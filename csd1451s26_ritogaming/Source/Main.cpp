@@ -1,6 +1,7 @@
 #include <crtdbg.h>
 #include "AEEngine.h"
 #include <cstdio>
+#include "renderer.hpp"
 
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
@@ -8,6 +9,8 @@
 
 AEGfxTexture* gTileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* gTileMesh = nullptr;
+
+f32 zoom{ 1.0f };
 
 // Dummy map
 int map[TILE_ROWS][TILE_COLS];
@@ -201,7 +204,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 
     // Determine tile size to fit both width and height
 
-    float tile_size = 10.f;
+    float tile_size = 64.f;
 
     InitializeDungeonMap();
 

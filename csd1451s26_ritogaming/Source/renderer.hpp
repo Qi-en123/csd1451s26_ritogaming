@@ -1,3 +1,10 @@
+/*!************************************************************************
+\file:			renderr.hpp
+\author:		Jerod
+\par DP email:	jerodyaowei.lim@digipen.edu
+\brief:			This header declares rendering-related data structures
+				and drawing functions using AEEngine.
+**************************************************************************/
 #pragma once
 #include "AEEngine.h"
 

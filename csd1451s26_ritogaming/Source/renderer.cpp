@@ -1,3 +1,11 @@
+/*!************************************************************************
+\file:			renderr.cpp
+\author:		Jerod
+\par DP email:	jerodyaowei.lim@digipen.edu
+\brief:		    This file handles mesh initialization and rendering of 
+				shapes,sprites, and text, including camera zoom support
+				using AEEngine.
+**************************************************************************/
 #include "renderer.hpp"
 #include "AEEngine.h"
 

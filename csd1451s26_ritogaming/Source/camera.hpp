@@ -1,3 +1,10 @@
+/*!************************************************************************
+\file:			camera.hpp
+\author:		Jerod
+\par DP email:	jerodyaowei.lim@digipen.edu
+\brief:			This header declares the Camera structure and camera
+				control functions.
+**************************************************************************/
 #pragma once
 #include "AEEngine.h"
 

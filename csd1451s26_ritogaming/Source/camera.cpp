@@ -1,3 +1,10 @@
+/*!************************************************************************
+\file:			camera.cpp
+\author:		Jerod
+\par DP email:	jerodyaowei.lim@digipen.edu
+\brief:			This file handles camera initialization and player-following
+				behavior with boundary constraints using AEEngine.
+**************************************************************************/
 #include "camera.hpp"
 #include "AEEngine.h"
 

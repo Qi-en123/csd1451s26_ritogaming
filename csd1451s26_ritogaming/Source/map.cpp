@@ -1,4 +1,6 @@
 #include "AEEngine.h"
+#include "renderer.hpp"
+
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
 #define TILE_COLS 160
@@ -73,7 +75,8 @@ void DrawMap(float tile_size)
         {
             float x = startX + col * tile_size;
             int tileType = map[row][col];
-            DrawTile(TileTextures[tileType], x, y, tile_size);
+            //DrawTile(TileTextures[tileType], x, y, tile_size);
+            renderSprite(rectMeshCenter, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
 }

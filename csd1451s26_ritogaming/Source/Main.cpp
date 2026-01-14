@@ -2,10 +2,14 @@
 #include "AEEngine.h"
 #include <cstdio>
 #include "map.hpp"
+#include "renderer.hpp"
+#include "camera.hpp"
 
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
 #define TILE_COLS 160
+
+f32 zoom{1.0f};
 
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
@@ -21,16 +25,21 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, nullptr);
     AESysSetWindowTitle("Square Tile Map");
 
-
-
     // Determine tile size to fit both width and height
 
-    float tile_size = 10.f;
+    float tile_size = 64.0f;
 
     InitializeDungeonMap();
 
     // Create mesh
-    CreateTileMesh(&TileMesh);
+    //CreateTileMesh(&TileMesh);
+    initMesh();
+
+    //js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
+    f32 curr_player_x{}, curr_player_y{};
+
+    //Starting position of camera
+    Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
 
     // Load textures properly
     char filename[128];
@@ -47,18 +56,32 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     {
         AESysFrameStart();
 
+        // Tell the Alpha Engine to get ready to draw something with texture.
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+
+        // Set blend mode to AE_GFX_BM_BLEND, which will allow transparency.
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxSetTransparency(1.0f);
+
+        f32 dt = (f32)AEFrameRateControllerGetFrameTime();
+
         DrawMap(tile_size);
 
-        AESysFrameEnd();
+        getZoom(dt);
+        //Bounds anyhow set first
+        simulateCamera(&cam, &curr_player_x, &curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
         if (AEInputCheckTriggered(AEVK_ESCAPE) || !AESysDoesWindowExist())
             gGameRunning = 0;
+
+        AESysFrameEnd();
     }
 
     // Cleanup
     for (int i = 0; i < NUM_TILE_TYPES; ++i)
         if (TileTextures[i]) AEGfxTextureUnload(TileTextures[i]);
     if (TileMesh) AEGfxMeshFree(TileMesh);
+    freeMesh();
 
     AESysExit();
     return 0;

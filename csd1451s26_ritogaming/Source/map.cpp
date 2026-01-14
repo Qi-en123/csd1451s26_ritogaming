@@ -55,7 +55,7 @@ void DrawTile(AEGfxTexture* tex, float topLeftX, float topLeftY, float tile_size
 // ------------------------------------------------------------
 // Draw the entire map perfectly centered
 // ------------------------------------------------------------
-void DrawMap(float tile_size, float screen_w, float screen_h)
+void DrawMap(float tile_size)
 {
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
@@ -63,8 +63,8 @@ void DrawMap(float tile_size, float screen_w, float screen_h)
     AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
     AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 
-    float startX = -screen_w / 2.f;
-    float startY = screen_h / 2.f - tile_size;
+    float startX = -1600.f / 2.f;
+    float startY = 900.f / 2.f - tile_size;
 
     for (int row = 0; row < TILE_ROWS; ++row)
     {

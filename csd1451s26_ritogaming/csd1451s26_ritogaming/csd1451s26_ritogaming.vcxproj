@@ -96,7 +96,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Source\Main.cpp" />
+    <ClCompile Include="..\Source\main.cpp" />
     <ClCompile Include="..\Source\map.cpp" />
   </ItemGroup>
   <ItemGroup>

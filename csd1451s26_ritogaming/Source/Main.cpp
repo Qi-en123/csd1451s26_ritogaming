@@ -21,8 +21,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, nullptr);
     AESysSetWindowTitle("Square Tile Map");
 
-    float screen_w = 1600.f;
-    float screen_h = 900.f;
+
 
     // Determine tile size to fit both width and height
 
@@ -48,7 +47,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     {
         AESysFrameStart();
 
-        DrawMap(tile_size, screen_w, screen_h);
+        DrawMap(tile_size);
 
         AESysFrameEnd();
 

@@ -138,6 +138,7 @@ void freeMesh() {
 
 void drawCircle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y) {
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
 
@@ -160,6 +161,7 @@ void drawCircle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
 
 void drawRect(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y) {
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
 
@@ -185,6 +187,7 @@ void drawSquare(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
 }
 
 void drawTriangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
 
@@ -212,6 +215,7 @@ void renderSquareSprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 
 void renderSprite(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture) {
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
 

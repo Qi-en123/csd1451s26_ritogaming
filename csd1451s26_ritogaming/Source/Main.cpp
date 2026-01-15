@@ -4,6 +4,8 @@
 #include "map.hpp"
 #include "renderer.hpp"
 #include "camera.hpp"
+#include "player.hpp"
+
 
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
@@ -14,19 +16,14 @@ f32 zoom{1.0f};
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
 
-
-// ------------------------------------------------------------
-// Main
-// ------------------------------------------------------------
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, nullptr);
-    AESysSetWindowTitle("Square Tile Map");
+    AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-
     float tile_size = 64.0f;
 
     InitializeDungeonMap();
@@ -51,6 +48,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
             printf("Failed to load: %s\n", filename);
     }
 
+    // Create player
+    Player player;
+    player_system_initialize(&player);
+
     int gGameRunning = 1;
     while (gGameRunning)
     {
@@ -70,6 +71,12 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
         getZoom(dt);
         //Bounds anyhow set first
         simulateCamera(&cam, &curr_player_x, &curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+
+        // Update player system
+        player_system_update(&player);
+
+        // Render player system
+        player_system_render(&player);
 
         if (AEInputCheckTriggered(AEVK_ESCAPE) || !AESysDoesWindowExist())
             gGameRunning = 0;

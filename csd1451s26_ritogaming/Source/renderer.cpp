@@ -1,10 +1,12 @@
 /*!************************************************************************
-\file:			renderr.cpp
-\author:		Jerod
-\par DP email:	jerodyaowei.lim@digipen.edu
-\brief:		    This file handles mesh initialization and rendering of 
-				shapes,sprites, and text, including camera zoom support
-				using AEEngine.
+\file:						renderr.cpp
+\author:					Jerod
+\par DP email:				jerodyaowei.lim@digipen.edu
+\co-author:					Claire
+\par co-author DP email:	c.cheong@digipen.edu
+\brief:						This file handles mesh initialization and 
+							rendering of shapes,sprites, and text, including 
+							camera zoom support using AEEngine.
 **************************************************************************/
 #include "renderer.hpp"
 #include "AEEngine.h"
@@ -15,6 +17,9 @@
 AEGfxVertexList * rectMeshCorner = nullptr;
 AEGfxVertexList* rectMeshCenter = nullptr;
 AEGfxVertexList* circleMesh = nullptr;
+AEGfxVertexList* squareMesh = nullptr;
+AEGfxVertexList* triangleMesh = nullptr;
+
 
 const Color red = { 1.0f, 0.0f,0.0f,0.0f };
 const Color green = { 0.0f, 1.0f, 0.0f, 0.0f };
@@ -27,6 +32,39 @@ const Color white = { 1.0f, 1.0f, 1.0f, 0.0f };
 void AEGfxSetColorToAdd(const Color& c)
 {
 	AEGfxSetColorToAdd(c.r, c.g, c.b, c.a);
+}
+
+AEGfxVertexList* createSquareMesh() {
+	AEGfxMeshStart();
+
+	// First triangle
+	AEGfxTriAdd(
+		-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f
+	);
+
+	// Second triangle
+	AEGfxTriAdd(
+		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f
+	);
+
+	return AEGfxMeshEnd();
+}
+
+AEGfxVertexList* createTriangleMesh() {
+	AEGfxMeshStart();
+
+	// Create a triangle pointing DOWNWARD (inverted Y coordinates)
+	AEGfxTriAdd(
+		0.0f, -0.5f, 0xFFFFFFFF, 0.5f, 1.0f,  // Bottom point (now at bottom)
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f,  // Top-left (now at top)
+		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f   // Top-right (now at top)
+	);
+
+	return AEGfxMeshEnd();
 }
 
 void initMesh() {
@@ -86,12 +124,16 @@ void initMesh() {
 
 	}
 	circleMesh = AEGfxMeshEnd();
+	squareMesh = createSquareMesh();
+	triangleMesh = createTriangleMesh();
 }
 
 void freeMesh() {
 	AEGfxMeshFree(circleMesh);
 	AEGfxMeshFree(rectMeshCorner);
 	AEGfxMeshFree(rectMeshCenter);
+	AEGfxMeshFree(squareMesh);     
+	AEGfxMeshFree(triangleMesh);   
 }
 
 void drawCircle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
@@ -136,6 +178,36 @@ void drawRect(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
 	//AEMtx33Concat(&transform, &translate, &scale);
 	AEGfxSetTransform(transform.m);
 	AEGfxMeshDraw(rectMesh, AE_GFX_MDM_TRIANGLES);
+}
+
+void drawSquare(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
+	drawRect(squareMesh, trans_x, trans_y, scale_x, scale_y);
+}
+
+void drawTriangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
+	AEMtx33 transform;
+	AEMtx33Identity(&transform);
+
+	AEMtx33 translate;
+	AEMtx33Trans(&translate, trans_x, trans_y);
+
+	AEMtx33 scale;
+	AEMtx33Scale(&scale, scale_x, scale_y);
+
+	AEMtx33 cam_zoom;
+	AEMtx33Scale(&cam_zoom, zoom, zoom);
+
+	AEMtx33Concat(&transform, &transform, &cam_zoom);
+	AEMtx33Concat(&transform, &transform, &translate);
+	AEMtx33Concat(&transform, &transform, &scale);
+
+	AEGfxSetTransform(transform.m);
+	AEGfxMeshDraw(triangleMesh, AE_GFX_MDM_TRIANGLES);
+}
+
+void renderSquareSprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
+	AEGfxTexture* texture) {
+	renderSprite(squareMesh, trans_x, trans_y, scale_x, scale_y, texture);
 }
 
 void renderSprite(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,

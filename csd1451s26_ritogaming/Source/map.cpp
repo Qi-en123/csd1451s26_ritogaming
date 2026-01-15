@@ -79,79 +79,74 @@ void InitializeDungeonMap()
     // Clear map
     for (int r = 0; r < TILE_ROWS; ++r)
         for (int c = 0; c < TILE_COLS; ++c)
-            map[r][c] = 0; //clear room
+            map[r][c] = 0; // clear room
 
     // ============================================================
-    // PLAYER ROOM 1 (Top Left)
+    // PLAYER ROOM 1 (Top Left) - Expanded
     // ============================================================
-    for (int r = 10; r < 18; ++r)
-        for (int c = 10; c < 18; ++c)
-            map[r][c] = 2; 
+    for (int r = 8; r < 20; ++r)      // expand rows
+        for (int c = 8; c < 20; ++c)  // expand cols
+            map[r][c] = 2;            // floor tile
 
-    for (int c = 9; c < 19; ++c)
-        map[9][c] = map[18][c] = 1; // wall tile
-    for (int r = 9; r < 19; ++r)
-        map[r][9] = map[r][18] = 1; // wall tile
+    for (int c = 7; c < 21; ++c)
+        map[7][c] = map[20][c] = 1;  // wall tile
+    for (int r = 7; r < 21; ++r)
+        map[r][7] = map[r][20] = 1;  // wall tile
 
-    map[14][14] = 3; //player 1
-
+    map[14][14] = 3; // player 1
 
     // ============================================================
-    // PLAYER ROOM 2 (Bottom Left)
+    // PLAYER ROOM 2 (Bottom Left) - Expanded
     // ============================================================
-    for (int r = 60; r < 68; ++r)
-        for (int c = 10; c < 18; ++c)
+    for (int r = 58; r < 70; ++r)
+        for (int c = 8; c < 20; ++c)
             map[r][c] = 2; // floor tile
 
-    for (int c = 9; c < 19; ++c)
-        map[59][c] = map[68][c] = 1; // wall tile
-    for (int r = 59; r < 69; ++r)
-        map[r][9] = map[r][18] = 1; // wall tile
+    for (int c = 7; c < 21; ++c)
+        map[57][c] = map[70][c] = 1; // wall tile
+    for (int r = 57; r < 71; ++r)
+        map[r][7] = map[r][20] = 1; // wall tile
 
-    map[64][14] = 4; //player 2
-
+    map[64][14] = 4; // player 2
 
     // ============================================================
-    // VERTICAL CORRIDOR
+    // VERTICAL CORRIDOR - Expanded
     // ============================================================
-    for (int r = 18; r < 68; ++r)
-        for (int c = 9; c < 19; ++c)
+    for (int r = 20; r < 58; ++r)        // slightly taller corridor
+        for (int c = 7; c < 21; ++c)     // wider corridor
             map[r][c] = 2; // floor tile
 
-    for (int r = 18; r < 68; ++r) {
-        map[r][9] = 1;  // wall tile
-        map[r][18] = 1; // wall tile
+    for (int r = 20; r < 58; ++r) {
+        map[r][7] = 1;  // wall tile
+        map[r][20] = 1; // wall tile
     }
 
-
     // ============================================================
-    // BOSS ROOM 1 (Top Right)
+    // BOSS ROOM 1 (Top Right) - Keep same
     // ============================================================
     for (int r = 6; r < 26; ++r)
         for (int c = 60; c < 90; ++c)
             map[r][c] = 2; // floor tile
 
     for (int c = 59; c < 91; ++c)
-        map[5][c] = map[26][c] = 1; // // wall tile
+        map[5][c] = map[26][c] = 1; // wall tile
     for (int r = 5; r < 27; ++r)
-        map[r][59] = map[r][90] = 1; // // wall tile
+        map[r][59] = map[r][90] = 1; // wall tile
 
     map[16][75] = 5; // boss 1
 
-
-    // Corridor to Boss Room 1
+    // Corridor to Boss Room 1 - Expanded
     for (int c = 18; c < 60; ++c)
-        for (int r = 13; r < 15; ++r)
+        for (int r = 11; r < 17; ++r) // taller corridor
             map[r][c] = 2; // floor tile
 
     for (int c = 18; c < 60; ++c) {
-        map[12][c] = 1; // wall tile
-        map[15][c] = 1; // wall tile
+        map[10][c] = 1; // wall tile
+        map[17][c] = 1; // wall tile
     }
 
-
     // ============================================================
-    // BOSS ROOM 2 (Bottom Right – Bigger)
+    // BOSS ROOM 2 (Bottom Right – Bigger) - Keep same
     // ============================================================
     for (int r = 48; r < 82; ++r)
         for (int c = 60; c < 100; ++c)
@@ -164,14 +159,13 @@ void InitializeDungeonMap()
 
     map[65][80] = 6; // boss 2
 
-
-    // Corridor to Boss Room 2
+    // Corridor to Boss Room 2 - Expanded
     for (int c = 18; c < 60; ++c)
-        for (int r = 63; r < 65; ++r)
+        for (int r = 61; r < 67; ++r) // taller corridor
             map[r][c] = 2; // floor tile
 
     for (int c = 18; c < 60; ++c) {
-        map[62][c] = 1; // wall tile
-        map[65][c] = 1; // wall tile
+        map[60][c] = 1; // wall tile
+        map[67][c] = 1; // wall tile
     }
 }

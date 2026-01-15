@@ -32,11 +32,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     //CreateTileMesh(&TileMesh);
     initMesh();
 
-    //js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-    f32 curr_player_x{}, curr_player_y{};
+    ////js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
+    //f32 curr_player_x{}, curr_player_y{};
 
-    //Starting position of camera
-    Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
+    ////Starting position of camera
+    //Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
 
     // Load textures properly
     char filename[128];
@@ -51,6 +51,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     // Create player
     Player player;
     player_system_initialize(&player);
+
+    Camera cam = initCam(&player.x, &player.y, 60.0f, 5.0f);
+
 
     int gGameRunning = 1;
     while (gGameRunning)
@@ -70,7 +73,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 
         getZoom(dt);
         //Bounds anyhow set first
-        simulateCamera(&cam, &curr_player_x, &curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+        simulateCamera(&cam, &player.x, &player.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
         // Update player system
         player_system_update(&player);

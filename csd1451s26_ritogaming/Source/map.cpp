@@ -3,19 +3,13 @@
 \author:        Qien
 \par DP email:  g.qien@digipen.edu
 \brief:         This file handles tile-based map rendering and initialization.
-                It creates the tile mesh, draws individual tiles and the 
-                full map and defines the dungeon layout including rooms, 
+                It creates the tile mesh, draws individual tiles and the
+                full map and defines the dungeon layout including rooms,
                 corridors, players,and boss areas.
 **************************************************************************/
 #include "AEEngine.h"
 #include "renderer.hpp"
-
-#define NUM_TILE_TYPES 131
-#define TILE_ROWS 90
-#define TILE_COLS 160
-
-extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
-extern AEGfxVertexList* TileMesh;
+#include "map.hpp"
 
 // Dummy map
 extern int map[TILE_ROWS][TILE_COLS];
@@ -23,20 +17,20 @@ extern int map[TILE_ROWS][TILE_COLS];
 // ------------------------------------------------------------
 // Create a square tile mesh
 // ------------------------------------------------------------
-void CreateTileMesh(AEGfxVertexList** mesh)
+void CreateTileMesh(AEGfxVertexList **mesh)
 {
     AEGfxMeshStart();
 
     // top-left = (0,0), bottom-right = (1,1)
     AEGfxTriAdd(
-        0.f, 0.f, 0xFFFFFFFF, 0.0f, 0.0f,   // top-left
-        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
-        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
+        0.f, 0.f, 0xFFFFFFFF, 0.0f, 0.0f,  // top-left
+        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,  // top-right
+        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f); // bottom-left
 
     AEGfxTriAdd(
-        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
-        1.f, 1.f, 0xFFFFFFFF, 1.0f, 1.0f,   // bottom-right
-        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
+        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,  // top-right
+        1.f, 1.f, 0xFFFFFFFF, 1.0f, 1.0f,  // bottom-right
+        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f); // bottom-left
 
     *mesh = AEGfxMeshEnd();
 }
@@ -44,9 +38,10 @@ void CreateTileMesh(AEGfxVertexList** mesh)
 // ------------------------------------------------------------
 // Draw a single tile using top-left coordinates
 // ------------------------------------------------------------
-void DrawTile(AEGfxTexture* tex, float topLeftX, float topLeftY, float tile_size)
+void DrawTile(AEGfxTexture *tex, float topLeftX, float topLeftY, float tile_size)
 {
-    if (!tex || !TileMesh) return;
+    if (!tex || !TileMesh)
+        return;
 
     AEMtx33 Scale, Rotate, Translate, Transform;
 
@@ -84,7 +79,7 @@ void DrawMap(float tile_size)
         {
             float x = startX + col * tile_size;
             int tileType = map[row][col];
-            //DrawTile(TileTextures[tileType], x, y, tile_size);
+            // DrawTile(TileTextures[tileType], x, y, tile_size);
             renderSprite(rectMeshCenter, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
@@ -114,7 +109,6 @@ void InitializeDungeonMap()
 
     map[14][14] = 96; // Player 1
 
-
     // ============================================================
     // PLAYER ROOM 2 (Bottom Left)
     // ============================================================
@@ -129,7 +123,6 @@ void InitializeDungeonMap()
 
     map[64][14] = 84; // Player 2
 
-
     // ============================================================
     // VERTICAL CORRIDOR
     // ============================================================
@@ -137,11 +130,11 @@ void InitializeDungeonMap()
         for (int c = 9; c < 19; ++c)
             map[r][c] = 49;
 
-    for (int r = 18; r < 68; ++r) {
+    for (int r = 18; r < 68; ++r)
+    {
         map[r][9] = 14;
         map[r][18] = 14;
     }
-
 
     // ============================================================
     // BOSS ROOM 1 (Top Right)
@@ -157,20 +150,19 @@ void InitializeDungeonMap()
 
     map[16][75] = 121; // Boss 1
 
-
     // Corridor to Boss Room 1
     for (int c = 18; c < 60; ++c)
         for (int r = 13; r < 15; ++r)
             map[r][c] = 49;
 
-    for (int c = 18; c < 60; ++c) {
+    for (int c = 18; c < 60; ++c)
+    {
         map[12][c] = 14;
         map[15][c] = 14;
     }
 
-
     // ============================================================
-    // BOSS ROOM 2 (Bottom Right – Bigger)
+    // BOSS ROOM 2 (Bottom Right ï¿½ Bigger)
     // ============================================================
     for (int r = 48; r < 82; ++r)
         for (int c = 60; c < 100; ++c)
@@ -183,13 +175,13 @@ void InitializeDungeonMap()
 
     map[65][80] = 110; // Boss 2
 
-
     // Corridor to Boss Room 2
     for (int c = 18; c < 60; ++c)
         for (int r = 63; r < 65; ++r)
             map[r][c] = 49;
 
-    for (int c = 18; c < 60; ++c) {
+    for (int c = 18; c < 60; ++c)
+    {
         map[62][c] = 14;
         map[65][c] = 14;
     }

@@ -10,10 +10,12 @@
 
 #include "AEEngine.h"
 #include "renderer.hpp"
+#include "map.hpp"
 
 typedef struct player_config {
     // Size settings
-    float characterSize = 200.f;      // Default character size
+    //float characterSize = 200.f;      // Default character size
+    float characterSize = tile_size;      // Default character size
     float triangleSize = 80.f;        // Default triangle indicator size
     float triangleOffset = 150.f;     // How far above character the triangle sits
 
@@ -61,6 +63,8 @@ typedef struct Player {
     AEMtx33 triangleScale;
     AEMtx33 rotate;
 } Player;
+
+extern Player player;
 
 /**************************************************************************
     \brief

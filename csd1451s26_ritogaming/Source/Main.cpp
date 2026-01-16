@@ -5,15 +5,19 @@
 #include "camera.hpp"
 #include "player.hpp"
 
+// #include "puzzle.hpp"
 
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
+Camera cam{};
 f32 zoom{1.0f};
+Player player;
 
-AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
-AEGfxVertexList* TileMesh = nullptr;
+AEGfxTexture *TileTextures[NUM_TILE_TYPES] = {nullptr};
+AEGfxVertexList *TileMesh = nullptr;
+float tile_size = 64.0f;
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 {
@@ -23,19 +27,19 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    float tile_size = 64.0f;
+    // float tile_size = 64.0f;
 
     InitializeDungeonMap();
 
     // Create mesh
-    //CreateTileMesh(&TileMesh);
+    // CreateTileMesh(&TileMesh);
     initMesh();
 
     ////js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-    //f32 curr_player_x{}, curr_player_y{};
+    // f32 curr_player_x{}, curr_player_y{};
 
     ////Starting position of camera
-    //Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
+    // Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
 
     // Load textures properly
     char filename[128];
@@ -48,17 +52,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     }
 
     // Create player
-    Player player;
     player_system_initialize(&player);
 
     Camera cam = initCam(&player.x, &player.y, 60.0f, 5.0f);
-
 
     int gGameRunning = 1;
     while (gGameRunning)
     {
         AESysFrameStart();
- 
+
         // Tell the Alpha Engine to get ready to draw something with texture.
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
@@ -71,8 +73,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
         DrawMap(tile_size);
 
         getZoom(dt);
-        //Bounds anyhow set first
+        // Bounds anyhow set first
         simulateCamera(&cam, &player.x, &player.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+
+        // Bounds anyhow set first
+        simulateCamera(&cam, curr_player_x, curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
         // Update player system
         player_system_update(&player);
@@ -88,8 +93,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 
     // Cleanup
     for (int i = 0; i < NUM_TILE_TYPES; ++i)
-        if (TileTextures[i]) AEGfxTextureUnload(TileTextures[i]);
-    if (TileMesh) AEGfxMeshFree(TileMesh);
+        if (TileTextures[i])
+            AEGfxTextureUnload(TileTextures[i]);
+    if (TileMesh)
+        AEGfxMeshFree(TileMesh);
     freeMesh();
 
     AESysExit();

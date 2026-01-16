@@ -85,7 +85,7 @@ void DrawMap(float tile_size)
             float x = startX + col * tile_size;
             int tileType = map[row][col];
             //DrawTile(TileTextures[tileType], x, y, tile_size);
-            renderSprite(rectMeshCenter, x, y, tile_size, tile_size, TileTextures[tileType]);
+            render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
 }
@@ -181,7 +181,7 @@ void InitializeDungeonMap()
     for (int r = 47; r < 83; ++r)
         map[r][59] = map[r][100] = 14;
 
-    map[65][80] = 110; // Boss 2
+    //map[65][80] = 110; // Boss 2
 
 
     // Corridor to Boss Room 2

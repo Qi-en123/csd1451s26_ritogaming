@@ -1,6 +1,5 @@
 #include <crtdbg.h>
 #include "AEEngine.h"
-#include <cstdio>
 #include "map.hpp"
 #include "renderer.hpp"
 #include "camera.hpp"
@@ -59,7 +58,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     while (gGameRunning)
     {
         AESysFrameStart();
-
+ 
         // Tell the Alpha Engine to get ready to draw something with texture.
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
@@ -83,7 +82,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 
         if (AEInputCheckTriggered(AEVK_ESCAPE) || !AESysDoesWindowExist())
             gGameRunning = 0;
-
+        AEGfxSetBackgroundColor(0, 0, 0);
         AESysFrameEnd();
     }
 

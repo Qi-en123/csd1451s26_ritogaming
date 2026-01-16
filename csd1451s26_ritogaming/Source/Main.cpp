@@ -14,6 +14,7 @@
 
 Camera cam{};
 f32 zoom{1.0f};
+Player player;
 
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
@@ -46,7 +47,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     }
 
     // Create player
-	Player player;
 	player_system_initialize(&player);
 
 	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)

@@ -9,18 +9,10 @@
 **************************************************************************/
 #include "AEEngine.h"
 #include "renderer.hpp"
-
-#define NUM_TILE_TYPES 131
-#define TILE_ROWS 90
-#define TILE_COLS 160
-
-extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
-extern AEGfxVertexList* TileMesh;
+#include "map.hpp"
 
 // Dummy map
-extern int map[TILE_ROWS][TILE_COLS];
-
-
+int map[90][160];
 
 // ------------------------------------------------------------
 // Draw a single tile using top-left coordinates

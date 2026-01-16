@@ -14,6 +14,8 @@ typedef struct Camera {
 	f32 limit_x, limit_y;
 }Camera;
 
+extern Camera cam;
+
 Camera initCam(f32* player_x, f32* player_y, f32 limit_x, f32 limit_y);
 
 void simulateCamera(Camera* cam, f32* player_x, f32* player_y,

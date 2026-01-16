@@ -42,6 +42,10 @@ void initMesh();
 
 void freeMesh();
 
+//checks if object in on screen
+//Only did culling for sprites, cuz lazy
+bool on_screen(f32 x, f32 y);
+
 //circleMesh - Corner or Center mode.
 //trans_x - translate x
 //trans_y - translate y

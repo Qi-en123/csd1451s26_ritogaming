@@ -6,15 +6,18 @@
 #include "camera.hpp"
 #include "player.hpp"
 
+#include "puzzle.hpp"
 
 #define NUM_TILE_TYPES 7
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
+Camera cam{};
 f32 zoom{1.0f};
 
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
+float tile_size = 64.0f;
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 {
@@ -24,19 +27,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    float tile_size = 64.0f;
+    //float tile_size = 64.0f;
 
     InitializeDungeonMap();
 
     // Create mesh
     //CreateTileMesh(&TileMesh);
     initMesh();
-
-    //js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-    f32 curr_player_x{}, curr_player_y{};
-
-    //Starting position of camera
-    Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
 
     // Load textures properly
     char filename[128];
@@ -49,11 +46,17 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     }
 
     // Create player
-    Player player;
-    player_system_initialize(&player);
+	Player player;
+	player_system_initialize(&player);
 
-    int gGameRunning = 1;
-    while (gGameRunning)
+	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
+	f32* curr_player_x{ &player.char1X }, * curr_player_y{ &player.char1Y };
+
+	//Starting position of camera
+	cam = initCam(curr_player_x, curr_player_y, 60.0f, 5.0f);
+
+	int gGameRunning = 1;
+	while (gGameRunning)
     {
         AESysFrameStart();
 
@@ -66,13 +69,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 
         f32 dt = (f32)AEFrameRateControllerGetFrameTime();
 
-        DrawMap(tile_size);
+		DrawMap(tile_size);
 
-        getZoom(dt);
-        //Bounds anyhow set first
-        simulateCamera(&cam, &curr_player_x, &curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+		getZoom(dt);
 
-        // Update player system
+		//Bounds anyhow set first
+		simulateCamera(&cam, curr_player_x, curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+
+		// Update player system
         player_system_update(&player);
 
         // Render player system

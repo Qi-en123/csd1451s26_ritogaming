@@ -139,10 +139,10 @@ void freeMesh() {
 }
 
 bool on_screen(f32 x, f32 y) {
-	return (x < cam.pos.x + AEGfxGetWindowWidth() / 2 + tile_size &&
-		x > cam.pos.x - AEGfxGetWindowWidth() / 2 - tile_size &&
-		y < cam.pos.y + AEGfxGetWindowHeight() / 2 + tile_size &&
-		y > cam.pos.y - AEGfxGetWindowHeight() / 2 - tile_size);
+	return (x < cam.pos.x + (AEGfxGetWindowWidth() / 2 / zoom) + tile_size &&
+		x > cam.pos.x - (AEGfxGetWindowWidth() / 2 / zoom) - tile_size &&
+		y < cam.pos.y + (AEGfxGetWindowHeight() / 2 / zoom) + tile_size &&
+		y > cam.pos.y - (AEGfxGetWindowHeight() / 2 / zoom) - tile_size);
 }
 
 void drawCircle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
@@ -225,14 +225,16 @@ void renderSquareSprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 void renderSprite(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture) {
 	//CULLING
-	if (on_screen) {
-
+	if (on_screen(trans_x, trans_y)) {
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		AEMtx33 transform;
 		AEMtx33Identity(&transform);
 
 		AEMtx33 translate;
 		AEMtx33Trans(&translate, trans_x, trans_y);
+
+		AEMtx33 cam_translate;
+		AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
 
 		AEMtx33 scale;
 		AEMtx33Scale(&scale, scale_x, scale_y);
@@ -241,6 +243,8 @@ void renderSprite(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
 		AEMtx33Scale(&cam_zoom, zoom, zoom);
 
 		AEMtx33Concat(&transform, &transform, &cam_zoom);
+		AEMtx33Concat(&transform, &transform, &cam_translate);
+
 		AEMtx33Concat(&transform, &transform, &translate);
 		AEMtx33Concat(&transform, &transform, &scale);
 

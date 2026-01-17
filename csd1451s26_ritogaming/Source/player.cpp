@@ -118,32 +118,38 @@ void player_system_handle_input(Player* player) {
 void player_system_render(Player* player) {
     if (!player) return;
 
-    // Setup for textured rendering (characters)
-    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
+    //// Setup for textured rendering (characters)
+    //AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    //AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+    //AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+    //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    //AEGfxSetTransparency(1.0f);
 
-    // Draw Character 1
-    AEGfxSetTransform(player->transform1.m);
-    AEGfxTextureSet(player->char1Texture, 0, 0);
-    AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    //// Draw Character 1
+    //AEGfxSetTransform(player->transform1.m);
+    //AEGfxTextureSet(player->char1Texture, 0, 0);
+    //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    // Draw Character 2
-    AEGfxSetTransform(player->transform2.m);
-    AEGfxTextureSet(player->char2Texture, 0, 0);
-    AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
+    renderSprite(rectMeshCenter, player->char1X, player->char1Y,
+        player->config.characterSize, player->config.characterSize, player->char1Texture);
 
-    // Setup for colored rendering (triangle indicator)
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
+    //// Draw Character 2
+    //AEGfxSetTransform(player->transform2.m);
+    //AEGfxTextureSet(player->char2Texture, 0, 0);
+    //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    // Draw green triangle pointing DOWN above active character
-    AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
-    AEGfxSetTransform(player->triangleTransform.m);
-    AEGfxMeshDraw(triangleMesh, AE_GFX_MDM_TRIANGLES);
+    renderSprite(rectMeshCenter, player->char2X, player->char2Y,
+        player->config.characterSize, player->config.characterSize, player->char2Texture);
+
+    //// Setup for colored rendering (triangle indicator)
+    //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    //AEGfxSetTransparency(1.0f);
+
+    //// Draw green triangle pointing DOWN above active character
+    //AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
+    //AEGfxSetTransform(player->triangleTransform.m);
+    //AEGfxMeshDraw(triangleMesh, AE_GFX_MDM_TRIANGLES);
 }
 
 

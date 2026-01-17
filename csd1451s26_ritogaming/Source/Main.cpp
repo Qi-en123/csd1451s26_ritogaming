@@ -6,7 +6,7 @@
 #include "camera.hpp"
 #include "player.hpp"
 
-#include "puzzle.hpp"
+//#include "puzzle.hpp"
 
 #define NUM_TILE_TYPES 7
 #define TILE_ROWS 90

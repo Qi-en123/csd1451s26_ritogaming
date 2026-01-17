@@ -36,14 +36,16 @@ void simulateCamera(Camera* cam, f32* player_x, f32* player_y,
 		float max = 100.0f;
 
 		float rel_speed = max * (1.0f - expf(-k * dist));
-		printf("%f %f\n", dist, rel_speed/max/10);
+		//printf("%f %f\n", dist, rel_speed/max/10);
 
 		AEVec2Lerp(&cam->pos, &cam->pos, &curr_player_pos,
 			rel_speed/max/10);
+
+		//AEVec2Lerp(&cam->pos, &cam->pos, &curr_player_pos, CAMERA_SPEED);
 	}
 
 	cam->pos.x = AEClamp(cam->pos.x, left_bound, right_bound);
 	cam->pos.y = AEClamp(cam->pos.y, bottom_bound, top_bound);
 
-	AEGfxSetCamPosition(cam->pos.x, cam->pos.y);
+	//AEGfxSetCamPosition(cam->pos.x, cam->pos.y);
 }

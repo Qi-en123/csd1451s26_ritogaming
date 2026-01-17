@@ -71,21 +71,21 @@ void InitializeDungeonMap()
     // Clear map
     for (int r = 0; r < TILE_ROWS; ++r)
         for (int c = 0; c < TILE_COLS; ++c)
-            map[r][c] = 0; //clear room
+            map[r][c] = 0;
 
     // ============================================================
     // PLAYER ROOM 1 (Top Left)
     // ============================================================
     for (int r = 10; r < 18; ++r)
         for (int c = 10; c < 18; ++c)
-            map[r][c] = 2; 
+            map[r][c] = 49;
 
     for (int c = 9; c < 19; ++c)
-        map[9][c] = map[18][c] = 1; // wall tile
+        map[9][c] = map[18][c] = 14;
     for (int r = 9; r < 19; ++r)
-        map[r][9] = map[r][18] = 1; // wall tile
+        map[r][9] = map[r][18] = 14;
 
-    map[14][14] = 3; //player 1
+    map[14][14] = 96; // Player 1
 
 
     // ============================================================
@@ -93,14 +93,14 @@ void InitializeDungeonMap()
     // ============================================================
     for (int r = 60; r < 68; ++r)
         for (int c = 10; c < 18; ++c)
-            map[r][c] = 2; // floor tile
+            map[r][c] = 49;
 
     for (int c = 9; c < 19; ++c)
-        map[59][c] = map[68][c] = 1; // wall tile
+        map[59][c] = map[68][c] = 14;
     for (int r = 59; r < 69; ++r)
-        map[r][9] = map[r][18] = 1; // wall tile
+        map[r][9] = map[r][18] = 14;
 
-    map[64][14] = 4; //player 2
+    map[64][14] = 84; // Player 2
 
 
     // ============================================================
@@ -108,11 +108,11 @@ void InitializeDungeonMap()
     // ============================================================
     for (int r = 18; r < 68; ++r)
         for (int c = 9; c < 19; ++c)
-            map[r][c] = 2; // floor tile
+            map[r][c] = 49;
 
     for (int r = 18; r < 68; ++r) {
-        map[r][9] = 1;  // wall tile
-        map[r][18] = 1; // wall tile
+        map[r][9] = 14;
+        map[r][18] = 14;
     }
 
 
@@ -121,49 +121,49 @@ void InitializeDungeonMap()
     // ============================================================
     for (int r = 6; r < 26; ++r)
         for (int c = 60; c < 90; ++c)
-            map[r][c] = 2; // floor tile
+            map[r][c] = 49;
 
     for (int c = 59; c < 91; ++c)
-        map[5][c] = map[26][c] = 1; // // wall tile
+        map[5][c] = map[26][c] = 14;
     for (int r = 5; r < 27; ++r)
-        map[r][59] = map[r][90] = 1; // // wall tile
+        map[r][59] = map[r][90] = 14;
 
-    map[16][75] = 5; // boss 1
+    map[16][75] = 121; // Boss 1
 
 
     // Corridor to Boss Room 1
     for (int c = 18; c < 60; ++c)
         for (int r = 13; r < 15; ++r)
-            map[r][c] = 2; // floor tile
+            map[r][c] = 49;
 
     for (int c = 18; c < 60; ++c) {
-        map[12][c] = 1; // wall tile
-        map[15][c] = 1; // wall tile
+        map[12][c] = 14;
+        map[15][c] = 14;
     }
 
 
     // ============================================================
-    // BOSS ROOM 2 (Bottom Right – Bigger)
+    // BOSS ROOM 2 (Bottom Right ï¿½ Bigger)
     // ============================================================
     for (int r = 48; r < 82; ++r)
         for (int c = 60; c < 100; ++c)
-            map[r][c] = 2; // floor tile
+            map[r][c] = 49;
 
     for (int c = 59; c < 101; ++c)
-        map[47][c] = map[82][c] = 1; // wall tile
+        map[47][c] = map[82][c] = 14;
     for (int r = 47; r < 83; ++r)
-        map[r][59] = map[r][100] = 1; // wall tile
+        map[r][59] = map[r][100] = 14;
 
-    map[65][80] = 6; // boss 2
+    map[65][80] = 110; // Boss 2
 
 
     // Corridor to Boss Room 2
     for (int c = 18; c < 60; ++c)
         for (int r = 63; r < 65; ++r)
-            map[r][c] = 2; // floor tile
+            map[r][c] = 49;
 
     for (int c = 18; c < 60; ++c) {
-        map[62][c] = 1; // wall tile
-        map[65][c] = 1; // wall tile
+        map[62][c] = 14;
+        map[65][c] = 14;
     }
 }

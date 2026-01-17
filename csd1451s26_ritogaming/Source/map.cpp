@@ -18,7 +18,7 @@ extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 extern AEGfxVertexList* TileMesh;
 
 // Dummy map
-extern int map[TILE_ROWS][TILE_COLS];
+int map[TILE_ROWS][TILE_COLS];
 
 
 

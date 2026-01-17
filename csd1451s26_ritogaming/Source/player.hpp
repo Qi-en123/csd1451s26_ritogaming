@@ -13,7 +13,7 @@
 
 typedef struct player_config {
     // Size settings
-    float characterSize = 200.f;      // Default character size
+    float characterSize = 50.f;      // Default character size
     float triangleSize = 80.f;        // Default triangle indicator size
     float triangleOffset = 150.f;     // How far above character the triangle sits
 
@@ -27,8 +27,8 @@ typedef struct player_config {
     float moveSpeed = 10.0f;          // Player movement speed
 
     // Texture paths (with YOUR corrected paths!)
-    const char* char1TexturePath = "Assets/kenney_tiny-dungeon/Tiles/tile_0096.png";
-    const char* char2TexturePath = "Assets/kenney_tiny-dungeon/Tiles/tile_0084.png";
+    const char* char1TexturePath = "Assets/Tiles/tile_0003.png";
+    const char* char2TexturePath = "Assets/Tiles/tile_0004.png";
 } PlayerConfig;
 
 typedef struct Player {

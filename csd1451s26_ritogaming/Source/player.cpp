@@ -7,9 +7,11 @@
                 updates transformations, renders player visuals and indicators,
                 and handles resource initialization and cleanup.
 **************************************************************************/
+#include "collision.hpp"
 #include "player.hpp"
 #include <crtdbg.h>
 
+extern int map[TILE_ROWS][TILE_COLS];
 
 static void player_system_update_transforms(Player* player) {
     if (!player) return;
@@ -100,19 +102,27 @@ void player_system_handle_input(Player* player) {
     }
 
     if (moveX && moveY) {
-        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W)) {
-            *moveY += player->speed;
-        }
-        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S)) {
-            *moveY -= player->speed;
-        }
-        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A)) {
-            *moveX -= player->speed;
-        }
-        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D)) {
-            *moveX += player->speed;
+        float newX = *moveX;
+        float newY = *moveY;
+
+        // Gather input
+        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W)) newY += player->speed;
+        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S)) newY -= player->speed;
+        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A)) newX -= player->speed;
+        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D)) newX += player->speed;
+
+        // Tile map offsets and size (same as in DrawMap)
+        float tile_size = 20.0f;              // replace to tile size
+        float startX = -1600.f / 2.f;
+        float startY = 900.f / 2.f - tile_size;
+
+        // Only move if no collision
+        if (!check_player_collision(player, newX, newY, map, tile_size, startX, startY)) {
+            *moveX = newX;
+            *moveY = newY;
         }
     }
+
 }
 
 void player_system_render(Player* player) {

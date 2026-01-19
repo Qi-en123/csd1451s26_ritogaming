@@ -9,11 +9,12 @@
 **************************************************************************/
 #include "player.hpp"
 #include <crtdbg.h>
+#include "camera.hpp"
+#include "renderer.hpp"
 
 
 static void player_system_update_transforms(Player* player) {
     if (!player) return;
-
     // Update character 1 transform
     AEMtx33 translate1;
     AEMtx33Trans(&translate1, player->char1X, player->char1Y);
@@ -37,8 +38,8 @@ static void player_system_update_transforms(Player* player) {
         AEMtx33Trans(&triangleTranslate, player->char2X, player->char2Y + player->config.triangleOffset);
     }
 
-    AEMtx33Concat(&player->triangleTransform, &player->rotate, &player->triangleScale);
     AEMtx33Concat(&player->triangleTransform, &triangleTranslate, &player->triangleTransform);
+    AEMtx33Concat(&player->triangleTransform, &player->rotate, &player->triangleScale);
 }
 
 void player_system_initialize(Player* player, const player_config* config) {
@@ -141,15 +142,17 @@ void player_system_render(Player* player) {
     renderSprite(rectMeshCenter, player->char2X, player->char2Y,
         player->config.characterSize, player->config.characterSize, player->char2Texture);
 
-    //// Setup for colored rendering (triangle indicator)
-    //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    //AEGfxSetTransparency(1.0f);
+    // Setup for colored rendering (triangle indicator)
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
 
-    //// Draw green triangle pointing DOWN above active character
-    //AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
-    //AEGfxSetTransform(player->triangleTransform.m);
-    //AEGfxMeshDraw(triangleMesh, AE_GFX_MDM_TRIANGLES);
+    // Draw green triangle pointing DOWN above active character
+    AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
+    AEGfxSetTransform(player->triangleTransform.m);
+    AEGfxMeshDraw(triangleMesh, AE_GFX_MDM_TRIANGLES);
+    
+    //drawTriangle(/*things*/);
 }
 
 

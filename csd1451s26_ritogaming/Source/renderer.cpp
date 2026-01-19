@@ -203,6 +203,9 @@ void drawTriangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
 	AEMtx33 translate;
 	AEMtx33Trans(&translate, trans_x, trans_y);
 
+	AEMtx33 cam_translate;
+	AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
+
 	AEMtx33 scale;
 	AEMtx33Scale(&scale, scale_x, scale_y);
 
@@ -210,6 +213,8 @@ void drawTriangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
 	AEMtx33Scale(&cam_zoom, zoom, zoom);
 
 	AEMtx33Concat(&transform, &transform, &cam_zoom);
+	AEMtx33Concat(&transform, &transform, &cam_translate);
+
 	AEMtx33Concat(&transform, &transform, &translate);
 	AEMtx33Concat(&transform, &transform, &scale);
 

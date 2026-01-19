@@ -7,7 +7,7 @@
 #include "player.hpp"
 
 
-#define NUM_TILE_TYPES 131
+#define NUM_TILE_TYPES 7
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
@@ -24,7 +24,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    float tile_size = 64.0f;
+    float tile_size = 10.0f;
 
     // Tell the Alpha Engine to set the background to black.
     AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
@@ -45,7 +45,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     char filename[128];
     for (int i = 0; i < NUM_TILE_TYPES; ++i)
     {
-        sprintf_s(filename, "Assets/kenney_tiny-dungeon/Tiles/tile_%04d.png", i);
+        sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
         TileTextures[i] = AEGfxTextureLoad(filename);
         if (!TileTextures[i])
             printf("Failed to load: %s\n", filename);

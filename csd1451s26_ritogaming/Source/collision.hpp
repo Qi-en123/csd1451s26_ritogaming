@@ -1,16 +1,36 @@
+/*!************************************************************************
+\file:          collision.hpp
+\author:        Ahmad Qusyairi
+\par DP email:  ahmadqusyairi.b@digipen.edu
+\brief:         This file consist of declarations of functions
+                GenerateWallsFromMap, AABBvsAABB and CheckPlayerCollision
+**************************************************************************/
 #pragma once
 
 #include "player.hpp"
 #include "map.hpp"
+#include <vector>
 
-#define TILE_ROWS 90
-#define TILE_COLS 160
+// Simple axis-aligned rectangle (AABB) for walls
+struct Wall
+{
+    float x;      // center x
+    float y;      // center y
+    float halfW;  // half width
+    float halfH;  // half height
+};
 
-// Must match DrawMap
-constexpr float TILE_SIZE = 20.0f;          // size of one tile
-constexpr float MAP_START_X = -1600.0f / 2;   // X of top-left map tile
-constexpr float MAP_START_Y = 900.0f / 2 - TILE_SIZE; // Y of top-left map tile
+// Global walls vector
+extern std::vector<Wall> g_walls;
 
-// Check if a player’s tentative position collides with walls
-// Returns true if collision occurs
-bool check_player_collision(const Player* player, float newX, float newY, int map[TILE_ROWS][TILE_COLS]);
+// Generate walls from actual dungeon map
+void generate_walls_from_map(int map[TILE_ROWS][TILE_COLS], float tile_size);
+
+// Check AABB vs AABB collision
+bool aabb_vs_aabb(
+    float ax, float ay, float ahw, float ahh,
+    float bx, float by, float bhw, float bhh
+);
+
+// Check collision for a player position
+bool check_player_collision(float newX, float newY, float playerHalfSize);

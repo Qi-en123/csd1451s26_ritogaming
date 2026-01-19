@@ -5,6 +5,8 @@
 #include "renderer.hpp"
 #include "camera.hpp"
 #include "player.hpp"
+#include "collision.hpp"
+#include <vector>
 
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
@@ -14,6 +16,8 @@ f32 zoom{ 1.0f };
 
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
+
+extern int map[TILE_ROWS][TILE_COLS];
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 {
@@ -25,7 +29,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     // Determine tile size to fit both width and height
     f32 tile_size = 64.0f;
 
-    InitializeDungeonMap();
+    InitializeDungeonMap();            // step 1: setup map
+    generate_walls_from_map(map, 64.0f); // step 2: make walls from map
+    printf("Walls created: %zu\n", g_walls.size());
+
+
 
     // Create mesh
     init_mesh();

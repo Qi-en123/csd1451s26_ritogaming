@@ -12,6 +12,7 @@
 #include <crtdbg.h>
 
 extern int map[TILE_ROWS][TILE_COLS];
+extern std::vector<Wall> g_walls;
 
 static void player_system_update_transforms(player* player_ptr) {
     if (!player_ptr) return;
@@ -99,26 +100,32 @@ void player_system_handle_input(player* player_ptr) {
     else {
         move_x = &player_ptr->char2_x;
         move_y = &player_ptr->char2_y;
+    }   
+   
+    if (move_x && move_y) {
+        float nextX = *move_x;
+        float nextY = *move_y;
+
+        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
+            nextY += player_ptr->speed;
+        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
+            nextY -= player_ptr->speed;
+        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))
+            nextX -= player_ptr->speed;
+        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D))
+            nextX += player_ptr->speed;
+
+        // Half-size for AABB collision
+        float halfSize = player_ptr->config.character_size / 2.0f;
+
+        // Check collision separately for X and Y
+        if (!check_player_collision(*move_x, nextY, halfSize))
+            *move_y = nextY;
+        if (!check_player_collision(nextX, *move_y, halfSize))
+            *move_x = nextX;
     }
 
-    if (moveX && moveY)
-    {
-        float newX = *moveX;
-        float newY = *moveY;
 
-        // Gather input
-        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))    newY += player->speed;
-        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))  newY -= player->speed;
-        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))  newX -= player->speed;
-        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D)) newX += player->speed;
-
-        // Only move if no collision
-        if (!check_player_collision(player, newX, newY, map))
-        {
-            *moveX = newX;
-            *moveY = newY;
-        }
-    }
 
 }
 

@@ -32,11 +32,6 @@ typedef struct player_config {
     const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0084.png";
 } player_config;
 
-    // Texture paths (with YOUR corrected paths!)
-    const char* char1TexturePath = "Assets/Tiles/tile_0003.png";
-    const char* char2TexturePath = "Assets/Tiles/tile_0004.png";
-} PlayerConfig;
-
 typedef struct Player {
     player_config config;
 

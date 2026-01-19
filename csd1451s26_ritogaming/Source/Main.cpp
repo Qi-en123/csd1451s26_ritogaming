@@ -7,7 +7,7 @@
 #include "player.hpp"
 
 
-#define NUM_TILE_TYPES 7
+#define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
@@ -24,7 +24,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    float tile_size = 10.0f;
+    float tile_size = 64.0f;
 
     // Tell the Alpha Engine to set the background to black.
     AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
@@ -35,17 +35,17 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     //CreateTileMesh(&TileMesh);
     initMesh();
 
-    //js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-    f32 curr_player_x{}, curr_player_y{};
+    ////js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
+    //f32 curr_player_x{}, curr_player_y{};
 
-    //Starting position of camera
-    Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
+    ////Starting position of camera
+    //Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
 
     // Load textures properly
     char filename[128];
     for (int i = 0; i < NUM_TILE_TYPES; ++i)
     {
-        sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
+        sprintf_s(filename, "Assets/kenney_tiny-dungeon/Tiles/tile_%04d.png", i);
         TileTextures[i] = AEGfxTextureLoad(filename);
         if (!TileTextures[i])
             printf("Failed to load: %s\n", filename);
@@ -54,6 +54,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     // Create player
     Player player;
     player_system_initialize(&player);
+
+    Camera cam = initCam(&player.x, &player.y, 60.0f, 5.0f);
+
 
     int gGameRunning = 1;
     while (gGameRunning)
@@ -73,7 +76,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 
         getZoom(dt);
         //Bounds anyhow set first
-        simulateCamera(&cam, &curr_player_x, &curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+        simulateCamera(&cam, &player.x, &player.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
         // Update player system
         player_system_update(&player);

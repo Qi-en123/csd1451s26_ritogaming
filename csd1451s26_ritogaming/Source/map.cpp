@@ -20,7 +20,26 @@ extern AEGfxVertexList* TileMesh;
 // Dummy map
 extern int map[TILE_ROWS][TILE_COLS];
 
+// ------------------------------------------------------------
+// Create a square tile mesh
+// ------------------------------------------------------------
+void CreateTileMesh(AEGfxVertexList** mesh)
+{
+    AEGfxMeshStart();
 
+    // top-left = (0,0), bottom-right = (1,1)
+    AEGfxTriAdd(
+        0.f, 0.f, 0xFFFFFFFF, 0.0f, 0.0f,   // top-left
+        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
+        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
+
+    AEGfxTriAdd(
+        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
+        1.f, 1.f, 0xFFFFFFFF, 1.0f, 1.0f,   // bottom-right
+        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
+
+    *mesh = AEGfxMeshEnd();
+}
 
 // ------------------------------------------------------------
 // Draw a single tile using top-left coordinates
@@ -99,6 +118,7 @@ void InitializeDungeonMap()
 
     //map[26][26] = 3; // player 1 spawn position
 
+
     // ============================================================
     // PLAYER ROOM 2 (Bottom Left) - Expanded & Centered
     // ============================================================
@@ -147,8 +167,9 @@ void InitializeDungeonMap()
     for (int c = 33; c < 60; ++c)
         map[22][c] = map[27][c] = 1; // top and bottom horizontal lines of corridor walls
 
+
     // ============================================================
-    // BOSS ROOM 2 (Bottom Right – Bigger) - Centered horizontally
+    // BOSS ROOM 2 (Bottom Right ï¿½ Bigger) - Centered horizontally
     // ============================================================
     for (int r = 55; r < 85; ++r)       // floor area rows
         for (int c = 60; c < 100; ++c) // floor area columns

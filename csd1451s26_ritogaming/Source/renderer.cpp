@@ -212,6 +212,7 @@ void renderSquareSprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 
 void renderSprite(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture) {
+
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
 

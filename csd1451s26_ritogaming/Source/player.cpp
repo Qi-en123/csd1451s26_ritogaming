@@ -125,13 +125,37 @@ void player_system_render(Player* player) {
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
 
-    // Draw Character 1
-    AEGfxSetTransform(player->transform1.m);
+    // Draw Character 1 - SIMPLER APPROACH
+    // Camera is already set by AEEngine, so just draw at world coordinates
+    AEMtx33 transform1;
+    AEMtx33Identity(&transform1);
+
+    AEMtx33 translate1;
+    AEMtx33Trans(&translate1, player->char1X, player->char1Y);
+
+    AEMtx33 scale1;
+    AEMtx33Scale(&scale1, player->config.characterSize, player->config.characterSize);
+
+    // Apply transformations: Translate THEN Scale
+    AEMtx33Concat(&transform1, &translate1, &scale1);
+
+    AEGfxSetTransform(transform1.m);
     AEGfxTextureSet(player->char1Texture, 0, 0);
     AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
     // Draw Character 2
-    AEGfxSetTransform(player->transform2.m);
+    AEMtx33 transform2;
+    AEMtx33Identity(&transform2);
+
+    AEMtx33 translate2;
+    AEMtx33Trans(&translate2, player->char2X, player->char2Y);
+
+    AEMtx33 scale2;
+    AEMtx33Scale(&scale2, player->config.characterSize, player->config.characterSize);
+
+    AEMtx33Concat(&transform2, &translate2, &scale2);
+
+    AEGfxSetTransform(transform2.m);
     AEGfxTextureSet(player->char2Texture, 0, 0);
     AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
@@ -139,10 +163,33 @@ void player_system_render(Player* player) {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
-
-    // Draw green triangle pointing DOWN above active character
     AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
-    AEGfxSetTransform(player->triangleTransform.m);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+
+    // Calculate triangle position above active character
+    float triX, triY;
+    if (player->currentCharacter == 1) {
+        triX = player->char1X;
+        triY = player->char1Y + player->config.triangleOffset;
+    }
+    else {
+        triX = player->char2X;
+        triY = player->char2Y + player->config.triangleOffset;
+    }
+
+    // Draw triangle
+    AEMtx33 triTransform;
+    AEMtx33Identity(&triTransform);
+
+    AEMtx33 triTranslate;
+    AEMtx33Trans(&triTranslate, triX, triY);
+
+    AEMtx33 triScale;
+    AEMtx33Scale(&triScale, player->config.triangleSize, player->config.triangleSize);
+
+    AEMtx33Concat(&triTransform, &triTranslate, &triScale);
+
+    AEGfxSetTransform(triTransform.m);
     AEGfxMeshDraw(triangleMesh, AE_GFX_MDM_TRIANGLES);
 }
 

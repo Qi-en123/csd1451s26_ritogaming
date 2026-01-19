@@ -48,7 +48,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     player_system_init(&player_instance);
 
 	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-	f32* curr_player_x{ &player.char1X }, * curr_player_y{ &player.char1Y };
+	f32* curr_player_x{ &player_instance.char1_x }, * curr_player_y{ &player_instance.char1_y };
 
 	//Starting position of camera
 	cam = init_cam(curr_player_x, curr_player_y, 60.0f, 0.0f);

@@ -132,16 +132,16 @@ void player_system_render(player* player_ptr) {
     //AEGfxTextureSet(player->char1Texture, 0, 0);
     //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    render_sprite(rect_mesh_center, player->char1X, player->char1Y,
-        player->config.characterSize, player->config.characterSize, player->char1Texture);
+    render_sprite(rect_mesh_center, player_ptr->char1_x, player_ptr->char1_y,
+        player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char1_texture);
 
     //// Draw Character 2
     //AEGfxSetTransform(player->transform2.m);
     //AEGfxTextureSet(player->char2Texture, 0, 0);
     //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    render_sprite(rect_mesh_center, player->char2X, player->char2Y,
-        player->config.characterSize, player->config.characterSize, player->char2Texture);
+    render_sprite(rect_mesh_center, player_ptr->char2_x, player_ptr->char2_y,
+        player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char2_texture);
 
     // Setup for colored rendering (triangle indicator)
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);

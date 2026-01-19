@@ -12,7 +12,7 @@
 #define TILE_COLS 160
 
 f32 zoom{1.0f};
-
+int map[TILE_ROWS][TILE_COLS];
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
 

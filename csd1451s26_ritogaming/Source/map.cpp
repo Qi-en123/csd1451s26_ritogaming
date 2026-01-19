@@ -9,7 +9,13 @@
 **************************************************************************/
 #include "AEEngine.h"
 #include "renderer.hpp"
-#include "map.hpp"
+
+#define NUM_TILE_TYPES 131
+#define TILE_ROWS 90
+#define TILE_COLS 160
+
+extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
+extern AEGfxVertexList* TileMesh;
 
 // Dummy map
 int map[90][160];
@@ -58,7 +64,7 @@ void DrawMap(float tile_size)
             float x = startX + col * tile_size;
             int tileType = map[row][col];
             //DrawTile(TileTextures[tileType], x, y, tile_size);
-            renderSprite(rectMeshCenter, x, y, tile_size, tile_size, TileTextures[tileType]);
+            render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
 }
@@ -143,7 +149,7 @@ void InitializeDungeonMap()
 
 
     // ============================================================
-    // BOSS ROOM 2 (Bottom Right – Bigger)
+    // BOSS ROOM 2 (Bottom Right ï¿½ Bigger)
     // ============================================================
     for (int r = 48; r < 82; ++r)
         for (int c = 60; c < 100; ++c)
@@ -154,7 +160,7 @@ void InitializeDungeonMap()
     for (int r = 47; r < 83; ++r)
         map[r][59] = map[r][100] = 1; // wall tile
 
-    map[65][80] = 6; // boss 2
+    //map[65][80] = 110; // Boss 2
 
 
     // Corridor to Boss Room 2

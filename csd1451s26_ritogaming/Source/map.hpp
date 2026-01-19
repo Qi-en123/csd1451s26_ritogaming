@@ -6,16 +6,8 @@
                 functions.
 **************************************************************************/
 #include "AEEngine.h"
-#define NUM_TILE_TYPES 131
-#define TILE_ROWS 90
-#define TILE_COLS 160
-
-extern float tile_size;
-extern AEGfxTexture* TileTextures[];
-extern AEGfxVertexList* TileMesh;
-
 void InitializeDungeonMap();
 void DrawMap(float tile_size);
 void DrawTile(AEGfxTexture* tex, float topLeftX, float topLeftY, float tile_size);
 
-extern int map[TILE_ROWS][TILE_COLS];
+int map[90][160];

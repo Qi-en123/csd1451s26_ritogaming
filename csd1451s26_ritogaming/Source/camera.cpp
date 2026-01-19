@@ -39,7 +39,7 @@ void simulateCamera(Camera* cam, f32* player_x, f32* player_y,
 		//printf("%f %f\n", dist, rel_speed/max/10);
 
 		AEVec2Lerp(&cam->pos, &cam->pos, &curr_player_pos,
-			rel_speed/max/10);
+			rel_speed/max/7.0f);
 
 		//AEVec2Lerp(&cam->pos, &cam->pos, &curr_player_pos, CAMERA_SPEED);
 	}

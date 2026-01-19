@@ -53,7 +53,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 	f32* curr_player_x{ &player.char1X }, * curr_player_y{ &player.char1Y };
 
 	//Starting position of camera
-	cam = initCam(curr_player_x, curr_player_y, 60.0f, 5.0f);
+	cam = initCam(curr_player_x, curr_player_y, 60.0f, 0.0f);
 
 	int gGameRunning = 1;
 	while (gGameRunning)

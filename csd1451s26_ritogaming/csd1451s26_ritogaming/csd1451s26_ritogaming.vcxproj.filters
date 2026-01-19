@@ -30,7 +30,7 @@
     <ClCompile Include="..\Source\player.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="enemy.cpp">
+    <ClCompile Include="..\Source\enemy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,7 +47,7 @@
     <ClInclude Include="..\Source\player.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="enemy.hpp">
+    <ClInclude Include="..\Source\enemy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

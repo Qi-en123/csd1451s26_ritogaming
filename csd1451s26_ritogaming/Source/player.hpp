@@ -26,8 +26,8 @@ typedef struct player_config {
 
     // Movement settings
     f32 move_speed = 30.f;          // Player movement speed
-
-    // Texture paths (with YOUR corrected paths!)
+    
+    // Texture paths
     const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0096.png";
     const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0084.png";
 } player_config;
@@ -39,25 +39,22 @@ typedef struct player {
     f32 x, y;
 
     // Character properties
-    s32 current_character;   // 1 = character 1, 2 = character 2
+    s32 current_character;
     f32 speed;
 
     // Separate positions for each character
     f32 char1_x, char1_y;
     f32 char2_x, char2_y;
 
-    // Meshes and textures
     AEGfxVertexList* square_mesh;
     AEGfxVertexList* triangle_mesh;
     AEGfxTexture* char1_texture;
     AEGfxTexture* char2_texture;
 
-    // Transform matrices
     AEMtx33 transform1;
     AEMtx33 transform2;
     AEMtx33 triangle_transform;
 
-    // Scale and rotation matrices
     AEMtx33 character_scale;
     AEMtx33 triangle_scale;
     AEMtx33 rotate;

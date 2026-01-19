@@ -1,59 +1,59 @@
 /*!************************************************************************
-\file:						renderr.hpp
+\file:						render.hpp
 \author:					Jerod
 \par DP email:				jerodyaowei.lim@digipen.edu
 \co-author:					Claire
 \par co-author DP email:	c.cheong@digipen.edu
-\brief:						This header declares rendering-related data 
-							structures and drawing functions using 
+\brief:						This header declares rendering-related data
+							structures and drawing functions using
 							AEEngine.
 **************************************************************************/
 #pragma once
 #include "AEEngine.h"
 #include "player.hpp"
 
-typedef struct Color {
+typedef struct color {
 	f32 r, g, b, a;
-}Color;
+}color;
 
-extern const Color red;
-extern const Color green;
-extern const Color blue;
-extern const Color dark_red;
-extern const Color white;
-extern const Color black;
+extern const color red;
+extern const color green;
+extern const color blue;
+extern const color dark_red;
+extern const color white;
+extern const color black;
 
 constexpr f32 anim_duration_per_frame = 0.1f;
 
 //Rect pos is at top right corner
-extern AEGfxVertexList* rectMeshCorner;
-extern AEGfxVertexList* rectMeshCenter;
-extern AEGfxVertexList* circleMesh;
-extern AEGfxVertexList* squareMesh;
-extern AEGfxVertexList* triangleMesh;
+extern AEGfxVertexList* rect_mesh_corner;
+extern AEGfxVertexList* rect_mesh_center;
+extern AEGfxVertexList* circle_mesh;
+extern AEGfxVertexList* square_mesh;
+extern AEGfxVertexList* triangle_mesh;
 
 extern f32 zoom;
 
 //Shortcut, js pass in color struct
-void AEGfxSetColorToAdd(const Color& c);
+void AEGfxSetColorToAdd(const color& c);
 
-//Initializes rectMeshCorner, rectMeshCenter & circleMesh
-void initMesh();
+//Initializes rect_mesh_corner, rect_mesh_center & circle_mesh
+void init_mesh();
 
-void freeMesh();
+void free_mesh();
 
-//circleMesh - Corner or Center mode.
+//circle_mesh - Corner or Center mode.
 //trans_x - translate x
 //trans_y - translate y
-//Color is set outside this function, before it is called
-void drawCircle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
+//color is set outside this function, before it is called
+void draw_circle(AEGfxVertexList* circle_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y);
 
-//rectMesh - Corner or Center mode.
+//rect_mesh - Corner or Center mode.
 //trans_x - translate x
 //trans_y - translate y
-//Color is set outside this function, before it is called
-void drawRect(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
+//color is set outside this function, before it is called
+void draw_rect(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y);
 
 /**************************************************************************
@@ -68,7 +68,7 @@ void drawRect(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
 	\param scale_x X-axis scale of the square.
 	\param scale_y Y-axis scale of the square.
 **************************************************************************/
-void drawSquare(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
+void draw_square(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
 
 /**************************************************************************
 	\brief
@@ -82,7 +82,7 @@ void drawSquare(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
 	\param scale_x X-axis scale of the triangle.
 	\param scale_y Y-axis scale of the triangle.
 **************************************************************************/
-void drawTriangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
+void draw_triangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
 
 /**************************************************************************
 	\brief
@@ -97,24 +97,24 @@ void drawTriangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
 	\param scale_y Y-axis scale of the sprite.
 	\param texture Pointer to the texture to apply to the sprite.
 **************************************************************************/
-void renderSquareSprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
-						AEGfxTexture* texture);
+void render_square_sprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
+	AEGfxTexture* texture);
 
-//rectMesh - Corner or Center mode (USE RECT MESH)
+//rect_mesh - Corner or Center mode (USE RECT MESH)
 //texture is loaded outside this function
-void renderSprite(AEGfxVertexList* rectMesh, f32 trans_x, f32 trans_y,
+void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture);
 
 //pos_x - posX in normalized coords (-1.0f to 1.0f)
 //pos_y - posY in normalized coords (-1.0f to 1.0f)
 //Text pos is in the middle
-void renderTextCenter(char const* text, s8 font, f32 pos_x, f32 pos_y,
-	f32 scale, Color color);
+void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,
+	f32 scale, color color);
 
 //pos_x - posX in normalized coords (-1.0f to 1.0f)
 //pos_y - posY in normalized coords (-1.0f to 1.0f)
 //Text pos is at btm right corner
-void renderTextCorner(char const* text, s8 font, f32 pos_x, f32 pos_y,
-	f32 scale, Color color);
+void render_text_corner(char const* text, s8 font, f32 pos_x, f32 pos_y,
+	f32 scale, color color);
 
-void getZoom(f32 dt);
+void get_zoom(f32 dt);

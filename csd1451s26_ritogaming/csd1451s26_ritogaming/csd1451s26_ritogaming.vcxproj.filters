@@ -31,6 +31,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\collision.cpp">
+    <ClCompile Include="..\Source\enemy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -48,6 +49,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\collision.hpp">
+    <ClInclude Include="..\Source\enemy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

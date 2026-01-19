@@ -1,17 +1,16 @@
 #include <crtdbg.h>
+
 #include "AEEngine.h"
-#include <cstdio>
 #include "map.hpp"
 #include "renderer.hpp"
 #include "camera.hpp"
 #include "player.hpp"
 
-
-#define NUM_TILE_TYPES 7
+#define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
-f32 zoom{1.0f};
+f32 zoom{ 1.0f };
 
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
@@ -24,38 +23,35 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    float tile_size = 64.0f;
+    f32 tile_size = 64.0f;
 
     InitializeDungeonMap();
 
     // Create mesh
-    //CreateTileMesh(&TileMesh);
-    initMesh();
-
-    //js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-    f32 curr_player_x{}, curr_player_y{};
-
-    //Starting position of camera
-    Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
+    init_mesh();
 
     // Load textures properly
     char filename[128];
-    for (int i = 0; i < NUM_TILE_TYPES; ++i)
+    for (s32 i = 0; i < NUM_TILE_TYPES; ++i)
     {
-        sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
+        sprintf_s(filename, "Assets/kenney_tiny-dungeon/Tiles/tile_%04d.png", i);
         TileTextures[i] = AEGfxTextureLoad(filename);
         if (!TileTextures[i])
             printf("Failed to load: %s\n", filename);
     }
 
     // Create player
-    Player player;
-    player_system_initialize(&player);
+    player player_instance;
+    player_system_init(&player_instance);
 
-    int gGameRunning = 1;
-    while (gGameRunning)
+    camera cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
+
+    s32 g_game_running = 1;
+    while (g_game_running)
     {
         AESysFrameStart();
+
+        //AEGfxSetBackgroundColor(0.6f, 0.2f, 0.1f);
 
         // Tell the Alpha Engine to get ready to draw something with texture.
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -68,27 +64,27 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 
         DrawMap(tile_size);
 
-        getZoom(dt);
+        get_zoom(dt);
         //Bounds anyhow set first
-        simulateCamera(&cam, &curr_player_x, &curr_player_y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+        simulate_camera(&cam, &player_instance.x, &player_instance.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
         // Update player system
-        player_system_update(&player);
+        player_system_update(&player_instance);
 
         // Render player system
-        player_system_render(&player);
+        player_system_render(&player_instance);
 
         if (AEInputCheckTriggered(AEVK_ESCAPE) || !AESysDoesWindowExist())
-            gGameRunning = 0;
+            g_game_running = 0;
 
         AESysFrameEnd();
     }
 
     // Cleanup
-    for (int i = 0; i < NUM_TILE_TYPES; ++i)
+    for (s32 i = 0; i < NUM_TILE_TYPES; ++i)
         if (TileTextures[i]) AEGfxTextureUnload(TileTextures[i]);
     if (TileMesh) AEGfxMeshFree(TileMesh);
-    freeMesh();
+    free_mesh();
 
     AESysExit();
     return 0;

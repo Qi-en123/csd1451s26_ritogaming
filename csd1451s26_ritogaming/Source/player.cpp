@@ -101,23 +101,20 @@ void player_system_handle_input(Player* player) {
         moveY = &player->char2Y;
     }
 
-    if (moveX && moveY) {
+    if (moveX && moveY)
+    {
         float newX = *moveX;
         float newY = *moveY;
 
         // Gather input
-        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W)) newY += player->speed;
-        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S)) newY -= player->speed;
-        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A)) newX -= player->speed;
+        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))    newY += player->speed;
+        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))  newY -= player->speed;
+        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))  newX -= player->speed;
         if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D)) newX += player->speed;
 
-        // Tile map offsets and size (same as in DrawMap)
-        float tile_size = 20.0f;              // replace to tile size
-        float startX = -1600.f / 2.f;
-        float startY = 900.f / 2.f - tile_size;
-
         // Only move if no collision
-        if (!check_player_collision(player, newX, newY, map, tile_size, startX, startY)) {
+        if (!check_player_collision(player, newX, newY, map))
+        {
             *moveX = newX;
             *moveY = newY;
         }

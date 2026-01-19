@@ -1,28 +1,42 @@
 #include "collision.hpp"
 
 // Check collision with tile map
-bool check_player_collision(const Player* player, float newX, float newY, int map[TILE_ROWS][TILE_COLS], float tile_size, float startX, float startY)
+// Convert world coordinates to tile indices
+static bool WorldToTile(float worldX, float worldY, int& outCol, int& outRow)
+{
+    outCol = static_cast<int>((worldX - MAP_START_X) / TILE_SIZE);
+    outRow = static_cast<int>((MAP_START_Y - worldY) / TILE_SIZE);
+
+    // Check if outside map
+    if (outCol < 0 || outCol >= TILE_COLS || outRow < 0 || outRow >= TILE_ROWS)
+        return false; // outside map
+    return true;      // inside map
+}
+
+// Check collision with tile map
+bool check_player_collision(const Player* player, float newX, float newY, int map[TILE_ROWS][TILE_COLS])
 {
     if (!player) return true; // treat null player as collision
 
-    // Compute the corners of the player's hitbox
-    int tileLeft = (int)((newX - player->config.characterSize / 2 - (startX - tile_size / 2)) / tile_size);
-    int tileRight = (int)((newX + player->config.characterSize / 2 - (startX - tile_size / 2)) / tile_size);
-    int tileTop = (int)(((startY + tile_size / 2) - (newY - player->config.characterSize / 2)) / tile_size);
-    int tileBottom = (int)(((startY + tile_size / 2) - (newY + player->config.characterSize / 2)) / tile_size);
+    float half = player->config.characterSize * 0.5f;
 
+    // Four corners of player hitbox
+    const float corners[4][2] = {
+        { newX - half, newY + half }, // top-left
+        { newX + half, newY + half }, // top-right
+        { newX - half, newY - half }, // bottom-left
+        { newX + half, newY - half }  // bottom-right
+    };
 
-    // Clamp tile indices to map bounds
-    tileLeft = (tileLeft < 0) ? 0 : (tileLeft >= TILE_COLS) ? TILE_COLS - 1 : tileLeft;
-    tileRight = (tileRight < 0) ? 0 : (tileRight >= TILE_COLS) ? TILE_COLS - 1 : tileRight;
-    tileTop = (tileTop < 0) ? 0 : (tileTop >= TILE_ROWS) ? TILE_ROWS - 1 : tileTop;
-    tileBottom = (tileBottom < 0) ? 0 : (tileBottom >= TILE_ROWS) ? TILE_ROWS - 1 : tileBottom;
-
-    // Check all corners for wall tiles (value == 1)
-    if (map[tileTop][tileLeft] == 1 || map[tileTop][tileRight] == 1 ||
-        map[tileBottom][tileLeft] == 1 || map[tileBottom][tileRight] == 1)
+    // Check each corner for collision
+    for (int i = 0; i < 4; ++i)
     {
-        return true; // collision detected
+        int col, row;
+        if (!WorldToTile(corners[i][0], corners[i][1], col, row))
+            return true; // treat out-of-map as wall
+
+        if (map[row][col] == 1) // wall tile
+            return true; // collision detected
     }
 
     return false; // no collision

@@ -10,7 +10,7 @@
 #include "AEEngine.h"
 #include "renderer.hpp"
 
-#define NUM_TILE_TYPES 131
+#define NUM_TILE_TYPES 7
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
@@ -97,7 +97,7 @@ void InitializeDungeonMap()
     for (int r = 19; r < 33; ++r)
         map[r][19] = map[r][32] = 1;  // left and right vertical lines of walls
 
-    map[26][26] = 3; // player 1 spawn position
+    //map[26][26] = 3; // player 1 spawn position
 
     // ============================================================
     // PLAYER ROOM 2 (Bottom Left) - Expanded & Centered
@@ -111,7 +111,7 @@ void InitializeDungeonMap()
     for (int r = 57; r < 71; ++r)
         map[r][19] = map[r][32] = 1; // left and right vertical lines of walls
 
-    map[64][26] = 4; // player 2 spawn position
+    //map[64][26] = 4; // player 2 spawn position
 
     // ============================================================
     // VERTICAL CORRIDOR - Centered & Wider
@@ -136,7 +136,7 @@ void InitializeDungeonMap()
     for (int r = 14; r < 36; ++r)
         map[r][59] = map[r][90] = 1; // left and right vertical lines of walls
 
-    map[25][80] = 5; // boss 1 position
+    //map[25][80] = 5; // boss 1 position
     // ============================================================
     // Horizontal corridor to Boss Room 1 - Shortened & synced
     // ============================================================
@@ -159,7 +159,7 @@ void InitializeDungeonMap()
     for (int r = 54; r < 86; ++r)
         map[r][59] = map[r][100] = 1; // left and right vertical lines of walls
 
-    map[70][80] = 6; // boss 2 position
+    //map[70][80] = 6; // boss 2 position
     // ============================================================
     // Horizontal corridor to Boss Room 2 - Shortened & synced
     // ============================================================

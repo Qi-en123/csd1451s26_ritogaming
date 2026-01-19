@@ -24,7 +24,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    float tile_size = 64.0f;
+    float tile_size = 10.0f;
+
+    // Tell the Alpha Engine to set the background to black.
+    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
     InitializeDungeonMap();
 

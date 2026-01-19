@@ -132,7 +132,7 @@ void player_system_render(player* player_ptr) {
     //AEGfxTextureSet(player->char1Texture, 0, 0);
     //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    renderSprite(rectMeshCenter, player->char1X, player->char1Y,
+    render_sprite(rect_mesh_center, player->char1X, player->char1Y,
         player->config.characterSize, player->config.characterSize, player->char1Texture);
 
     //// Draw Character 2
@@ -140,7 +140,7 @@ void player_system_render(player* player_ptr) {
     //AEGfxTextureSet(player->char2Texture, 0, 0);
     //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    renderSprite(rectMeshCenter, player->char2X, player->char2Y,
+    render_sprite(rect_mesh_center, player->char2X, player->char2Y,
         player->config.characterSize, player->config.characterSize, player->char2Texture);
 
     // Setup for colored rendering (triangle indicator)

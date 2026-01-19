@@ -10,7 +10,10 @@
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
+camera cam{};
 f32 zoom{ 1.0f };
+
+f32 tile_size = 64.0f;
 
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
@@ -23,7 +26,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    f32 tile_size = 64.0f;
+    //f32 tile_size = 64.0f;
 
     InitializeDungeonMap();
 
@@ -48,7 +51,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 	f32* curr_player_x{ &player.char1X }, * curr_player_y{ &player.char1Y };
 
 	//Starting position of camera
-	cam = initCam(curr_player_x, curr_player_y, 60.0f, 0.0f);
+	cam = init_cam(curr_player_x, curr_player_y, 60.0f, 0.0f);
 
 	//int gGameRunning = 1;
 	//while (gGameRunning)

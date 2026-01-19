@@ -9,13 +9,10 @@
 **************************************************************************/
 #include "AEEngine.h"
 #include "renderer.hpp"
+#include "map.hpp"
 
-#define NUM_TILE_TYPES 131
-#define TILE_ROWS 90
-#define TILE_COLS 160
-
-extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
-extern AEGfxVertexList* TileMesh;
+//extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
+//extern AEGfxVertexList* TileMesh;
 
 // Dummy map
 int map[90][160];

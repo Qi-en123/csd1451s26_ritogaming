@@ -10,6 +10,8 @@
 **************************************************************************/
 #include "renderer.hpp"
 #include "AEEngine.h"
+#include "camera.hpp"
+#include "map.hpp"
 
 #define ZOOM_MAX 1.65f
 #define ZOOM_MIN 0.8f
@@ -251,7 +253,7 @@ void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 		//AEMtx33Concat(&transform, &translate, &scale);
 		AEGfxTextureSet(texture, 0, 0);
 		AEGfxSetTransform(transform.m);
-		AEGfxMeshDraw(rectMesh, AE_GFX_MDM_TRIANGLES);
+		AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
 		AEGfxTextureSet(nullptr, 0, 0);
 	}
 }

@@ -127,30 +127,13 @@ void player_system_render(player* player_ptr) {
     //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     //AEGfxSetTransparency(1.0f);
 
-    //// Draw Character 1
-    //AEGfxSetTransform(player->transform1.m);
-    //AEGfxTextureSet(player->char1Texture, 0, 0);
-    //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
+    // Draw character 1
     render_sprite(rect_mesh_center, player_ptr->char1_x, player_ptr->char1_y,
         player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char1_texture);
-
-    //// Draw Character 2
-    //AEGfxSetTransform(player->transform2.m);
-    //AEGfxTextureSet(player->char2Texture, 0, 0);
-    //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
-
+    
+    // Draw character 2 
     render_sprite(rect_mesh_center, player_ptr->char2_x, player_ptr->char2_y,
         player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char2_texture);
-
-    // Setup for colored rendering (triangle indicator)
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
-
-    // Draw green triangle pointing DOWN above active character
-    AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
-    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Calculate triangle position above active character
     f32 tri_x, tri_y;
@@ -163,20 +146,18 @@ void player_system_render(player* player_ptr) {
         tri_y = player_ptr->char2_y + player_ptr->config.triangle_offset;
     }
 
-    // Draw triangle
-    AEMtx33 tri_transform;
-    AEMtx33Identity(&tri_transform);
+    // Setup for colored rendering (triangle indicator)
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
 
-    AEMtx33 tri_translate;
-    AEMtx33Trans(&tri_translate, tri_x, tri_y);
+    // Draw green triangle pointing DOWN above active character
+    AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 
-    AEMtx33 tri_scale;
-    AEMtx33Scale(&tri_scale, player_ptr->config.triangle_size, player_ptr->config.triangle_size);
-
-    AEMtx33Concat(&tri_transform, &tri_translate, &tri_scale);
-
-    AEGfxSetTransform(tri_transform.m);
-    AEGfxMeshDraw(triangle_mesh, AE_GFX_MDM_TRIANGLES);
+    draw_triangle(tri_x, tri_y,
+        player_ptr->config.triangle_size,
+        player_ptr->config.triangle_size);
 }
 
 

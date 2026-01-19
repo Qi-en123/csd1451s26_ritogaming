@@ -25,7 +25,7 @@ typedef struct player_config {
     f32 char2_start_y = -3374.f;
 
     // Movement settings
-    f32 move_speed = 30.f;          // Player movement speed
+    f32 move_speed = 25.f;          // Player movement speed
     
     // Texture paths
     const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0096.png";

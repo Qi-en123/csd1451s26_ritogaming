@@ -13,7 +13,7 @@
 
 typedef struct player_config {
     // Size settings
-    f32 character_size = 64.f;      // Default character size
+    f32 character_size = 64.f;       // Default character size
     f32 triangle_size = 20.f;        // Default triangle indicator size
     f32 triangle_offset = 40.f;     // How far above character the triangle sits
 
@@ -35,14 +35,11 @@ typedef struct player_config {
 typedef struct player {
     player_config config;
 
-    // Position
     f32 x, y;
 
-    // Character properties
     s32 current_character;
     f32 speed;
 
-    // Separate positions for each character
     f32 char1_x, char1_y;
     f32 char2_x, char2_y;
 

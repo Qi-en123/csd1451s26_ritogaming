@@ -11,7 +11,7 @@ and Restart, providing a central list of all possible game states.
 enum GS_STATES
 {
     GS_LEVEL1 = 0,   // First level of the game
-
+    GS_LEVEL_EDITOR, // Level editor state
     GS_QUIT,         // Exits the game loop and terminates the system
     GS_RESTART       // Restarts the current level
 };

@@ -8,6 +8,6 @@
 #include "AEEngine.h"
 void InitializeDungeonMap();
 void DrawMap(float tile_size);
-void ShiftMapRight();
+void ShiftMapRight(int shift_right_by);
 
 

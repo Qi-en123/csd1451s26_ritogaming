@@ -69,6 +69,7 @@ void level1_initialize()
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
     InitializeDungeonMap();
+    ShiftMapRight(2);
 }
 
 void level1_update()

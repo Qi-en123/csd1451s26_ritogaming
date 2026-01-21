@@ -10,6 +10,8 @@
 #include "collision.hpp"
 #include "player.hpp"
 #include <crtdbg.h>
+#include "camera.hpp"
+#include "renderer.hpp"
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
@@ -132,51 +134,35 @@ void player_system_handle_input(player* player_ptr) {
 void player_system_render(player* player_ptr) {
     if (!player_ptr) return;
 
-    // Setup for textured rendering (characters)
-    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
+    //// Setup for textured rendering (characters)
+    //AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    //AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+    //AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+    //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    //AEGfxSetTransparency(1.0f);
 
-    // Draw Character 1 - SIMPLER APPROACH
-    // Camera is already set by AEEngine, so just draw at world coordinates
-    AEMtx33 transform1;
-    AEMtx33Identity(&transform1);
+    //// Draw Character 1
+    //AEGfxSetTransform(player->transform1.m);
+    //AEGfxTextureSet(player->char1Texture, 0, 0);
+    //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    AEMtx33 translate1;
-    AEMtx33Trans(&translate1, player_ptr->char1_x, player_ptr->char1_y);
+    render_sprite(rect_mesh_center, player_ptr->char1_x, player_ptr->char1_y,
+        player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char1_texture);
 
-    AEMtx33 scale1;
-    AEMtx33Scale(&scale1, player_ptr->config.character_size, player_ptr->config.character_size);
+    //// Draw Character 2
+    //AEGfxSetTransform(player->transform2.m);
+    //AEGfxTextureSet(player->char2Texture, 0, 0);
+    //AEGfxMeshDraw(squareMesh, AE_GFX_MDM_TRIANGLES);
 
-    // Apply transformations: Translate THEN Scale
-    AEMtx33Concat(&transform1, &translate1, &scale1);
-
-    AEGfxSetTransform(transform1.m);
-    AEGfxTextureSet(player_ptr->char1_texture, 0, 0);
-    AEGfxMeshDraw(square_mesh, AE_GFX_MDM_TRIANGLES);
-
-    // Draw Character 2
-    AEMtx33 transform2;
-    AEMtx33Identity(&transform2);
-
-    AEMtx33 translate2;
-    AEMtx33Trans(&translate2, player_ptr->char2_x, player_ptr->char2_y);
-
-    AEMtx33 scale2;
-    AEMtx33Scale(&scale2, player_ptr->config.character_size, player_ptr->config.character_size);
-
-    AEMtx33Concat(&transform2, &translate2, &scale2);
-
-    AEGfxSetTransform(transform2.m);
-    AEGfxTextureSet(player_ptr->char2_texture, 0, 0);
-    AEGfxMeshDraw(square_mesh, AE_GFX_MDM_TRIANGLES);
+    render_sprite(rect_mesh_center, player_ptr->char2_x, player_ptr->char2_y,
+        player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char2_texture);
 
     // Setup for colored rendering (triangle indicator)
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
+
+    // Draw green triangle pointing DOWN above active character
     AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 

@@ -29,11 +29,22 @@ void simulate_camera(camera* cam, f32* player_x, f32* player_y,
 		*player_x < cam->pos.x - cam->limit_x ||
 		*player_y > cam->pos.y + cam->limit_y ||
 		*player_y < cam->pos.y - cam->limit_y) {
-		AEVec2Lerp(&cam->pos, &cam->pos, &curr_player_pos, CAMERA_SPEED);
+
+		float dist = AEVec2Distance(&curr_player_pos, &cam->pos);
+		float k = 0.005f;
+		float max = 100.0f;
+
+		float rel_speed = max * (1.0f - expf(-k * dist));
+		//printf("%f %f\n", dist, rel_speed/max/10);
+
+		AEVec2Lerp(&cam->pos, &cam->pos, &curr_player_pos,
+			rel_speed/max/7.0f);
+
+		//AEVec2Lerp(&cam->pos, &cam->pos, &curr_player_pos, CAMERA_SPEED);
 	}
 
 	cam->pos.x = AEClamp(cam->pos.x, left_bound, right_bound);
 	cam->pos.y = AEClamp(cam->pos.y, bottom_bound, top_bound);
 
-	AEGfxSetCamPosition(cam->pos.x, cam->pos.y);
+	//AEGfxSetCamPosition(cam->pos.x, cam->pos.y);
 }

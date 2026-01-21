@@ -10,6 +10,8 @@
 **************************************************************************/
 #include "renderer.hpp"
 #include "AEEngine.h"
+#include "camera.hpp"
+#include "map.hpp"
 
 #define ZOOM_MAX 1.65f
 #define ZOOM_MIN 0.8f
@@ -131,7 +133,14 @@ void free_mesh() {
 	AEGfxMeshFree(triangle_mesh);
 }
 
-void draw_circle(AEGfxVertexList* circle_mesh, f32 trans_x, f32 trans_y,
+bool on_screen(f32 x, f32 y) {
+	return (x < cam.pos.x + (AEGfxGetWindowWidth() / 2 / zoom) + tile_size &&
+		x > cam.pos.x - (AEGfxGetWindowWidth() / 2 / zoom) - tile_size &&
+		y < cam.pos.y + (AEGfxGetWindowHeight() / 2 / zoom) + tile_size &&
+		y > cam.pos.y - (AEGfxGetWindowHeight() / 2 / zoom) - tile_size);
+}
+
+void drawCircle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y) {
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
@@ -161,6 +170,9 @@ void draw_rect(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	AEMtx33 translate;
 	AEMtx33Trans(&translate, trans_x, trans_y);
 
+	AEMtx33 cam_translate;
+	AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
+
 	AEMtx33 scale;
 	AEMtx33Scale(&scale, scale_x, scale_y);
 
@@ -168,6 +180,8 @@ void draw_rect(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	AEMtx33Scale(&cam_zoom, zoom, zoom);
 
 	AEMtx33Concat(&transform, &transform, &cam_zoom);
+	AEMtx33Concat(&transform, &transform, &cam_translate);
+
 	AEMtx33Concat(&transform, &transform, &translate);
 	AEMtx33Concat(&transform, &transform, &scale);
 
@@ -185,6 +199,9 @@ void draw_triangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
 
 	AEMtx33 translate;
 	AEMtx33Trans(&translate, trans_x, trans_y);
+	
+	AEMtx33 cam_translate;
+	AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
 
 	AEMtx33 scale;
 	AEMtx33Scale(&scale, scale_x, scale_y);
@@ -193,6 +210,8 @@ void draw_triangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y) {
 	AEMtx33Scale(&cam_zoom, zoom, zoom);
 
 	AEMtx33Concat(&transform, &transform, &cam_zoom);
+	AEMtx33Concat(&transform, &transform, &cam_translate);
+
 	AEMtx33Concat(&transform, &transform, &translate);
 	AEMtx33Concat(&transform, &transform, &scale);
 
@@ -207,27 +226,36 @@ void render_square_sprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture) {
+	//CULLING
+	if (on_screen(trans_x, trans_y)) {
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEMtx33 transform;
+		AEMtx33Identity(&transform);
 
-	AEMtx33 transform;
-	AEMtx33Identity(&transform);
+		AEMtx33 translate;
+		AEMtx33Trans(&translate, trans_x, trans_y);
 
-	AEMtx33 translate;
-	AEMtx33Trans(&translate, trans_x, trans_y);
+		AEMtx33 scale;
+		AEMtx33Scale(&scale, scale_x, scale_y);
 
-	AEMtx33 scale;
-	AEMtx33Scale(&scale, scale_x, scale_y);
+		AEMtx33 cam_translate;
+		AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
 
-	AEMtx33 cam_zoom;
-	AEMtx33Scale(&cam_zoom, zoom, zoom);
+		AEMtx33 cam_zoom;
+		AEMtx33Scale(&cam_zoom, zoom, zoom);
 
-	AEMtx33Concat(&transform, &transform, &cam_zoom);
-	AEMtx33Concat(&transform, &transform, &translate);
-	AEMtx33Concat(&transform, &transform, &scale);
+		AEMtx33Concat(&transform, &transform, &cam_zoom);
+		AEMtx33Concat(&transform, &transform, &cam_translate);
 
-	AEGfxTextureSet(texture, 0, 0);
-	AEGfxSetTransform(transform.m);
-	AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
-	AEGfxTextureSet(nullptr, 0, 0);
+		AEMtx33Concat(&transform, &transform, &translate);
+		AEMtx33Concat(&transform, &transform, &scale);
+
+		//AEMtx33Concat(&transform, &translate, &scale);
+		AEGfxTextureSet(texture, 0, 0);
+		AEGfxSetTransform(transform.m);
+		AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
+		AEGfxTextureSet(nullptr, 0, 0);
+	}
 }
 
 void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,

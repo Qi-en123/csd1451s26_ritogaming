@@ -12,7 +12,10 @@
 #define TILE_ROWS 90
 #define TILE_COLS 160
 
+camera cam{};
 f32 zoom{ 1.0f };
+
+f32 tile_size = 64.0f;
 
 AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
 AEGfxVertexList* TileMesh = nullptr;
@@ -27,7 +30,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Determine tile size to fit both width and height
-    f32 tile_size = 64.0f;
+    //f32 tile_size = 64.0f;
 
     InitializeDungeonMap();            // step 1: setup map
     generate_walls_from_map(map, 64.0f); // step 2: make walls from map
@@ -42,7 +45,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     char filename[128];
     for (s32 i = 0; i < NUM_TILE_TYPES; ++i)
     {
-        sprintf_s(filename, "Assets/kenney_tiny-dungeon/Tiles/tile_%04d.png", i);
+        sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
         TileTextures[i] = AEGfxTextureLoad(filename);
         if (!TileTextures[i])
             printf("Failed to load: %s\n", filename);
@@ -52,7 +55,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
     player player_instance;
     player_system_init(&player_instance);
 
-    camera cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
+	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
+	f32* curr_player_x{ &player_instance.char1_x }, * curr_player_y{ &player_instance.char1_y };
+
+	//Starting position of camera
+	cam = init_cam(curr_player_x, curr_player_y, 60.0f, 0.0f);
+
+	//int gGameRunning = 1;
+	//while (gGameRunning)
+    //camera cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
 
     s32 g_game_running = 1;
     while (g_game_running)

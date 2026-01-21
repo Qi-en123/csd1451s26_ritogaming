@@ -5,96 +5,54 @@
 #include "renderer.hpp"
 #include "camera.hpp"
 #include "player.hpp"
-
+#include "game_state_manager.hpp"
+#include "game_state_list.hpp"
 
 #define NUM_TILE_TYPES 7
-#define TILE_ROWS 90
-#define TILE_COLS 160
+#define TILE_ROWS 36
+#define TILE_COLS 64
 
-f32 zoom{1.0f};
-int map[TILE_ROWS][TILE_COLS];
-AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
-AEGfxVertexList* TileMesh = nullptr;
+
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, nullptr);
     AESysSetWindowTitle("Ahmad's Dungeon");
-
-    // Determine tile size to fit both width and height
-    float tile_size = 10.0f;
-
-    // Tell the Alpha Engine to set the background to black.
-    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-
-    InitializeDungeonMap();
-
-    // Create mesh
-    //CreateTileMesh(&TileMesh);
-    initMesh();
-
-    ////js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-    //f32 curr_player_x{}, curr_player_y{};
-
-    ////Starting position of camera
-    //Camera cam = initCam(&curr_player_x, &curr_player_y, 60.0f, 5.0f);
-
-    // Load textures properly
-    char filename[128];
-    for (int i = 0; i < NUM_TILE_TYPES; ++i)
-    {
-        sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
-        TileTextures[i] = AEGfxTextureLoad(filename);
-        if (!TileTextures[i])
-            printf("Failed to load: %s\n", filename);
-    }
+    gsm_initialize(GS_LEVEL1);
 
     // Create player
-    Player player;
-    player_system_initialize(&player);
-
-    Camera cam = initCam(&player.x, &player.y, 60.0f, 5.0f);
+   
 
 
-    int gGameRunning = 1;
-    while (gGameRunning)
+    while (current != GS_QUIT)
     {
-        AESysFrameStart();
+        if (current != GS_RESTART)
+            gsm_update();
 
-        // Tell the Alpha Engine to get ready to draw something with texture.
-        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        if (fpLoad) fpLoad();
+        if (fpInitialize) fpInitialize();
 
-        // Set blend mode to AE_GFX_BM_BLEND, which will allow transparency.
-        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-        AEGfxSetTransparency(1.0f);
+        while (next == current)
+        {
+            AESysFrameStart(); // start of frame
 
-        f32 dt = (f32)AEFrameRateControllerGetFrameTime();
+           
+            if (fpUpdate) fpUpdate();
+            if (fpDraw) fpDraw();
 
-        DrawMap(tile_size);
+            AESysFrameEnd();   // end of frame
+        }
 
-        getZoom(dt);
-        //Bounds anyhow set first
-        simulateCamera(&cam, &player.x, &player.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+        if (fpFree) fpFree();
+        if (next != GS_RESTART && fpUnload)
+            fpUnload();
 
-        // Update player system
-        player_system_update(&player);
-
-        // Render player system
-        player_system_render(&player);
-
-        if (AEInputCheckTriggered(AEVK_ESCAPE) || !AESysDoesWindowExist())
-            gGameRunning = 0;
-
-        AESysFrameEnd();
+        previous = current;
+        current = next;
     }
 
-    // Cleanup
-    for (int i = 0; i < NUM_TILE_TYPES; ++i)
-        if (TileTextures[i]) AEGfxTextureUnload(TileTextures[i]);
-    if (TileMesh) AEGfxMeshFree(TileMesh);
-    freeMesh();
+ 
 
     AESysExit();
     return 0;

@@ -5,6 +5,7 @@
 \brief:         This header declares dungeon map rendering and initialization
                 functions.
 **************************************************************************/
+#pragma once
 #include "AEEngine.h"
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90

@@ -8,9 +8,6 @@
 #include "collision.hpp"
 #include <vector>
 
-#define NUM_TILE_TYPES 131
-#define TILE_ROWS 90
-#define TILE_COLS 160
 
 camera cam{};
 f32 zoom{ 1.0f };
@@ -82,6 +79,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
         f32 dt = (f32)AEFrameRateControllerGetFrameTime();
 
         DrawMap(tile_size);
+        // Debug: draw all walls as semi-transparent red
+        //debug_draw_all_walls();
 
         get_zoom(dt);
         //Bounds anyhow set first

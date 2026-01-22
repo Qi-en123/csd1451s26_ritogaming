@@ -34,3 +34,5 @@ bool aabb_vs_aabb(
 
 // Check collision for a player position
 bool check_player_collision(float newX, float newY, float playerHalfSize);
+
+void debug_draw_all_walls();

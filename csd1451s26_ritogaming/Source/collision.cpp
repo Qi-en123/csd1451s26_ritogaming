@@ -14,6 +14,7 @@ This file defines functions to:
 
 #include "collision.hpp"
 #include <vector>
+#include "map.hpp"
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
@@ -33,24 +34,25 @@ void generate_walls_from_map(int map[TILE_ROWS][TILE_COLS], float tile_size)
 {
     g_walls.clear();
 
-    float startX = -1600.f / 2.f; // same as in DrawMap
+    // MATCHING map.cpp: Use the exact same start positions
+    float startX = -1600.f / 2.f;
     float startY = 900.f / 2.f - tile_size;
 
     for (int row = 0; row < TILE_ROWS; ++row)
     {
-        float y = startY - row * tile_size + tile_size / 2.0f; // center of tile
+        // MATCHING map.cpp: Use the exact same Y calculation
+        float y = startY - row * tile_size;
+
         for (int col = 0; col < TILE_COLS; ++col)
         {
-            float x = startX + col * tile_size + tile_size / 2.0f; // center of tile
+            // MATCHING map.cpp: Use the exact same X calculation
+            float x = startX + col * tile_size;
 
-            int tileID = map[row][col];
-
-            // Solid tiles: example, tileID 14 = wall
-            if (tileID == 14)
+            if (map[row][col] == 1)
             {
                 Wall w;
-                w.x = x;
-                w.y = y;
+                w.x = x; // Now matches the visual center used in DrawMap
+                w.y = y; // Now matches the visual center used in DrawMap
                 w.halfW = tile_size / 2.0f;
                 w.halfH = tile_size / 2.0f;
 
@@ -77,13 +79,15 @@ void generate_walls_from_map(int map[TILE_ROWS][TILE_COLS], float tile_size)
    A : The Player
    B : Wall etc.
 **************************************************************************/
-bool aabb_vs_aabb(float ax, float ay, float ahw, float ahh,
-                  float bx, float by, float bhw, float bhh)
+bool aabb_vs_aabb(
+    float ax, float ay, float ahw, float ahh,
+    float bx, float by, float bhw, float bhh
+)
 {
     return !(ax + ahw < bx - bhw || // A’s right < B’s left - no collision
-             ax - ahw > bx + bhw || // A’s left > B’s right - no collision
-             ay + ahh < by - bhh || // A’s top < B’s bottom - no collision
-             ay - ahh > by + bhh);  // A’s bottom > B’s top - no collision
+        ax - ahw > bx + bhw || // A’s left > B’s right - no collision
+        ay + ahh < by - bhh || // A’s top < B’s bottom - no collision
+        ay - ahh > by + bhh);  // A’s bottom > B’s top - no collision
 }
 
 /*!************************************************************************
@@ -104,9 +108,31 @@ bool check_player_collision(float newX, float newY, float playerHalfSize)
         if (aabb_vs_aabb(newX, newY, playerHalfSize, playerHalfSize,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
+            // Debug: print tile coordinates
+            printf("Colliding with wall at (%.2f, %.2f)\n", wall.x, wall.y);
+
             return true; // collision detected
         }
     }
-
     return false; // no collision
+}
+
+/*!************************************************************************
+\brief Debug draw for all walls
+Shows all wall positions as red rectangles
+// Go to main.cpp and uncomment the debug_draw_all_walls(); after
+// drawmap()
+**************************************************************************/
+void debug_draw_all_walls()
+{
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+    AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 0.5f); // red, semi-transparent
+
+    for (Wall& wall : g_walls)
+    {
+        // draw_square expects full width/height
+        draw_square(wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f);
+    }
 }

@@ -120,7 +120,7 @@ void player_system_handle_input(player* player_ptr) {
         // Half-size for AABB collision
         float halfSize = player_ptr->config.character_size / 2.0f;
 
-        // Check collision separately for X and Y
+        // Update your check to use separate Width and Height half-sizes
         if (!check_player_collision(*move_x, nextY, halfSize))
             *move_y = nextY;
         if (!check_player_collision(nextX, *move_y, halfSize))
@@ -192,6 +192,7 @@ void player_system_render(player* player_ptr) {
     AEGfxSetTransform(tri_transform.m);
     AEGfxMeshDraw(triangle_mesh, AE_GFX_MDM_TRIANGLES);
 }
+
 
 
 void player_system_update(player* player_ptr) {

@@ -120,11 +120,36 @@ void player_system_handle_input(player* player_ptr) {
         // Half-size for AABB collision
         float halfSize = player_ptr->config.character_size / 2.0f;
 
-        // Update your check to use separate Width and Height half-sizes
-        if (!check_player_collision(*move_x, nextY, halfSize))
-            *move_y = nextY;
-        if (!check_player_collision(nextX, *move_y, halfSize))
+        // Update the check to use separate Width and Height half-sizes
+       //  Horizontal Movement
+        if (!check_player_collision(nextX, *move_y, halfSize)) {
+            // If the path is totally clear, just move there.
             *move_x = nextX;
+        }
+        else {
+            // Path is blocked! Move 1 pixel at a time until player is touching the wall.
+            // if nextX is greater than current pos, +1 if lesser -1
+            float direction = (nextX > *move_x) ? 1.0f : -1.0f;
+
+            // While the NEXT pixel is clear, keep moving
+            while (!check_player_collision(*move_x + direction, *move_y, halfSize)) {
+                *move_x += direction;
+            }
+        }
+
+        // Vertical movement
+        if (!check_player_collision(*move_x, nextY, halfSize)) {
+            // Path is clear
+            *move_y = nextY;
+        }
+        else {
+            // Path is blocked! Move 1 pixel at a time
+            float direction = (nextY > *move_y) ? 1.0f : -1.0f;
+
+            while (!check_player_collision(*move_x, *move_y + direction, halfSize)) {
+                *move_y += direction;
+            }
+        }
     }
 
 

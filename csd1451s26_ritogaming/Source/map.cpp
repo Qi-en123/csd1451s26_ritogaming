@@ -10,12 +10,35 @@
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "map.hpp"
+    
+// Dummy map
+int map[TILE_ROWS][TILE_COLS];
 
+// ------------------------------------------------------------
+// Create a square tile mesh
+// ------------------------------------------------------------
+void CreateTileMesh(AEGfxVertexList** mesh)
+{
+    AEGfxMeshStart();
+
+    // top-left = (0,0), bottom-right = (1,1)
+    AEGfxTriAdd(
+        0.f, 0.f, 0xFFFFFFFF, 0.0f, 0.0f,   // top-left
+        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
+        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
+
+    AEGfxTriAdd(
+        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
+        1.f, 1.f, 0xFFFFFFFF, 1.0f, 1.0f,   // bottom-right
+        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
+
+    *mesh = AEGfxMeshEnd();
+}
 //extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 //extern AEGfxVertexList* TileMesh;
 
 // Dummy map
-int map[90][160];
+//int map[90][160];
 
 // ------------------------------------------------------------
 // Draw a single tile using top-left coordinates

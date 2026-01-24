@@ -7,11 +7,14 @@
                 updates transformations, renders player visuals and indicators,
                 and handles resource initialization and cleanup.
 **************************************************************************/
+#include "collision.hpp"
 #include "player.hpp"
 #include <crtdbg.h>
 #include "camera.hpp"
 #include "renderer.hpp"
 
+extern int map[TILE_ROWS][TILE_COLS];
+extern std::vector<Wall> g_walls;
 
 static void player_system_update_transforms(player* player_ptr) {
     if (!player_ptr) return;
@@ -99,22 +102,58 @@ void player_system_handle_input(player* player_ptr) {
     else {
         move_x = &player_ptr->char2_x;
         move_y = &player_ptr->char2_y;
+    }   
+   
+    if (move_x && move_y) {
+        float nextX = *move_x;
+        float nextY = *move_y;
+
+        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
+            nextY += player_ptr->speed;
+        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
+            nextY -= player_ptr->speed;
+        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))
+            nextX -= player_ptr->speed;
+        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D))
+            nextX += player_ptr->speed;
+
+        // Half-size for AABB collision
+        float halfSize = player_ptr->config.character_size / 2.0f;
+
+        // Update the check to use separate Width and Height half-sizes
+       //  Horizontal Movement
+        if (!check_player_collision(nextX, *move_y, halfSize)) {
+            // If the path is totally clear, just move there.
+            *move_x = nextX;
+        }
+        else {
+            // Path is blocked! Move 1 pixel at a time until player is touching the wall.
+            // if nextX is greater than current pos, +1 if lesser -1
+            float direction = (nextX > *move_x) ? 1.0f : -1.0f;
+
+            // While the NEXT pixel is clear, keep moving
+            while (!check_player_collision(*move_x + direction, *move_y, halfSize)) {
+                *move_x += direction;
+            }
+        }
+
+        // Vertical movement
+        if (!check_player_collision(*move_x, nextY, halfSize)) {
+            // Path is clear
+            *move_y = nextY;
+        }
+        else {
+            // Path is blocked! Move 1 pixel at a time
+            float direction = (nextY > *move_y) ? 1.0f : -1.0f;
+
+            while (!check_player_collision(*move_x, *move_y + direction, halfSize)) {
+                *move_y += direction;
+            }
+        }
     }
 
-    if (move_x && move_y) {
-        if (AEInputCheckCurr(AEVK_W)) {
-            *move_y += player_ptr->speed;
-        }
-        if (AEInputCheckCurr(AEVK_S)) {
-            *move_y -= player_ptr->speed;
-        }
-        if (AEInputCheckCurr(AEVK_A)) {
-            *move_x -= player_ptr->speed;
-        }
-        if (AEInputCheckCurr(AEVK_D)) {
-            *move_x += player_ptr->speed;
-        }
-    }
+
+
 }
 
 void player_system_render(player* player_ptr) {
@@ -159,6 +198,7 @@ void player_system_render(player* player_ptr) {
         player_ptr->config.triangle_size,
         player_ptr->config.triangle_size);
 }
+
 
 
 void player_system_update(player* player_ptr) {

@@ -5,6 +5,7 @@
 \brief:         This header declares dungeon map rendering and initialization
                 functions.
 **************************************************************************/
+#pragma once
 #include "AEEngine.h"
 #define NUM_TILE_TYPES 131
 #define TILE_ROWS 90
@@ -18,4 +19,5 @@ void InitializeDungeonMap();
 void DrawMap(float tile_size);
 void DrawTile(AEGfxTexture* tex, float topLeftX, float topLeftY, float tile_size);
 
+extern int map[90][160];
 //int map[90][160];

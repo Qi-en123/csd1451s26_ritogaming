@@ -32,7 +32,7 @@ typedef struct player_config {
     const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0084.png";
 } player_config;
 
-typedef struct player {
+typedef struct Player {
     player_config config;
 
     f32 x, y;

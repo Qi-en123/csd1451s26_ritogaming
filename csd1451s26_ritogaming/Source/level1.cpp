@@ -53,7 +53,7 @@ void level1_initialize()
 	// Determine tile size to fit both width and height
 	tile_size = 64.f;
 	player_system_init(&player_instance);
-	player_instance.config.character_size = tile_size;
+	player_instance.config.character_size = tile_size - 4.0f;
 	cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
 	init_mesh();
 
@@ -68,9 +68,9 @@ void level1_initialize()
 	//////////////////////////////////////////////////
 
 	InitializeDungeonMap();
-	//generate_walls_from_map(map, 64.0f); // step 2: make walls from map
+	generate_walls_from_map(map, 64.0f); // step 2: make walls from map
 
-	ShiftMapRight(2);
+	//ShiftMapRight(2);
 }
 
 void level1_update()
@@ -78,9 +78,6 @@ void level1_update()
 	dt = (f32)AEFrameRateControllerGetFrameTime();
 
 	///////////////////////////
-	// Debug: draw all walls as semi-transparent red
-	//debug_draw_all_walls();
-
 	get_zoom(dt);
 	//Bounds anyhow set first
 	simulate_camera(&cam, &player_instance.x, &player_instance.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
@@ -96,6 +93,8 @@ void level1_draw()
 {
 
 	DrawMap(tile_size);
+	// Debug: draw all walls as semi-transparent red
+	debug_draw_all_walls();
 	// Render player system
 	player_system_render(&player_instance);
 }

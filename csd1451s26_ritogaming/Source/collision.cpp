@@ -36,7 +36,7 @@ void generate_walls_from_map(int map[TILE_ROWS][TILE_COLS], float tile_size)
 
     // MATCHING map.cpp: Use the exact same start positions
     float startX = -1600.f / 2.f;
-    float startY = 900.f / 2.f - tile_size;
+    float startY = 900.f / 2.f;
 
     for (int row = 0; row < TILE_ROWS; ++row)
     {

@@ -17,7 +17,7 @@ extern AEGfxVertexList* TileMesh;
 extern f32 tile_size;
 
 void InitializeDungeonMap();
-void DrawMap(float tile_size);
+void DrawMap(f32 tile_size);
 
 extern int map[TILE_ROWS][TILE_COLS];
 

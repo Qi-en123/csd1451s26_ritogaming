@@ -9,19 +9,6 @@
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 
-#include <vector>
-
-
-camera cam{};
-f32 zoom{ 1.0f };
-
-f32 tile_size = 64.0f;
-
-AEGfxTexture* TileTextures[NUM_TILE_TYPES] = { nullptr };
-AEGfxVertexList* TileMesh = nullptr;
-
-extern int map[TILE_ROWS][TILE_COLS];
-
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
 {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);

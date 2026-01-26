@@ -18,7 +18,7 @@ int map[TILE_ROWS][TILE_COLS];
 // ------------------------------------------------------------
 // Draw the entire map perfectly centered
 // ------------------------------------------------------------
-void DrawMap(float tile_size)
+void DrawMap(f32 tile_size)
 {
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
@@ -26,15 +26,15 @@ void DrawMap(float tile_size)
     AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
     AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 
-    float startX = -1600.f / 2.f;
-    float startY = 900.f / 2.f;
+    f32 startX = -1600.f / 2.f;
+    f32 startY = 900.f / 2.f;
 
     for (int row = 0; row < TILE_ROWS; ++row)
     {
-        float y = startY - row * tile_size;
+        f32 y = startY - row * tile_size;
         for (int col = 0; col < TILE_COLS; ++col)
         {
-            float x = startX + col * tile_size;
+            f32 x = startX + col * tile_size;
             int tileType = map[row][col];
             //DrawTile(TileTextures[tileType], x, y, tile_size);
             render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);

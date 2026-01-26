@@ -10,26 +10,27 @@
 
 #include "AEEngine.h"
 #include "renderer.hpp"
+#include "map.hpp"
 
 typedef struct player_config {
     // Size settings
-    f32 character_size = 64.f;       // Default character size
+    f32 character_size = 25.0f;       // Default character size
     f32 triangle_size = 20.f;        // Default triangle indicator size
     f32 triangle_offset = 40.f;     // How far above character the triangle sits
 
     // Position settings
-    f32 char1_start_x = 4320.f;      // Character 1 starting position
-    f32 char1_start_y = -3374.f;
+    f32 char1_start_x = 0.0f;      // Character 1 starting position
+    f32 char1_start_y = -0.0f;
 
-    f32 char2_start_x = 4120.f;       // Character 2 starting position  
-    f32 char2_start_y = -3374.f;
+    f32 char2_start_x = 0.0f;       // Character 2 starting position  
+    f32 char2_start_y = -0.0f;
 
     // Movement settings
     f32 move_speed = 25.f;          // Player movement speed
     
     // Texture paths
-    const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0096.png";
-    const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0084.png";
+    //const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0004.png";
+    //const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0003.png";
 } player_config;
 
 typedef struct Player {

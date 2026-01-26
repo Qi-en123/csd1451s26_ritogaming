@@ -1,23 +1,26 @@
 /*!************************************************************************
 \file:          map.hpp
-\author:        Qien
+\author:        Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This header declares dungeon map rendering and initialization
                 functions.
 **************************************************************************/
 #pragma once
 #include "AEEngine.h"
-#define NUM_TILE_TYPES 131
-#define TILE_ROWS 90
-#define TILE_COLS 160
+#define NUM_TILE_TYPES 7
+#define TILE_ROWS 36
+#define TILE_COLS 64
+
+extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
+extern AEGfxVertexList* TileMesh;
 
 extern f32 tile_size;
-extern AEGfxTexture* TileTextures[];
-extern AEGfxVertexList* TileMesh;
 
 void InitializeDungeonMap();
 void DrawMap(float tile_size);
-void DrawTile(AEGfxTexture* tex, float topLeftX, float topLeftY, float tile_size);
 
-extern int map[90][160];
-//int map[90][160];
+extern int map[TILE_ROWS][TILE_COLS];
+
+void ShiftMapRight(int shift_right_by);
+
+

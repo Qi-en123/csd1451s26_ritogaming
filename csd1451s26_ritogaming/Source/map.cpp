@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:          map.cpp
-\author:        Qien
+\author:        Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This file handles tile-based map rendering and initialization.
                 It creates the tile mesh, draws individual tiles and the 
@@ -14,53 +14,6 @@
 // Dummy map
 int map[TILE_ROWS][TILE_COLS];
 
-// ------------------------------------------------------------
-// Create a square tile mesh
-// ------------------------------------------------------------
-void CreateTileMesh(AEGfxVertexList** mesh)
-{
-    AEGfxMeshStart();
-
-    // top-left = (0,0), bottom-right = (1,1)
-    AEGfxTriAdd(
-        0.f, 0.f, 0xFFFFFFFF, 0.0f, 0.0f,   // top-left
-        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
-        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
-
-    AEGfxTriAdd(
-        1.f, 0.f, 0xFFFFFFFF, 1.0f, 0.0f,   // top-right
-        1.f, 1.f, 0xFFFFFFFF, 1.0f, 1.0f,   // bottom-right
-        0.f, 1.f, 0xFFFFFFFF, 0.0f, 1.0f);  // bottom-left
-
-    *mesh = AEGfxMeshEnd();
-}
-//extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
-//extern AEGfxVertexList* TileMesh;
-
-// Dummy map
-//int map[90][160];
-
-// ------------------------------------------------------------
-// Draw a single tile using top-left coordinates
-// ------------------------------------------------------------
-void DrawTile(AEGfxTexture* tex, float topLeftX, float topLeftY, float tile_size)
-{
-    if (!tex || !TileMesh) return;
-
-    AEMtx33 Scale, Rotate, Translate, Transform;
-
-    AEMtx33Scale(&Scale, tile_size, -tile_size);
-    AEMtx33Rot(&Rotate, 0.0f);
-    AEMtx33Trans(&Translate, topLeftX, topLeftY);
-
-    AEMtx33Concat(&Transform, &Rotate, &Scale);
-    AEMtx33Concat(&Transform, &Translate, &Transform);
-
-    AEGfxSetTransform(Transform.m);
-
-    AEGfxTextureSet(tex, 0, 0);
-    AEGfxMeshDraw(TileMesh, AE_GFX_MDM_TRIANGLES);
-}
 
 // ------------------------------------------------------------
 // Draw the entire map perfectly centered
@@ -74,7 +27,7 @@ void DrawMap(float tile_size)
     AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 
     float startX = -1600.f / 2.f;
-    float startY = 900.f / 2.f - tile_size;
+    float startY = 900.f / 2.f;
 
     for (int row = 0; row < TILE_ROWS; ++row)
     {
@@ -94,102 +47,150 @@ void DrawMap(float tile_size)
 // ------------------------------------------------------------
 void InitializeDungeonMap()
 {
-    // Clear map
-    for (int r = 0; r < TILE_ROWS; ++r)
-        for (int c = 0; c < TILE_COLS; ++c)
-            map[r][c] = 0; //clear room
-
     // ============================================================
     // PLAYER ROOM 1 (Top Left)
     // ============================================================
-    for (int r = 10; r < 18; ++r)
-        for (int c = 10; c < 18; ++c)
-            map[r][c] = 2; 
 
-    for (int c = 9; c < 19; ++c)
-        map[9][c] = map[18][c] = 1; // wall tile
-    for (int r = 9; r < 19; ++r)
-        map[r][9] = map[r][18] = 1; // wall tile
+    // Floor area
+    for (int r = 3; r < 10; ++r)
+        for (int c = 3; c < 10; ++c)
+            map[r][c] = 2; // floor tile
 
-    map[14][14] = 3; //player 1
+    // Top horizontal wall
+    for (int c = 2; c <= 10; ++c)
+        map[2][c] = 1;
 
+    // Bottom horizontal wall
+    for (int c = 2; c <= 10; ++c)
+        map[10][c] = 1;
+    map[10][5] = map[10][6] = 2; // opening to bottom left room
+
+    // Left vertical wall
+    for (int r = 2; r <= 10; ++r)
+        map[r][2] = 1;
+
+    // Right vertical wall
+    for (int r = 2; r <= 10; ++r)
+        map[r][10] = 1;
+    map[5][10] = map[6][10] = 2; // opening to top right room
 
     // ============================================================
     // PLAYER ROOM 2 (Bottom Left)
     // ============================================================
-    for (int r = 60; r < 68; ++r)
-        for (int c = 10; c < 18; ++c)
+
+    // Floor area
+    for (int r = 18; r < 26; ++r)
+        for (int c = 3; c < 10; ++c)
             map[r][c] = 2; // floor tile
 
-    for (int c = 9; c < 19; ++c)
-        map[59][c] = map[68][c] = 1; // wall tile
-    for (int r = 59; r < 69; ++r)
-        map[r][9] = map[r][18] = 1; // wall tile
+    // Top horizontal wall
+    for (int c = 2; c <= 10; ++c)
+        map[18][c] = 1;
 
-    map[64][14] = 4; //player 2
+    // Bottom horizontal wall
+    for (int c = 2; c <= 10; ++c)
+        map[25][c] = 1;
+    map[18][5] = map[18][6] = 2; // opening to bottom right room
 
+    // Left vertical wall
+    for (int r = 18; r <= 25; ++r)
+        map[r][2] = 1;
+
+    // Right vertical wall
+    for (int r = 18; r <= 25; ++r)
+        map[r][10] = 1;
+    map[21][10] = map[22][10] = 2; // opening to horizontal corridor
 
     // ============================================================
-    // VERTICAL CORRIDOR
+    // VERTICAL CORRIDOR (connecting player rooms)
     // ============================================================
-    for (int r = 18; r < 68; ++r)
-        for (int c = 9; c < 19; ++c)
-            map[r][c] = 2; // floor tile
 
-    for (int r = 18; r < 68; ++r) {
-        map[r][9] = 1;  // wall tile
-        map[r][18] = 1; // wall tile
+    // Corridor floor (expanded width)
+    for (int r = 11; r < 18; ++r)
+        for (int c = 4; c < 8; ++c)
+            map[r][c] = 2;
+
+    // Left and right corridor walls
+    for (int r = 11; r < 18; ++r)
+        map[r][3] = map[r][8] = 1;
+
+    // ============================================================
+    // BOSS ROOM 1 (Top Right) - expanded vertically
+    // ============================================================
+
+    // Floor area
+    for (int r = 3; r < 12; ++r)
+        for (int c = 36; c < 54; ++c)
+            map[r][c] = 2;
+
+    // Top and bottom horizontal walls
+    for (int c = 35; c <= 54; ++c) {
+        map[2][c] = 1;
+        map[12][c] = 1; // bottom wall
     }
 
+    // Left and right vertical walls
+    for (int r = 2; r <= 12; ++r)
+        map[r][35] = map[r][54] = 1;
 
     // ============================================================
-    // BOSS ROOM 1 (Top Right)
+    // Horizontal corridor to Boss Room 1 (expanded vertically)
     // ============================================================
-    for (int r = 6; r < 26; ++r)
-        for (int c = 60; c < 90; ++c)
-            map[r][c] = 2; // floor tile
 
-    for (int c = 59; c < 91; ++c)
-        map[5][c] = map[26][c] = 1; // // wall tile
-    for (int r = 5; r < 27; ++r)
-        map[r][59] = map[r][90] = 1; // // wall tile
+    // Corridor floor
+    for (int c = 9; c < 36; ++c)
+        for (int r = 5; r < 9; ++r) // increased vertical height from 5-7 to 5-9
+            map[r][c] = 2;
 
-    map[16][75] = 5; // boss 1
-
-
-    // Corridor to Boss Room 1
-    for (int c = 18; c < 60; ++c)
-        for (int r = 13; r < 15; ++r)
-            map[r][c] = 2; // floor tile
-
-    for (int c = 18; c < 60; ++c) {
-        map[12][c] = 1; // wall tile
-        map[15][c] = 1; // wall tile
+    // Top and bottom corridor walls
+    for (int c = 9; c < 36; ++c) {
+        map[4][c] = 1;  // top wall
+        map[9][c] = 1;  // bottom wall (moved down)
     }
 
+    // ============================================================
+    // BOSS ROOM 2 (Bottom Right)
+    // ============================================================
+
+    // Floor area
+    for (int r = 17; r < 28; ++r)
+        for (int c = 36; c < 54; ++c)
+            map[r][c] = 2;
+
+    // Top and bottom horizontal walls
+    for (int c = 35; c <= 54; ++c) {
+        map[16][c] = 1;
+        map[28][c] = 1;
+    }
+
+    // Left and right vertical walls
+    for (int r = 16; r <= 28; ++r)
+        map[r][35] = map[r][54] = 1;
 
     // ============================================================
-    // BOSS ROOM 2 (Bottom Right � Bigger)
+    // Horizontal corridor to Boss Room 2 (expanded vertically)
     // ============================================================
-    for (int r = 48; r < 82; ++r)
-        for (int c = 60; c < 100; ++c)
-            map[r][c] = 2; // floor tile
 
-    for (int c = 59; c < 101; ++c)
-        map[47][c] = map[82][c] = 1; // wall tile
-    for (int r = 47; r < 83; ++r)
-        map[r][59] = map[r][100] = 1; // wall tile
+    // Corridor floor
+    for (int c = 9; c < 36; ++c)
+        for (int r = 21; r < 24; ++r) // increased vertical height from 21-23 to 21-24
+            map[r][c] = 2;
 
-    //map[65][80] = 110; // Boss 2
+    // Top and bottom corridor walls
+    for (int c = 9; c < 36; ++c) {
+        map[20][c] = 1; // top wall
+        map[24][c] = 1; // bottom wall
+    }
+}
 
-
-    // Corridor to Boss Room 2
-    for (int c = 18; c < 60; ++c)
-        for (int r = 63; r < 65; ++r)
-            map[r][c] = 2; // floor tile
-
-    for (int c = 18; c < 60; ++c) {
-        map[62][c] = 1; // wall tile
-        map[65][c] = 1; // wall tile
+void ShiftMapRight(int shift_right_by)
+{
+    for (int r = 0; r < TILE_ROWS; ++r)
+    {
+        for (int c = TILE_COLS - shift_right_by; c > (shift_right_by-1); --c)
+        {
+            map[r][c] = map[r][c - shift_right_by]; // shift everything to the right
+        }
+       
     }
 }

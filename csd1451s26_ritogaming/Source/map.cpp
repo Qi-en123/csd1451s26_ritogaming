@@ -12,13 +12,13 @@
 #include "map.hpp"
     
 // Dummy map
-int map[TILE_ROWS][TILE_COLS];
+s32 map[TILE_ROWS][TILE_COLS];
 
 
 // ------------------------------------------------------------
 // Draw the entire map perfectly centered
 // ------------------------------------------------------------
-void DrawMap(f32 tile_size)
+void draw_map(f32 tile_size)
 {
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
@@ -45,7 +45,7 @@ void DrawMap(f32 tile_size)
 // ------------------------------------------------------------
 // Initialize the dungeon map layout
 // ------------------------------------------------------------
-void InitializeDungeonMap()
+void initialize_dungeon_map()
 {
     // ============================================================
     // PLAYER ROOM 1 (Top Left)
@@ -183,7 +183,7 @@ void InitializeDungeonMap()
     }
 }
 
-void ShiftMapRight(int shift_right_by)
+void shift_map_right(s32 shift_right_by)
 {
     for (int r = 0; r < TILE_ROWS; ++r)
     {

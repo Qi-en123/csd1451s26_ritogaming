@@ -67,7 +67,7 @@ void level1_initialize()
 
 	//////////////////////////////////////////////////
 
-	InitializeDungeonMap();
+	initialize_dungeon_map();
 	generate_walls_from_map(map, 64.0f); // step 2: make walls from map
 
 	//ShiftMapRight(2);
@@ -92,9 +92,9 @@ void level1_update()
 void level1_draw()
 {
 
-	DrawMap(tile_size);
+	draw_map(tile_size);
 	// Debug: draw all walls as semi-transparent red
-	debug_draw_all_walls();
+	//debug_draw_all_walls();
 	// Render player system
 	player_system_render(&player_instance);
 }

@@ -34,28 +34,28 @@ typedef struct player_config {
 } player_config;
 
 typedef struct Player {
-    player_config config;
+    player_config config{};
 
-    f32 x, y;
+    f32 x{}, y{};
 
-    s32 current_character;
-    f32 speed;
+    s32 current_character{};
+    f32 speed{};
 
-    f32 char1_x, char1_y;
-    f32 char2_x, char2_y;
+    f32 char1_x{}, char1_y{};
+    f32 char2_x{}, char2_y{};
 
-    AEGfxVertexList* square_mesh;
-    AEGfxVertexList* triangle_mesh;
-    AEGfxTexture* char1_texture;
-    AEGfxTexture* char2_texture;
+    AEGfxVertexList* square_mesh{};
+    AEGfxVertexList* triangle_mesh{};
+    AEGfxTexture* char1_texture{};
+    AEGfxTexture* char2_texture{};
 
-    AEMtx33 transform1;
-    AEMtx33 transform2;
-    AEMtx33 triangle_transform;
+    AEMtx33 transform1{};
+    AEMtx33 transform2{};
+    AEMtx33 triangle_transform{};
 
-    AEMtx33 character_scale;
-    AEMtx33 triangle_scale;
-    AEMtx33 rotate;
+    AEMtx33 character_scale{};
+    AEMtx33 triangle_scale{};
+    AEMtx33 rotate{};
 } player;
 
 /**************************************************************************

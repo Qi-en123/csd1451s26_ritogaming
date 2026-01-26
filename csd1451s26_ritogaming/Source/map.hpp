@@ -13,14 +13,13 @@
 
 extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 extern AEGfxVertexList* TileMesh;
+extern s32 map[TILE_ROWS][TILE_COLS];
 
 extern f32 tile_size;
 
-void InitializeDungeonMap();
-void DrawMap(f32 tile_size);
+void initialize_dungeon_map();
+void draw_map(f32 tile_size);
 
-extern int map[TILE_ROWS][TILE_COLS];
-
-void ShiftMapRight(int shift_right_by);
+void shift_map_right(s32 shift_right_by);
 
 

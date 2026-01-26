@@ -30,23 +30,23 @@ objects for all tiles marked as solid (e.g., tileID == 14). The walls
 are centered in their respective tile positions and stored in the
 global g_walls vector.
 **************************************************************************/
-void generate_walls_from_map(int map[TILE_ROWS][TILE_COLS], float tile_size)
+void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
 {
     g_walls.clear();
 
     // MATCHING map.cpp: Use the exact same start positions
-    float startX = -1600.f / 2.f;
-    float startY = 900.f / 2.f;
+    f32 startX = -1600.f / 2.f;
+    f32 startY = 900.f / 2.f;
 
-    for (int row = 0; row < TILE_ROWS; ++row)
+    for (s32 row = 0; row < TILE_ROWS; ++row)
     {
         // MATCHING map.cpp: Use the exact same Y calculation
-        float y = startY - row * tile_size;
+        f32 y = startY - row * tile_size;
 
-        for (int col = 0; col < TILE_COLS; ++col)
+        for (s32 col = 0; col < TILE_COLS; ++col)
         {
             // MATCHING map.cpp: Use the exact same X calculation
-            float x = startX + col * tile_size;
+            f32 x = startX + col * tile_size;
 
             if (map[row][col] == 1)
             {
@@ -79,9 +79,9 @@ void generate_walls_from_map(int map[TILE_ROWS][TILE_COLS], float tile_size)
    A : The Player
    B : Wall etc.
 **************************************************************************/
-bool aabb_vs_aabb(
-    float ax, float ay, float ahw, float ahh,
-    float bx, float by, float bhw, float bhh
+bool ss_collision(
+    f32 ax, f32 ay, f32 ahw, f32 ahh,
+    f32 bx, f32 by, f32 bhw, f32 bhh
 )
 {
     return !(ax + ahw < bx - bhw || // A’s right < B’s left - no collision
@@ -101,11 +101,11 @@ bool aabb_vs_aabb(
 Iterates through all walls in g_walls and uses AABBvsAABB to check
 for overlap with the player's bounding box.
 **************************************************************************/
-bool check_player_collision(float newX, float newY, float playerHalfSize)
+bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
 {
     for (Wall& wall : g_walls)
     {
-        if (aabb_vs_aabb(newX, newY, playerHalfSize, playerHalfSize,
+        if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
             // Debug: print tile coordinates

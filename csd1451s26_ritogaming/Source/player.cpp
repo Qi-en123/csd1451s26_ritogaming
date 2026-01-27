@@ -12,6 +12,7 @@
 #include <crtdbg.h>
 #include "camera.hpp"
 #include "renderer.hpp"
+#include "puzzle.hpp"
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
@@ -108,21 +109,25 @@ void player_system_handle_input(player* player_ptr) {
         float nextX = *move_x;
         float nextY = *move_y;
 
+        static bool is_dragging;
+
         if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
-            nextY += player_ptr->speed;
+            nextY += is_dragging ? 1.0f : player_ptr->speed;
         if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
-            nextY -= player_ptr->speed;
+            nextY -= is_dragging ? 1.0f : player_ptr->speed;
         if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))
-            nextX -= player_ptr->speed;
+            nextX -= is_dragging ? 1.0f : player_ptr->speed;
         if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D))
-            nextX += player_ptr->speed;
+            nextX += is_dragging ? 1.0f : player_ptr->speed;
 
         // Half-size for AABB collision
         float halfSize = player_ptr->config.character_size / 2.0f;
+        static s32 puzzle_index;
 
         // Update the check to use separate Width and Height half-sizes
        //  Horizontal Movement
-        if (!check_player_collision(nextX, *move_y, halfSize)) {
+        if (!check_player_collision(nextX, *move_y, halfSize) &&
+            !player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index)) {
             // If the path is totally clear, just move there.
             *move_x = nextX;
         }
@@ -132,13 +137,18 @@ void player_system_handle_input(player* player_ptr) {
             float direction = (nextX > *move_x) ? 1.0f : -1.0f;
 
             // While the NEXT pixel is clear, keep moving
-            while (!check_player_collision(*move_x + direction, *move_y, halfSize)) {
-                *move_x += direction;
+            if (!check_player_collision(*move_x + direction, *move_y, halfSize) &&
+                !player_collide_puzzles(*move_x + direction, *move_y, halfSize, puzzle_index)) {
+                *move_x += direction;                
+            }
+            if (player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index)) {
+                move_puzzle(puzzle_index, (direction > 0.0f) ? RIGHT : LEFT);
             }
         }
 
         // Vertical movement
-        if (!check_player_collision(*move_x, nextY, halfSize)) {
+        if (!check_player_collision(*move_x, nextY, halfSize) &&
+            !player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index)) {
             // Path is clear
             *move_y = nextY;
         }
@@ -146,14 +156,23 @@ void player_system_handle_input(player* player_ptr) {
             // Path is blocked! Move 1 pixel at a time
             float direction = (nextY > *move_y) ? 1.0f : -1.0f;
 
-            while (!check_player_collision(*move_x, *move_y + direction, halfSize)) {
+            if (!check_player_collision(*move_x, *move_y + direction, halfSize) &&
+                !player_collide_puzzles(*move_x, *move_y + direction, halfSize, puzzle_index)) {
                 *move_y += direction;
             }
+            if (player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index)) {
+                move_puzzle(puzzle_index, (direction > 0.0f) ? DOWN : UP);
+            }
+        }
+
+        //DRAGGING OBJECT TEST
+        if (AEInputCheckCurr(AEVK_SPACE)) {
+            drag_puzzle(*move_x, *move_y, player_ptr->config.character_size / 2.0f, is_dragging);
+        }
+        else {
+            is_dragging = false;
         }
     }
-
-
-
 }
 
 void player_system_render(player* player_ptr) {

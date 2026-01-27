@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -104,6 +104,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\main.cpp" />
     <ClCompile Include="..\Source\map.cpp" />
     <ClCompile Include="..\Source\player.cpp" />
+    <ClCompile Include="..\Source\puzzle.cpp" />
     <ClCompile Include="..\Source\renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +116,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\level1.hpp" />
     <ClInclude Include="..\Source\map.hpp" />
     <ClInclude Include="..\Source\player.hpp" />
+    <ClInclude Include="..\Source\puzzle.hpp" />
     <ClInclude Include="..\Source\renderer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

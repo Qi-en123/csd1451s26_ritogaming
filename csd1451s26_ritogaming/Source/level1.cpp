@@ -13,6 +13,7 @@ update game logic, render, free resources,
 #include "player.hpp"
 #include "collision.hpp"
 #include "game_state_manager.hpp"
+#include "puzzle.hpp"
 
 #define NUM_TILE_TYPES 7
 #define TILE_ROWS 36
@@ -45,6 +46,7 @@ void level1_load()
 		if (!TileTextures[i])
 			printf("Failed to load: %s\n", filename);
 	}
+	load_puzzle_textures();
 }
 
 void level1_initialize()
@@ -70,6 +72,8 @@ void level1_initialize()
 	initialize_dungeon_map();
 	generate_walls_from_map(map, 64.0f); // step 2: make walls from map
 
+	intialize_puzzle_blocks();
+
 	//ShiftMapRight(2);
 }
 
@@ -87,6 +91,7 @@ void level1_update()
 
 	// Render player system
 	player_system_render(&player_instance);
+	//check_puzzle_collision(&player_instance);
 }
 
 void level1_draw()
@@ -97,6 +102,7 @@ void level1_draw()
 	//debug_draw_all_walls();
 	// Render player system
 	player_system_render(&player_instance);
+	render_puzzle_blocks();
 }
 
 void level1_free()
@@ -110,5 +116,7 @@ void level1_unload()
 	for (int i = 0; i < NUM_TILE_TYPES; ++i)
 		if (TileTextures[i]) AEGfxTextureUnload(TileTextures[i]);
 	free_mesh();
+	unload_puzzle_textures();
+	player_system_free(&player_instance);
 	//if (TileMesh) AEGfxMeshFree(TileMesh);
 }

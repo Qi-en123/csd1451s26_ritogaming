@@ -109,7 +109,7 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
             // Debug: print tile coordinates
-            printf("Colliding with wall at (%.2f, %.2f)\n", wall.x, wall.y);
+            //printf("Colliding with wall at (%.2f, %.2f)\n", wall.x, wall.y);
 
             return true; // collision detected
         }

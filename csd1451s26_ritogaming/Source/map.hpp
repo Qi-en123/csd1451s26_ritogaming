@@ -20,6 +20,6 @@ extern f32 tile_size;
 void initialize_dungeon_map();
 void draw_map(f32 tile_size);
 
-void shift_map_right(s32 shift_right_by);
+
 
 

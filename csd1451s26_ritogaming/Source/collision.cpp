@@ -136,3 +136,31 @@ void debug_draw_all_walls()
         draw_square(wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f);
     }
 }
+
+bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh) {
+    // 1. Find the rectangle's edges
+    f32 rLeft = rx - (rw / 2.0f);
+    f32 rRight = rx + (rw / 2.0f);
+    f32 rTop = ry + (rh / 2.0f);
+    f32 rBottom = ry - (rh / 2.0f);
+
+    // 2. Find the closest point on the rectangle to the circle center
+    f32 closestX = cx;
+    f32 closestY = cy;
+
+    // Clamp closestX to the rectangle's range
+    if (closestX < rLeft)  closestX = rLeft;
+    else if (closestX > rRight) closestX = rRight;
+
+    // Clamp closestY to the rectangle's range
+    if (closestY < rBottom) closestY = rBottom;
+    else if (closestY > rTop)    closestY = rTop;
+
+    // 3. calculate the distance from the circle center to this closest point
+    f32 distX = cx - closestX;
+    f32 distY = cy - closestY;
+
+    // 4. compare squared distance to squared radius (performance optimization)
+    f32 distanceSq = (distX * distX) + (distY * distY);
+    return distanceSq <= (cr * cr);
+}

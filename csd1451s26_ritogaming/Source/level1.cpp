@@ -14,6 +14,7 @@ update game logic, render, free resources,
 #include "collision.hpp"
 #include "game_state_manager.hpp"
 
+
 #define NUM_TILE_TYPES 7
 #define TILE_ROWS 36
 #define TILE_COLS 64
@@ -87,16 +88,19 @@ void level1_update()
 
 	// Render player system
 	player_system_render(&player_instance);
+	circle_to_rectangle(200, 100, 50, player_instance.x, player_instance.y, 25.f, 25.f);
 }
 
 void level1_draw()
 {
-
+	
 	draw_map(tile_size);
+	
 	// Debug: draw all walls as semi-transparent red
 	//debug_draw_all_walls();
 	// Render player system
 	player_system_render(&player_instance);
+
 }
 
 void level1_free()

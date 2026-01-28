@@ -20,6 +20,14 @@ extern f32 tile_size;
 void initialize_dungeon_map();
 void draw_map(f32 tile_size);
 
-
+enum TILE_ID
+{
+    EMPTY = 0,   
+    WALL, 
+    FLOOR,        
+    DOOR,
+    SPECIAL_DOOR,
+    OPENED_DOOR,
+};
 
 

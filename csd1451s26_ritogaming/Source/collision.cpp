@@ -90,6 +90,46 @@ bool ss_collision(
         ay - ahh > by + bhh);  // A’s bottom > B’s top - no collision
 }
 
+/**
+ * @brief Checks for collision between a circular projectile and a square boss.
+ * * @param cx Circle center X
+ * \param cy Circle center Y
+ * \param cr Circle radius
+ * \param rx Rectangle center X
+ * \param ry Rectangle center Y
+ * \param rw Rectangle width (or size if square)
+ * \param rh Rectangle height (or size if square)
+ * \return true if colliding, false otherwise
+ */
+bool cr_collision(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh) {
+    // 1. Find the rectangle's edges
+    f32 rLeft = rx - (rw / 2.0f);
+    f32 rRight = rx + (rw / 2.0f);
+    f32 rTop = ry + (rh / 2.0f);
+    f32 rBottom = ry - (rh / 2.0f);
+
+    // 2. Find the closest point on the rectangle to the circle center
+    f32 closestX = cx;
+    f32 closestY = cy;
+
+    // Clamp closestX to the rectangle's range
+    if (closestX < rLeft)  closestX = rLeft;
+    else if (closestX > rRight) closestX = rRight;
+
+    // Clamp closestY to the rectangle's range
+    if (closestY < rBottom) closestY = rBottom;
+    else if (closestY > rTop)    closestY = rTop;
+
+    // 3. calculate the distance from the circle center to this closest point
+    f32 distX = cx - closestX;
+    f32 distY = cy - closestY;
+
+    // 4. compare squared distance to squared radius (performance optimization)
+    f32 distanceSq = (distX * distX) + (distY * distY);
+
+    return distanceSq <= (cr * cr);
+}
+
 /*!************************************************************************
 \brief Check if a player collides with any wall in the map.
 

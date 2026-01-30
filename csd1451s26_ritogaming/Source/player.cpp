@@ -2,11 +2,21 @@
 \file:          player.cpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-\brief:         This file implements the player system using AEEngine.
-                It manages two switchable characters, handles player input,
-                updates transformations, renders player visuals and indicators,
-                and handles resource initialization and cleanup.
+\brief:         Implements the player system using AEEngine.
+
+                Responsibilities of this system:
+                - Manages two switchable player characters
+                - Processes player input and movement
+                - Updates transformation matrices
+                - Renders characters and the active-player indicator
+                - Handles initialization and cleanup of player resources
+
+                Refactor note:
+                Each character is stored in its own Character struct, and
+                a current_player pointer is used to reference the active one.
+                This avoids duplicate logic and keeps the system modular.
 **************************************************************************/
+
 #include "collision.hpp"
 #include "player.hpp"
 #include <crtdbg.h>
@@ -16,181 +26,165 @@
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
-static void player_system_update_transforms(player* player_ptr) {
+/**************************************************************************/
+/*!
+  Updates transformation matrices for both characters and the active
+  player indicator triangle.
+*/
+/**************************************************************************/
+static void player_system_update_transforms(Player* player_ptr) {
     if (!player_ptr) return;
 
-    // Update character 1 transform
+    // --- Character 1 transform ---
+    // Apply rotation and scale, then translate to world position
     AEMtx33 translate1;
-    AEMtx33Trans(&translate1, player_ptr->char1_x, player_ptr->char1_y);
-    AEMtx33Concat(&player_ptr->transform1, &player_ptr->rotate, &player_ptr->character_scale);
-    AEMtx33Concat(&player_ptr->transform1, &translate1, &player_ptr->transform1);
+    AEMtx33Trans(&translate1, player_ptr->char1.x, player_ptr->char1.y);
+    AEMtx33Concat(&player_ptr->char1.transform, &player_ptr->rotate, &player_ptr->character_scale);
+    AEMtx33Concat(&player_ptr->char1.transform, &translate1, &player_ptr->char1.transform);
 
-    // Update character 2 transform
+    // --- Character 2 transform ---
     AEMtx33 translate2;
-    AEMtx33Trans(&translate2, player_ptr->char2_x, player_ptr->char2_y);
-    AEMtx33Concat(&player_ptr->transform2, &player_ptr->rotate, &player_ptr->character_scale);
-    AEMtx33Concat(&player_ptr->transform2, &translate2, &player_ptr->transform2);
+    AEMtx33Trans(&translate2, player_ptr->char2.x, player_ptr->char2.y);
+    AEMtx33Concat(&player_ptr->char2.transform, &player_ptr->rotate, &player_ptr->character_scale);
+    AEMtx33Concat(&player_ptr->char2.transform, &translate2, &player_ptr->char2.transform);
 
-    // Update triangle position (just above the character)
+    // --- Active player indicator (triangle) ---
+    // Positioned slightly above the currently controlled character
     AEMtx33 triangle_translate;
-    if (player_ptr->current_character == 1) {
-        // Position triangle just above character 1 - USING CONFIG OFFSET
-        AEMtx33Trans(&triangle_translate, player_ptr->char1_x, player_ptr->char1_y + player_ptr->config.triangle_offset);
-    }
-    else {
-        // Position triangle just above character 2 - USING CONFIG OFFSET
-        AEMtx33Trans(&triangle_translate, player_ptr->char2_x, player_ptr->char2_y + player_ptr->config.triangle_offset);
-    }
+    AEMtx33Trans(&triangle_translate,
+        player_ptr->current_player->x,
+        player_ptr->current_player->y + player_ptr->config.triangle_offset);
 
     AEMtx33Concat(&player_ptr->triangle_transform, &player_ptr->rotate, &player_ptr->triangle_scale);
     AEMtx33Concat(&player_ptr->triangle_transform, &triangle_translate, &player_ptr->triangle_transform);
 }
 
-void player_system_init(player* player_ptr, const player_config* config) {
+/**************************************************************************/
+/*!
+  Initializes the player system using the provided configuration.
+*/
+/**************************************************************************/
+void player_system_init(Player* player_ptr, const player_config* config) {
     if (!player_ptr) return;
 
-    // Store configuration 
+    // Copy configuration values if provided
     if (config) {
         player_ptr->config = *config;
     }
 
-    player_ptr->char1_x = player_ptr->config.char1_start_x;
-    player_ptr->char1_y = player_ptr->config.char1_start_y;
-    player_ptr->char2_x = player_ptr->config.char2_start_x;
-    player_ptr->char2_y = player_ptr->config.char2_start_y;
+    // --- Character 1 setup ---
+    player_ptr->char1.x = player_ptr->config.char1_start_x;
+    player_ptr->char1.y = player_ptr->config.char1_start_y;
+    player_ptr->char1.speed = player_ptr->config.move_speed;
+    player_ptr->char1.character_id = 1;
+    player_ptr->char1.texture = nullptr;  // Assigned during rendering
 
-    // Current position (active character)
-    player_ptr->x = player_ptr->char1_x;
-    player_ptr->y = player_ptr->char1_y;
+    // --- Character 2 setup ---
+    player_ptr->char2.x = player_ptr->config.char2_start_x;
+    player_ptr->char2.y = player_ptr->config.char2_start_y;
+    player_ptr->char2.speed = player_ptr->config.move_speed;
+    player_ptr->char2.character_id = 2;
+    player_ptr->char2.texture = nullptr;  // Assigned during rendering
 
-    // Player properties FROM CONFIG
-    player_ptr->current_character = 1;
-    player_ptr->speed = player_ptr->config.move_speed;
+    // Default to controlling Character 1
+    player_ptr->current_player = &player_ptr->char1;
 
-    // Load textures FROM CONFIG PATHS
-    //player_ptr->char1_texture = AEGfxTextureLoad(player_ptr->config.char1_texture_path);
-    //player_ptr->char2_texture = AEGfxTextureLoad(player_ptr->config.char2_texture_path);
-
-    // Initialize scale matrices FROM CONFIG
+    // Precompute scale and rotation matrices
     AEMtx33Scale(&player_ptr->character_scale, player_ptr->config.character_size, player_ptr->config.character_size);
     AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->config.triangle_size, player_ptr->config.triangle_size);
     AEMtx33Rot(&player_ptr->rotate, 0);
 
-    // Initialize transform matrices
+    // Initialize all transforms
     player_system_update_transforms(player_ptr);
 }
 
-void player_system_handle_input(player* player_ptr) {
+/**************************************************************************/
+/*!
+  Handles player input for character switching and movement, including
+  collision detection and sliding.
+*/
+/**************************************************************************/
+void player_system_handle_input(Player* player_ptr) {
     if (!player_ptr) return;
 
-    // Character swapping
+    // --- Character switching ---
+    // Update which character is currently controlled
     if (AEInputCheckTriggered(AEVK_1)) {
-        player_ptr->current_character = 1;
+        player_ptr->current_player = &player_ptr->char1;
     }
     if (AEInputCheckTriggered(AEVK_2)) {
-        player_ptr->current_character = 2;
+        player_ptr->current_player = &player_ptr->char2;
     }
 
-    // Movement - only affect active character
-    f32* move_x = NULL;
-    f32* move_y = NULL;
+    // Target position before collision checks
+    float nextX = player_ptr->current_player->x;
+    float nextY = player_ptr->current_player->y;
 
-    if (player_ptr->current_character == 1) {
-        move_x = &player_ptr->char1_x;
-        move_y = &player_ptr->char1_y;
+    // Movement input (arrow keys + WASD)
+    if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
+        nextY += player_ptr->current_player->speed;
+    if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
+        nextY -= player_ptr->current_player->speed;
+    if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))
+        nextX -= player_ptr->current_player->speed;
+    if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D))
+        nextX += player_ptr->current_player->speed;
+
+    // Half-size used for AABB collision detection
+    float halfSize = player_ptr->config.character_size / 2.0f;
+
+    // --- Horizontal movement with collision sliding ---
+    if (!check_player_collision(nextX, player_ptr->current_player->y, halfSize)) {
+        player_ptr->current_player->x = nextX;
     }
     else {
-        move_x = &player_ptr->char2_x;
-        move_y = &player_ptr->char2_y;
-    }   
-   
-    if (move_x && move_y) {
-        float nextX = *move_x;
-        float nextY = *move_y;
-
-        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
-            nextY += player_ptr->speed;
-        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
-            nextY -= player_ptr->speed;
-        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))
-            nextX -= player_ptr->speed;
-        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D))
-            nextX += player_ptr->speed;
-
-        // Half-size for AABB collision
-        float halfSize = player_ptr->config.character_size / 2.0f;
-
-        // Update the check to use separate Width and Height half-sizes
-       //  Horizontal Movement
-        if (!check_player_collision(nextX, *move_y, halfSize)) {
-            // If the path is totally clear, just move there.
-            *move_x = nextX;
-        }
-        else {
-            // Path is blocked! Move 1 pixel at a time until player is touching the wall.
-            // if nextX is greater than current pos, +1 if lesser -1
-            float direction = (nextX > *move_x) ? 1.0f : -1.0f;
-
-            // While the NEXT pixel is clear, keep moving
-            while (!check_player_collision(*move_x + direction, *move_y, halfSize)) {
-                *move_x += direction;
-            }
-        }
-
-        // Vertical movement
-        if (!check_player_collision(*move_x, nextY, halfSize)) {
-            // Path is clear
-            *move_y = nextY;
-        }
-        else {
-            // Path is blocked! Move 1 pixel at a time
-            float direction = (nextY > *move_y) ? 1.0f : -1.0f;
-
-            while (!check_player_collision(*move_x, *move_y + direction, halfSize)) {
-                *move_y += direction;
-            }
+        // Move one unit at a time until just before collision
+        float direction = (nextX > player_ptr->current_player->x) ? 1.0f : -1.0f;
+        while (!check_player_collision(player_ptr->current_player->x + direction,
+            player_ptr->current_player->y, halfSize)) {
+            player_ptr->current_player->x += direction;
         }
     }
 
-
-
+    // --- Vertical movement with collision sliding ---
+    if (!check_player_collision(player_ptr->current_player->x, nextY, halfSize)) {
+        player_ptr->current_player->y = nextY;
+    }
+    else {
+        float direction = (nextY > player_ptr->current_player->y) ? 1.0f : -1.0f;
+        while (!check_player_collision(player_ptr->current_player->x,
+            player_ptr->current_player->y + direction, halfSize)) {
+            player_ptr->current_player->y += direction;
+        }
+    }
 }
 
-void player_system_render(player* player_ptr) {
+/**************************************************************************/
+/*!
+  Renders both characters and the indicator for the active player.
+*/
+/**************************************************************************/
+void player_system_render(Player* player_ptr) {
     if (!player_ptr) return;
 
-    //// Setup for textured rendering (characters)
-    //AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-    //AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-    //AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
-    //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    //AEGfxSetTransparency(1.0f);
-
-    // Draw character 1
-    render_sprite(rect_mesh_center, player_ptr->char1_x, player_ptr->char1_y,
+    // Draw Character 1
+    render_sprite(rect_mesh_center, player_ptr->char1.x, player_ptr->char1.y,
         player_ptr->config.character_size, player_ptr->config.character_size, TileTextures[4]);
-    
-    // Draw character 2 
-    render_sprite(rect_mesh_center, player_ptr->char2_x, player_ptr->char2_y,
+
+    // Draw Character 2
+    render_sprite(rect_mesh_center, player_ptr->char2.x, player_ptr->char2.y,
         player_ptr->config.character_size, player_ptr->config.character_size, TileTextures[3]);
 
-    // Calculate triangle position above active character
-    f32 tri_x, tri_y;
-    if (player_ptr->current_character == 1) {
-        tri_x = player_ptr->char1_x;
-        tri_y = player_ptr->char1_y + player_ptr->config.triangle_offset;
-    }
-    else {
-        tri_x = player_ptr->char2_x;
-        tri_y = player_ptr->char2_y + player_ptr->config.triangle_offset;
-    }
+    // Position the indicator triangle above the active player
+    f32 tri_x = player_ptr->current_player->x;
+    f32 tri_y = player_ptr->current_player->y + player_ptr->config.triangle_offset;
 
-    // Setup for colored rendering (triangle indicator)
+    // Set render state for colored shape drawing
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
 
-    // Draw green triangle pointing DOWN above active character
+    // Green triangle marks the currently controlled character
     AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -199,37 +193,37 @@ void player_system_render(player* player_ptr) {
         player_ptr->config.triangle_size);
 }
 
-void player_system_update(player* player_ptr) {
+/**************************************************************************/
+/*!
+  Updates the player system each frame.
+*/
+/**************************************************************************/
+void player_system_update(Player* player_ptr) {
     if (!player_ptr) return;
 
     player_system_handle_input(player_ptr);
     player_system_update_transforms(player_ptr);
-
-    // Update current position for reference
-    if (player_ptr->current_character == 1) {
-        player_ptr->x = player_ptr->char1_x;
-        player_ptr->y = player_ptr->char1_y;
-    }
-    else {
-        player_ptr->x = player_ptr->char2_x;
-        player_ptr->y = player_ptr->char2_y;
-    }
 }
 
-void player_system_free(player* player_ptr) {
+/**************************************************************************/
+/*!
+  Frees resources used by the player system.
+*/
+/**************************************************************************/
+void player_system_free(Player* player_ptr) {
     if (!player_ptr) return;
 
-    // REMOVED mesh freeing (meshes are global in render.cpp)
-    // ONLY free textures
-
-    // Unload textures
-    if (player_ptr->char1_texture) {
-        AEGfxTextureUnload(player_ptr->char1_texture);
-        player_ptr->char1_texture = NULL;
+    // Unload character textures if they were loaded individually
+    if (player_ptr->char1.texture) {
+        AEGfxTextureUnload(player_ptr->char1.texture);
+        player_ptr->char1.texture = nullptr;
     }
 
-    if (player_ptr->char2_texture) {
-        AEGfxTextureUnload(player_ptr->char2_texture);
-        player_ptr->char2_texture = NULL;
+    if (player_ptr->char2.texture) {
+        AEGfxTextureUnload(player_ptr->char2.texture);
+        player_ptr->char2.texture = nullptr;
     }
+
+    // Clear active player reference
+    player_ptr->current_player = nullptr;
 }

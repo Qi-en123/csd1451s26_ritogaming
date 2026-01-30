@@ -4,6 +4,8 @@
 \par DP email:				g.qien@digipen.edu
 \brief:						This file implements Level 1 functions to load the assests from a file, initialize the level,
 update game logic, render, free resources,
+
+UPDATED: Now works with refactored player structure using current_player pointer
 **************************************************************************/
 #include "AEEngine.h"
 #include <cstdio>
@@ -54,16 +56,20 @@ void level1_initialize()
 	tile_size = 64.f;
 	player_system_init(&player_instance);
 	player_instance.config.character_size = tile_size - 4.0f;
-	cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
+
+	// UPDATED: Use current_player pointer for camera initialization
+	// Camera now follows the active character via the pointer
+	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
 
 
 	//printf("Walls created: %zu\n", g_walls.size());
 
 	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-	//f32* curr_player_x{ &player_instance.char1_x }, * curr_player_y{ &player_instance.char1_y };
-
-	//cam = init_cam(curr_player_x, curr_player_y, 60.0f, 0.0f);
+	// UPDATED: With the new structure, you can easily switch camera target:
+	// cam = init_cam(&player_instance.char1.x, &player_instance.char1.y, 60.0f, 5.0f);  // Follow char1
+	// cam = init_cam(&player_instance.char2.x, &player_instance.char2.y, 60.0f, 5.0f);  // Follow char2
+	// cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);  // Follow active
 
 	//////////////////////////////////////////////////
 
@@ -76,11 +82,11 @@ void level1_initialize()
 void level1_update()
 {
 	dt = (f32)AEFrameRateControllerGetFrameTime();
-
-	///////////////////////////
 	get_zoom(dt);
-	//Bounds anyhow set first
-	simulate_camera(&cam, &player_instance.x, &player_instance.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+
+	// UPDATED: Camera follows current_player - automatically updates when you switch characters!
+	simulate_camera(&cam, &player_instance.current_player->x, &player_instance.current_player->y,
+		-6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
 	// Update player system
 	player_system_update(&player_instance);
@@ -102,7 +108,7 @@ void level1_draw()
 void level1_free()
 {
 	// Cleanup
-
+	player_system_free(&player_instance);
 }
 
 void level1_unload()

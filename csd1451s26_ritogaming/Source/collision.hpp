@@ -35,4 +35,6 @@ bool ss_collision(
 // Check collision for a player position
 bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize);
 
+bool check_puzzle_collision(f32 newX, f32 newY);
+
 void debug_draw_all_walls();

@@ -10,6 +10,9 @@
 
 //first puzzle "elements", if element block is hit, open door
 
+#define PUZZLE_BLOCK_SPEED 50.0f
+#define PUZZLE_GRAB_RANGE 15.0f
+
 extern AEGfxTexture* element_block_textures[];
 
 enum Element {
@@ -47,7 +50,9 @@ void render_puzzle_blocks();
 //void check_puzzle_collision(player* player);
 bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_index);
 
-void move_puzzle(s32 index, Direction direction);
-void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size, bool& dragging);
+void move_puzzle(s32 index, Direction direction, Element player_elem);
+
+void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
+	bool& dragging, s32 index, Element player_elem);
 
 void unload_puzzle_textures();

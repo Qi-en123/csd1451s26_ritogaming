@@ -118,6 +118,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\player.hpp" />
     <ClInclude Include="..\Source\puzzle.hpp" />
     <ClInclude Include="..\Source\renderer.hpp" />
+    <ClInclude Include="..\Source\utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

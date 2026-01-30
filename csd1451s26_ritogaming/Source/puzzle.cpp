@@ -9,6 +9,7 @@
 #include "renderer.hpp"
 #include "collision.hpp"
 #include "map.hpp"
+#include "utils.hpp"
 #include <vector>
 
 AEGfxTexture* element_block_textures[ELEMENT_COUNT]{};
@@ -23,12 +24,11 @@ void load_puzzle_textures() {
 	}
 }
 
-
 void intialize_puzzle_blocks() {
 	puzzle_blocks.reserve(num_puzzle_blocks);
 
 	for (int i{}; i < num_puzzle_blocks; ++i) {
-		puzzle_blocks.emplace_back(WATER, tile_size*i, tile_size*i, element_block_textures[WATER]);
+		puzzle_blocks.emplace_back(WATER, tile_size * i, tile_size * i, element_block_textures[WATER]);
 	}
 }
 
@@ -41,31 +41,9 @@ void render_puzzle_blocks() {
 	}
 }
 
-//useless
-//void check_puzzle_collision(player* player) {
-//	for (int i{}; i < num_puzzle_blocks; ++i) {
-//		element_block* curr = &puzzle_blocks[i];
-//
-//		f32 hts = tile_size / 2.0f;
-//		f32 hps = player->config.character_size / 2.0f;
-//
-//		if (ss_collision(player->char1_x, player->char1_y, hps, hps,
-//			curr[i].position.x, curr[i].position.y, hts, hts)) {
-//
-//			if (fabsf(player->char1_x - curr[i].position.x) <
-//				fabsf(player->char1_y - curr[i].position.y)) {
-//				player->char1_x -= player->config.move_speed;
-//			}
-//			else {
-//				player->char1_y -= player->config.move_speed;
-//			}
-//		}
-//	}
-//}
-
 bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_index)
 {
-	for (int i{}; i<num_puzzle_blocks; ++i)
+	for (int i{}; i < num_puzzle_blocks; ++i)
 	{
 		if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
 			puzzle_blocks[i].position.x, puzzle_blocks[i].position.y, tile_size / 2.0f, tile_size / 2.0f))
@@ -79,67 +57,77 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	return false; // no collision
 }
 
-//
-//bool puzzle_collide_wall() {
-//
-//}
+void move_puzzle(s32 index, Direction direction, Element player_elem) {
+	element_block& puzzle = puzzle_blocks[index];
 
-void move_puzzle(s32 index, Direction direction) {
+	if (puzzle.element != player_elem) return;
+
+	f32 dx{}, dy{};
+
 	switch (direction)
 	{
 	case LEFT:
-		puzzle_blocks[index].position.x -= 1.0f;
+		dx = -PUZZLE_BLOCK_SPEED * dt;
 		break;
 	case RIGHT:
-		puzzle_blocks[index].position.x += 1.0f;
+		dx = PUZZLE_BLOCK_SPEED * dt;
 		break;
 	case UP:
-		puzzle_blocks[index].position.y -= 1.0f;
+		dy = -PUZZLE_BLOCK_SPEED * dt;
 		break;
 	case DOWN:
-		puzzle_blocks[index].position.y += 1.0f;
+		dy = PUZZLE_BLOCK_SPEED * dt;
 		break;
 	default:
 		break;
 	}
+
+	if (!check_puzzle_collision(puzzle.position.x + dx, puzzle.position.y + dy)) {
+		puzzle.position.x += dx;
+		puzzle.position.y += dy;
+	}
 }
 
-void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size, bool& dragging) {
-	for (int i{}; i < num_puzzle_blocks; ++i) {
-		element_block* curr = &puzzle_blocks[i];
+//based on player movement speed, should change player to use dt
+//calls when "Drag" key is pressed
+void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
+	bool& dragging, s32 index, Element player_elem) {
 
-		f32 dx = player_pos_x - curr->position.x;
-		f32 dy = player_pos_y - curr->position.y;
-		f32 dist = sqrtf(dx * dx + dy * dy);
+	element_block& puzzle = puzzle_blocks[index];
 
-		//printf("%f\n", dist);
+	f32 dx{ player_pos_x - puzzle.position.x };
+	f32 dy{ player_pos_y - puzzle.position.y };
 
-		if (dist < (player_half_size + tile_size / 2.0f) + 15.0f) {
-			//printf("is dragging");
-			dragging = true;
-			//checks if player is top/bottom or left/right using x/y overlap distance
-			if ((player_half_size + tile_size / 2.0f) - fabsf(dx) <
-				(player_half_size + tile_size / 2.0f) - fabsf(dy)) {
-				if (curr->position.x > player_pos_x) { //block on the right
-					curr->position.x = player_pos_x + player_half_size + (tile_size / 2.0f) + 3.0f;
-				}
-				if (curr->position.x < player_pos_x) {
-					curr->position.x = player_pos_x - player_half_size - (tile_size / 2.0f) - 3.0f;
-				}
-			}
-			else {
-				if (curr->position.y > player_pos_y) { //block on the top
-					curr->position.y = player_pos_y + player_half_size + (tile_size / 2.0f) + 3.0f;
-				}				   			  
-				if (curr->position.y < player_pos_y) {
-					curr->position.y = player_pos_y - player_half_size - (tile_size / 2.0f) - 3.0f;
-				}
-			}
+	const f32 min_gap{ 3.0f }; //prevent puzzle going inside wall
+	const f32 grab_range{ (player_half_size + tile_size / 2.0f) + PUZZLE_GRAB_RANGE };
 
+	if ((dx * dx + dy * dy) < (grab_range * grab_range) &&
+		puzzle.element == player_elem) {
+		//printf("is dragging");
+		dragging = true;
+		const f32 min_dist = player_half_size + (tile_size / 2.0f) + min_gap;
+		f32 newX{ puzzle.position.x }, newY{ puzzle.position.y };
+
+		//checks if player is top/bottom or left/right using x/y overlap distance
+		if ((player_half_size + tile_size / 2.0f) - fabsf(dx) <
+			(player_half_size + tile_size / 2.0f) - fabsf(dy)) {
+
+			newX = (puzzle.position.x > player_pos_x) ?
+				player_pos_x + min_dist : player_pos_x - min_dist;
 		}
-		//else {
-		//	dragging = false;
-		//}
+		else {
+			newY = (puzzle.position.y > player_pos_y) ?
+				player_pos_y + min_dist : player_pos_y - min_dist;
+		}
+
+		if (!check_puzzle_collision(newX, newY)) {
+			puzzle.position.x = newX;
+			puzzle.position.y = newY;
+		}
+
+	}
+	else {
+		dragging = false;
 	}
 }
 

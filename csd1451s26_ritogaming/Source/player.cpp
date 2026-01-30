@@ -77,6 +77,9 @@ void player_system_init(player* player_ptr, const player_config* config) {
     AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->config.triangle_size, player_ptr->config.triangle_size);
     AEMtx33Rot(&player_ptr->rotate, 0);
 
+    player_ptr->char1_element = WATER;
+    player_ptr->char2_element = FIRE;
+
     // Initialize transform matrices
     player_system_update_transforms(player_ptr);
 }
@@ -104,13 +107,19 @@ void player_system_handle_input(player* player_ptr) {
         move_x = &player_ptr->char2_x;
         move_y = &player_ptr->char2_y;
     }   
-   
+
+    Element curr_elem = (player_ptr->current_character == 1) ?
+        player_ptr->char1_element : player_ptr->char2_element;
+
     if (move_x && move_y) {
         float nextX = *move_x;
         float nextY = *move_y;
 
+        //to check if player is dragging a block
         static bool is_dragging;
 
+        //if dragging, change speed to 1.0f 
+        //(currently frame based, once change to time based, replace 1.0f to PUZZLE_BLOCK_SPEED)
         if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
             nextY += is_dragging ? 1.0f : player_ptr->speed;
         if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
@@ -122,6 +131,7 @@ void player_system_handle_input(player* player_ptr) {
 
         // Half-size for AABB collision
         float halfSize = player_ptr->config.character_size / 2.0f;
+        //store index of current puzzle being interacted with
         static s32 puzzle_index;
 
         // Update the check to use separate Width and Height half-sizes
@@ -137,12 +147,14 @@ void player_system_handle_input(player* player_ptr) {
             float direction = (nextX > *move_x) ? 1.0f : -1.0f;
 
             // While the NEXT pixel is clear, keep moving
+            //player collision against walls
             if (!check_player_collision(*move_x + direction, *move_y, halfSize) &&
                 !player_collide_puzzles(*move_x + direction, *move_y, halfSize, puzzle_index)) {
                 *move_x += direction;                
             }
+            //player collision against puzzles
             if (player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index)) {
-                move_puzzle(puzzle_index, (direction > 0.0f) ? RIGHT : LEFT);
+                move_puzzle(puzzle_index, (direction > 0.0f) ? RIGHT : LEFT, curr_elem);
             }
         }
 
@@ -161,13 +173,13 @@ void player_system_handle_input(player* player_ptr) {
                 *move_y += direction;
             }
             if (player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index)) {
-                move_puzzle(puzzle_index, (direction > 0.0f) ? DOWN : UP);
+                move_puzzle(puzzle_index, (direction > 0.0f) ? DOWN : UP, curr_elem);
             }
         }
 
         //DRAGGING OBJECT TEST
         if (AEInputCheckCurr(AEVK_SPACE)) {
-            drag_puzzle(*move_x, *move_y, player_ptr->config.character_size / 2.0f, is_dragging);
+            drag_puzzle(*move_x, *move_y, player_ptr->config.character_size / 2.0f, is_dragging, puzzle_index, curr_elem);
         }
         else {
             is_dragging = false;

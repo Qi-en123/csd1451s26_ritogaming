@@ -11,6 +11,7 @@
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "map.hpp"
+#include "puzzle.hpp"
 
 typedef struct player_config {
     // Size settings
@@ -56,6 +57,8 @@ typedef struct Player {
     AEMtx33 character_scale{};
     AEMtx33 triangle_scale{};
     AEMtx33 rotate{};
+
+    enum Element char1_element, char2_element;
 } player;
 
 /**************************************************************************

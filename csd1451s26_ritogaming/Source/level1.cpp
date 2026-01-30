@@ -14,6 +14,7 @@ update game logic, render, free resources,
 #include "collision.hpp"
 #include "game_state_manager.hpp"
 #include "puzzle.hpp"
+#include "utils.hpp"
 
 #define NUM_TILE_TYPES 7
 #define TILE_ROWS 36
@@ -25,7 +26,7 @@ f32 tile_size;
 f32 zoom;
 AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 //AEGfxVertexList* TileMesh = nullptr;
-static f32 dt;
+f32 dt;
 
 void level1_load()
 {
@@ -96,7 +97,6 @@ void level1_update()
 
 void level1_draw()
 {
-
 	draw_map(tile_size);
 	// Debug: draw all walls as semi-transparent red
 	//debug_draw_all_walls();

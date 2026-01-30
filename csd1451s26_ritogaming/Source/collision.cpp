@@ -117,6 +117,22 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
     return false; // no collision
 }
 
+bool check_puzzle_collision(f32 newX, f32 newY) {
+    for (Wall& wall : g_walls)
+    {
+        if (ss_collision(newX, newY, tile_size/2.0f, tile_size/2.0f,
+            wall.x, wall.y, wall.halfW, wall.halfH))
+        {
+            // Debug: print tile coordinates
+            //printf("Colliding with wall at (%.2f, %.2f)\n", wall.x, wall.y);
+
+            return true; // collision detected
+        }
+    }
+    return false; // no collision
+}
+
+
 /*!************************************************************************
 \brief Debug draw for all walls
 Shows all wall positions as red rectangles

@@ -12,32 +12,71 @@
 #include "utils.hpp"
 #include <vector>
 
-AEGfxTexture* element_block_textures[ELEMENT_COUNT]{};
+AEGfxTexture* puzzle_block_textures[PUZZLE_TYPE_COUNT]{};
 
-int num_puzzle_blocks{ 2 };
-std::vector<element_block> puzzle_blocks;
+int num_puzzle_blocks{ 3 }; //make sure ints below add up to this no.
+std::vector<int> button_indexes{}, pushable_indexes{};
+
+std::vector<puzzle> puzzle_blocks;
 
 void load_puzzle_textures() {
-	for (int i{}; i < ELEMENT_COUNT; ++i) {
-		//rn is all this tex, will change
-		element_block_textures[i] = AEGfxTextureLoad("Assets/Tiles/tile_0006.png");
+	char filename[128];
+	for (int i{}; i < PUZZLE_TYPE_COUNT; ++i) {
+		//I named by puzzle texture tiles to start with 1, so tile_100x
+		sprintf_s(filename, "Assets/Tiles/tile_1%03d.png", i);
+		puzzle_block_textures[i] = AEGfxTextureLoad(filename);
+		if (!puzzle_block_textures[i])
+			printf("Failed to load: %s\n", filename);
 	}
 }
 
+//in the future, this will read from text file to determine puzzle block inits
+//for nao, hard code just to test features
 void intialize_puzzle_blocks() {
 	puzzle_blocks.reserve(num_puzzle_blocks);
 
-	for (int i{}; i < num_puzzle_blocks; ++i) {
-		puzzle_blocks.emplace_back(WATER, tile_size * i, tile_size * i, element_block_textures[WATER]);
-	}
+	//Simulating for loop vv
+	puzzle tmp{ BUTTON_UP,{tile_size, tile_size}, false };
+	puzzle_blocks.push_back(tmp);
+	//this is supposed to be called if(type==button_up || type==button_down)
+	button_indexes.push_back(0); //this will be changed to 'i'
+
+	tmp = { BUTTON_DOWN, {-tile_size + 10.0f, -tile_size + 10.0f}, false };
+	puzzle_blocks.push_back(tmp);
+	button_indexes.push_back(1);
+
+	tmp = { PUSHABLE, {-tile_size * 3.0f, -tile_size + 10.0f}, false };
+	puzzle_blocks.push_back(tmp);
+	pushable_indexes.push_back(2);
+
 }
 
 void render_puzzle_blocks() {
 	for (int i{}; i < num_puzzle_blocks; ++i) {
-		element_block* curr = &puzzle_blocks[i];
+		puzzle& curr = puzzle_blocks[i];
 
-		render_sprite(rect_mesh_center, curr->position.x,
-			curr->position.y, tile_size, tile_size, curr->texture);
+		color clr{ white };
+		if (curr.is_elemental) {
+			switch (curr.element)
+			{
+			case WATER:
+				clr = { 0.5f,0.5f,1.0f,1.0f };
+				break;
+			case EARTH:
+				clr = { 0.5f,0.5f,0.5f,1.0f };
+				break;
+			case FIRE:
+				clr = { 1.0f,0.5f,0.5f,1.0f };
+				break;
+			case AIR:
+				clr = { 2.0f,2.0f,2.0f,1.0f };
+				break;
+			default:
+				break;
+			}
+		}
+		render_sprite(rect_mesh_center, curr.position.x,
+			curr.position.y, tile_size, tile_size, puzzle_block_textures[curr.type], clr);
 	}
 }
 
@@ -45,9 +84,14 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 {
 	for (int i{}; i < num_puzzle_blocks; ++i)
 	{
+		puzzle& curr = puzzle_blocks[i];
 		if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
-			puzzle_blocks[i].position.x, puzzle_blocks[i].position.y, tile_size / 2.0f, tile_size / 2.0f))
+			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
 		{
+			if (curr.type == BUTTON_UP || curr.type == BUTTON_DOWN) {
+				return false;
+			}
+
 			// Debug: print tile coordinates
 			//printf("Colliding with puzzle at (%.2f, %.2f)\n", e_block.position.x, e_block.position.y);
 			puzzle_index = i;
@@ -57,10 +101,44 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	return false; // no collision
 }
 
-void move_puzzle(s32 index, Direction direction, Element player_elem) {
-	element_block& puzzle = puzzle_blocks[index];
+void check_button_collision(f32 pos_x, f32 pos_y, f32 playerHalfSize) {
+	for (int i{}; i < button_indexes.size(); ++i) {
+		puzzle& curr = puzzle_blocks[button_indexes[i]];
 
-	if (puzzle.element != player_elem) return;
+		//Player collision
+		if (ss_collision(pos_x, pos_y, playerHalfSize, playerHalfSize,
+			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
+		{
+			curr.type = BUTTON_DOWN;
+			return;
+		}
+		else {
+			curr.type = BUTTON_UP;
+		}
+
+
+		//Puzzle collision
+		for (int j{}; j < pushable_indexes.size(); ++j) {
+			puzzle& pushable = puzzle_blocks[pushable_indexes[j]];
+
+			if (ss_collision(pushable.position.x, pushable.position.y, tile_size / 2.0f, tile_size / 2.0f,
+				curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
+			{
+				curr.type = BUTTON_DOWN;
+				return;
+			}
+			else {
+				curr.type = BUTTON_UP;
+			}
+		}
+	}
+}
+
+void move_puzzle(s32 index, Direction direction, Element player_elem) {
+	puzzle& puzzle = puzzle_blocks[index];
+
+	if (puzzle.type != PUSHABLE) return;
+	if (puzzle.is_elemental && puzzle.element != player_elem) return;
 
 	f32 dx{}, dy{};
 
@@ -93,7 +171,10 @@ void move_puzzle(s32 index, Direction direction, Element player_elem) {
 void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	bool& dragging, s32 index, Element player_elem) {
 
-	element_block& puzzle = puzzle_blocks[index];
+	puzzle& puzzle = puzzle_blocks[index];
+
+	if (puzzle.type != PUSHABLE) return;
+	if (puzzle.is_elemental && puzzle.element != player_elem) return;
 
 	f32 dx{ player_pos_x - puzzle.position.x };
 	f32 dy{ player_pos_y - puzzle.position.y };
@@ -132,7 +213,7 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 }
 
 void unload_puzzle_textures() {
-	for (int i{}; i < ELEMENT_COUNT; ++i) {
-		AEGfxTextureUnload(element_block_textures[i]);
+	for (int i{}; i < PUZZLE_TYPE_COUNT; ++i) {
+		AEGfxTextureUnload(puzzle_block_textures[i]);
 	}
 }

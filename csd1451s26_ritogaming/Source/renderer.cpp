@@ -35,6 +35,10 @@ void AEGfxSetColorToAdd(const color& c)
 {
 	AEGfxSetColorToAdd(c.r, c.g, c.b, c.a);
 }
+void AEGfxSetColorToMultiply(const color& c)
+{
+	AEGfxSetColorToMultiply(c.r, c.g, c.b, 1.0f);
+}
 
 AEGfxVertexList* create_square_mesh() {
 	AEGfxMeshStart();
@@ -225,7 +229,7 @@ void render_square_sprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 }
 
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y, AEGfxTexture* texture) {
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color) {
 	//CULLING
 	if (on_screen(trans_x, trans_y)) {
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -251,6 +255,7 @@ void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 		AEMtx33Concat(&transform, &transform, &scale);
 
 		//AEMtx33Concat(&transform, &translate, &scale);
+		AEGfxSetColorToMultiply(color.r, color.g, color.b, 1.0f);
 		AEGfxTextureSet(texture, 0, 0);
 		AEGfxSetTransform(transform.m);
 		AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);

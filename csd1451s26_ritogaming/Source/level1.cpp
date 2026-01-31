@@ -89,7 +89,7 @@ void level1_update()
 
 	// Update player system
 	player_system_update(&player_instance);
-
+	check_button_collision(player_instance.x, player_instance.y, player_instance.config.character_size / 2.0f);
 	// Render player system
 	player_system_render(&player_instance);
 	//check_puzzle_collision(&player_instance);
@@ -101,8 +101,9 @@ void level1_draw()
 	// Debug: draw all walls as semi-transparent red
 	//debug_draw_all_walls();
 	// Render player system
-	player_system_render(&player_instance);
+
 	render_puzzle_blocks();
+	player_system_render(&player_instance);
 }
 
 void level1_free()

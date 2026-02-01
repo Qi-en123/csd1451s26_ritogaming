@@ -31,9 +31,11 @@ bool ss_collision(
     f32 ax, f32 ay, f32 ahw, f32 ahh,
     f32 bx, f32 by, f32 bhw, f32 bhh
 );
-
+bool cc_collision(f32 x1, f32 y1, f32 r1, f32 x2, f32 y2, f32 r2);
 // Check collision for a player position
 bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize);
 bool cr_collision(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh);
 
 void debug_draw_all_walls();
+
+bool check_projectile_collision(f32 projX, f32 projY, f32 projRadius);

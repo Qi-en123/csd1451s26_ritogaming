@@ -11,6 +11,14 @@
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "map.hpp"
+#include <vector>
+
+typedef struct Projectile {
+    f32 x, y;
+    f32 vx, vy;
+    f32 radius;
+    bool active;
+} Projectile;
 
 typedef struct player_config {
     // Size settings
@@ -56,6 +64,10 @@ typedef struct Player {
     AEMtx33 character_scale{};
     AEMtx33 triangle_scale{};
     AEMtx33 rotate{};
+
+    std::vector<Projectile> projectiles;
+
+    f32 last_dir_x, last_dir_y;
 } player;
 
 /**************************************************************************

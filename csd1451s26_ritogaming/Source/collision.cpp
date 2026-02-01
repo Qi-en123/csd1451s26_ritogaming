@@ -90,6 +90,33 @@ bool ss_collision(
         ay - ahh > by + bhh);  // A’s bottom > B’s top - no collision
 }
 
+/*!************************************************************************
+\brief Check for collision between two circular objects.
+
+\param x1  X-coordinate of the first circle's center.
+\param y1  Y-coordinate of the first circle's center.
+\param r1  Radius of the first circle.
+\param x2  X-coordinate of the second circle's center.
+\param y2  Y-coordinate of the second circle's center.
+\param r2  Radius of the second circle.
+
+\return True if the circles overlap or touch, false otherwise.
+
+This function performs a collision check by calculating the squared
+distance between the centers of two circles and comparing it to the
+squared sum of their radii. This approach avoids the computational
+expense of a square root operation.
+**************************************************************************/
+
+bool cc_collision(f32 x1, f32 y1, f32 r1, f32 x2, f32 y2, f32 r2) {
+    f32 distX = x1 - x2;
+    f32 distY = y1 - y2;
+    f32 distanceSq = (distX * distX) + (distY * distY);
+    f32 radiiSum = r1 + r2;
+
+    return distanceSq <= (radiiSum * radiiSum);
+}
+
 /**
  * @brief Checks for collision between a circular projectile and a square boss.
  * * @param cx Circle center X
@@ -175,4 +202,28 @@ void debug_draw_all_walls()
         // draw_square expects full width/height
         draw_square(wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f);
     }
+}
+
+/*!************************************************************************
+\brief Check if a circular projectile collides with any wall in the map.
+
+\param projX      X-coordinate of the projectile's center.
+\param projY      Y-coordinate of the projectile's center.
+\param projRadius The radius of the circular projectile.
+
+\return True if a collision is detected with any wall, false otherwise.
+
+This function iterates through the global vector of wall objects (g_walls).
+It uses Circle-to-Rectangle collision detection (cr_collision) by
+converting each wall's half-dimensions into full width and height to
+determine if the projectile has impacted a solid tile.
+**************************************************************************/
+bool check_projectile_collision(f32 projX, f32 projY, f32 projRadius) {
+    for (Wall& wall : g_walls) {
+        // Uses your cr_collision (Circle vs Rect) math
+        if (cr_collision(projX, projY, projRadius, wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f)) {
+            return true;
+        }
+    }
+    return false;
 }

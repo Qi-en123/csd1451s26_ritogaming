@@ -75,7 +75,18 @@ void Minimap_Draw(player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
 
-    // 3. Draw Background Box
+    // 3a. Draw Border
+    float borderThickness = 50.0f; // Total thickness in pixels
+    AEMtx33 sB, tB, finalB;
+
+    // Scale is mapSize + thickness
+    AEMtx33Scale(&sB, mapSize + borderThickness + 150, mapSize + borderThickness);
+    AEMtx33Trans(&tB, mapCenterX, mapCenterY);
+    AEMtx33Concat(&finalB, &tB, &sB);
+    AEGfxSetTransform(finalB.m);
+    AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
+
+    // 3b. Draw Background Box
     AEGfxSetColorToMultiply(0.05f, 0.05f, 0.05f, 0.9f); // Almost black
     AEMtx33 s, t, final;
     AEMtx33Scale(&s, mapSize, mapSize);

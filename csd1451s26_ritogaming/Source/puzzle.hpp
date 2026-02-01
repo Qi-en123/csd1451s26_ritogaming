@@ -20,7 +20,6 @@ enum PuzzleType {
 	PUSHABLE, //0
 	BUTTON_UP,
 	BUTTON_DOWN,
-	//ELEMENT_BOARD, //this one is hit with element to trigger (dk wat to call this)
 	PUZZLE_TYPE_COUNT
 };
 
@@ -57,7 +56,25 @@ struct puzzle {
 	bool is_elemental{};
 
 	//might put inside union
-	Element element{};
+	union {
+		Element element;
+		int button_id;
+	};
+
+	//constructor for if not elem or btn
+	puzzle(PuzzleType t, AEVec2 pos, bool is_elem) :
+		type{ t }, position{ pos }, is_elemental{ is_elem }, element{ } {
+	};
+	//constructor for if btn
+	puzzle(PuzzleType t, AEVec2 pos, bool is_elem, int btn_id) :
+		type{ t }, position{ pos }, is_elemental{ is_elem }, button_id{ btn_id } {
+	};
+	//constructor for if elemental
+	puzzle(PuzzleType t, AEVec2 pos, bool is_elem, Element elem) :
+		type{ t }, position{ pos }, is_elemental{ is_elem }, element{ elem } {
+	};
+
+	//destructors are fake no such thing
 };
 
 void load_puzzle_textures();
@@ -70,7 +87,9 @@ void render_puzzle_blocks();
 bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_index);
 
 //alot of collisions everywhere sry (dk how else to do it :p)
-void check_button_collision(f32 pos_x, f32 pos_y, f32 playerHalfSize);
+void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHalfSize);
+
+void puzzle_button_manager(); //open to rename suggestions (txt me)
 
 void move_puzzle(s32 index, Direction direction, Element player_elem);
 

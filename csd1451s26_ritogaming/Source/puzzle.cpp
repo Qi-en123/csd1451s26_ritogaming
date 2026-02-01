@@ -15,9 +15,14 @@
 AEGfxTexture* puzzle_block_textures[PUZZLE_TYPE_COUNT]{};
 
 int num_puzzle_blocks{ 3 }; //make sure ints below add up to this no.
-std::vector<int> button_indexes{}, pushable_indexes{};
+std::vector<int> button_indexes{}, pushable_indexes{}; //to store indexes of btns and pushables (more efficient? idk js trying)
 
 std::vector<puzzle> puzzle_blocks;
+
+//vec of pairs to store btn_id and whether triggered or not
+static std::vector<std::pair<int, void(*)()>> btns{};
+
+void apple() { printf("APPLE"); } //js testing
 
 void load_puzzle_textures() {
 	char filename[128];
@@ -36,19 +41,34 @@ void intialize_puzzle_blocks() {
 	puzzle_blocks.reserve(num_puzzle_blocks);
 
 	//Simulating for loop vv
-	puzzle tmp{ BUTTON_UP,{tile_size, tile_size}, false };
+	puzzle tmp{ BUTTON_UP,{tile_size, tile_size}, false, 67};
 	puzzle_blocks.push_back(tmp);
 	//this is supposed to be called if(type==button_up || type==button_down)
 	button_indexes.push_back(0); //this will be changed to 'i'
 
-	tmp = { BUTTON_DOWN, {-tile_size + 10.0f, -tile_size + 10.0f}, false };
+	tmp = { BUTTON_DOWN, {-tile_size + 10.0f, -tile_size + 10.0f}, false, 67};
 	puzzle_blocks.push_back(tmp);
 	button_indexes.push_back(1);
 
-	tmp = { PUSHABLE, {-tile_size * 3.0f, -tile_size + 10.0f}, false };
+	tmp = { PUSHABLE, {-tile_size * 3.0f, -tile_size + 10.0f}, true, WATER};
 	puzzle_blocks.push_back(tmp);
 	pushable_indexes.push_back(2);
 
+	//Saving button ids for btn manager to use
+	//for each btns
+	for (int i{}; i < button_indexes.size(); ++i) {
+		puzzle& curr = puzzle_blocks[button_indexes[i]];
+
+		//if btns_id exists, dont push_back
+		bool exists{ false };
+		for (int j{}; j < btns.size(); ++j) {
+			if (curr.button_id == btns[j].first) exists = true;
+		}
+
+		//if id is unique, add it to vec
+		//not sure how to init the different functions tho
+		if (!exists) btns.push_back(std::pair<int, void(*)()>{curr.button_id, apple});
+	}
 }
 
 void render_puzzle_blocks() {
@@ -89,7 +109,7 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
 		{
 			if (curr.type == BUTTON_UP || curr.type == BUTTON_DOWN) {
-				return false;
+				continue;
 			}
 
 			// Debug: print tile coordinates
@@ -101,16 +121,18 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	return false; // no collision
 }
 
-void check_button_collision(f32 pos_x, f32 pos_y, f32 playerHalfSize) {
+void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHalfSize) {
 	for (int i{}; i < button_indexes.size(); ++i) {
 		puzzle& curr = puzzle_blocks[button_indexes[i]];
 
 		//Player collision
-		if (ss_collision(pos_x, pos_y, playerHalfSize, playerHalfSize,
-			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
+		if (ss_collision(p1_x, p1_y, playerHalfSize, playerHalfSize,
+			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f) ||
+			ss_collision(p2_x, p2_y, playerHalfSize, playerHalfSize,
+				curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
 		{
 			curr.type = BUTTON_DOWN;
-			return;
+			continue;
 		}
 		else {
 			curr.type = BUTTON_UP;
@@ -125,11 +147,33 @@ void check_button_collision(f32 pos_x, f32 pos_y, f32 playerHalfSize) {
 				curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
 			{
 				curr.type = BUTTON_DOWN;
-				return;
+				continue;
 			}
 			else {
 				curr.type = BUTTON_UP;
 			}
+		}
+	}
+}
+
+void puzzle_button_manager() {
+	//goes through each btn id
+	for (int j{}; j < btns.size(); ++j) {
+		bool triggered{ true };
+		//goes through each btn
+		for (int i{}; i < button_indexes.size(); ++i) {
+			puzzle& curr = puzzle_blocks[button_indexes[i]];
+
+			//if triggered
+			if (curr.button_id == btns[j].first) {
+				if (curr.type != BUTTON_DOWN) triggered = false;
+			}
+		}
+
+		if (triggered) {
+			//call trigger function here
+			//e.g. open_door() assuming its like void open_door(), if not nid change my pair :(
+			btns[j].second(); //dis calls the trigger fnc
 		}
 	}
 }

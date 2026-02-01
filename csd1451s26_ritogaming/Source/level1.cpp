@@ -89,7 +89,12 @@ void level1_update()
 
 	// Update player system
 	player_system_update(&player_instance);
-	check_button_collision(player_instance.x, player_instance.y, player_instance.config.character_size / 2.0f);
+
+	check_button_collision(player_instance.char1_x, player_instance.char1_y,
+		player_instance.char2_x, player_instance.char2_y,
+		player_instance.config.character_size / 2.0f);
+	puzzle_button_manager();
+
 	// Render player system
 	player_system_render(&player_instance);
 	//check_puzzle_collision(&player_instance);

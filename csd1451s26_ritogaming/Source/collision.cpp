@@ -185,7 +185,8 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
     return false; // no collision
 }
 
-bool check_puzzle_collision(f32 newX, f32 newY) {
+//this is for puzzle against walls
+bool puzzle_to_wall_collision(f32 newX, f32 newY) {
     for (Wall& wall : g_walls)
     {
         if (ss_collision(newX, newY, tile_size/2.0f, tile_size/2.0f,

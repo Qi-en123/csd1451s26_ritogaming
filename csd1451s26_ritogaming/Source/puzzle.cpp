@@ -2,7 +2,8 @@
 \file:			puzzle.cpp
 \author:		Jerod
 \par DP email:	jerodyaowei.lim@digipen.edu
-\brief:			awd
+\brief:			All these comments are for me paiseh, how to use is in
+				puzzle.hpp (go read that one)
 **************************************************************************/
 #include "puzzle.hpp"
 #include "AEEngine.h"
@@ -14,15 +15,18 @@
 
 AEGfxTexture* puzzle_block_textures[PUZZLE_TYPE_COUNT]{};
 
-int num_puzzle_blocks{ 3 }; //make sure ints below add up to this no.
+int num_puzzle_blocks{ 4 }; //make sure ints below add up to this no.
 std::vector<int> button_indexes{}, pushable_indexes{}; //to store indexes of btns and pushables (more efficient? idk js trying)
 
 std::vector<puzzle> puzzle_blocks;
 
 //vec of pairs to store btn_id and whether triggered or not
-static std::vector<std::pair<int, void(*)()>> btns{};
+static std::vector<std::pair<int, void(*)(int,int)>> btns{}; //wanna use btn struct instead of pair, to store door row,col
 
-void apple() { printf("APPLE"); } //js testing
+void open_door(int row, int col)
+{
+	map[row][col] = OPENED_DOOR;
+} //js testing
 
 void load_puzzle_textures() {
 	char filename[128];
@@ -50,9 +54,13 @@ void intialize_puzzle_blocks() {
 	puzzle_blocks.push_back(tmp);
 	button_indexes.push_back(1);
 
-	tmp = { PUSHABLE, {-tile_size * 3.0f, -tile_size + 10.0f}, true, WATER};
+	tmp = { PUSHABLE, {-tile_size * 3.0f, -tile_size + 10.0f}, true, EARTH};
 	puzzle_blocks.push_back(tmp);
 	pushable_indexes.push_back(2);
+
+	tmp = { PUSHABLE, {-tile_size * 4.0f, -tile_size + 10.0f}, true, EARTH };
+	puzzle_blocks.push_back(tmp);
+	pushable_indexes.push_back(3);
 
 	//Saving button ids for btn manager to use
 	//for each btns
@@ -67,7 +75,7 @@ void intialize_puzzle_blocks() {
 
 		//if id is unique, add it to vec
 		//not sure how to init the different functions tho
-		if (!exists) btns.push_back(std::pair<int, void(*)()>{curr.button_id, apple});
+		if (!exists) btns.push_back(std::pair<int, void(*)(int, int)>{curr.button_id, open_door});
 	}
 }
 
@@ -124,35 +132,30 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHalfSize) {
 	for (int i{}; i < button_indexes.size(); ++i) {
 		puzzle& curr = puzzle_blocks[button_indexes[i]];
+		bool pressed{ false };
 
-		//Player collision
+		//Players collision (both p1 & p2)
 		if (ss_collision(p1_x, p1_y, playerHalfSize, playerHalfSize,
 			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f) ||
 			ss_collision(p2_x, p2_y, playerHalfSize, playerHalfSize,
 				curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
 		{
-			curr.type = BUTTON_DOWN;
-			continue;
+			pressed = true;
 		}
-		else {
-			curr.type = BUTTON_UP;
-		}
-
 
 		//Puzzle collision
 		for (int j{}; j < pushable_indexes.size(); ++j) {
 			puzzle& pushable = puzzle_blocks[pushable_indexes[j]];
-
+	
 			if (ss_collision(pushable.position.x, pushable.position.y, tile_size / 2.0f, tile_size / 2.0f,
 				curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
 			{
-				curr.type = BUTTON_DOWN;
-				continue;
-			}
-			else {
-				curr.type = BUTTON_UP;
+				pressed = true;
+				break; // as long as got 1 puzzle on it
 			}
 		}
+
+		curr.type = pressed ? BUTTON_DOWN : BUTTON_UP;
 	}
 }
 
@@ -173,9 +176,29 @@ void puzzle_button_manager() {
 		if (triggered) {
 			//call trigger function here
 			//e.g. open_door() assuming its like void open_door(), if not nid change my pair :(
-			btns[j].second(); //dis calls the trigger fnc
+			btns[j].second(10,5); //dis calls the trigger fnc
 		}
 	}
+}
+
+//make this private for nao
+bool puzzle_on_puzzle_collision(s32 index, f32 pos_x, f32 pos_y) {
+	f32 hts = tile_size / 2.0f;
+
+	for (int i{}; i < puzzle_blocks.size(); ++i) {
+		if (i == index) continue; //skips itself
+
+		puzzle& curr = puzzle_blocks[i];
+
+		//button triggers done in another function to prevent confusion
+		if (curr.type == BUTTON_DOWN || curr.type == BUTTON_UP) continue; 
+
+		if (ss_collision(curr.position.x, curr.position.y, hts, hts,
+			pos_x, pos_y, hts, hts)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void move_puzzle(s32 index, Direction direction, Element player_elem) {
@@ -204,7 +227,8 @@ void move_puzzle(s32 index, Direction direction, Element player_elem) {
 		break;
 	}
 
-	if (!check_puzzle_collision(puzzle.position.x + dx, puzzle.position.y + dy)) {
+	if (!puzzle_to_wall_collision(puzzle.position.x + dx, puzzle.position.y + dy)
+		&& !puzzle_on_puzzle_collision(index, puzzle.position.x + dx, puzzle.position.y + dy)) {
 		puzzle.position.x += dx;
 		puzzle.position.y += dy;
 	}
@@ -245,7 +269,8 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 				player_pos_y + min_dist : player_pos_y - min_dist;
 		}
 
-		if (!check_puzzle_collision(newX, newY)) {
+		if (!puzzle_to_wall_collision(newX, newY) &&
+			!puzzle_on_puzzle_collision(index, newX, newY)) {
 			puzzle.position.x = newX;
 			puzzle.position.y = newY;
 		}

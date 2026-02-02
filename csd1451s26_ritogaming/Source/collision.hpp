@@ -36,7 +36,7 @@ bool cc_collision(f32 x1, f32 y1, f32 r1, f32 x2, f32 y2, f32 r2);
 bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize);
 bool cr_collision(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh);
 
-bool check_puzzle_collision(f32 newX, f32 newY);
+bool puzzle_to_wall_collision(f32 newX, f32 newY);
 
 void debug_draw_all_walls();
 

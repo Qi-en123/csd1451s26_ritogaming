@@ -77,8 +77,17 @@ struct puzzle {
 	//destructors are fake no such thing
 };
 
+/**************************************************************************
+	\brief
+	Loads puzzle textures
+
+	Loads and stores textures into "puzzle_block_textures", based on how 
+	many types there are "PUZZLE_TYPE_COUNT". Puzzle tiles are named:
+	tile_1xxx, from tile_1000 onwards.
+**************************************************************************/
 void load_puzzle_textures();
 
+//lz comment liao after prototype then comment
 void intialize_puzzle_blocks();
 
 void render_puzzle_blocks();

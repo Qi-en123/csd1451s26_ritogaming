@@ -23,10 +23,7 @@ std::vector<puzzle> puzzle_blocks;
 //vec of pairs to store btn_id and whether triggered or not
 static std::vector<std::pair<int, void(*)(int,int)>> btns{}; //wanna use btn struct instead of pair, to store door row,col
 
-void open_door(int row, int col)
-{
-	map[row][col] = OPENED_DOOR;
-} //js testing
+void apple() { map[10][5] = OPENED_DOOR; } //js testing
 
 void load_puzzle_textures() {
 	char filename[128];

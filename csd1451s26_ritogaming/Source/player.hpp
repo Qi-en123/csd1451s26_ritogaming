@@ -72,6 +72,8 @@ typedef struct Player {
     f32 last_dir_x, last_dir_y;
 } player;
 
+extern Player player_instance;
+
 /**************************************************************************
     \brief
     Initializes the player system.

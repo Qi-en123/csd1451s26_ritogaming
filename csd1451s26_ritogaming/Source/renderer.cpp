@@ -30,6 +30,9 @@ const color dark_red = { 0.5f, 0.0f, 0.0f, 0.0f };
 const color black = { 0.0f, 0.0f, 0.0f, 0.0f };
 const color white = { 1.0f, 1.0f, 1.0f, 0.0f };
 
+camera cam{};
+f32 zoom{};
+
 //Shortcut, js pass in color struct
 void AEGfxSetColorToAdd(const color& c)
 {

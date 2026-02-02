@@ -14,7 +14,8 @@
 // Dummy map
 s32 map[TILE_ROWS][TILE_COLS];
 s32 boss_map[TILE_ROWS][TILE_COLS];
-
+f32 tile_size{};
+AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 // ------------------------------------------------------------
 // Draw the entire map perfectly centered
 // ------------------------------------------------------------

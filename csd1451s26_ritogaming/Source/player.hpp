@@ -5,18 +5,15 @@
 \brief:		    This header declares the player structure and public
                 functions for player initialization, input handling,
                 updating, rendering, and cleanup using AEEngine.
-
-                REFACTORED: Now uses individual Character structs with
-                a pointer to the current active character for easier
-                reference and cleaner code.
 **************************************************************************/
 #pragma once
 
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "map.hpp"
-#include "puzzle.hpp"
 #include <vector>
+
+enum Element;
 
 typedef struct Projectile
 {
@@ -36,21 +33,15 @@ typedef struct player_config
     f32 char1_start_x = 2100.f;
     f32 char1_start_y = -950.f;
 
-    f32 char2_start_x = 2300.f; // char1_start_x + 200.f
-    f32 char2_start_y = -950.f; // char1_start_y
+    f32 char2_start_x = char1_start_x + 200.f;
+    f32 char2_start_y = char1_start_y;
 
     // Movement settings
-    f32 move_speed = 15.f; // Player movement speed
-
-    // Texture paths
     f32 move_speed = 20.f; // Player movement speed
+
     // This is for hp
     f32 curr_health{};
     f32 max_health{};
-
-    // Texture paths (commented out - currently using tile textures)
-    // const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0004.png";
-    // const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0003.png";
 } player_config;
 
 // Individual character structure
@@ -59,10 +50,11 @@ typedef struct Character
     f32 x{}, y{}; // Position
     f32 speed{};  // Movement speed
 
-    AEGfxTexture *texture{}; // Character texture
+    AEGfxTexture* texture{}; // Character texture
     AEMtx33 transform{};     // Transform matrix
 
     s32 character_id{}; // 1 or 2 for identification
+    Element element{};  // Character's element (WATER, FIRE, etc.)
 } Character;
 
 // Player system structure
@@ -75,11 +67,12 @@ typedef struct Player
     Character char2{};
 
     // Pointer to currently active character - EASY REFERENCE!
-    Character *current_player{};
+    Character* current_player{};
+    s32 current_character{ 1 }; // 1 or 2
 
     // Shared resources
-    AEGfxVertexList *square_mesh{};
-    AEGfxVertexList *triangle_mesh{};
+    AEGfxVertexList* square_mesh{};
+    AEGfxVertexList* triangle_mesh{};
 
     // Shared transformation matrices
     AEMtx33 character_scale{};
@@ -87,15 +80,14 @@ typedef struct Player
     AEMtx33 triangle_transform{};
     AEMtx33 rotate{};
 
-    enum Element char1_element
-    {
-    },
-        char2_element{};
+    // Projectile system
     std::vector<Projectile> projectiles;
 
-    f32 last_dir_x, last_dir_y;
-} player;
+    // Last movement direction for shooting
+    f32 last_dir_x{}, last_dir_y{};
+} Player;
 
+// Global player instance
 extern Player player_instance;
 
 /**************************************************************************
@@ -109,7 +101,7 @@ extern Player player_instance;
     \param player_ptr Pointer to the player structure to initialize.
     \param config Optional configuration override (uses defaults if nullptr).
 **************************************************************************/
-void player_system_init(Player *player_ptr, const player_config *config = nullptr);
+void player_system_init(Player* player_ptr, const player_config* config = nullptr);
 
 /**************************************************************************
     \brief
@@ -121,7 +113,7 @@ void player_system_init(Player *player_ptr, const player_config *config = nullpt
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_handle_input(Player *player_ptr);
+void player_system_handle_input(Player* player_ptr);
 
 /**************************************************************************
     \brief
@@ -132,7 +124,7 @@ void player_system_handle_input(Player *player_ptr);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_update(Player *player_ptr);
+void player_system_update(Player* player_ptr);
 
 /**************************************************************************
     \brief
@@ -143,7 +135,7 @@ void player_system_update(Player *player_ptr);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_render(Player *player_ptr);
+void player_system_render(Player* player_ptr);
 
 /**************************************************************************
     \brief
@@ -154,4 +146,29 @@ void player_system_render(Player *player_ptr);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_free(Player *player_ptr);
+void player_system_free(Player* player_ptr);
+
+/**************************************************************************
+    \brief
+    Updates projectile positions and handles collisions.
+
+    \param player_ptr Pointer to the player structure.
+    \param dt Delta time for frame-independent movement.
+**************************************************************************/
+void player_update_projectiles(Player* player_ptr, f32 dt);
+
+/**************************************************************************
+    \brief
+    Handles shooting logic for character 2.
+
+    \param player_ptr Pointer to the player structure.
+**************************************************************************/
+void player_handle_shooting(Player* player_ptr);
+
+/**************************************************************************
+    \brief
+    Renders all active projectiles.
+
+    \param player_ptr Pointer to the player structure.
+**************************************************************************/
+void player_render_projectiles(Player* player_ptr);

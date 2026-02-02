@@ -33,14 +33,15 @@ enemy_manager::~enemy_manager() {
 // ============================================================================
 // GHOST SLOT INITIALIZATION
 // ============================================================================
+// ============================================================================
+// GHOST SLOT INITIALIZATION
+// ============================================================================
 void enemy_manager::initialize_ghost_slots() {
     // Based on your map layout:
     // Tile size: 64.0f
     // Map origin: X=-800, Y=450
-    // Player Room 1 (Top Left): rows 3-9, cols 3-9
+    // Player Room 2 (Bottom Left): rows 18-26, cols 2-9
     // Vertical Corridor: rows 11-17, cols 4-7
-    // Boss Room 1 (Top Right): rows 3-11, cols 36-53
-    // Horizontal Corridor to Boss Room 1: rows 5-8, cols 9-35
 
     const f32 TILE_SIZE = 64.0f;
     const f32 MAP_START_X = -1600.0f / 2.0f;  // -800
@@ -54,25 +55,24 @@ void enemy_manager::initialize_ghost_slots() {
         return p;
         };
 
-    // Spread ghosts across rooms AND corridors to limit camera view encounters
+    // NEW: Ghosts only in Bottom Left Room (Player Room 2) and Vertical Corridor
+    // Player Room 2 coordinates: rows 18-26, cols 2-9
 
-    // 2 ghosts in Player Room 1 (Top Left) - less dense
-    AEVec2 p0 = tile_to_world(5, 5);   // Center-left
-    AEVec2 p1 = tile_to_world(7, 7);   // Center-right
+    // 4 ghosts in Bottom Left Room (Player Room 2) - spread out
+    AEVec2 p0 = tile_to_world(20, 4);   // Top-left area
+    AEVec2 p1 = tile_to_world(22, 6);   // Center
+    AEVec2 p2 = tile_to_world(24, 4);   // Bottom-left
+    AEVec2 p3 = tile_to_world(24, 8);   // Bottom-right
 
-    // 2 ghosts in Vertical Corridor (connecting rooms)
-    AEVec2 p2 = tile_to_world(13, 5);  // Upper corridor
-    AEVec2 p3 = tile_to_world(15, 6);  // Lower corridor
+    // 3 ghosts in Vertical Corridor (connecting to top room)
+    AEVec2 p4 = tile_to_world(12, 5);  // Upper part of corridor
+    AEVec2 p5 = tile_to_world(14, 6);  // Middle of corridor  
+    AEVec2 p6 = tile_to_world(16, 5);  // Lower part of corridor (near Player Room 2)
 
-    // 3 ghosts in Horizontal Corridor to Boss Room 1
-    AEVec2 p4 = tile_to_world(6, 15);  // Left section
-    AEVec2 p5 = tile_to_world(7, 22);  // Middle section
-    AEVec2 p6 = tile_to_world(6, 30);  // Right section (near boss room)
-
-    // 3 ghosts in Boss Room 1 (Top Right) - spread out
-    AEVec2 p7 = tile_to_world(5, 40);  // Left side
-    AEVec2 p8 = tile_to_world(7, 45);  // Center
-    AEVec2 p9 = tile_to_world(9, 50);  // Right side
+    // 3 ghosts near entrance/start area of Player Room 2
+    AEVec2 p7 = tile_to_world(19, 5);   // Just inside top door
+    AEVec2 p8 = tile_to_world(18, 6);   // Right by the door
+    AEVec2 p9 = tile_to_world(20, 8);   // Near right wall
 
     ghost_slots[0] = { p0.x, p0.y, nullptr, 0.0f };
     ghost_slots[1] = { p1.x, p1.y, nullptr, 0.0f };
@@ -85,18 +85,11 @@ void enemy_manager::initialize_ghost_slots() {
     ghost_slots[8] = { p8.x, p8.y, nullptr, 0.0f };
     ghost_slots[9] = { p9.x, p9.y, nullptr, 0.0f };
 
-    printf("[Enemy Manager] Initialized %d ghost spawn slots across map\n", NUM_GHOST_SLOTS);
-    printf("[Enemy Manager] - Player Room 1: 2 ghosts\n");
-    printf("[Enemy Manager] - Vertical Corridor: 2 ghosts\n");
-    printf("[Enemy Manager] - Horizontal Corridor: 3 ghosts\n");
-    printf("[Enemy Manager] - Boss Room 1: 3 ghosts\n");
-
     // Spawn all ghosts initially
     for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
         spawn_ghost_at_slot(i);
     }
 }
-
 // ============================================================================
 // UPDATE AND RENDER
 // ============================================================================

@@ -20,7 +20,7 @@ void Minimap_Init(float worldW, float worldH, float mapSize);
  * @param playerX The current world X-coordinate of the player.
  * @param playerY The current world Y-coordinate of the player.
  */
-void Minimap_Draw(player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTexture* tiles[]);
+void Minimap_Draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTexture* tiles[]);
 
 void DrawSpriteOnMap(float worldX, float worldY, float spriteScale, AEGfxTexture* pTex);
 

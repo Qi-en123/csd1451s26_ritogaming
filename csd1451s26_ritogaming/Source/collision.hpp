@@ -41,3 +41,5 @@ bool check_puzzle_collision(f32 newX, f32 newY);
 void debug_draw_all_walls();
 
 bool check_projectile_collision(f32 projX, f32 projY, f32 projRadius);
+bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh);
+void check_and_open_doors();

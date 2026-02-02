@@ -7,7 +7,7 @@
 **************************************************************************/
 #pragma once
 #include "AEEngine.h"
-#define NUM_TILE_TYPES 7
+#define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
 #define TILE_COLS 64
 
@@ -20,6 +20,14 @@ extern f32 tile_size;
 void initialize_dungeon_map();
 void draw_map(f32 tile_size);
 
-
+enum TILE_ID
+{
+    EMPTY = 0,   
+    WALL, 
+    FLOOR,        
+    OPENED_DOOR = 7,
+    DOOR = 8,
+    SPECIAL_DOOR
+};
 
 

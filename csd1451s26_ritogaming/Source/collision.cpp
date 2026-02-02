@@ -16,9 +16,10 @@ This file defines functions to:
 #include <vector>
 #include "map.hpp"
 
+
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
-
+extern Player player_instance;
 /*!************************************************************************
 \brief Generate wall objects from a 2D tile map.
 
@@ -163,4 +164,84 @@ bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh)
     // 4. compare squared distance to squared radius (performance optimization)
     f32 distanceSq = (distX * distX) + (distY * distY);
     return distanceSq <= (cr * cr);
+}
+
+// Converts a world-space position (x, y) into tile map indices (row, col)
+// Returns true if the position lies within the map bounds, false otherwise
+bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol)
+{
+    // These values MUST match the map's drawing origin in draw_map()
+    // startX represents the left-most edge of the map in world coordinates
+    // startY represents the top-most edge of the map in world coordinates
+    f32 startX = -1600.f / 2.f;
+    f32 startY = 900.f / 2.f;
+
+    // Convert the world X position to a tile column index
+    // 1. Subtract startX to get distance from the left edge of the map
+    // 2. Divide by tile_size to determine how many tiles across
+    // 3. Cast to int to floor the value and obtain the tile index
+    outCol = (int)((worldX - startX) / tile_size);
+
+    // Convert the world Y position to a tile row index
+    // Note: Y is inverted because tile rows increase downward
+    // 1. Subtract worldY from startY to get distance from the top edge
+    // 2. Divide by tile_size to determine how many tiles down
+    // 3. Cast to int to floor the value and obtain the tile index
+    outRow = (int)((startY - worldY) / tile_size);
+
+    // Bounds check to ensure the calculated tile indices are valid
+    // Prevents accessing tiles outside the map array
+    if (outRow < 0 || outRow >= TILE_ROWS ||
+        outCol < 0 || outCol >= TILE_COLS)
+    {
+        return false; // World position is outside the map
+    }
+
+    // Successfully converted world position to valid tile indices
+    return true;
+}
+// Checks if the player is close to any door tile and opens it
+// A door is considered "close" if it is within a 3x3 tile area
+// around the player's current tile position
+void check_and_open_doors()
+{
+    // Variables to store the player's current tile row and column
+    int playerRow, playerCol;
+
+    // Convert the player's world position into tile map indices
+    // If the player is outside the map bounds, exit early
+    if (!world_to_tile(player_instance.x, player_instance.y, playerRow, playerCol))
+        return;
+
+    // Loop through the surrounding tiles in a 3x3 area
+    // This allows the door to open when the player is near,
+    // rather than requiring perfect alignment on the door tile
+    for (int r = playerRow - 1; r <= playerRow + 1; ++r)
+    {
+        for (int c = playerCol - 1; c <= playerCol + 1; ++c)
+        {
+            // Ensure the tile indices are within valid map bounds
+            // Prevents accessing memory outside the map array
+            if (r < 0 || r >= TILE_ROWS ||
+                c < 0 || c >= TILE_COLS)
+            {
+                continue;
+            }
+
+            // Check if the current tile is a closed door
+            if (map[r][c] == DOOR)
+            {
+                // Change the tile to an opened door
+                map[r][c] = OPENED_DOOR;
+
+                // Regenerate wall collision data since the door
+                // should no longer block player movement
+                generate_walls_from_map(map, tile_size);
+
+                // Exit after opening one door to prevent
+                // multiple doors opening at the same time
+                return;
+            }
+        }
+    }
 }

@@ -61,6 +61,7 @@ void initialize_dungeon_map()
     {
         map[2][c] = WALL;  // top wall
         map[11][c] = WALL; // bottom wall
+
     }
 
     // Left wall
@@ -74,6 +75,7 @@ void initialize_dungeon_map()
     // Bottom door (inside floor)
     for (int c = 4; c <= 7; ++c)
         map[10][c] = FLOOR;
+    map[10][5] = DOOR;
 
     // Right door
     map[6][10] = FLOOR;

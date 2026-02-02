@@ -7,7 +7,7 @@
 **************************************************************************/
 #pragma once
 #include "AEEngine.h"
-#define NUM_TILE_TYPES 7
+#define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
 #define TILE_COLS 64
 
@@ -25,9 +25,9 @@ enum TILE_ID
     EMPTY = 0,   
     WALL, 
     FLOOR,        
-    DOOR,
-    SPECIAL_DOOR,
-    OPENED_DOOR,
+    OPENED_DOOR = 7,
+    DOOR = 8,
+    SPECIAL_DOOR
 };
 
 

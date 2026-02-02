@@ -15,11 +15,11 @@ update game logic, render, free resources,
 #include "game_state_manager.hpp"
 
 
-#define NUM_TILE_TYPES 7
+#define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
 #define TILE_COLS 64
 
-static Player player_instance;
+Player player_instance;
 camera cam{};
 f32 tile_size;
 f32 zoom;
@@ -85,7 +85,7 @@ void level1_update()
 
 	// Update player system
 	player_system_update(&player_instance);
-
+	check_and_open_doors();
 	// Render player system
 	player_system_render(&player_instance);
 	circle_to_rectangle(200, 100, 50, player_instance.x, player_instance.y, 25.f, 25.f);

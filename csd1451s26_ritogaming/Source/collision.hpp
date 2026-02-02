@@ -37,3 +37,4 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize);
 
 void debug_draw_all_walls();
 bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh);
+void check_and_open_doors();

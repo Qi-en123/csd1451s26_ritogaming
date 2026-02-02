@@ -116,9 +116,9 @@ void level1_draw()
 
 	render_puzzle_blocks();
 	player_system_render(&player_instance);
-	Minimap_Draw(&player_instance, map, TileTextures);
+	//Minimap_Draw(&player_instance, map, TileTextures);
 
-	Minimap_DrawWalls(map);
+	//Minimap_DrawWalls(map);
 }
 
 void level1_free()

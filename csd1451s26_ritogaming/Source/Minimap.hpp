@@ -21,6 +21,8 @@ void Minimap_Init(float worldW, float worldH, float mapSize);
  */
 void Minimap_Draw(player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTexture* tiles[]);
 
+void DrawSpriteOnMap(float worldX, float worldY, float spriteScale, AEGfxTexture* pTex);
+
 // New function to draw the layout
 void Minimap_DrawWalls(int dungeonMap[TILE_ROWS][TILE_COLS]);
 

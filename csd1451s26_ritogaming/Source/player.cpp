@@ -69,8 +69,8 @@ void player_system_init(player* player_ptr, const player_config* config) {
     player_ptr->speed = player_ptr->config.move_speed;
 
     // Load textures FROM CONFIG PATHS
-    //player_ptr->char1_texture = AEGfxTextureLoad(player_ptr->config.char1_texture_path);
-    //player_ptr->char2_texture = AEGfxTextureLoad(player_ptr->config.char2_texture_path);
+    player_ptr->char1_texture = TileTextures[4];
+    player_ptr->char2_texture = TileTextures[3];
 
     // Initialize scale matrices FROM CONFIG
     AEMtx33Scale(&player_ptr->character_scale, player_ptr->config.character_size, player_ptr->config.character_size);
@@ -222,11 +222,11 @@ void player_system_render(player* player_ptr) {
 
     // Draw character 1
     render_sprite(rect_mesh_center, player_ptr->char1_x, player_ptr->char1_y,
-        player_ptr->config.character_size, player_ptr->config.character_size, TileTextures[4]);
+        player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char1_texture);
     
     // Draw character 2 
     render_sprite(rect_mesh_center, player_ptr->char2_x, player_ptr->char2_y,
-        player_ptr->config.character_size, player_ptr->config.character_size, TileTextures[3]);
+        player_ptr->config.character_size, player_ptr->config.character_size, player_ptr->char2_texture);
 
     // Calculate triangle position above active character
     f32 tri_x, tri_y;

@@ -126,24 +126,15 @@ void Minimap_Draw(player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
         }
     }
 
-    // Draw Character 1
+    //// Draw Character 1
     float c1X = (pPlayer->char1_x * scaleFactor) + mapCenterX;
     float c1Y = (pPlayer->char1_y * scaleFactor) + mapCenterY;
-    AEGfxTextureSet(pPlayer->char1_texture, 0, 0);
-    AEMtx33Scale(&s, 12.0f, 12.0f); // Adjust 12.0f to change sprite size on map
-    AEMtx33Trans(&t, c1X, c1Y);
-    AEMtx33Concat(&final, &t, &s);
-    AEGfxSetTransform(final.m);
-    AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
+    DrawSpriteOnMap(c1X, c1Y, 12.0f, pPlayer->char1_texture);
 
     // Draw Character 2
     float c2X = (pPlayer->char2_x * scaleFactor) + mapCenterX;
     float c2Y = (pPlayer->char2_y * scaleFactor) + mapCenterY;
-    AEGfxTextureSet(pPlayer->char2_texture, 0, 0);
-    AEMtx33Trans(&t, c2X, c2Y); // Reuse scale from above
-    AEMtx33Concat(&final, &t, &s);
-    AEGfxSetTransform(final.m);
-    AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
+    DrawSpriteOnMap(c2X, c2Y, 12.0f, pPlayer->char2_texture);
 }
 
 void DrawSpriteOnMap(float worldX, float worldY, float spriteScale, AEGfxTexture* pTex) {

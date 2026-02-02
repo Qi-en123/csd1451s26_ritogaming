@@ -117,17 +117,23 @@ void player_system_handle_input(player* player_ptr) {
 
         //to check if player is dragging a block
         static bool is_dragging;
-
-        //if dragging, change speed to 1.0f 
-        //(currently frame based, once change to time based, replace 1.0f to PUZZLE_BLOCK_SPEED)
-        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
+        
+        if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W)) {
             nextY += is_dragging ? 1.0f : player_ptr->speed;
-        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
+            player_ptr->last_dir_x = 0.0f; player_ptr->last_dir_y = 1.0f;
+        }
+        if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S)) {
             nextY -= is_dragging ? 1.0f : player_ptr->speed;
-        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))
+            player_ptr->last_dir_x = 0.0f; player_ptr->last_dir_y = -1.0f;
+        }
+        if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A)) {
             nextX -= is_dragging ? 1.0f : player_ptr->speed;
-        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D))
+            player_ptr->last_dir_x = -1.0f; player_ptr->last_dir_y = 0.0f;
+        }
+        if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D)) {
             nextX += is_dragging ? 1.0f : player_ptr->speed;
+            player_ptr->last_dir_x = 1.0f; player_ptr->last_dir_y = 0.0f;
+        }
 
         // Half-size for AABB collision
         float halfSize = player_ptr->config.character_size / 2.0f;
@@ -185,6 +191,23 @@ void player_system_handle_input(player* player_ptr) {
             is_dragging = false;
         }
     }
+    // --- SHOOTING LOGIC (CHARACTER 2 ONLY) ---
+    if (player_ptr->current_character == 2 && AEInputCheckTriggered(AEVK_F)) {
+        Projectile new_fire;
+        new_fire.active = true;
+        new_fire.radius = 8.0f;
+
+        f32 spawn_offset = 30.0f;
+        new_fire.x = player_ptr->char2_x + (player_ptr->last_dir_x * spawn_offset);
+        new_fire.y = player_ptr->char2_y + (player_ptr->last_dir_y * spawn_offset);
+
+        f32 shotSpeed = 600.0f;
+        new_fire.vx = player_ptr->last_dir_x * shotSpeed;
+        new_fire.vy = player_ptr->last_dir_y * shotSpeed;
+
+        player_ptr->projectiles.push_back(new_fire);
+    }
+
 }
 
 void player_system_render(player* player_ptr) {
@@ -221,6 +244,17 @@ void player_system_render(player* player_ptr) {
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
 
+    // 2. Draw Fireballs (Explicitly set color here!)
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetColorToMultiply(1.0f, 0.5f, 0.0f, 1.0f); // Bright Orange
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (const auto& p : player_ptr->projectiles) {
+        if (p.active) {
+            draw_circle(circle_mesh, p.x, p.y, p.radius * 2.0f, p.radius * 2.0f);
+        }
+    }
+
     // Draw green triangle pointing DOWN above active character
     AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
@@ -232,8 +266,33 @@ void player_system_render(player* player_ptr) {
 
 void player_system_update(player* player_ptr) {
     if (!player_ptr) return;
-
+    f32 dt = (f32)AEFrameRateControllerGetFrameTime();
+    ///
+    //
     player_system_handle_input(player_ptr);
+    // Get frame time for smooth movement
+    
+    for (size_t i = 0; i < player_ptr->projectiles.size(); ++i) {
+        Projectile& p = player_ptr->projectiles[i];
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        // Check if fireball hits wall
+        if (check_projectile_collision(p.x, p.y, p.radius)) {
+            p.active = false;
+            //debug
+            printf("Projectile Reset: Hit Wall at (%.2f, %.2f)\n", p.x, p.y);
+        }
+        //---------------------------------------------
+        // ADD COLLISION FOR ENEMY HERE!!!!!!!!!!!!!!
+        //---------------------------------------------
+
+        // Clean up inactive projectiles to save memory
+        if (!p.active) {
+            player_ptr->projectiles.erase(player_ptr->projectiles.begin() + i);
+            i--; // Adjust index after erase
+        }
+    }
     player_system_update_transforms(player_ptr);
 
     // Update current position for reference

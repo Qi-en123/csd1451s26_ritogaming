@@ -12,6 +12,14 @@
 #include "renderer.hpp"
 #include "map.hpp"
 #include "puzzle.hpp"
+#include <vector>
+
+typedef struct Projectile {
+    f32 x, y;
+    f32 vx, vy;
+    f32 radius;
+    bool active;
+} Projectile;
 
 typedef struct player_config {
     // Size settings
@@ -59,6 +67,9 @@ typedef struct Player {
     AEMtx33 rotate{};
 
     enum Element char1_element{}, char2_element{};
+    std::vector<Projectile> projectiles;
+
+    f32 last_dir_x, last_dir_y;
 } player;
 
 /**************************************************************************

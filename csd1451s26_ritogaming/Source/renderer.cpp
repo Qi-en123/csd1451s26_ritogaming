@@ -158,12 +158,18 @@ void draw_circle(AEGfxVertexList* circle_mesh, f32 trans_x, f32 trans_y,
 	AEMtx33 cam_zoom;
 	AEMtx33Scale(&cam_zoom, zoom, zoom);
 
+	AEMtx33 cam_translate;
+	AEMtx33Trans(&translate, trans_x, trans_y);
+	AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
+
 	AEMtx33Concat(&transform, &transform, &cam_zoom);
+	AEMtx33Concat(&transform, &transform, &cam_translate);
 	AEMtx33Concat(&transform, &transform, &translate);
 	AEMtx33Concat(&transform, &transform, &scale);
 
 	AEGfxSetTransform(transform.m);
 	AEGfxMeshDraw(circle_mesh, AE_GFX_MDM_TRIANGLES);
+
 }
 
 void draw_rect(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,

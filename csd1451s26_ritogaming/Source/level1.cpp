@@ -15,6 +15,7 @@ update game logic, render, free resources,
 #include "game_state_manager.hpp"
 #include "puzzle.hpp"
 #include "utils.hpp"
+#include "Minimap.hpp"
 
 #define NUM_TILE_TYPES 7
 #define TILE_ROWS 36
@@ -24,6 +25,9 @@ static Player player_instance;
 camera cam{};
 f32 tile_size;
 f32 zoom;
+f32 zoomlevel;
+f32 totalWorldW;
+f32 totalWorldH;
 AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 //AEGfxVertexList* TileMesh = nullptr;
 f32 dt;
@@ -60,7 +64,10 @@ void level1_initialize()
 	cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
 	init_mesh();
 
-
+	zoomlevel = 2.0f;
+	totalWorldW = ((f32)TILE_COLS * tile_size) / zoomlevel;
+	totalWorldH = ((f32)TILE_ROWS * tile_size) / zoomlevel;
+	Minimap_Init(totalWorldW, totalWorldH, 200.0f); // 200px wide map
 	//printf("Walls created: %zu\n", g_walls.size());
 
 	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
@@ -109,6 +116,9 @@ void level1_draw()
 
 	render_puzzle_blocks();
 	player_system_render(&player_instance);
+	Minimap_Draw(&player_instance, map, TileTextures);
+
+	Minimap_DrawWalls(map);
 }
 
 void level1_free()

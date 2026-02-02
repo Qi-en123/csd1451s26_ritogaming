@@ -147,7 +147,6 @@ void initialize_dungeon_map()
         map[4][c] = 1;  // top wall
         map[9][c] = 1;  // bottom wall (moved down)
     }
-
     // ============================================================
     // BOSS ROOM 2 (Bottom Right)
     // ============================================================

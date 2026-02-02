@@ -22,6 +22,7 @@
 #include <crtdbg.h>
 #include "camera.hpp"
 #include "renderer.hpp"
+#include "enemy_manager.hpp"
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;

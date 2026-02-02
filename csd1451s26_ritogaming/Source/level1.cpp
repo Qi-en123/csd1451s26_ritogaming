@@ -13,6 +13,7 @@ UPDATED: Now works with refactored player structure using current_player pointer
 #include "renderer.hpp"
 #include "camera.hpp"
 #include "player.hpp"
+#include "enemy_manager.hpp"
 #include "collision.hpp"
 #include "game_state_manager.hpp"
 
@@ -77,6 +78,9 @@ void level1_initialize()
 	generate_walls_from_map(map, 64.0f); // step 2: make walls from map
 
 	//ShiftMapRight(2);
+
+	// Clear any existing enemies
+	g_enemy_manager.clear_all();
 }
 
 void level1_update()
@@ -88,11 +92,10 @@ void level1_update()
 	simulate_camera(&cam, &player_instance.current_player->x, &player_instance.current_player->y,
 		-6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
-	// Update player system
 	player_system_update(&player_instance);
-
-	// Render player system
 	player_system_render(&player_instance);
+
+	g_enemy_manager.update(dt, &player_instance, &cam);
 }
 
 void level1_draw()
@@ -103,12 +106,14 @@ void level1_draw()
 	//debug_draw_all_walls();
 	// Render player system
 	player_system_render(&player_instance);
+	g_enemy_manager.render();
 }
 
 void level1_free()
 {
 	// Cleanup
 	player_system_free(&player_instance);
+	g_enemy_manager.clear_all();
 }
 
 void level1_unload()

@@ -11,6 +11,7 @@
 #pragma once
 #include "AEEngine.h"
 #include "player.hpp"
+#include "enemy.hpp"
 
 typedef struct color {
 	f32 r, g, b, a;

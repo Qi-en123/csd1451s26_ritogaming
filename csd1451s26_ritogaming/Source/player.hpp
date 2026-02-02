@@ -30,6 +30,9 @@ typedef struct player_config {
 
     // Movement settings
     f32 move_speed = 20.f;           // Player movement speed
+    // This is for hp
+    f32 curr_health{};
+    f32 max_health{};
 
     // Texture paths (commented out - currently using tile textures)
     //const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0004.png";

@@ -15,6 +15,8 @@ This file defines functions to:
 #include "collision.hpp"
 #include <vector>
 #include "map.hpp"
+#include "game_State_manager.hpp"
+#include "game_state_list.hpp"
 
 
 // Global vector storing all wall objects generated from the map
@@ -277,78 +279,39 @@ bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh)
 // Returns true if the position lies within the map bounds, false otherwise
 bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol)
 {
-    // These values MUST match the map's drawing origin in draw_map()
-    // startX represents the left-most edge of the map in world coordinates
-    // startY represents the top-most edge of the map in world coordinates
-    f32 startX = -1600.f / 2.f;
-    f32 startY = 900.f / 2.f;
+    // Map's top-left origin in world coordinates (must match draw_map())
+    f32 startX = -1600.f / 2.f; // left edge
+    f32 startY = 900.f / 2.f;   // top edge
 
-    // Convert the world X position to a tile column index
-    // 1. Subtract startX to get distance from the left edge of the map
-    // 2. Divide by tile_size to determine how many tiles across
-    // 3. Cast to int to floor the value and obtain the tile index
+    // Convert world X to column index
     outCol = (int)((worldX - startX) / tile_size);
 
-    // Convert the world Y position to a tile row index
-    // Note: Y is inverted because tile rows increase downward
-    // 1. Subtract worldY from startY to get distance from the top edge
-    // 2. Divide by tile_size to determine how many tiles down
-    // 3. Cast to int to floor the value and obtain the tile index
+    // Convert world Y to row index (Y increases downward in tiles)
     outRow = (int)((startY - worldY) / tile_size);
 
-    // Bounds check to ensure the calculated tile indices are valid
-    // Prevents accessing tiles outside the map array
+    // Check bounds
     if (outRow < 0 || outRow >= TILE_ROWS ||
         outCol < 0 || outCol >= TILE_COLS)
     {
-        return false; // World position is outside the map
+        return false; // outside map
     }
 
-    // Successfully converted world position to valid tile indices
-    return true;
+    return true; // valid tile indices
 }
-// Checks if the player is close to any door tile and opens it
-// A door is considered "close" if it is within a 3x3 tile area
-// around the player's current tile position
+
+// Opens the door tile only if the player is standing exactly on it
 void check_and_open_doors()
 {
-    // Variables to store the player's current tile row and column
     int playerRow, playerCol;
 
-    // Convert the player's world position into tile map indices
-    // If the player is outside the map bounds, exit early
+    // Convert player's world position to tile indices
     if (!world_to_tile(player_instance.x, player_instance.y, playerRow, playerCol))
-        return;
+        return; // player outside map
 
-    // Loop through the surrounding tiles in a 3x3 area
-    // This allows the door to open when the player is near,
-    // rather than requiring perfect alignment on the door tile
-    for (int r = playerRow - 1; r <= playerRow + 1; ++r)
+    // Check if the player is exactly on a door tile
+    if (map[playerRow][playerCol] == OPENED_DOOR)
     {
-        for (int c = playerCol - 1; c <= playerCol + 1; ++c)
-        {
-            // Ensure the tile indices are within valid map bounds
-            // Prevents accessing memory outside the map array
-            if (r < 0 || r >= TILE_ROWS ||
-                c < 0 || c >= TILE_COLS)
-            {
-                continue;
-            }
+        next = GS_BOSS_ROOM;
 
-            // Check if the current tile is a closed door
-            if (map[r][c] == DOOR)
-            {
-                // Change the tile to an opened door
-                map[r][c] = OPENED_DOOR;
-
-                // Regenerate wall collision data since the door
-                // should no longer block player movement
-                generate_walls_from_map(map, tile_size);
-
-                // Exit after opening one door to prevent
-                // multiple doors opening at the same time
-                return;
-            }
-        }
     }
 }

@@ -14,10 +14,12 @@
 extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 extern AEGfxVertexList* TileMesh;
 extern s32 map[TILE_ROWS][TILE_COLS];
-
+extern s32 boss_map[TILE_ROWS][TILE_COLS];
 extern f32 tile_size;
-
+void initialize_boss_map();
 void initialize_dungeon_map();
+
+void draw_boss_map(f32 tile_size);
 void draw_map(f32 tile_size);
 
 enum TILE_ID

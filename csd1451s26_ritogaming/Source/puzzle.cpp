@@ -22,7 +22,7 @@ std::vector<puzzle> puzzle_blocks;
 //vec of pairs to store btn_id and whether triggered or not
 static std::vector<std::pair<int, void(*)()>> btns{};
 
-void apple() { printf("APPLE"); } //js testing
+void apple() { map[10][5] = OPENED_DOOR; } //js testing
 
 void load_puzzle_textures() {
 	char filename[128];

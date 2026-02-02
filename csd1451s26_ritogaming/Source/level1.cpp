@@ -135,6 +135,6 @@ void level1_unload()
 		if (TileTextures[i]) AEGfxTextureUnload(TileTextures[i]);
 	free_mesh();
 	unload_puzzle_textures();
-	player_system_free(&player_instance);
+	//player_system_free(&player_instance);
 	//if (TileMesh) AEGfxMeshFree(TileMesh);
 }

@@ -9,6 +9,7 @@
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "level1.hpp"
+#include "boss.hpp"
 // ----------------------------------------------------------------------------
 // Current, previous, and next game state identifiers
 // Used by the Game State Manager (GSM) to track and switch between states
@@ -51,6 +52,14 @@ void gsm_update()
 		fpDraw = level1_draw;
 		fpFree = level1_free;
 		fpUnload = level1_unload;
+		break;
+	case GS_BOSS_ROOM:
+		fpLoad = boss_load;
+		fpInitialize = boss_initialize;
+		fpUpdate = boss_update;
+		fpDraw = boss_draw;
+		fpFree = boss_free;
+		fpUnload = boss_unload;
 		break;
 	case GS_RESTART:
 		break;

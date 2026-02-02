@@ -30,10 +30,17 @@ const color dark_red = { 0.5f, 0.0f, 0.0f, 0.0f };
 const color black = { 0.0f, 0.0f, 0.0f, 0.0f };
 const color white = { 1.0f, 1.0f, 1.0f, 0.0f };
 
+camera cam{};
+f32 zoom{};
+
 //Shortcut, js pass in color struct
 void AEGfxSetColorToAdd(const color& c)
 {
 	AEGfxSetColorToAdd(c.r, c.g, c.b, c.a);
+}
+void AEGfxSetColorToMultiply(const color& c)
+{
+	AEGfxSetColorToMultiply(c.r, c.g, c.b, 1.0f);
 }
 
 AEGfxVertexList* create_square_mesh() {
@@ -140,7 +147,7 @@ bool on_screen(f32 x, f32 y) {
 		y > cam.pos.y - (AEGfxGetWindowHeight() / 2 / zoom) - tile_size);
 }
 
-void draw_circle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
+void draw_circle(AEGfxVertexList* circle_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y) {
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
@@ -154,7 +161,13 @@ void draw_circle(AEGfxVertexList* circleMesh, f32 trans_x, f32 trans_y,
 	AEMtx33 cam_zoom;
 	AEMtx33Scale(&cam_zoom, zoom, zoom);
 
+	AEMtx33 cam_translate;
+	AEMtx33Trans(&translate, trans_x, trans_y);
+	AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
+
 	AEMtx33Concat(&transform, &transform, &cam_zoom);
+	AEMtx33Concat(&transform, &transform, &cam_translate);
+
 	AEMtx33Concat(&transform, &transform, &translate);
 	AEMtx33Concat(&transform, &transform, &scale);
 
@@ -225,7 +238,7 @@ void render_square_sprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 }
 
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y, AEGfxTexture* texture) {
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color) {
 	//CULLING
 	if (on_screen(trans_x, trans_y)) {
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -251,6 +264,7 @@ void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 		AEMtx33Concat(&transform, &transform, &scale);
 
 		//AEMtx33Concat(&transform, &translate, &scale);
+		AEGfxSetColorToMultiply(color.r, color.g, color.b, 1.0f);
 		AEGfxTextureSet(texture, 0, 0);
 		AEGfxSetTransform(transform.m);
 		AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);

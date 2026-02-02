@@ -15,43 +15,59 @@
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "map.hpp"
+#include "puzzle.hpp"
+#include <vector>
 
-typedef struct player_config {
+typedef struct Projectile
+{
+    f32 x, y;
+    f32 vx, vy;
+    f32 radius;
+    bool active;
+} Projectile;
+
+typedef struct player_config
+{
     // Size settings
-    f32 character_size = 25.f;       // Default character size
-    f32 triangle_size = 20.f;        // Default triangle indicator size
-    f32 triangle_offset = 40.f;      // How far above character the triangle sits
+    f32 character_size = 25.f;  // Default character size
+    f32 triangle_size = 20.f;   // Default triangle indicator size
+    f32 triangle_offset = 40.f; // How far above character the triangle sits
 
     f32 char1_start_x = 2100.f;
     f32 char1_start_y = -950.f;
 
-    f32 char2_start_x = 2300.f;      // char1_start_x + 200.f
-    f32 char2_start_y = -950.f;      // char1_start_y
+    f32 char2_start_x = 2300.f; // char1_start_x + 200.f
+    f32 char2_start_y = -950.f; // char1_start_y
 
     // Movement settings
-    f32 move_speed = 20.f;           // Player movement speed
+    f32 move_speed = 15.f; // Player movement speed
+
+    // Texture paths
+    f32 move_speed = 20.f; // Player movement speed
     // This is for hp
     f32 curr_health{};
     f32 max_health{};
 
     // Texture paths (commented out - currently using tile textures)
-    //const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0004.png";
-    //const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0003.png";
+    // const char* char1_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0004.png";
+    // const char* char2_texture_path = "Assets/kenney_tiny-dungeon/Tiles/tile_0003.png";
 } player_config;
 
 // Individual character structure
-typedef struct Character {
-    f32 x{}, y{};                    // Position
-    f32 speed{};                     // Movement speed
+typedef struct Character
+{
+    f32 x{}, y{}; // Position
+    f32 speed{};  // Movement speed
 
-    AEGfxTexture* texture{};         // Character texture
-    AEMtx33 transform{};             // Transform matrix
+    AEGfxTexture *texture{}; // Character texture
+    AEMtx33 transform{};     // Transform matrix
 
-    s32 character_id{};              // 1 or 2 for identification
+    s32 character_id{}; // 1 or 2 for identification
 } Character;
 
 // Player system structure
-typedef struct Player {
+typedef struct Player
+{
     player_config config{};
 
     // Individual characters
@@ -59,18 +75,28 @@ typedef struct Player {
     Character char2{};
 
     // Pointer to currently active character - EASY REFERENCE!
-    Character* current_player{};
+    Character *current_player{};
 
     // Shared resources
-    AEGfxVertexList* square_mesh{};
-    AEGfxVertexList* triangle_mesh{};
+    AEGfxVertexList *square_mesh{};
+    AEGfxVertexList *triangle_mesh{};
 
     // Shared transformation matrices
     AEMtx33 character_scale{};
     AEMtx33 triangle_scale{};
     AEMtx33 triangle_transform{};
     AEMtx33 rotate{};
-} Player;
+
+    enum Element char1_element
+    {
+    },
+        char2_element{};
+    std::vector<Projectile> projectiles;
+
+    f32 last_dir_x, last_dir_y;
+} player;
+
+extern Player player_instance;
 
 /**************************************************************************
     \brief
@@ -83,7 +109,7 @@ typedef struct Player {
     \param player_ptr Pointer to the player structure to initialize.
     \param config Optional configuration override (uses defaults if nullptr).
 **************************************************************************/
-void player_system_init(Player* player_ptr, const player_config* config = nullptr);
+void player_system_init(Player *player_ptr, const player_config *config = nullptr);
 
 /**************************************************************************
     \brief
@@ -95,7 +121,7 @@ void player_system_init(Player* player_ptr, const player_config* config = nullpt
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_handle_input(Player* player_ptr);
+void player_system_handle_input(Player *player_ptr);
 
 /**************************************************************************
     \brief
@@ -106,7 +132,7 @@ void player_system_handle_input(Player* player_ptr);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_update(Player* player_ptr);
+void player_system_update(Player *player_ptr);
 
 /**************************************************************************
     \brief
@@ -117,7 +143,7 @@ void player_system_update(Player* player_ptr);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_render(Player* player_ptr);
+void player_system_render(Player *player_ptr);
 
 /**************************************************************************
     \brief
@@ -128,4 +154,4 @@ void player_system_render(Player* player_ptr);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_system_free(Player* player_ptr);
+void player_system_free(Player *player_ptr);

@@ -37,6 +37,7 @@ extern f32 zoom;
 
 //Shortcut, js pass in color struct
 void AEGfxSetColorToAdd(const color& c);
+void AEGfxSetColorToMultiply(const color& c);
 
 //Initializes rect_mesh_corner, rect_mesh_center & circle_mesh
 void init_mesh();
@@ -104,7 +105,7 @@ void render_square_sprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 //rect_mesh - Corner or Center mode (USE RECT MESH)
 //texture is loaded outside this function
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y, AEGfxTexture* texture);
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = {1.0f,1.0f,1.0f,1.0f});
 
 //pos_x - posX in normalized coords (-1.0f to 1.0f)
 //pos_y - posY in normalized coords (-1.0f to 1.0f)

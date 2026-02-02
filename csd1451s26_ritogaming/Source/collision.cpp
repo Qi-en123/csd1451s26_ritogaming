@@ -243,6 +243,8 @@ bool check_projectile_collision(f32 projX, f32 projY, f32 projRadius) {
         }
     }
     return false;
+}
+
 bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh) {
     // 1. Find the rectangle's edges
     f32 rLeft = rx - (rw / 2.0f);

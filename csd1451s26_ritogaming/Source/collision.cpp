@@ -3,7 +3,7 @@
 \author:        Ahmad Qusyairi
 \par DP email:  ahmadqusyairi.b@digipen.edu
 \brief:         Implementation of collision detection for tile-based maps.
-                Includes wall generation from a map and AABB collision 
+                Includes wall generation from a map and AABB collision
                 checks.
 
 This file defines functions to:
@@ -15,13 +15,12 @@ This file defines functions to:
 #include "collision.hpp"
 #include <vector>
 #include "map.hpp"
-#include "game_State_manager.hpp"
+#include "game_state_manager.hpp"
 #include "game_state_list.hpp"
-
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
-extern Player player_instance;
+
 /*!************************************************************************
 \brief Generate wall objects from a 2D tile map.
 
@@ -29,7 +28,7 @@ extern Player player_instance;
 \param tile_size The width and height of each square tile in world units.
 
 This function iterates through the 2D tile map and generates Wall
-objects for all tiles marked as solid (e.g., tileID == 14). The walls
+objects for all tiles marked as solid (e.g., tileID == 1). The walls
 are centered in their respective tile positions and stored in the
 global g_walls vector.
 **************************************************************************/
@@ -54,8 +53,8 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
             if (map[row][col] == 1)
             {
                 Wall w;
-                w.x = x; // Now matches the visual center used in DrawMap
-                w.y = y; // Now matches the visual center used in DrawMap
+                w.x = x;
+                w.y = y;
                 w.halfW = tile_size / 2.0f;
                 w.halfH = tile_size / 2.0f;
 
@@ -65,7 +64,6 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
     }
 }
 
-// AABB collision check
 /*!************************************************************************
 \brief Check collision between two Axis-Aligned Bounding Boxes (AABB).
 
@@ -87,10 +85,10 @@ bool ss_collision(
     f32 bx, f32 by, f32 bhw, f32 bhh
 )
 {
-    return !(ax + ahw < bx - bhw || // A�s right < B�s left - no collision
-        ax - ahw > bx + bhw || // A�s left > B�s right - no collision
-        ay + ahh < by - bhh || // A�s top < B�s bottom - no collision
-        ay - ahh > by + bhh);  // A�s bottom > B�s top - no collision
+    return !(ax + ahw < bx - bhw || // A's right < B's left - no collision
+        ax - ahw > bx + bhw || // A's left > B's right - no collision
+        ay + ahh < by - bhh || // A's top < B's bottom - no collision
+        ay - ahh > by + bhh);  // A's bottom > B's top - no collision
 }
 
 /*!************************************************************************
@@ -110,7 +108,6 @@ distance between the centers of two circles and comparing it to the
 squared sum of their radii. This approach avoids the computational
 expense of a square root operation.
 **************************************************************************/
-
 bool cc_collision(f32 x1, f32 y1, f32 r1, f32 x2, f32 y2, f32 r2) {
     f32 distX = x1 - x2;
     f32 distY = y1 - y2;
@@ -122,7 +119,7 @@ bool cc_collision(f32 x1, f32 y1, f32 r1, f32 x2, f32 y2, f32 r2) {
 
 /**
  * @brief Checks for collision between a circular projectile and a square boss.
- * * @param cx Circle center X
+ * @param cx Circle center X
  * \param cy Circle center Y
  * \param cr Circle radius
  * \param rx Rectangle center X
@@ -178,9 +175,6 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
         if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
-            // Debug: print tile coordinates
-            //printf("Colliding with wall at (%.2f, %.2f)\n", wall.x, wall.y);
-
             return true; // collision detected
         }
     }
@@ -190,12 +184,9 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
 bool check_puzzle_collision(f32 newX, f32 newY) {
     for (Wall& wall : g_walls)
     {
-        if (ss_collision(newX, newY, tile_size/2.0f, tile_size/2.0f,
+        if (ss_collision(newX, newY, tile_size / 2.0f, tile_size / 2.0f,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
-            // Debug: print tile coordinates
-            //printf("Colliding with wall at (%.2f, %.2f)\n", wall.x, wall.y);
-
             return true; // collision detected
         }
     }
@@ -206,8 +197,6 @@ bool check_puzzle_collision(f32 newX, f32 newY) {
 /*!************************************************************************
 \brief Debug draw for all walls
 Shows all wall positions as red rectangles
-// Go to main.cpp and uncomment the debug_draw_all_walls(); after
-// drawmap()
 **************************************************************************/
 void debug_draw_all_walls()
 {
@@ -239,7 +228,6 @@ determine if the projectile has impacted a solid tile.
 **************************************************************************/
 bool check_projectile_collision(f32 projX, f32 projY, f32 projRadius) {
     for (Wall& wall : g_walls) {
-        // Uses your cr_collision (Circle vs Rect) math
         if (cr_collision(projX, projY, projRadius, wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f)) {
             return true;
         }
@@ -299,19 +287,29 @@ bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol)
     return true; // valid tile indices
 }
 
-// Opens the door tile only if the player is standing exactly on it
-void check_and_open_doors()
+/*!************************************************************************
+\brief Opens the door tile if the player is standing exactly on it
+
+\param player Pointer to the player structure
+
+This function converts the player's world position to tile indices and
+checks if they're standing on an OPENED_DOOR tile. If so, it triggers
+the transition to the boss room.
+**************************************************************************/
+void check_and_open_doors(Player* player)
 {
+    if (!player || !player->current_player)
+        return;
+
     int playerRow, playerCol;
 
     // Convert player's world position to tile indices
-    if (!world_to_tile(player_instance.x, player_instance.y, playerRow, playerCol))
+    if (!world_to_tile(player->current_player->x, player->current_player->y, playerRow, playerCol))
         return; // player outside map
 
     // Check if the player is exactly on a door tile
     if (map[playerRow][playerCol] == OPENED_DOOR)
     {
         next = GS_BOSS_ROOM;
-
     }
 }

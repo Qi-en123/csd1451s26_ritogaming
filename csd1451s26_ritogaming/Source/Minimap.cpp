@@ -1,3 +1,8 @@
+/*!************************************************************************
+\file:          Minimap.cpp
+\author:        Various
+\brief:         Minimap rendering system for the dungeon
+**************************************************************************/
 #include "Minimap.hpp"
 #include "AEEngine.h"
 #include "map.hpp"
@@ -61,7 +66,7 @@ void Minimap_DrawWalls(int dungeonMap[TILE_ROWS][TILE_COLS]) {
     }
 }
 
-void Minimap_Draw(player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTexture* tiles[]) {
+void Minimap_Draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTexture* tiles[]) {
     if (!pPlayer) return;
 
     // 1. Setup screen positions
@@ -106,7 +111,6 @@ void Minimap_Draw(player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
             int tileID = dungeonMap[r][c];
 
             // Only draw if it's a valid tile and NOT an empty floor (optional)
-            // If you want floors too, just remove the 'tileID > 0' check
             if (tileID >= 0 && tileID < NUM_TILE_TYPES && tiles[tileID] != nullptr) {
 
                 // Math to match your world drawing logic
@@ -126,15 +130,15 @@ void Minimap_Draw(player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
         }
     }
 
-    //// Draw Character 1
-    float c1X = (pPlayer->char1_x * scaleFactor) + mapCenterX;
-    float c1Y = (pPlayer->char1_y * scaleFactor) + mapCenterY;
-    DrawSpriteOnMap(c1X, c1Y, 12.0f, pPlayer->char1_texture);
+    // Draw Character 1 - USING CHARACTER STRUCT NOW
+    float c1X = (pPlayer->char1.x * scaleFactor) + mapCenterX;
+    float c1Y = (pPlayer->char1.y * scaleFactor) + mapCenterY;
+    DrawSpriteOnMap(c1X, c1Y, 12.0f, pPlayer->char1.texture);
 
-    // Draw Character 2
-    float c2X = (pPlayer->char2_x * scaleFactor) + mapCenterX;
-    float c2Y = (pPlayer->char2_y * scaleFactor) + mapCenterY;
-    DrawSpriteOnMap(c2X, c2Y, 12.0f, pPlayer->char2_texture);
+    // Draw Character 2 - USING CHARACTER STRUCT NOW
+    float c2X = (pPlayer->char2.x * scaleFactor) + mapCenterX;
+    float c2Y = (pPlayer->char2.y * scaleFactor) + mapCenterY;
+    DrawSpriteOnMap(c2X, c2Y, 12.0f, pPlayer->char2.texture);
 }
 
 void DrawSpriteOnMap(float worldX, float worldY, float spriteScale, AEGfxTexture* pTex) {

@@ -1,15 +1,16 @@
 /*!************************************************************************
-\file:          map.hpp
+\file:          game_state_manager.cpp
 \author:        Qi En
 \par DP email:  g.qien@digipen.edu
-\brief:         This file implements the Game State Manager (GSM), which controls which game state is active and 
+\brief:         This file implements the Game State Manager (GSM), which controls which game state is active and
 				which functions are executed at any time during the game.
 **************************************************************************/
 
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "level1.hpp"
-#include "boss.hpp"
+#include "level2.hpp"
+
 // ----------------------------------------------------------------------------
 // Current, previous, and next game state identifiers
 // Used by the Game State Manager (GSM) to track and switch between states
@@ -35,13 +36,10 @@ fp fpUnload = nullptr;      // Function to unload assets after the game state en
 void gsm_initialize(int startingState)
 {
 	current = previous = next = startingState;
-
 }
 
 void gsm_update()
 {
-
-
 	// Assign function pointers based on the current state
 	switch (current)
 	{
@@ -53,21 +51,23 @@ void gsm_update()
 		fpFree = level1_free;
 		fpUnload = level1_unload;
 		break;
+
 	case GS_BOSS_ROOM:
-		fpLoad = boss_load;
-		fpInitialize = boss_initialize;
-		fpUpdate = boss_update;
-		fpDraw = boss_draw;
-		fpFree = boss_free;
-		fpUnload = boss_unload;
+		fpLoad = level2_load;
+		fpInitialize = level2_initialize;
+		fpUpdate = level2_update;
+		fpDraw = level2_draw;
+		fpFree = level2_free;
+		fpUnload = level2_unload;
 		break;
+
 	case GS_RESTART:
 		break;
+
 	case GS_QUIT:
 		break;
+
 	default:
-		// Unknown state: do nothing
 		break;
 	}
-
 }

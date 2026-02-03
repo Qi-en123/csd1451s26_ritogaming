@@ -318,3 +318,23 @@ void enemy_manager::clear_all() {
         ghost_slots[i].respawn_timer = 0.0f;
     }
 }
+
+// ============================================================================
+// PROJECTILE TO ENEMY
+// ============================================================================v
+bool enemy_manager::check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage) {
+    // This is the SAME loop logic you posted!
+    for (auto& enemy : enemies) {
+        if (!enemy || !enemy->is_active()) continue;
+
+        // This is the SAME collision check!
+        if (cr_collision(px, py, radius,
+            enemy->get_x(), enemy->get_y(),
+            enemy->get_size(), enemy->get_size()))
+        {
+            enemy->take_damage(damage); // SAME damage logic!
+            return true;
+        }
+    }
+    return false;
+}

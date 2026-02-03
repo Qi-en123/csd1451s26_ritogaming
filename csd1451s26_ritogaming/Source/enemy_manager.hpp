@@ -71,6 +71,8 @@ public:
     void spawn_food(f32 x, f32 y, f32 heal_percentage, const char* texture_path);
     void check_player_attacks(Player* player, f32 attack_range, f32 damage);
 
+    bool check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage);
+
     void cleanup_dead_enemies();
     void clear_all();
 

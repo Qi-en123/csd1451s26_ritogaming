@@ -23,6 +23,8 @@
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
+#define DAMAGE 1000.0f // change this for fireball damage
+
 // Global player instance definition
 Player player_instance;
 
@@ -297,6 +299,10 @@ void player_update_projectiles(Player* player_ptr, f32 dt)
         if (check_projectile_collision(p.x, p.y, p.radius))
         {
             p.active = false;
+        }
+        //
+        if (p.active && g_enemy_manager.check_projectile_hit(p.x, p.y, p.radius, DAMAGE)) {
+            p.active = false; // Destroy fireball on hit
         }
 
         // Clean up inactive projectiles

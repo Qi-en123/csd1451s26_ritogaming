@@ -51,7 +51,7 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
             // MATCHING map.cpp: Use the exact same X calculation
             f32 x = startX + col * tile_size;
 
-            if (map[row][col] == 1)
+            if (map[row][col] == WALL || map[row][col] == SPECIAL_DOOR)
             {
                 Wall w;
                 w.x = x; // Now matches the visual center used in DrawMap
@@ -175,7 +175,7 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
 {
     for (Wall& wall : g_walls)
     {
-        if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
+        if (ss_collision(newX, newY, playerHalfSize - 2.0f, playerHalfSize - 2.0f,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
             // Debug: print tile coordinates
@@ -191,7 +191,7 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
 bool puzzle_to_wall_collision(f32 newX, f32 newY) {
     for (Wall& wall : g_walls)
     {
-        if (ss_collision(newX, newY, tile_size/2.0f, tile_size/2.0f,
+        if (ss_collision(newX, newY, (tile_size / 2.0f) - 2.0f, (tile_size / 2.0f)-2.0f,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
             // Debug: print tile coordinates

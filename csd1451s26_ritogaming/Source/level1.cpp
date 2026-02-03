@@ -18,18 +18,18 @@ update game logic, render, free resources,
 #include "Minimap.hpp"
 
 
-#define NUM_TILE_TYPES 9
+#define NUM_TILE_TYPES 10
 #define TILE_ROWS 36
 #define TILE_COLS 64
 
-Player player_instance;
-camera cam{};
-f32 tile_size;
-f32 zoom;
-f32 zoomlevel;
+//Player player_instance;
+//camera cam{};
+//f32 tile_size;
+//f32 zoom;
+//f32 zoomlevel;
 f32 totalWorldW;
 f32 totalWorldH;
-AEGfxTexture* TileTextures[NUM_TILE_TYPES];
+//AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 //AEGfxVertexList* TileMesh = nullptr;
 f32 dt;
 
@@ -37,7 +37,6 @@ void level1_load()
 {
 	// Tell the Alpha Engine to set the background to black.
 	//AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-
 
 	for (int i = 0; i < NUM_TILE_TYPES; i++)
 		TileTextures[i] = nullptr;
@@ -57,17 +56,19 @@ void level1_load()
 
 void level1_initialize()
 {
-	zoom = 1.0f;
+	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+	zoom = 1.1f;
 	// Determine tile size to fit both width and height
+	
 	tile_size = 64.f;
 	player_system_init(&player_instance);
-	player_instance.config.character_size = tile_size - 4.0f;
+	player_instance.config.character_size = tile_size - 8.0f;
 	cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
 	init_mesh();
 
-	zoomlevel = 2.0f;
-	totalWorldW = ((f32)TILE_COLS * tile_size) / zoomlevel;
-	totalWorldH = ((f32)TILE_ROWS * tile_size) / zoomlevel;
+	//zoomlevel = 2.0f;
+	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
+	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	Minimap_Init(totalWorldW, totalWorldH, 200.0f); // 200px wide map
 	//printf("Walls created: %zu\n", g_walls.size());
 
@@ -106,6 +107,8 @@ void level1_update()
 	//check_puzzle_collision(&player_instance);
 	check_and_open_doors();
 	circle_to_rectangle(200, 100, 50, player_instance.x, player_instance.y, 25.f, 25.f);
+
+	printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 }
 
 void level1_draw()
@@ -113,7 +116,7 @@ void level1_draw()
 	draw_map(tile_size);
 	
 	// Debug: draw all walls as semi-transparent red
-	//debug_draw_all_walls();
+	debug_draw_all_walls();
 	// Render player system
 
 	render_puzzle_blocks();

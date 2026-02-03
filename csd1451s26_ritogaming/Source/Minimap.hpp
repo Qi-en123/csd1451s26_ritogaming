@@ -6,6 +6,7 @@
 #include "renderer.hpp" // Keep this to access your 'color' struct and meshes
 #include "map.hpp"
 
+#define ZOOM_LEVEL 2.0f
 /**
  * @brief Sets the internal world bounds and the desired size of the UI.
  * @param worldW Total width of your game map (e.g., TILE_COLS * tile_size).

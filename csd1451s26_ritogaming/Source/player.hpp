@@ -28,11 +28,11 @@ typedef struct player_config {
     f32 triangle_offset = 40.f;     // How far above character the triangle sits
 
     // Position settings
-    f32 char1_start_x = 0.0f;      // Character 1 starting position
-    f32 char1_start_y = -0.0f;
+    f32 char1_start_x = -450.0f;      // Character 1 starting position
+    f32 char1_start_y = -950.0f;
 
-    f32 char2_start_x = 0.0f;       // Character 2 starting position  
-    f32 char2_start_y = -0.0f;
+    f32 char2_start_x = 1000.0f;       // Character 2 starting position  
+    f32 char2_start_y = -950.0f;
 
     // Movement settings
     f32 move_speed = 10.f;          // Player movement speed
@@ -71,6 +71,8 @@ typedef struct Player {
 
     f32 last_dir_x, last_dir_y;
 } player;
+
+extern Player player_instance;
 
 /**************************************************************************
     \brief

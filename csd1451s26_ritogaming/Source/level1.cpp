@@ -56,8 +56,10 @@ void level1_load()
 
 void level1_initialize()
 {
+	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	//zoom = 1.0f;
 	// Determine tile size to fit both width and height
+	
 	tile_size = 64.f;
 	player_system_init(&player_instance);
 	player_instance.config.character_size = tile_size - 4.0f;

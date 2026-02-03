@@ -35,9 +35,13 @@ void draw_map(f32 tile_size)
         f32 y = startY - row * tile_size;
         for (int col = 0; col < TILE_COLS; ++col)
         {
-            f32 x = startX + col * tile_size;
             int tileType = map[row][col];
-            //DrawTile(TileTextures[tileType], x, y, tile_size);
+
+            // Skip empty tiles
+            if (tileType == 0)
+                continue;
+
+            f32 x = startX + col * tile_size;
             render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }

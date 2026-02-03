@@ -172,18 +172,18 @@ void initialize_dungeon_map()
 
     // Floor area
     for (int r = 3; r < 12; ++r)
-        for (int c = 25; c < 43; ++c)
+        for (int c = 25; c < 31; ++c)
             map[r][c] = FLOOR;
 
     // Top and bottom horizontal walls
-    for (int c = 24; c <= 43; ++c) {
+    for (int c = 24; c <= 31; ++c) {
         map[2][c] = WALL;
         map[12][c] = WALL; // bottom wall
     }
 
     // Left and right vertical walls
     for (int r = 2; r <= 12; ++r)
-        map[r][24] = map[r][43] = WALL;
+        map[r][24] = map[r][31] = WALL;
 
     // ============================================================
     // Horizontal corridor to Boss Room 1 
@@ -208,19 +208,19 @@ void initialize_dungeon_map()
     // ============================================================
 
     // Floor area
-    for (int r = 17; r < 28; ++r)
-        for (int c = 25; c < 43; ++c)
+    for (int r = 18; r < 24; ++r)
+        for (int c = 25; c < 32; ++c)
             map[r][c] = FLOOR;
 
     // Top and bottom horizontal walls
-    for (int c = 24; c <= 43; ++c) {
-        map[16][c] = WALL;
-        map[28][c] = WALL;
+    for (int c = 24; c <= 32; ++c) {
+        map[17][c] = WALL;
+        map[24][c] = WALL;
     }
 
     // Left and right vertical walls
-    for (int r = 16; r <= 28; ++r)
-        map[r][24] = map[r][43] = WALL;
+    for (int r = 17; r <= 24; ++r)
+        map[r][24] = map[r][32] = WALL;
 
     // ============================================================
     // Horizontal corridor to Boss Room 2 

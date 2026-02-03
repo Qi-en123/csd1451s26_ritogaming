@@ -103,7 +103,7 @@ void level1_draw()
 {
 	draw_map(tile_size);	
 	// Debug: draw all walls as semi-transparent red
-	debug_draw_all_walls();
+	//debug_draw_all_walls();
 	// Render player system
 
 	render_puzzle_blocks();

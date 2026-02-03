@@ -119,7 +119,7 @@ void level2_initialize()
 	initialize_boss_map();
 	generate_walls_from_map(boss_map, 64.0f); // step 2: make walls from map
 
-	intialize_puzzle_blocks();
+	//intialize_puzzle_blocks();
 
 	//ShiftMapRight(2);
 }
@@ -147,15 +147,15 @@ void level2_draw()
 {
 	draw_boss_map(tile_size);
 
-	render_puzzle_blocks();
+	//render_puzzle_blocks();
 	player_system_render(&player_instance);
-	Minimap_Draw(&player_instance, map, TileTextures);
-	Minimap_DrawWalls(map);
+	//Minimap_Draw(&player_instance, map, TileTextures);
+	//Minimap_DrawWalls(map);
 }
 
 void level2_free()
 {
-	// Cleanup
+	// Cleanupw
 }
 
 void level2_unload()

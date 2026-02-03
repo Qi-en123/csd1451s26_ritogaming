@@ -17,9 +17,6 @@ update game logic, render, free resources,
 #include "utils.hpp"
 #include "Minimap.hpp"
 
-
-
-
 //Player player_instance2;
 
  //f32 zoomlevel2;
@@ -77,7 +74,7 @@ void boss_initialize()
 	initialize_boss_map();
 	generate_walls_from_map(boss_map, 64.0f); // step 2: make walls from map
 
-	intialize_puzzle_blocks();
+	//intialize_puzzle_blocks();
 
 	//ShiftMapRight(2);
 }
@@ -112,7 +109,7 @@ void boss_draw()
 	//debug_draw_all_walls();
 	// Render player system
 
-	render_puzzle_blocks();
+	//render_puzzle_blocks();
 	player_system_render(&player_instance);
 	//Minimap_Draw(&player_instance, map, TileTextures);
 

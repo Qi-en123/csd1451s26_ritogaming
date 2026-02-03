@@ -152,7 +152,7 @@ static void player_handle_movement(Player* player_ptr)
 
     // Track if player is dragging a puzzle block
     static bool is_dragging = false;
-    static s32 puzzle_index = -1;
+    static s32 puzzle_index;
 
     // Movement input
     if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))

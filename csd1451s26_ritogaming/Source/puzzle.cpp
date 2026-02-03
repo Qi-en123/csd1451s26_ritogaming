@@ -14,7 +14,8 @@
 
 AEGfxTexture* puzzle_block_textures[PUZZLE_TYPE_COUNT]{};
 
-int num_puzzle_blocks{ 3 }; //make sure ints below add up to this no.
+static f32 puzzle_size;
+int num_puzzle_blocks{ 8 }; //make sure ints below add up to this no.
 std::vector<int> button_indexes{}, pushable_indexes{}; //to store indexes of btns and pushables (more efficient? idk js trying)
 
 std::vector<puzzle> puzzle_blocks;
@@ -37,22 +38,48 @@ void load_puzzle_textures() {
 
 //in the future, this will read from text file to determine puzzle block inits
 //for nao, hard code just to test features
-void intialize_puzzle_blocks() {
+void intialize_puzzle_blocks() { //in the future will have char const* of text file name
+	puzzle_size = tile_size - 8.0f;
 	puzzle_blocks.reserve(num_puzzle_blocks);
 
 	//Simulating for loop vv
-	puzzle tmp{ BUTTON_UP,{tile_size, tile_size}, false, 67};
+	//--------------- bottom left buttons ---------------//
+	puzzle tmp{ BUTTON_UP, {-672.0f, -768.0f}, false, 1 };
 	puzzle_blocks.push_back(tmp);
 	//this is supposed to be called if(type==button_up || type==button_down)
 	button_indexes.push_back(0); //this will be changed to 'i'
 
-	tmp = { BUTTON_DOWN, {-tile_size + 10.0f, -tile_size + 10.0f}, false, 67};
+	tmp = { BUTTON_UP, {-224.0f, -768.0f}, false, 1};
 	puzzle_blocks.push_back(tmp);
 	button_indexes.push_back(1);
 
-	tmp = { PUSHABLE, {-tile_size * 3.0f, -tile_size + 10.0f}, true, WATER};
+	//--------------- bottom pushable ---------------//
+	tmp = { PUSHABLE, {-100.0f, -895.0f}, true, WATER};
 	puzzle_blocks.push_back(tmp);
 	pushable_indexes.push_back(2);
+
+	//--------------- top left buttons ---------------//
+	tmp = { BUTTON_UP, {-224.0f, 256.0f}, false, 2 };
+	puzzle_blocks.push_back(tmp);
+	button_indexes.push_back(3);
+
+	tmp = { BUTTON_UP, {-672.0f, 256.0f}, false, 2 };
+	puzzle_blocks.push_back(tmp);
+	button_indexes.push_back(4);
+
+	tmp = { BUTTON_UP, {-448.0f, 256.0f}, false, 2 };
+	puzzle_blocks.push_back(tmp);
+	button_indexes.push_back(5);
+
+	//--------------- top pushable ---------------//
+	tmp = { PUSHABLE, {-672.0f, 128.0f}, false };
+	puzzle_blocks.push_back(tmp);
+	pushable_indexes.push_back(6);
+
+	//--------------- LAST pushable ---------------//
+	tmp = { PUSHABLE, {704.0f, 2.0f}, true, FIRE };
+	puzzle_blocks.push_back(tmp);
+	pushable_indexes.push_back(7);
 
 	//Saving button ids for btn manager to use
 	//for each btns
@@ -96,7 +123,7 @@ void render_puzzle_blocks() {
 			}
 		}
 		render_sprite(rect_mesh_center, curr.position.x,
-			curr.position.y, tile_size, tile_size, puzzle_block_textures[curr.type], clr);
+			curr.position.y, puzzle_size, puzzle_size, puzzle_block_textures[curr.type], clr);
 	}
 }
 
@@ -106,7 +133,7 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	{
 		puzzle& curr = puzzle_blocks[i];
 		if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
-			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
+			curr.position.x, curr.position.y, puzzle_size / 2.0f, puzzle_size / 2.0f))
 		{
 			if (curr.type == BUTTON_UP || curr.type == BUTTON_DOWN) {
 				continue;
@@ -127,9 +154,9 @@ void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHa
 
 		//Player collision
 		if (ss_collision(p1_x, p1_y, playerHalfSize, playerHalfSize,
-			curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f) ||
+			curr.position.x, curr.position.y, puzzle_size / 2.0f, puzzle_size / 2.0f) ||
 			ss_collision(p2_x, p2_y, playerHalfSize, playerHalfSize,
-				curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
+				curr.position.x, curr.position.y, puzzle_size / 2.0f, puzzle_size / 2.0f))
 		{
 			curr.type = BUTTON_DOWN;
 			continue;
@@ -143,11 +170,12 @@ void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHa
 		for (int j{}; j < pushable_indexes.size(); ++j) {
 			puzzle& pushable = puzzle_blocks[pushable_indexes[j]];
 
-			if (ss_collision(pushable.position.x, pushable.position.y, tile_size / 2.0f, tile_size / 2.0f,
-				curr.position.x, curr.position.y, tile_size / 2.0f, tile_size / 2.0f))
+			if (ss_collision(pushable.position.x, pushable.position.y, puzzle_size / 2.0f, puzzle_size / 2.0f,
+				curr.position.x, curr.position.y, puzzle_size / 2.0f, puzzle_size / 2.0f))
 			{
 				curr.type = BUTTON_DOWN;
-				continue;
+				printf("supposed to be collided");
+				break;
 			}
 			else {
 				curr.type = BUTTON_UP;
@@ -172,8 +200,19 @@ void puzzle_button_manager() {
 
 		if (triggered) {
 			//call trigger function here
-			//e.g. open_door() assuming its like void open_door(), if not nid change my pair :(
-			btns[j].second(); //dis calls the trigger fnc
+			//e.g. open_door() assuming its like void open_door()
+			//btns[j].second(); //dis calls the trigger fnc
+
+			if (btns[j].first == 1) { //bottom left
+				for (int c = 4; c <= 7; ++c) {
+					map[18][c] = FLOOR;
+				}
+			}
+
+			if (btns[j].first == 2) { //top left
+				map[7][10] = FLOOR;
+			}
+			generate_walls_from_map(map, tile_size);
 		}
 	}
 }
@@ -224,18 +263,18 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	f32 dy{ player_pos_y - puzzle.position.y };
 
 	const f32 min_gap{ 3.0f }; //prevent puzzle going inside wall
-	const f32 grab_range{ (player_half_size + tile_size / 2.0f) + PUZZLE_GRAB_RANGE };
+	const f32 grab_range{ (player_half_size + puzzle_size / 2.0f) + PUZZLE_GRAB_RANGE };
 
 	if ((dx * dx + dy * dy) < (grab_range * grab_range) &&
 		puzzle.element == player_elem) {
 		//printf("is dragging");
 		dragging = true;
-		const f32 min_dist = player_half_size + (tile_size / 2.0f) + min_gap;
+		const f32 min_dist = player_half_size + (puzzle_size / 2.0f) + min_gap;
 		f32 newX{ puzzle.position.x }, newY{ puzzle.position.y };
 
 		//checks if player is top/bottom or left/right using x/y overlap distance
-		if ((player_half_size + tile_size / 2.0f) - fabsf(dx) <
-			(player_half_size + tile_size / 2.0f) - fabsf(dy)) {
+		if ((player_half_size + puzzle_size / 2.0f) - fabsf(dx) <
+			(player_half_size + puzzle_size / 2.0f) - fabsf(dy)) {
 
 			newX = (puzzle.position.x > player_pos_x) ?
 				player_pos_x + min_dist : player_pos_x - min_dist;

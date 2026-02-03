@@ -57,7 +57,7 @@ void boss_initialize()
 	// Determine tile size to fit both width and height
 	tile_size = 64.f;
 	player_system_init(&player_instance);
-	player_instance.config.character_size = tile_size - 4.0f;
+	player_instance.config.character_size = tile_size - 8.0f;
 	cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
 	init_mesh();
 
@@ -114,9 +114,9 @@ void boss_draw()
 
 	render_puzzle_blocks();
 	player_system_render(&player_instance);
-	Minimap_Draw(&player_instance, map, TileTextures);
+	//Minimap_Draw(&player_instance, map, TileTextures);
 
-	Minimap_DrawWalls(map);
+	//Minimap_DrawWalls(map);
 }
 
 void boss_free()

@@ -175,7 +175,7 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
 {
     for (Wall& wall : g_walls)
     {
-        if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
+        if (ss_collision(newX, newY, playerHalfSize - 2.0f, playerHalfSize - 2.0f,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
             // Debug: print tile coordinates
@@ -190,7 +190,7 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
 bool check_puzzle_collision(f32 newX, f32 newY) {
     for (Wall& wall : g_walls)
     {
-        if (ss_collision(newX, newY, tile_size/2.0f, tile_size/2.0f,
+        if (ss_collision(newX, newY, (tile_size / 2.0f) - 2.0f, (tile_size / 2.0f)-2.0f,
             wall.x, wall.y, wall.halfW, wall.halfH))
         {
             // Debug: print tile coordinates

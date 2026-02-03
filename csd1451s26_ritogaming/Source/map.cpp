@@ -94,8 +94,16 @@ void initialize_dungeon_map()
     {
         map[2][c] = WALL;  // top wall
         map[11][c] = WALL; // bottom wall
-
     }
+
+    // walls inside player room 1
+    for (int r = 2; r <= 6; ++r)
+    {
+        map[r][3] = WALL;  // top wall
+        map[r][8] = WALL; // bottom wall
+    }
+
+
 
     // Left wall
     for (int r = 3; r <= 11; ++r)
@@ -118,7 +126,7 @@ void initialize_dungeon_map()
     // ============================================================
 
    // Floor area
-    for (int r = 18; r < 27; ++r)      // was < 26
+    for (int r = 18; r < 27; ++r)      
         for (int c = 2; c < 10; ++c)
             map[r][c] = FLOOR; // floor tile
 
@@ -128,21 +136,21 @@ void initialize_dungeon_map()
 
     // Bottom horizontal wall
     for (int c = 1; c <= 10; ++c)
-        map[26][c] = WALL;                // was 25
+        map[26][c] = WALL;                
 
     // Top opening (4 tiles wide, centered)
     for (int c = 4; c <= 7; ++c)
-        map[18][c] = FLOOR;
+        map[18][c] = SPECIAL_DOOR;
 
     // Left vertical wall
-    for (int r = 18; r <= 26; ++r)     // was <= 25
+    for (int r = 18; r <= 26; ++r)     
         map[r][1] = WALL;
 
     // Right vertical wall
-    for (int r = 18; r <= 26; ++r)     // was <= 25
+    for (int r = 18; r <= 26; ++r)     
         map[r][10] = WALL;
 
-    map[21][10] = map[22][10] = FLOOR;     // unchanged
+    map[21][10] = map[22][10] = FLOOR;    
 
     // ============================================================
     // VERTICAL CORRIDOR (connecting player rooms)
@@ -183,20 +191,17 @@ void initialize_dungeon_map()
 
     // Corridor floor
     for (int c = 9; c < 25; ++c)
-        for (int r = 5; r < 9; ++r) // increased vertical height from 5-7 to 5-9
-            map[r][c] = FLOOR;
+            map[7][c] = FLOOR;
 
     // Top and bottom corridor walls
     for (int c = 10; c < 25; ++c) {
-        map[4][c] = WALL;  // top wall
-        map[9][c] = WALL;  // bottom wall (moved down)
+        map[6][c] = WALL;  // top wall
+        map[8][c] = WALL;  // bottom wall (moved down)
     }
 
-    // walls in middle
-    for (int r = 5; r < 9; ++r)
-        map[r][17] = WALL;
-    map[6][17] = SPECIAL_DOOR;
-    map[7][17] = SPECIAL_DOOR;
+
+        map[7][10] = SPECIAL_DOOR;
+
 
     // ============================================================
     // BOSS ROOM 2 (Bottom Right)
@@ -223,18 +228,14 @@ void initialize_dungeon_map()
 
     // Corridor floor
     for (int c = 9; c < 25; ++c)
-        for (int r = 21; r < 24; ++r) // increased vertical height from 21-23 to 21-24
-            map[r][c] = FLOOR;
+            map[21][c] = FLOOR;
 
     // Top and bottom corridor walls
     for (int c = 10; c < 25; ++c) {
         map[20][c] = WALL; // top wall
-        map[24][c] = WALL; // bottom wall
+        map[22][c] = WALL; // bottom wall
     }
-    // walls in middle
-    for (int r = 21; r < 24; ++r)
-        map[r][17] = WALL;
-    map[22][17] = SPECIAL_DOOR;
+
 
 
 }

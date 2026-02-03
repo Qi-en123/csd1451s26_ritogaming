@@ -232,10 +232,10 @@ dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32
     max_health = 300.0f;
     current_health = 300.0f;
     damage = 50.0f;
-    size = 40.0f;
+    size = 150.0f;
     food_heal_percentage = 1.0f;
 
-    texture = "Assets/kenney_pixel-platformer/tile_0005.png";
+    texture = "Assets/Tiles/tile_0005.png";
     food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/sushi.png";
 }
 

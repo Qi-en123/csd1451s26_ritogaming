@@ -25,7 +25,7 @@ class dragon;
 
 constexpr s32 NUM_GHOST_SLOTS = 10;
 constexpr f32 SPAWN_CHECK_INTERVAL = 2.0f;
-constexpr f32 GHOST_RESPAWN_DELAY = 5.0f;  // Delay between each ghost respawn
+constexpr f32 GHOST_RESPAWN_DELAY = 5.0f;  
 
 struct food_drop {
     f32 x, y;
@@ -57,6 +57,8 @@ private:
 
     f32 spawn_check_timer{};
 
+    bool is_in_level1{ true };
+
 public:
     enemy_manager();
     ~enemy_manager();
@@ -81,6 +83,8 @@ public:
 
     size_t get_active_enemy_count() const;
     size_t get_ghost_count() const;
+
+    void set_level(bool is_level1) { is_in_level1 = is_level1; }
 
 private:
     void update_food(f32 dt, Player* player);

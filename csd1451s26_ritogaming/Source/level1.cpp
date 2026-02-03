@@ -44,30 +44,57 @@ void level1_load()
 	load_puzzle_textures();
 }
 
+//void level1_initialize()
+//{
+//	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+//	zoom = 1.1f;
+//	// Determine tile size to fit both width and height
+//	
+//	tile_size = 64.f;
+//	player_system_init(&player_instance);
+//	player_instance.config.character_size = tile_size - 8.0f;
+//	// Camera follows the active character via the pointer
+//	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
+//	init_mesh();
+//
+//	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
+//	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
+//	Minimap_Init(totalWorldW, totalWorldH, 200.0f); // 200px wide map
+//
+//	initialize_dungeon_map();
+//	generate_walls_from_map(map, 64.0f);
+//
+//	intialize_puzzle_blocks();
+//
+//	// Clear any existing enemies
+//	g_enemy_manager.clear_all();
+//}
 void level1_initialize()
 {
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
-	// Determine tile size to fit both width and height
-	
+
 	tile_size = 64.f;
 	player_system_init(&player_instance);
 	player_instance.config.character_size = tile_size - 8.0f;
+
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
 
 	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
-	Minimap_Init(totalWorldW, totalWorldH, 200.0f); // 200px wide map
+	Minimap_Init(totalWorldW, totalWorldH, 200.0f);
 
 	initialize_dungeon_map();
 	generate_walls_from_map(map, 64.0f);
 
 	intialize_puzzle_blocks();
 
-	// Clear any existing enemies
+	// Clear any existing enemies and reinitialize with ghosts in top left room
 	g_enemy_manager.clear_all();
+	g_enemy_manager.set_level(true);  
+	g_enemy_manager.initialize_ghost_slots();
 }
 
 void level1_update()

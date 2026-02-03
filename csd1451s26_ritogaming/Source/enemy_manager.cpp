@@ -19,8 +19,6 @@ enemy_manager::enemy_manager() {
     ghost_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
     bat_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/burger.png");
     dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
-
-    initialize_ghost_slots();
 }
 
 enemy_manager::~enemy_manager() {
@@ -33,15 +31,11 @@ enemy_manager::~enemy_manager() {
 // ============================================================================
 // GHOST SLOT INITIALIZATION
 // ============================================================================
-// ============================================================================
-// GHOST SLOT INITIALIZATION
-// ============================================================================
 void enemy_manager::initialize_ghost_slots() {
     // Based on your map layout:
     // Tile size: 64.0f
     // Map origin: X=-800, Y=450
-    // Player Room 2 (Bottom Left): rows 18-26, cols 2-9
-    // Vertical Corridor: rows 11-17, cols 4-7
+    // Player Room 1 (Top Left): rows 3-10, cols 2-9
 
     const f32 TILE_SIZE = 64.0f;
     const f32 MAP_START_X = -1600.0f / 2.0f;  // -800
@@ -55,24 +49,23 @@ void enemy_manager::initialize_ghost_slots() {
         return p;
         };
 
-    // NEW: Ghosts only in Bottom Left Room (Player Room 2) and Vertical Corridor
-    // Player Room 2 coordinates: rows 18-26, cols 2-9
+    // GHOSTS in TOP LEFT ROOM (Player Room 1): rows 3-10, cols 2-9
 
-    // 4 ghosts in Bottom Left Room (Player Room 2) - spread out
-    AEVec2 p0 = tile_to_world(20, 4);   // Top-left area
-    AEVec2 p1 = tile_to_world(22, 6);   // Center
-    AEVec2 p2 = tile_to_world(24, 4);   // Bottom-left
-    AEVec2 p3 = tile_to_world(24, 8);   // Bottom-right
+    // 4 ghosts in Top Left Room (Player Room 1) - spread out
+    AEVec2 p0 = tile_to_world(5, 4);   // Top area
+    AEVec2 p1 = tile_to_world(7, 6);   // Center
+    AEVec2 p2 = tile_to_world(9, 4);   // Bottom-left
+    AEVec2 p3 = tile_to_world(9, 8);   // Bottom-right
 
-    // 3 ghosts in Vertical Corridor (connecting to top room)
-    AEVec2 p4 = tile_to_world(12, 5);  // Upper part of corridor
-    AEVec2 p5 = tile_to_world(14, 6);  // Middle of corridor  
-    AEVec2 p6 = tile_to_world(16, 5);  // Lower part of corridor (near Player Room 2)
+    // 3 ghosts near the right door area
+    AEVec2 p4 = tile_to_world(6, 9);   // Near right door
+    AEVec2 p5 = tile_to_world(7, 9);   // Near right door
+    AEVec2 p6 = tile_to_world(8, 9);   // Near right door
 
-    // 3 ghosts near entrance/start area of Player Room 2
-    AEVec2 p7 = tile_to_world(19, 5);   // Just inside top door
-    AEVec2 p8 = tile_to_world(18, 6);   // Right by the door
-    AEVec2 p9 = tile_to_world(20, 8);   // Near right wall
+    // 3 ghosts in the top area
+    AEVec2 p7 = tile_to_world(4, 5);   // Top-center left
+    AEVec2 p8 = tile_to_world(4, 7);   // Top-center right
+    AEVec2 p9 = tile_to_world(6, 3);   // Left side
 
     ghost_slots[0] = { p0.x, p0.y, nullptr, 0.0f };
     ghost_slots[1] = { p1.x, p1.y, nullptr, 0.0f };
@@ -93,18 +86,45 @@ void enemy_manager::initialize_ghost_slots() {
 // ============================================================================
 // UPDATE AND RENDER
 // ============================================================================
+//void enemy_manager::update(f32 dt, Player* player, camera* cam) {
+//    // Update all enemies
+//    for (auto& e : enemies) {
+//        if (e->is_active()) {
+//            e->update(dt, player, cam);
+//        }
+//    }
+//
+//    // Update food drops
+//    update_food(dt, player);
+//
+//    // Update respawn timers for empty slots
+//    for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
+//        if (ghost_slots[i].ghost == nullptr && ghost_slots[i].respawn_timer > 0.0f) {
+//            ghost_slots[i].respawn_timer -= dt;
+//        }
+//    }
+//
+//    // Clean up dead enemies and maintain population
+//    cleanup_dead_enemies();
+//
+//    // Periodically check if we need to respawn ghosts
+//    spawn_check_timer += dt;
+//    if (spawn_check_timer >= SPAWN_CHECK_INTERVAL) {
+//        maintain_ghost_population();
+//        spawn_check_timer = 0.0f;
+//    }
+//}
+
 void enemy_manager::update(f32 dt, Player* player, camera* cam) {
-    // Update all enemies
-    for (auto& e : enemies) {
-        if (e->is_active()) {
-            e->update(dt, player, cam);
+    // Only maintain ghost population in Level 1
+    if (is_in_level1) {
+        // Update all enemies
+        for (auto& e : enemies) {
+            if (e->is_active()) {
+                e->update(dt, player, cam);
+            }
         }
-    }
 
-    // Update food drops
-    update_food(dt, player);
-
-    // Update respawn timers for empty slots
     for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
         if (ghost_slots[i].ghost == nullptr && ghost_slots[i].respawn_timer > 0.0f) {
             ghost_slots[i].respawn_timer -= dt;
@@ -114,12 +134,25 @@ void enemy_manager::update(f32 dt, Player* player, camera* cam) {
     // Clean up dead enemies and maintain population
     cleanup_dead_enemies();
 
-    // Periodically check if we need to respawn ghosts
-    spawn_check_timer += dt;
-    if (spawn_check_timer >= SPAWN_CHECK_INTERVAL) {
-        maintain_ghost_population();
-        spawn_check_timer = 0.0f;
+        // Periodically check if we need to respawn ghosts
+        spawn_check_timer += dt;
+        if (spawn_check_timer >= SPAWN_CHECK_INTERVAL) {
+            maintain_ghost_population();
+            spawn_check_timer = 0.0f;
+        }
     }
+    else {
+        // Level 2/Boss Room - only update existing enemies (dragon)
+        for (auto& e : enemies) {
+            if (e->is_active()) {
+                e->update(dt, player, cam);
+            }
+        }
+        update_food(dt, player);
+    }
+
+    // Clean up dead enemies
+    cleanup_dead_enemies();
 }
 
 void enemy_manager::render() {
@@ -131,12 +164,27 @@ void enemy_manager::render() {
     render_food();
 }
 
+//void enemy_manager::render_enemy(base_enemy* e) {
+//    const char* path = e->get_texture_path();
+//    AEGfxTexture* tex = AEGfxTextureLoad(path);
+//    render_sprite(rect_mesh_center, e->get_x(), e->get_y(),
+//        e->get_size(), e->get_size(), tex);
+//    AEGfxTextureUnload(tex);
+//}
+
 void enemy_manager::render_enemy(base_enemy* e) {
     const char* path = e->get_texture_path();
     AEGfxTexture* tex = AEGfxTextureLoad(path);
-    render_sprite(rect_mesh_center, e->get_x(), e->get_y(),
-        e->get_size(), e->get_size(), tex);
-    AEGfxTextureUnload(tex);
+
+    if (tex) {
+        render_sprite(rect_mesh_center, e->get_x(), e->get_y(),
+            e->get_size(), e->get_size(), tex);
+        AEGfxTextureUnload(tex);
+    }
+    else {
+        // Texture failed to load, but don't crash
+        printf("[WARNING] Failed to load texture: %s\n", path);
+    }
 }
 
 // ============================================================================
@@ -163,6 +211,19 @@ void enemy_manager::spawn_ghost_at_slot(int slot_index) {
     printf("[Enemy Manager] Spawned ghost at slot %d: (%.1f, %.1f)\n", slot_index, x, y);
 }
 
+void enemy_manager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom) {
+    // Check if a dragon already exists
+    for (auto& enemy : enemies) {
+        if (enemy && enemy->get_type() == enemy_type::dragon && enemy->is_active()) {
+            printf("[Enemy Manager] Dragon already exists, not spawning another.\n");
+            return;
+        }
+    }
+
+    // Create a new dragon
+    enemies.push_back(std::make_unique<dragon>(x, y, r_left, r_right, r_top, r_bottom));
+    printf("[Enemy Manager] Spawned dragon at (%.1f, %.1f)\n", x, y);
+}
 // ============================================================================
 // FOOD SYSTEM
 // ============================================================================

@@ -16,6 +16,7 @@
 #include "puzzle.hpp"
 #include "utils.hpp"
 #include "Minimap.hpp"
+#include "enemy_manager.hpp"
 
 #define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
@@ -73,89 +74,154 @@ void level2_load()
 //	//ShiftMapRight(2);
 //}
 
+//void level2_initialize()
+//{
+//	zoom = 1.0f;
+//	// Determine tile size to fit both width and height
+//	tile_size = 64.f;
+//	player_system_init(&player_instance);
+//	player_instance.config.character_size = tile_size - 4.0f;
+//
+//	// FIX 1: Set player positions to bottom of boss room
+//	// Based on initialize_boss_map(): rows 2-11, columns 6-15
+//	// Map origin: X = -800, Y = 450
+//	// Bottom-center position would be:
+//	f32 bottomX = -800.0f + (10.5f * tile_size);  // Column 10.5 (center)
+//	f32 bottomY = 450.0f - (10.0f * tile_size);   // Row 10 (near bottom, avoiding wall)
+//
+//	player_instance.char1.x = bottomX - 25.0f;     // Center left
+//	player_instance.char1.y = bottomY;
+//
+//	player_instance.char2.x = bottomX + 25.0f;     // Center right  
+//	player_instance.char2.y = bottomY;
+//
+//	// Ensure current player is set correctly
+//	player_instance.current_player = &player_instance.char1;
+//	player_instance.current_character = 1;
+//
+//	// FIX 2: Initialize camera with player position
+//	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
+//
+//	init_mesh();
+//
+//	//zoomlevel2 = 2.0f;
+//	totalWorldW2 = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
+//	totalWorldH2 = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
+//	Minimap_Init(totalWorldW2, totalWorldH2, 200.0f); // 200px wide map
+//	//printf("Walls created: %zu\n", g_walls.size());
+//
+//	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
+//	//f32* curr_player_x{ &player_instance.char1_x }, * curr_player_y{ &player_instance.char1_y };
+//
+//	//cam2= init_cam(curr_player_x, curr_player_y, 60.0f, 0.0f);
+//
+//	//////////////////////////////////////////////////
+//
+//	initialize_boss_map();
+//	generate_walls_from_map(boss_map, 64.0f); // step 2: make walls from map
+//
+//	//intialize_puzzle_blocks();
+//
+//	//ShiftMapRight(2);
+//}
+
 void level2_initialize()
 {
-	zoom = 1.0f;
-	// Determine tile size to fit both width and height
-	tile_size = 64.f;
-	player_system_init(&player_instance);
-	player_instance.config.character_size = tile_size - 4.0f;
+    zoom = 1.0f;
+    tile_size = 64.f;
+    player_system_init(&player_instance);
+    player_instance.config.character_size = tile_size - 4.0f;
 
-	// FIX 1: Set player positions to bottom of boss room
-	// Based on initialize_boss_map(): rows 2-11, columns 6-15
-	// Map origin: X = -800, Y = 450
-	// Bottom-center position would be:
-	f32 bottomX = -800.0f + (10.5f * tile_size);  // Column 10.5 (center)
-	f32 bottomY = 450.0f - (10.0f * tile_size);   // Row 10 (near bottom, avoiding wall)
+    // FIX 1: Set player positions to bottom of boss room
+    // Based on initialize_boss_map(): rows 2-11, columns 6-15
+    // Map origin: X = -800, Y = 450
+    const f32 TILE_SIZE = 64.0f;
+    const f32 MAP_START_X = -1600.0f / 2.0f;  // -800
+    const f32 MAP_START_Y = 900.0f / 2.0f;    // 450
 
-	player_instance.char1.x = bottomX - 25.0f;     // Center left
-	player_instance.char1.y = bottomY;
+    // Player at bottom of boss room
+    f32 bottomX = MAP_START_X + (10.5f * TILE_SIZE);  // Column 10.5 (center)
+    f32 bottomY = MAP_START_Y - (10.0f * TILE_SIZE);   // Row 10 (near bottom, avoiding wall)
 
-	player_instance.char2.x = bottomX + 25.0f;     // Center right  
-	player_instance.char2.y = bottomY;
+    player_instance.char1.x = bottomX - 25.0f;     // Center left
+    player_instance.char1.y = bottomY;
 
-	// Ensure current player is set correctly
-	player_instance.current_player = &player_instance.char1;
-	player_instance.current_character = 1;
+    player_instance.char2.x = bottomX + 25.0f;     // Center right  
+    player_instance.char2.y = bottomY;
 
-	// FIX 2: Initialize camera with player position
-	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
+    // Ensure current player is set correctly
+    player_instance.current_player = &player_instance.char1;
+    player_instance.current_character = 1;
 
-	init_mesh();
+    // FIX 2: Initialize camera with player position
+    cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 
-	//zoomlevel2 = 2.0f;
-	totalWorldW2 = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
-	totalWorldH2 = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
-	Minimap_Init(totalWorldW2, totalWorldH2, 200.0f); // 200px wide map
-	//printf("Walls created: %zu\n", g_walls.size());
+    init_mesh();
 
-	//js to test camera (UPDATE CURR_PLAYER TO CHANGE CAMERA VIEW)
-	//f32* curr_player_x{ &player_instance.char1_x }, * curr_player_y{ &player_instance.char1_y };
+    totalWorldW2 = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
+    totalWorldH2 = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
+    Minimap_Init(totalWorldW2, totalWorldH2, 200.0f);
 
-	//cam2= init_cam(curr_player_x, curr_player_y, 60.0f, 0.0f);
+    initialize_boss_map();
+    generate_walls_from_map(boss_map, 64.0f);
 
-	//////////////////////////////////////////////////
+    // Clear any existing enemies
+    g_enemy_manager.clear_all();
+    g_enemy_manager.set_level(false);
 
-	initialize_boss_map();
-	generate_walls_from_map(boss_map, 64.0f); // step 2: make walls from map
+    // Boss room coordinates from initialize_boss_map(): rows 3-10, cols 7-15
+    // Center of boss room
+    f32 dragon_x = MAP_START_X + (11 * TILE_SIZE);  // Column 11 (center of cols 7-15)
+    f32 dragon_y = MAP_START_Y - (6.5 * TILE_SIZE); // Row 6.5 (center of rows 3-10)
 
-	//intialize_puzzle_blocks();
+    // Room bounds: approximate boundaries of the boss room
+    // Adjusted for the boss room layout in initialize_boss_map()
+    f32 room_left = MAP_START_X + (7 * TILE_SIZE) + (TILE_SIZE / 2.0f);
+    f32 room_right = MAP_START_X + (15 * TILE_SIZE) - (TILE_SIZE / 2.0f);
+    f32 room_top = MAP_START_Y - (3 * TILE_SIZE) + (TILE_SIZE / 2.0f);
+    f32 room_bottom = MAP_START_Y - (10 * TILE_SIZE) - (TILE_SIZE / 2.0f);
 
-	//ShiftMapRight(2);
+    g_enemy_manager.spawn_dragon(dragon_x, dragon_y,
+        room_left, room_right, room_top, room_bottom);
 }
+
 void level2_update()
 {
-	dt = (f32)AEFrameRateControllerGetFrameTime();
+    dt = (f32)AEFrameRateControllerGetFrameTime();
 
-	get_zoom(dt);
+    get_zoom(dt);
 
-	// Bounds for boss room
-	simulate_camera(&cam, &player_instance.current_player->x, &player_instance.current_player->y,
-		-6000.0f, 6000.0f, -5000.0f, 5000.0f);
+    // Bounds for boss room
+    simulate_camera(&cam, &player_instance.current_player->x, &player_instance.current_player->y,
+        -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
-	player_system_update(&player_instance);
+    player_system_update(&player_instance);
 
-	check_button_collision(player_instance.char1.x, player_instance.char1.y,
-		player_instance.char2.x, player_instance.char2.y,
-		player_instance.config.character_size / 2.0f);
-	puzzle_button_manager();
+    check_button_collision(player_instance.char1.x, player_instance.char1.y,
+        player_instance.char2.x, player_instance.char2.y,
+        player_instance.config.character_size / 2.0f);
+    puzzle_button_manager();
 
-	check_and_open_doors(&player_instance);
+    check_and_open_doors(&player_instance);
+
+    // Update enemy manager (for the dragon)
+    g_enemy_manager.update(dt, &player_instance, &cam);
 }
 
 void level2_draw()
 {
-	draw_boss_map(tile_size);
+    draw_boss_map(tile_size);
 
-	//render_puzzle_blocks();
-	player_system_render(&player_instance);
-	//Minimap_Draw(&player_instance, map, TileTextures);
-	//Minimap_DrawWalls(map);
+    player_system_render(&player_instance);
+
+    // Render enemies (dragon)
+    g_enemy_manager.render();
 }
 
 void level2_free()
 {
-	// Cleanupw
+    // Cleanup enemies
+    g_enemy_manager.clear_all();
 }
 
 void level2_unload()

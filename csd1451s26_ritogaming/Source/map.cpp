@@ -116,7 +116,6 @@ void initialize_dungeon_map()
     // Bottom door (inside floor)
     for (int c = 4; c <= 7; ++c)
         map[10][c] = FLOOR;
-    map[10][5] = DOOR;
 
     // Right door
     map[6][10] = FLOOR;
@@ -185,6 +184,9 @@ void initialize_dungeon_map()
     for (int r = 2; r <= 12; ++r)
         map[r][24] = map[r][31] = WALL;
 
+
+    map[7][28] = OPENED_DOOR;
+
     // ============================================================
     // Horizontal corridor to Boss Room 1 
     // ============================================================
@@ -199,9 +201,8 @@ void initialize_dungeon_map()
         map[8][c] = WALL;  // bottom wall (moved down)
     }
 
-
-        map[7][10] = SPECIAL_DOOR;
-
+   
+    map[7][10] = SPECIAL_DOOR;
 
     // ============================================================
     // BOSS ROOM 2 (Bottom Right)

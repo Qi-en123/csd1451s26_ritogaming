@@ -18,9 +18,6 @@ update game logic, render, free resources,
 #include "Minimap.hpp"
 
 
-#define NUM_TILE_TYPES 9
-#define TILE_ROWS 36
-#define TILE_COLS 64
 
 
 Player player_instance2;

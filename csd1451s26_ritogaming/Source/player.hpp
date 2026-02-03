@@ -38,7 +38,7 @@ typedef struct player_config
     f32 char2_start_y = -950.0f;
 
     // Movement settings
-    f32 move_speed = 20.f; // Player movement speed
+    f32 move_speed = 13.f; // Player movement speed
 
     // This is for hp
     f32 curr_health{};

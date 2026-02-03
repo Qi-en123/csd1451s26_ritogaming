@@ -20,14 +20,12 @@ update game logic, render, free resources,
 
 
 
-Player player_instance2;
-camera cam2{};
-extern f32 tile_size;
-f32 zoom2;
- f32 zoomlevel2;
+//Player player_instance2;
+
+ //f32 zoomlevel2;
  f32 totalWorldW2;
  f32 totalWorldH2;
-extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
+//extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 //AEGfxVertexList* TileMesh = nullptr;
 extern f32 dt;
 
@@ -55,17 +53,17 @@ void boss_load()
 
 void boss_initialize()
 {
-	zoom2= 1.0f;
+	zoom = 1.0f;
 	// Determine tile size to fit both width and height
 	tile_size = 64.f;
-	player_system_init(&player_instance2);
-	player_instance2.config.character_size = tile_size - 4.0f;
-	cam2= init_cam(&player_instance2.x, &player_instance2.y, 60.0f, 5.0f);
+	player_system_init(&player_instance);
+	player_instance.config.character_size = tile_size - 4.0f;
+	cam = init_cam(&player_instance.x, &player_instance.y, 60.0f, 5.0f);
 	init_mesh();
 
-	zoomlevel2 = 2.0f;
-	totalWorldW2 = ((f32)TILE_COLS * tile_size) / zoomlevel2;
-	totalWorldH2 = ((f32)TILE_ROWS * tile_size) / zoomlevel2;
+	//zoomlevel2 = 2.0f;
+	totalWorldW2 = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
+	totalWorldH2 = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	Minimap_Init(totalWorldW2, totalWorldH2, 200.0f); // 200px wide map
 	//printf("Walls created: %zu\n", g_walls.size());
 
@@ -77,7 +75,7 @@ void boss_initialize()
 	//////////////////////////////////////////////////
 
 	initialize_boss_map();
-	generate_walls_from_map(map, 64.0f); // step 2: make walls from map
+	generate_walls_from_map(boss_map, 64.0f); // step 2: make walls from map
 
 	intialize_puzzle_blocks();
 
@@ -91,19 +89,19 @@ void boss_update()
 	///////////////////////////
 	get_zoom(dt);
 	//Bounds anyhow set first
-	simulate_camera(&cam, &player_instance2.x, &player_instance2.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+	simulate_camera(&cam, &player_instance.x, &player_instance.y, -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
 	// Update player system
-	player_system_update(&player_instance2);
+	player_system_update(&player_instance);
 
-	check_button_collision(player_instance2.char1_x, player_instance2.char1_y,
-		player_instance2.char2_x, player_instance2.char2_y,
-		player_instance2.config.character_size / 2.0f);
+	check_button_collision(player_instance.char1_x, player_instance.char1_y,
+		player_instance.char2_x, player_instance.char2_y,
+		player_instance.config.character_size / 2.0f);
 	puzzle_button_manager();
 
 	//check_puzzle_collision(&player_instance);
 	check_and_open_doors();
-	circle_to_rectangle(200, 100, 50, player_instance2.x, player_instance2.y, 25.f, 25.f);
+	circle_to_rectangle(200, 100, 50, player_instance.x, player_instance.y, 25.f, 25.f);
 }
 
 void boss_draw()
@@ -115,10 +113,10 @@ void boss_draw()
 	// Render player system
 
 	render_puzzle_blocks();
-	player_system_render(&player_instance2);
-	//Minimap_Draw(&player_instance, map, TileTextures);
+	player_system_render(&player_instance);
+	Minimap_Draw(&player_instance, map, TileTextures);
 
-	//Minimap_DrawWalls(map);
+	Minimap_DrawWalls(map);
 }
 
 void boss_free()
@@ -133,6 +131,6 @@ void boss_unload()
 		if (TileTextures[i]) AEGfxTextureUnload(TileTextures[i]);
 	free_mesh();
 	unload_puzzle_textures();
-	player_system_free(&player_instance2);
+	player_system_free(&player_instance);
 	//if (TileMesh) AEGfxMeshFree(TileMesh);
 }

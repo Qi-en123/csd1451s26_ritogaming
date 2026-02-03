@@ -16,6 +16,7 @@
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
+Player player_instance;
 
 static void player_system_update_transforms(player* player_ptr) {
     if (!player_ptr) return;

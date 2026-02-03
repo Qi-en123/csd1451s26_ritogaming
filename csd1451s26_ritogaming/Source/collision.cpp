@@ -51,7 +51,7 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
             // MATCHING map.cpp: Use the exact same X calculation
             f32 x = startX + col * tile_size;
 
-            if (map[row][col] == 1)
+            if (map[row][col] == WALL || map[row][col] == SPECIAL_DOOR)
             {
                 Wall w;
                 w.x = x; // Now matches the visual center used in DrawMap

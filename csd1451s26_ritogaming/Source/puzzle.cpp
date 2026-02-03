@@ -22,7 +22,7 @@ std::vector<int> button_indexes{}, pushable_indexes{}; //to store indexes of btn
 std::vector<puzzle> puzzle_blocks;
 
 //vec of pairs to store btn_id and whether triggered or not
-static std::vector<std::pair<int, void(*)(int,int)>> btns{}; //wanna use btn struct instead of pair, to store door row,col
+static std::vector<std::pair<int, void(*)()>> btns{}; //wanna use btn struct instead of pair, to store door row,col
 
 void apple() { map[10][5] = OPENED_DOOR; } //js testing
 
@@ -95,7 +95,7 @@ void intialize_puzzle_blocks() { //in the future will have char const* of text f
 
 		//if id is unique, add it to vec
 		//not sure how to init the different functions tho
-		if (!exists) btns.push_back(std::pair<int, void(*)(int, int)>{curr.button_id, open_door});
+		if (!exists) btns.push_back(std::pair<int, void(*)()>{curr.button_id, apple});
 	}
 }
 
@@ -170,12 +170,8 @@ void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHa
 			if (ss_collision(pushable.position.x, pushable.position.y, puzzle_size / 2.0f, puzzle_size / 2.0f,
 				curr.position.x, curr.position.y, puzzle_size / 2.0f, puzzle_size / 2.0f))
 			{
-				curr.type = BUTTON_DOWN;
-				printf("supposed to be collided");
+				pressed = true;
 				break;
-			}
-			else {
-				curr.type = BUTTON_UP;
 			}
 		}
 

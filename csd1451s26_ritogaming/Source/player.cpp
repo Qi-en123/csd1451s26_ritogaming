@@ -78,7 +78,7 @@ void player_system_init(player* player_ptr, const player_config* config) {
     AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->config.triangle_size, player_ptr->config.triangle_size);
     AEMtx33Rot(&player_ptr->rotate, 0);
 
-    player_ptr->char1_element = EARTH;
+    player_ptr->char1_element = WATER;
     player_ptr->char2_element = FIRE;
 
     // Initialize transform matrices

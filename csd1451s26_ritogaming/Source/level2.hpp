@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:						level2.hpp
-\author:					Qi En
+\author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
 \brief:						This header declares Level 2 (Boss Room) functions for loading,
                             initializing, updating, drawing, freeing resources, and unloading

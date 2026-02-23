@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:          game_state_manager.hpp
-\author:        Qi En
+\author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         Declares the Game State Manager interface, including function pointers for loading, 
 initializing, updating, drawing, freeing, and unloading game states, 

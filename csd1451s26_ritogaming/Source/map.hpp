@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:          map.hpp
-\author:        Qi En
+\author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This header declares dungeon map rendering and initialization
                 functions.

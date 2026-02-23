@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:          map.cpp
-\author:        Qi En
+\author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This file handles tile-based map rendering and initialization.
                 It creates the tile mesh, draws individual tiles and the 

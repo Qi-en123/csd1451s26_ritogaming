@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:						game_State_list.hpp
-\author:					Qi En
+\author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
 \brief:						This header Defines the enumeration of game states, including Level 1, Quit, 
 and Restart, providing a central list of all possible game states.

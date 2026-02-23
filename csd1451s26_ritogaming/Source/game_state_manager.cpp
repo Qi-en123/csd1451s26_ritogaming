@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:          game_state_manager.cpp
-\author:        Qi En
+\author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This file implements the Game State Manager (GSM), which controls which game state is active and
 				which functions are executed at any time during the game.

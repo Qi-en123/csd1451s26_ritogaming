@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:						level2.cpp
-\author:					Qi En
+\author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
 \brief:						This file implements Level 2 (Boss Room) functions to load the assets from a file,
 							initialize the level, update game logic, render, free resources

@@ -1,6 +1,6 @@
 /*!************************************************************************
 \file:						level1.cpp
-\author:					Qi En
+\author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
 \brief:						This file implements Level 1 functions to load the assests from a file, initialize the level,
 update game logic, render, free resources

@@ -1,3 +1,13 @@
+/*!************************************************************************
+\file:          credit.cpp
+\author:        Goh Qi En
+\par DP email:  g.qien@digipen.edu
+\brief:         This file provides functions and global variables to manage game states, including
+                loading, initializing, updating, drawing, freeing, and unloading states. It also
+                implements a credit roll with adjustable speed, perspective scaling, and automatic
+                reset when finished
+**************************************************************************/
+
 #include "AEEngine.h"
 #include "cstdio"
 static s8  credit_font = -1;

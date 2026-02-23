@@ -98,6 +98,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
   <ItemGroup>
     <ClCompile Include="..\Source\camera.cpp" />
     <ClCompile Include="..\Source\collision.cpp" />
+    <ClCompile Include="..\Source\credit.cpp" />
     <ClCompile Include="..\Source\enemy.cpp" />
     <ClCompile Include="..\Source\enemy_manager.cpp" />
     <ClCompile Include="..\Source\game_state_manager.cpp" />
@@ -114,6 +115,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
   <ItemGroup>
     <ClInclude Include="..\Source\camera.hpp" />
     <ClInclude Include="..\Source\collision.hpp" />
+    <ClInclude Include="..\Source\credit.hpp" />
     <ClInclude Include="..\Source\enemy.hpp" />
     <ClInclude Include="..\Source\enemy_manager.hpp" />
     <ClInclude Include="..\Source\game_state_list.hpp" />

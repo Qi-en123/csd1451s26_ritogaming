@@ -10,47 +10,48 @@
 
 #include "AEEngine.h"
 #include "cstdio"
-static s8  credit_font = -1;
-static f32 scrollY = -1.3f;
-static bool finishedScrolling = false;
-static f32 scrollSpeed = 0.25f;          // normal speed
-static f32 fastScrollMultiplier = 3;     // how much faster when holding space
-static f32 totalHeight = 0.f;
+namespace {
+    static s8  credit_font = -1;
+    static f32 scrollY = -1.3f;
+    static bool finishedScrolling = false;
+    static f32 scrollSpeed = 0.25f;          // normal speed
+    static f32 fastScrollMultiplier = 3;     // how much faster when holding space
+    static f32 totalHeight = 0.f;
 
-static const char* credit_lines[] =
-{
-    "Team Rito Gaming",
-    "Team Members:",
-    "DIRECTOR and PROGRAMMER",
-    "Ahmad Qusyairi",
-    "PRODUCER and PROGRAMMER",
-    "Claire Cheong",
-    "PRODUCER, DESIGN LEAD and PROGRAMMER",
-    "Goh Qi En",
-    "AUDIO LEAD, COMPOSER, and PROGRAMMER",
-    "Jerod Lim",
-    " ",
-    "Faculty and Advisors",
-    "Lab management and Instructor",
-    "MR Gerald Wong",
-    "MR Tommy Tan",
-    "DR Soroor",
-    " ",
-    "Created at",
-    "DigiPen Institute of Technology Singapore",
-    "PRESIDENT",
-    "Claude COMAIR",
-    "EXECUTIVES",
-    "Claude COMAIR CHU Jason Yeu Tat Michael GATS",
-    "TAN Chek Ming Prasanna Kumar GHALI",
-    "Mandy WONG Johnny DEEK",
-    " ",
-    "Copyrights for software, tools and libraries",
-    "(C) Kenney Assets",
-    "(C) MetaDigger",
-    NULL
-};
-
+    static const char* credit_lines[] =
+    {
+        "Team Rito Gaming",
+        "Team Members:",
+        "DIRECTOR and PROGRAMMER",
+        "Ahmad Qusyairi",
+        "PRODUCER and PROGRAMMER",
+        "Claire Cheong",
+        "PRODUCER, DESIGN LEAD and PROGRAMMER",
+        "Goh Qi En",
+        "AUDIO LEAD, COMPOSER, and PROGRAMMER",
+        "Jerod Lim",
+        " ",
+        "Faculty and Advisors",
+        "Lab management and Instructor",
+        "MR Gerald Wong",
+        "MR Tommy Tan",
+        "DR Soroor",
+        " ",
+        "Created at",
+        "DigiPen Institute of Technology Singapore",
+        "PRESIDENT",
+        "Claude COMAIR",
+        "EXECUTIVES",
+        "Claude COMAIR CHU Jason Yeu Tat Michael GATS",
+        "TAN Chek Ming Prasanna Kumar GHALI",
+        "Mandy WONG Johnny DEEK",
+        " ",
+        "Copyrights for software, tools and libraries",
+        "(C) Kenney Assets",
+        "(C) MetaDigger",
+        NULL
+    };
+}
 void credit_load()
 {
     // Load font from Assets folder

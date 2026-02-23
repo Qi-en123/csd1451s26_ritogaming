@@ -11,6 +11,7 @@
 #include "level1.hpp"
 #include "level2.hpp"
 #include "credit.hpp"
+#include "opening.hpp"
 
 // ----------------------------------------------------------------------------
 // Current, previous, and next game state identifiers
@@ -68,6 +69,14 @@ void gsm_update()
 		fpDraw = credit_draw;
 		fpFree = credit_free;
 		fpUnload = credit_unload;
+		break;
+	case OPENING:
+		fpLoad = opening_load;
+		fpInitialize = opening_init;
+		fpUpdate = opening_update;
+		fpDraw = opening_draw;
+		fpFree = opening_free;
+		fpUnload = opening_unload;
 		break;
 	case GS_RESTART:
 		break;

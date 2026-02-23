@@ -4,6 +4,8 @@
 \par DP email:				jerodyaowei.lim@digipen.edu
 \co-author:					Claire
 \par co-author DP email:	c.cheong@digipen.edu
+\co-author:					Goh Qi En
+\par co-author DP email:	g.qien@digipen.edu
 \brief:						This file handles mesh initialization and
 							rendering of shapes,sprites, and text, including
 							camera zoom support using AEEngine.
@@ -272,6 +274,8 @@ void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	}
 }
 
+
+
 void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,
 	f32 scale, color color) {
 
@@ -301,4 +305,35 @@ void get_zoom(f32 dt) {
 		zoom -= dt * 2.0f;
 	}
 	zoom = AEClamp(zoom, ZOOM_MIN, ZOOM_MAX);
+}
+
+// for blending
+void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha)
+{
+	if (!texture || !rect_mesh_center) return;
+
+	// Enable blending
+	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+
+	// Set color and transparency
+	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	AEGfxSetTransparency(alpha);
+	AEGfxTextureSet(texture, 0, 0);
+
+	// Transformation: center mesh scaled to width/height
+	AEMtx33 transform, scale, translate;
+	AEMtx33Identity(&transform);
+	AEMtx33Scale(&scale, width, height);
+	AEMtx33Trans(&translate, 0.f, 0.f);   // Keep centered at origin
+	AEMtx33Concat(&transform, &translate, &scale);
+
+	AEGfxSetTransform(transform.m);
+
+	// Draw the mesh
+	AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
+
+	// Reset texture
+	AEGfxTextureSet(nullptr, 0, 0);
 }

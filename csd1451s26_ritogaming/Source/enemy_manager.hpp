@@ -24,7 +24,7 @@ class bat;
 class dragon;
 
 constexpr s32 NUM_GHOST_SLOTS = 10;
-constexpr f32 SPAWN_CHECK_INTERVAL = 2.0f;
+constexpr f32 SPAWN_CHECK_INTERVAL = 3.0f;
 constexpr f32 GHOST_RESPAWN_DELAY = 5.0f;  
 
 struct food_drop {
@@ -37,7 +37,7 @@ struct food_drop {
 };
 
 struct GhostSlot {
-    f32 spawn_x, spawn_y;
+    f32 spawn_x, spawn_y;         
     base_enemy* ghost;  // Pointer to the ghost occupying this slot (nullptr if empty)
     f32 respawn_timer;  // Timer before this slot can respawn
 };

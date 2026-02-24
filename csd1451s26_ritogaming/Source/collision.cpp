@@ -13,6 +13,7 @@ This file defines functions to:
 **************************************************************************/
 
 #include "collision.hpp"
+#include "player.hpp"
 #include <vector>
 #include "map.hpp"
 #include "game_state_manager.hpp"
@@ -183,17 +184,34 @@ bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize)
 
 //this is for puzzle against walls
 bool puzzle_to_wall_collision(f32 newX, f32 newY) {
-    for (Wall& wall : g_walls)
-    {
-        if (ss_collision(newX, newY, (tile_size / 2.0f) - 2.0f, (tile_size / 2.0f)-2.0f,
-            wall.x, wall.y, wall.halfW, wall.halfH))
-        {
-            return true; // collision detected
-        }
-    }
-    return false; // no collision
+    f32 puzzle_hw = (tile_size / 2.0f) - 2.0f;
+
+	for (Wall& wall : g_walls)
+	{
+		if (ss_collision(newX, newY, puzzle_hw, puzzle_hw,
+			wall.x, wall.y, wall.halfW, wall.halfH))
+		{
+			return true; // collision detected
+		}
+	}
+	return false; // no collision
 }
 
+bool puzzle_to_inactive_collision(f32 newX, f32 newY) {
+	f32 puzzle_hw = (tile_size / 2.0f) - 2.0f;
+
+	//Puzzle to inactive player collision
+    //get inactive player
+	Character& ip = (player_instance.current_character == 1)
+		? player_instance.char2 : player_instance.char1;
+	f32 phs = player_instance.config.character_size / 2.0f;
+
+	if (ss_collision(newX, newY, puzzle_hw, puzzle_hw,
+		ip.x, ip.y, phs, phs)) {
+		return true;
+	}
+    return false;
+}
 
 /*!************************************************************************
 \brief Debug draw for all walls

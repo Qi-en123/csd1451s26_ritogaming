@@ -6,12 +6,11 @@
 **************************************************************************/
 #pragma once
 #include "AEEngine.h"
-#include "player.hpp"
 
 //first puzzle "elements", if element block is hit, open door
 
-#define PUZZLE_BLOCK_SPEED 40.0f
-#define PUZZLE_GRAB_RANGE 15.0f
+constexpr f32 PUZZLE_BLOCK_SPEED = 40.0f;
+constexpr f32 PUZZLE_GRAB_RANGE = 15.0f;
 
 extern AEGfxTexture* puzzle_block_textures[];
 
@@ -28,7 +27,7 @@ enum Element {
 	EARTH,
 	FIRE,
 	AIR,
-	ELEMENT_COUNT
+	NO_ELEMENT
 };
 
 enum Direction {
@@ -38,43 +37,21 @@ enum Direction {
 	DOWN
 };
 
-//default this to the get hit one first
-//struct element_block {
-//	Element element{};
-//	AEGfxTexture* texture{};
-//	AEVec2 position{};
-//
-//	element_block(Element e, f32 pos_x, f32 pos_y, AEGfxTexture* tex)
-//		: element{ e }, position{ pos_x,pos_y }, 
-//		texture{ tex } {}
-//};
-
 //type, pos, is_elem, element
 struct puzzle {
 	PuzzleType type{}; //push, elemen, 
-	AEVec2 position{};
-	bool is_elemental{};
+	f32 posx{}, posy{};
+	//bool is_elemental{};
 
 	//might put inside union
 	union {
 		Element element;
-		int button_id;
+		s32 button_id;
 	};
 
 	//constructor for if not elem or btn
-	puzzle(PuzzleType t, AEVec2 pos, bool is_elem) :
-		type{ t }, position{ pos }, is_elemental{ is_elem }, element{ } {
-	};
-	//constructor for if btn
-	puzzle(PuzzleType t, AEVec2 pos, bool is_elem, int btn_id) :
-		type{ t }, position{ pos }, is_elemental{ is_elem }, button_id{ btn_id } {
-	};
-	//constructor for if elemental
-	puzzle(PuzzleType t, AEVec2 pos, bool is_elem, Element elem) :
-		type{ t }, position{ pos }, is_elemental{ is_elem }, element{ elem } {
-	};
-
-	//destructors are fake no such thing
+	puzzle(PuzzleType t, f32 x, f32 y, Element elem) : type{ t }, posx{ x }, posy{ y }, element{ elem } {}
+	puzzle(PuzzleType t, f32 x, f32 y, s32 btn_id) : type{ t }, posx{ x }, posy{ y }, button_id{ btn_id } {}
 };
 
 /**************************************************************************
@@ -89,6 +66,7 @@ void load_puzzle_textures();
 
 //lz comment liao after prototype then comment
 void intialize_puzzle_blocks();
+void initialize_puzzle_blocks_new(char const* filename);
 
 void render_puzzle_blocks();
 

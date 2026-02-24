@@ -90,6 +90,7 @@ void level1_initialize()
 	generate_walls_from_map(map, 64.0f);
 
 	intialize_puzzle_blocks();
+	initialize_puzzle_blocks_new("Assets/Levels/l1_puzzles.txt");
 
 	// Clear any existing enemies and reinitialize with ghosts in top left room
 	g_enemy_manager.clear_all();

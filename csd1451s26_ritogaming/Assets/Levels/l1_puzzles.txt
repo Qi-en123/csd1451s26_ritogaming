@@ -1,0 +1,10 @@
+Puzzles: 4
+
+PUSHABLE 5 7 4
+BUTTON   2 3 1
+BUTTON   4 3 1
+BUTTON   6 3 2
+
+Triggers: 2
+1: (18,4)
+2: (18,5) (18,6) (18,7)

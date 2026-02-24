@@ -147,7 +147,7 @@ bool on_screen(f32 x, f32 y) {
 		y > cam.pos.y - (AEGfxGetWindowHeight() / 2 / zoom) - tile_size);
 }
 
-void draw_circle(AEGfxVertexList* circle_mesh, f32 trans_x, f32 trans_y,
+void draw_circle(AEGfxVertexList* mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y) {
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
@@ -172,7 +172,7 @@ void draw_circle(AEGfxVertexList* circle_mesh, f32 trans_x, f32 trans_y,
 	AEMtx33Concat(&transform, &transform, &scale);
 
 	AEGfxSetTransform(transform.m);
-	AEGfxMeshDraw(circle_mesh, AE_GFX_MDM_TRIANGLES);
+	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
 void draw_rect(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,

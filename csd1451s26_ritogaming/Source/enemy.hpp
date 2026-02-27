@@ -58,21 +58,40 @@ protected:
     f32 reset_range;
 
     // Graphics
-    const char* texture;
-    f32 animation_timer;
+    const char* texture_path;
+    AEGfxTexture* texture;
 
     // Food Drop
     f32 food_heal_percentage;
     const char* food_texture_path;
+    AEGfxTexture* food_texture;
 
 public:
     base_enemy(enemy_type enemy_type, f32 start_x, f32 start_y);
     virtual ~base_enemy() = default;
 
-    // Pure virtual - must be overridden
+    // Pure virtual
+    virtual void load_textures() {
+        if (texture_path && !texture) {
+            texture = AEGfxTextureLoad(texture_path);
+        }
+        if (food_texture_path && !food_texture) {
+            food_texture = AEGfxTextureLoad(food_texture_path);
+        }
+    }
+
+    virtual void unload_textures() {
+        if (texture) {
+            AEGfxTextureUnload(texture);
+            texture = nullptr;
+        }
+        if (food_texture) {
+            AEGfxTextureUnload(food_texture);
+            food_texture = nullptr;
+        }
+    }
     virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
 
-    // Common functions
     virtual void take_damage(f32 amount);
     virtual bool is_dead() const { return current_health <= 0 || !active; }
     virtual bool should_despawn() const { return !active; }
@@ -97,8 +116,10 @@ public:
     enemy_state get_state() const { return state; }
     bool is_active() const { return active; }
     f32 get_food_heal_percentage() const { return food_heal_percentage; }
-    const char* get_texture_path() const { return texture; }
+    const char* get_texture_path() const { return texture_path; }
     const char* get_food_texture_path() const { return food_texture_path; }
+    AEGfxTexture* get_texture() const { return texture; }
+    AEGfxTexture* get_food_texture() const { return food_texture; }
 
     // Setters
     void set_active(bool val) { active = val; }

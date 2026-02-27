@@ -22,8 +22,8 @@ base_enemy::base_enemy(enemy_type enemy_type, f32 start_x, f32 start_y)
     type(enemy_type), state(enemy_state::idle), active(true),
     visible_to_player(false), collision_radius(15.0f),
     sight_range(300.0f), reset_range(500.0f),
-    texture(nullptr), animation_timer(0.0f),
-    food_heal_percentage(0.35f), food_texture_path(nullptr)
+    texture_path(nullptr), food_heal_percentage(0.35f), food_texture_path(nullptr),
+    texture (nullptr), food_texture (nullptr)
 {
 }
 
@@ -158,7 +158,7 @@ ghost_boy::ghost_boy(f32 start_x, f32 start_y)
     food_heal_percentage = 0.35f;  // 35% heal
     sight_range = 400.0f;
 
-    texture = "Assets/Tiles/tile_0006.png";
+    texture_path = "Assets/Tiles/tile_0006.png";
     food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/cream.png";
 }
 
@@ -190,7 +190,7 @@ bat::bat(f32 start_x, f32 start_y)
     food_heal_percentage = 0.50f;  // 50% heal
     sight_range = 350.0f;
 
-    texture = "Assets/kenney_pixel-platformer/tile_0025.png";
+    texture_path = "Assets/kenney_pixel-platformer/tile_0025.png";
     food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/burger.png";
 }
 
@@ -235,7 +235,7 @@ dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32
     size = 150.0f;
     food_heal_percentage = 1.0f;
 
-    texture = "Assets/Tiles/tile_0005.png";
+    texture_path = "Assets/Tiles/tile_0005.png";
     food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/sushi.png";
 }
 

@@ -16,6 +16,8 @@ enemy_manager g_enemy_manager;
 // CONSTRUCTOR / DESTRUCTOR
 // ============================================================================
 enemy_manager::enemy_manager() {
+
+
     ghost_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
     bat_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/burger.png");
     dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
@@ -32,10 +34,6 @@ enemy_manager::~enemy_manager() {
 // GHOST SLOT INITIALIZATION
 // ============================================================================
 void enemy_manager::initialize_ghost_slots() {
-    // Based on your map layout:
-    // Tile size: 64.0f
-    // Map origin: X=-800, Y=450
-    // Player Room 1 (Top Left): rows 3-10, cols 2-9
 
     const f32 TILE_SIZE = 64.0f;
     const f32 MAP_START_X = -1600.0f / 2.0f;  // -800
@@ -86,35 +84,6 @@ void enemy_manager::initialize_ghost_slots() {
 // ============================================================================
 // UPDATE AND RENDER
 // ============================================================================
-//void enemy_manager::update(f32 dt, Player* player, camera* cam) {
-//    // Update all enemies
-//    for (auto& e : enemies) {
-//        if (e->is_active()) {
-//            e->update(dt, player, cam);
-//        }
-//    }
-//
-//    // Update food drops
-//    update_food(dt, player);
-//
-//    // Update respawn timers for empty slots
-//    for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
-//        if (ghost_slots[i].ghost == nullptr && ghost_slots[i].respawn_timer > 0.0f) {
-//            ghost_slots[i].respawn_timer -= dt;
-//        }
-//    }
-//
-//    // Clean up dead enemies and maintain population
-//    cleanup_dead_enemies();
-//
-//    // Periodically check if we need to respawn ghosts
-//    spawn_check_timer += dt;
-//    if (spawn_check_timer >= SPAWN_CHECK_INTERVAL) {
-//        maintain_ghost_population();
-//        spawn_check_timer = 0.0f;
-//    }
-//}
-
 void enemy_manager::update(f32 dt, Player* player, camera* cam) {
     // Only maintain ghost population in Level 1
     if (is_in_level1) {
@@ -164,38 +133,16 @@ void enemy_manager::render() {
     render_food();
 }
 
-//void enemy_manager::render_enemy(base_enemy* e) {
-//    const char* path = e->get_texture_path();
-//    AEGfxTexture* tex = AEGfxTextureLoad(path);
-//    render_sprite(rect_mesh_center, e->get_x(), e->get_y(),
-//        e->get_size(), e->get_size(), tex);
-//    AEGfxTextureUnload(tex);
-//}
-
 void enemy_manager::render_enemy(base_enemy* e) {
-    const char* path = e->get_texture_path();
-    AEGfxTexture* tex = AEGfxTextureLoad(path);
+    AEGfxTexture* tex = e->get_texture();
 
-    if (tex) {
-        render_sprite(rect_mesh_center, e->get_x(), e->get_y(),
-            e->get_size(), e->get_size(), tex);
-        AEGfxTextureUnload(tex);
-    }
-    else {
-        // Texture failed to load, but don't crash
-        printf("[WARNING] Failed to load texture: %s\n", path);
-    }
+    if (tex)  render_sprite(rect_mesh_center, e->get_x(), e->get_y(), e->get_size(), e->get_size(), tex);
 }
 
 // ============================================================================
 // SPAWNING FUNCTIONS
 // ============================================================================
 void enemy_manager::spawn_ghost_at_slot(int slot_index) {
-    if (slot_index < 0 || slot_index >= NUM_GHOST_SLOTS) {
-        printf("[Enemy Manager] Invalid slot index: %d\n", slot_index);
-        return;
-    }
-
     // Check if slot is already occupied
     if (ghost_slots[slot_index].ghost != nullptr) {
         return; // Slot already has a ghost
@@ -208,7 +155,10 @@ void enemy_manager::spawn_ghost_at_slot(int slot_index) {
     enemies.push_back(std::make_unique<ghost_boy>(x, y));
     ghost_slots[slot_index].ghost = enemies.back().get();
 
-    printf("[Enemy Manager] Spawned ghost at slot %d: (%.1f, %.1f)\n", slot_index, x, y);
+    auto new_ghost = std::make_unique<ghost_boy>(x, y);
+    new_ghost->load_textures();
+    ghost_slots[slot_index].ghost = new_ghost.get();
+    enemies.push_back(std::move(new_ghost));
 }
 
 void enemy_manager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom) {

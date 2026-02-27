@@ -332,7 +332,7 @@ void player_render_projectiles(Player* player_ptr)
     {
         if (p.active)
         {
-            draw_circle(circle_mesh, p.x, p.y, p.radius * 2.0f, p.radius * 2.0f);
+            draw_circle(p.x, p.y, p.radius * 2.0f, p.radius * 2.0f);
         }
     }
 }

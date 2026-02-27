@@ -7,14 +7,11 @@
 #pragma once
 #include "AEEngine.h"
 
-//first puzzle "elements", if element block is hit, open door
-
 constexpr f32 PUZZLE_BLOCK_SPEED = 40.0f;
 constexpr f32 PUZZLE_GRAB_RANGE = 15.0f;
 
 extern AEGfxTexture* puzzle_block_textures[];
 
-//MORE ENUMSS I LOVE ENUMS, GIVE ME MORE
 enum PuzzleType {
 	PUSHABLE, //0
 	BUTTON_UP,
@@ -40,8 +37,8 @@ enum Direction {
 //type, pos, is_elem, element
 struct puzzle {
 	PuzzleType type{}; //push, elemen, 
-	f32 posx{}, posy{};
-	//bool is_elemental{};
+	f32 posx{}, posy{};	
+	s32 hidden_from{}; //0,1,2
 
 	//might put inside union
 	union {
@@ -50,8 +47,13 @@ struct puzzle {
 	};
 
 	//constructor for if not elem or btn
-	puzzle(PuzzleType t, f32 x, f32 y, Element elem) : type{ t }, posx{ x }, posy{ y }, element{ elem } {}
-	puzzle(PuzzleType t, f32 x, f32 y, s32 btn_id) : type{ t }, posx{ x }, posy{ y }, button_id{ btn_id } {}
+	puzzle(PuzzleType t, f32 x, f32 y, Element elem, s32 chara) :
+		type{ t }, posx{ x }, posy{ y }, element{ elem }, hidden_from{ chara } {
+	}
+
+	puzzle(PuzzleType t, f32 x, f32 y, s32 btn_id, s32 chara) :
+		type{ t }, posx{ x }, posy{ y }, button_id{ btn_id }, hidden_from{ chara } {
+	}
 };
 
 /**************************************************************************
@@ -64,9 +66,7 @@ struct puzzle {
 **************************************************************************/
 void load_puzzle_textures();
 
-//lz comment liao after prototype then comment
-void intialize_puzzle_blocks();
-void initialize_puzzle_blocks_new(char const* filename);
+void initialize_puzzle_blocks(char const* filename);
 
 void render_puzzle_blocks();
 
@@ -74,7 +74,7 @@ void render_puzzle_blocks();
 bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_index);
 
 //alot of collisions everywhere sry (dk how else to do it :p)
-void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHalfSize);
+//void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHalfSize);
 
 void puzzle_button_manager(); //open to rename suggestions (txt me)
 

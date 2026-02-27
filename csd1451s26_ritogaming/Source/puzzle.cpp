@@ -24,9 +24,6 @@ AEGfxTexture* puzzle_block_textures[PUZZLE_TYPE_COUNT]{};
 //size of puzzle, based off tile size
 static f32 puzzle_size;
 
-//make sure ints below add up to this no.
-int num_puzzle_blocks{ 0 };
-
 //to store indexes of btns and pushables
 std::vector<int> button_indexes{}, pushable_indexes{};
 
@@ -40,11 +37,9 @@ struct buttonTrigger {
 	s32 id;
 	std::vector<std::pair<int, int>> coords;
 };
-
 std::vector<buttonTrigger> btns{};
-//static std::vector<std::pair<int, std::vector<std::pair<int,int>>>> btns{};
 
-void apple() { map[10][5] = OPENED_DOOR; } //js testing
+
 
 void load_puzzle_textures() {
 	char filename[128];
@@ -57,69 +52,7 @@ void load_puzzle_textures() {
 	}
 }
 
-//in the future, this will read from text file to determine puzzle block inits
-//for nao, hard code just to test features
-void intialize_puzzle_blocks() { //in the future will have char const* of text file name
-	//puzzle_size = tile_size - 8.0f;
-	//puzzle_blocks.reserve(num_puzzle_blocks);
-
-	////Simulating for loop vv
-	////--------------- bottom left buttons ---------------//
-	//puzzle tmp{ BUTTON_UP, {-672.0f, -768.0f}, 1 };
-	//puzzle_blocks.push_back(tmp);
-	////this is supposed to be called if(type==button_up || type==button_down)
-	//button_indexes.push_back(0); //this will be changed to 'i'
-
-	//tmp = { BUTTON_UP, {-224.0f, -768.0f}, 1};
-	//puzzle_blocks.push_back(tmp);
-	//button_indexes.push_back(1);
-
-	////--------------- bottom pushable ---------------//
-	//tmp = { PUSHABLE, {-100.0f, -895.0f}, WATER};
-	//puzzle_blocks.push_back(tmp);
-	//pushable_indexes.push_back(2);
-
-	////--------------- top left buttons ---------------//
-	//tmp = { BUTTON_UP, {-224.0f, 256.0f}, 2 };
-	//puzzle_blocks.push_back(tmp);
-	//button_indexes.push_back(3);
-
-	//tmp = { BUTTON_UP, {-672.0f, 256.0f}, 2 };
-	//puzzle_blocks.push_back(tmp);
-	//button_indexes.push_back(4);
-
-	//tmp = { BUTTON_UP, {-448.0f, 256.0f}, 2 };
-	//puzzle_blocks.push_back(tmp);
-	//button_indexes.push_back(5);
-
-	////--------------- top pushable ---------------//
-	//tmp = { PUSHABLE, {-672.0f, 128.0f}};
-	//puzzle_blocks.push_back(tmp);
-	//pushable_indexes.push_back(6);
-
-	////--------------- LAST pushable ---------------//
-	//tmp = { PUSHABLE, {704.0f, 2.0f}, FIRE };
-	//puzzle_blocks.push_back(tmp);
-	//pushable_indexes.push_back(7);
-
-	////Saving button ids for btn manager to use
-	////for each btns
-	//for (int i{}; i < button_indexes.size(); ++i) {
-	//	puzzle& curr = puzzle_blocks[button_indexes[i]];
-
-	//	//if btns_id exists, dont push_back
-	//	bool exists{ false };
-	//	for (int j{}; j < btns.size(); ++j) {
-	//		if (curr.button_id == btns[j].first) exists = true;
-	//	}
-
-	//	//if id is unique, add it to vec
-	//	//not sure how to init the different functions tho
-	//	if (!exists) btns.push_back(std::pair<int, void(*)()>{curr.button_id, apple});
-	//}
-}
-
-void initialize_puzzle_blocks_new(char const* filename) {
+void initialize_puzzle_blocks(char const* filename) {
 	puzzle_size = tile_size - 8.0f;
 
 	std::ifstream ifs{ filename };
@@ -130,6 +63,7 @@ void initialize_puzzle_blocks_new(char const* filename) {
 
 	//Reads first line, gets number of puzzle blocks in level
 	std::string line;
+	s32 num_puzzle_blocks;
 	ifs >> line >> num_puzzle_blocks;
 
 	//idk y nid but the map uses
@@ -139,8 +73,8 @@ void initialize_puzzle_blocks_new(char const* filename) {
 	//Reads and stores values to init puzzle blocks
 	for (int i{}; i < num_puzzle_blocks; ++i) {
 		std::string type;
-		s32 row, col;
-		ifs >> type >> row >> col;
+		s32 row, col, chara;
+		ifs >> type >> row >> col >> chara;
 
 		f32 posx = startX + row * tile_size;
 		f32 posy = startY - col * tile_size;
@@ -150,7 +84,7 @@ void initialize_puzzle_blocks_new(char const* filename) {
 			s32 id;
 			ifs >> id;
 
-			puzzle tmp{ BUTTON_UP, posx, posy, id };
+			puzzle tmp{ BUTTON_UP, posx, posy, id, chara };
 			puzzle_blocks.push_back(tmp);
 			button_indexes.push_back(i);
 
@@ -168,7 +102,7 @@ void initialize_puzzle_blocks_new(char const* filename) {
 			}
 		
 			if (type == "PUSHABLE") {
-				puzzle tmp{ PUSHABLE, posx, posy, e };
+				puzzle tmp{ PUSHABLE, posx, posy, e, chara };
 				puzzle_blocks.push_back(tmp);
 				pushable_indexes.push_back(i);
 
@@ -213,25 +147,27 @@ void initialize_puzzle_blocks_new(char const* filename) {
 }
 
 void render_puzzle_blocks() {
-	for (int i{}; i < num_puzzle_blocks; ++i) {
+	for (size_t i{}; i < puzzle_blocks.size(); ++i) {
 		puzzle& curr = puzzle_blocks[i];
 
+		if (curr.hidden_from == player_instance.current_character) continue;
+		
 		color clr{ white };
 
 		if (!(curr.type == BUTTON_DOWN || curr.type == BUTTON_UP)) {
 			switch (curr.element)
 			{
 			case WATER:
-				clr = { 0.5f,0.5f,1.0f,1.0f };
+				clr = { 0.0f,0.0f,3.0f,1.0f };
 				break;
 			case EARTH:
-				clr = { 0.5f,0.5f,0.5f,1.0f };
+				clr = { 0.0f,0.0f,0.0f,1.0f };
 				break;
 			case FIRE:
-				clr = { 1.0f,0.5f,0.5f,1.0f };
+				clr = { 3.0f,0.0f,0.0f,1.0f };
 				break;
 			case AIR:
-				clr = { 2.0f,2.0f,2.0f,1.0f };
+				clr = { 3.0f,3.0f,3.0f,1.0f };
 				break;
 			default:
 				break;
@@ -245,9 +181,10 @@ void render_puzzle_blocks() {
 
 bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_index)
 {
-	for (int i{}; i < num_puzzle_blocks; ++i)
+	for (size_t i{}; i < puzzle_blocks.size(); ++i)
 	{
 		puzzle& curr = puzzle_blocks[i];
+
 		if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
 			curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
 		{
@@ -264,15 +201,25 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	return false; // no collision
 }
 
-void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHalfSize) {
+void check_button_collision() {
+	f32& p1_x = player_instance.char1.x;
+	f32& p1_y = player_instance.char1.y;
+	f32& p2_x = player_instance.char2.x;
+	f32& p2_y = player_instance.char2.y;
+	f32 phs = player_instance.config.character_size / 2.0f;
+
 	for (int i{}; i < button_indexes.size(); ++i) {
 		puzzle& curr = puzzle_blocks[button_indexes[i]];
+		
+		//don't allow button to activate for certain characters
+		if (curr.hidden_from == player_instance.current_character) continue;
+
 		bool pressed{ false };
 
 		//Players collision (both p1 & p2)
-		if (ss_collision(p1_x, p1_y, playerHalfSize, playerHalfSize,
+		if (ss_collision(p1_x, p1_y, phs, phs,
 			curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f) ||
-			ss_collision(p2_x, p2_y, playerHalfSize, playerHalfSize,
+			ss_collision(p2_x, p2_y, phs, phs,
 				curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
 		{
 			pressed = true;
@@ -295,6 +242,8 @@ void check_button_collision(f32 p1_x, f32 p1_y, f32 p2_x, f32 p2_y, f32 playerHa
 }
 
 void puzzle_button_manager() {
+	check_button_collision();
+
 	//goes through each btn id
 	for (int j{}; j < btns.size(); ++j) {
 		bool triggered{ true };
@@ -344,10 +293,11 @@ bool puzzle_on_puzzle_collision(s32 index, f32 pos_x, f32 pos_y) {
 }
 
 void move_puzzle(s32 index, Direction direction, Element player_elem) {
-	puzzle& puzzle = puzzle_blocks[index];
+	puzzle& curr = puzzle_blocks[index];
 
-	if (puzzle.type != PUSHABLE) return;
-	if (puzzle.element != NO_ELEMENT && puzzle.element != player_elem) return;
+	if (curr.hidden_from == player_instance.current_character) return;
+	if (curr.type != PUSHABLE) return;
+	if (curr.element != NO_ELEMENT && curr.element != player_elem) return;
 
 	f32 dx{}, dy{};
 
@@ -370,11 +320,11 @@ void move_puzzle(s32 index, Direction direction, Element player_elem) {
 	}
 
 	//Check if puzzle if blocked by: Wall | Puzzle | Player
-	if (!puzzle_to_wall_collision(puzzle.posx + dx, puzzle.posy + dy) &&
-		!puzzle_on_puzzle_collision(index, puzzle.posx + dx, puzzle.posy + dy) &&
-		!puzzle_to_inactive_collision(puzzle.posx + dx, puzzle.posy + dy)) {
-		puzzle.posx += dx;
-		puzzle.posy += dy;
+	if (!puzzle_to_wall_collision(curr.posx + dx, curr.posy + dy) &&
+		!puzzle_on_puzzle_collision(index, curr.posx + dx, curr.posy + dy) &&
+		!puzzle_to_inactive_collision(curr.posx + dx, curr.posy + dy)) {
+		curr.posx += dx;
+		curr.posy += dy;
 	}
 }
 
@@ -394,13 +344,15 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	const f32 min_gap{ 3.0f }; //prevent puzzle going inside wall
 	const f32 grab_range{ (player_half_size + puzzle_size / 2.0f) + PUZZLE_GRAB_RANGE };
 
-	if ((dx * dx + dy * dy) < (grab_range * grab_range) &&
-		puzzle.element == player_elem) {
+	//printf("%f, %f\n", (dx * dx + dy * dy),(grab_range * grab_range));
+	//printf("%d, %d\n", puzzle.element, player_elem);
+
+	if ((dx * dx + dy * dy) < (grab_range * grab_range)) {
 		//printf("is dragging");
 		dragging = true;
 		const f32 min_dist = player_half_size + (puzzle_size / 2.0f) + min_gap;
 		f32 newX{ puzzle.posx }, newY{ puzzle.posy };
-
+		
 		//checks if player is top/bottom or left/right using x/y overlap distance
 		if ((player_half_size + puzzle_size / 2.0f) - fabsf(dx) <
 			(player_half_size + puzzle_size / 2.0f) - fabsf(dy)) {

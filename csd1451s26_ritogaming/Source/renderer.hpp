@@ -12,11 +12,21 @@
 #include "AEEngine.h"
 #include "player.hpp"
 #include "enemy.hpp"
+#include <vector>
 
-typedef struct color {
+struct color {
 	f32 r, g, b, a;
-}color;
+};
 
+//pos, color, radius
+struct light {
+	AEVec2 pos;
+	color color;
+	s32 radius;
+	f32 effectiveness;
+};
+
+//Colors
 extern const color red;
 extern const color green;
 extern const color blue;
@@ -24,7 +34,7 @@ extern const color dark_red;
 extern const color white;
 extern const color black;
 
-constexpr f32 anim_duration_per_frame = 0.1f;
+extern std::vector<light> lights;
 
 //Rect pos is at top right corner
 extern AEGfxVertexList* rect_mesh_corner;
@@ -37,6 +47,7 @@ extern f32 zoom;
 
 //Shortcut, js pass in color struct
 void AEGfxSetColorToAdd(const color& c);
+
 void AEGfxSetColorToMultiply(const color& c);
 
 //Initializes rect_mesh_corner, rect_mesh_center & circle_mesh
@@ -48,14 +59,17 @@ void free_mesh();
 //trans_x - translate x
 //trans_y - translate y
 //color is set outside this function, before it is called
-void draw_circle(AEGfxVertexList* circle_mesh, f32 trans_x, f32 trans_y,
+void draw_circle(f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y);
 
 //rect_mesh - Corner or Center mode.
 //trans_x - translate x
 //trans_y - translate y
 //color is set outside this function, before it is called
-void draw_rect(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
+void draw_rect_center(f32 trans_x, f32 trans_y,
+	f32 scale_x, f32 scale_y);
+
+void draw_rect_corner(f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y);
 
 /**************************************************************************
@@ -105,7 +119,7 @@ void render_square_sprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 //rect_mesh - Corner or Center mode (USE RECT MESH)
 //texture is loaded outside this function
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = {1.0f,1.0f,1.0f,1.0f});
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = { 1.0f,1.0f,1.0f,1.0f });
 
 //pos_x - posX in normalized coords (-1.0f to 1.0f)
 //pos_y - posY in normalized coords (-1.0f to 1.0f)

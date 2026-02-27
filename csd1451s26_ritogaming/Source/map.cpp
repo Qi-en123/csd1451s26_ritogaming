@@ -42,6 +42,7 @@ void draw_map(f32 tile_size)
                 continue;
 
             f32 x = startX + col * tile_size;
+
             render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }

@@ -42,6 +42,7 @@ typedef struct player_config
     // This is for hp
     f32 curr_health{};
     f32 max_health{};
+
 } player_config;
 
 // Individual character structure
@@ -56,6 +57,7 @@ typedef struct Character
     s32 character_id{}; // 1 or 2 for identification
     Element element{};  // Character's element (WATER, FIRE, etc.)
 } Character;
+
 
 // Player system structure
 typedef struct Player

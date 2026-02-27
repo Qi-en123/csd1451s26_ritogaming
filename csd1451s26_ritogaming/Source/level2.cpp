@@ -197,9 +197,9 @@ void level2_update()
 
     player_system_update(&player_instance);
 
-    check_button_collision(player_instance.char1.x, player_instance.char1.y,
-        player_instance.char2.x, player_instance.char2.y,
-        player_instance.config.character_size / 2.0f);
+    //check_button_collision(player_instance.char1.x, player_instance.char1.y,
+    //    player_instance.char2.x, player_instance.char2.y,
+    //    player_instance.config.character_size / 2.0f);
     puzzle_button_manager();
 
     check_and_open_doors(&player_instance);

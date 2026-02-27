@@ -89,13 +89,21 @@ void level1_initialize()
 	initialize_dungeon_map();
 	generate_walls_from_map(map, 64.0f);
 
-	intialize_puzzle_blocks();
-	initialize_puzzle_blocks_new("Assets/Levels/l1_puzzles.txt");
+	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
 
 	// Clear any existing enemies and reinitialize with ghosts in top left room
 	g_enemy_manager.clear_all();
-	g_enemy_manager.set_level(true);  
+	g_enemy_manager.set_level(true);
 	g_enemy_manager.initialize_ghost_slots();
+
+	//lights
+	light l1{ {-300.0f,-300.0f}, {0.5f,0.5f,0.0f,1.0f}, 11, 2.0f };
+	light l2{ {-700.0f,-300.0f}, {white}, 11, 2.0f };
+	light l3{ {-700.0f, 300.0f}, {white}, 11, 2.0f };
+	
+	lights.push_back(l1);
+	lights.push_back(l2);
+	lights.push_back(l3);
 }
 
 void level1_update()
@@ -109,13 +117,12 @@ void level1_update()
 
 	player_system_update(&player_instance);
 
-	check_button_collision(player_instance.char1.x, player_instance.char1.y,
-		player_instance.char2.x, player_instance.char2.y,
-		player_instance.config.character_size / 2.0f);
+	//check_button_collision(player_instance.char1.x, player_instance.char1.y,
+	//	player_instance.char2.x, player_instance.char2.y,
+	//	player_instance.config.character_size / 2.0f);
 	puzzle_button_manager();
-	
 
-	////EHERHERHERHEHHRHERHERHEHHREHREHRHEHHEHR
+	////EHERHERHERHdEHHRHERHERHEHHREHREHRHEHHEHR
 	//check_puzzle_collision(&player_instance);
 	//check_and_open_doors();
 	//circle_to_rectangle(200, 100, 50, player_instance.x, player_instance.y, 25.f, 25.f);
@@ -129,6 +136,7 @@ void level1_update()
 
 void level1_draw()
 {
+	AEGfxReset();
 	draw_map(tile_size);	
 	// Debug: draw all walls as semi-transparent red
 	//debug_draw_all_walls();
@@ -136,10 +144,11 @@ void level1_draw()
 
 	render_puzzle_blocks();
 	player_system_render(&player_instance);
+
 	//Minimap_Draw(&player_instance, map, TileTextures);
 	//Minimap_DrawWalls(map);
 
-	g_enemy_manager.render();
+	//g_enemy_manager.render();
 }
 
 void level1_free()

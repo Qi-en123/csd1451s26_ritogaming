@@ -11,6 +11,7 @@ and Restart, providing a central list of all possible game states.
 enum GS_STATES
 {
     OPENING,
+	MAINMENU,
     GS_LEVEL1,   // First level of the game
     CREDIT,
     GS_LEVEL_EDITOR, // Level editor state

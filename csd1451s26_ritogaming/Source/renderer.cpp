@@ -308,32 +308,24 @@ void get_zoom(f32 dt) {
 }
 
 // for blending
-void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha)
+void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x , f32 trans_y )
 {
 	if (!texture || !rect_mesh_center) return;
 
-	// Enable blending
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-
-	// Set color and transparency
 	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
 	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 	AEGfxSetTransparency(alpha);
 	AEGfxTextureSet(texture, 0, 0);
 
-	// Transformation: center mesh scaled to width/height
 	AEMtx33 transform, scale, translate;
 	AEMtx33Identity(&transform);
 	AEMtx33Scale(&scale, width, height);
-	AEMtx33Trans(&translate, 0.f, 0.f);   // Keep centered at origin
+	AEMtx33Trans(&translate, trans_x, trans_y); 
 	AEMtx33Concat(&transform, &translate, &scale);
-
 	AEGfxSetTransform(transform.m);
 
-	// Draw the mesh
 	AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-
-	// Reset texture
 	AEGfxTextureSet(nullptr, 0, 0);
 }

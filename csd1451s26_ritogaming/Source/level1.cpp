@@ -145,6 +145,7 @@ void level1_free()
 {
 	player_system_free(&player_instance);
 	g_enemy_manager.clear_all();
+	free_mesh();
 }
 
 void level1_unload()
@@ -152,6 +153,5 @@ void level1_unload()
 	for (int i = 0; i < NUM_TILE_TYPES; ++i)
 		if (TileTextures[i])
 			AEGfxTextureUnload(TileTextures[i]);
-	free_mesh();
 	unload_puzzle_textures();
 }

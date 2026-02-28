@@ -147,4 +147,5 @@ void credit_unload()
         AEGfxDestroyFont(credit_font);
         credit_font = -1;
     }
+
 }

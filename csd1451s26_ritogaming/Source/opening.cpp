@@ -12,48 +12,76 @@
 #include "game_state_list.hpp"
 #include "utils.hpp"
 
-static AEGfxTexture* logo = nullptr;
-static float         elapsed = 0.f;
-static float         alpha = 0.f;
-static bool          done = false;
-
+namespace {
+     AEGfxTexture* logo = nullptr;
+     float         elapsed = 0.f;
+     float         alpha = 0.f;
+     bool          done = false;
+}
 void opening_load()
 {
     logo = AEGfxTextureLoad("Assets/DigiPen_BLACK.png");
  
 }
 
+// =========================================================
+// Opening Screen Initialization
+// =========================================================
 void opening_init()
 {
-    init_mesh();  
+    init_mesh();  // Create/load mesh needed for the opening screen
+
     AEGfxSetBackgroundColor(0.f, 0.f, 0.f);
-    elapsed = 0.f;
-    alpha = 0.f;
-    done = false;
-    cam.pos.x = 0.f;
-    cam.pos.y = 0.f;
-    zoom = 1.0f;
+    // Set background color to black (RGB: 0,0,0)
+
+    elapsed = 0.f;  // Reset total elapsed time for this scene
+    alpha = 0.f;    // Start fully transparent (for fade-in effect)
+
+    cam.pos.x = 0.f; // Reset camera horizontal position to center (no offset on X axis)
+    cam.pos.y = 0.f; // Reset camera vertical position to center (no offset on Y axis)
+    zoom = 1.0f; // Set camera zoom to normal scale (1.0 = no zoom in/out)
+
 }
 
+
+// =========================================================
+// Opening Screen Update (runs every frame)
+// =========================================================
 void opening_update()
 {
+    // Get frame time (delta time) from engine
     dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+
+    // Accumulate total time since game state started
     elapsed += dt;
 
-    if (elapsed < 2.f)                          // fade in over 2s
-        alpha = elapsed / 2.f;
-    else if (elapsed > 4.f)                     // fade out over 2s (4s to 6s)
-        alpha = 1.f - ((elapsed - 4.f) / 2.f);
-    else
-        alpha = 1.f;                            // fully visible from 2s to 4s
+    // ---------------------------
+    // Fade Logic (Total 6 seconds)
+    // ---------------------------
 
-	// to clamp the alpha value between 0 and 1, just in case
+    if (elapsed < 2.f)
+        alpha = elapsed / 2.f;
+    // Fade in over first 2 seconds
+    // alpha goes from 0 ->c1
+
+    else if (elapsed > 4.f)
+        alpha = 1.f - ((elapsed - 4.f) / 2.f);
+    // Fade out from 4s -> 6s
+    // alpha goes from 1 -> 0
+
+    else
+        alpha = 1.f;
+    // Fully visible between 2s and 4s
+
+
+// Clamp alpha between 0 and 1 (safety check)
     if (alpha < 0.f) alpha = 0.f;
     if (alpha > 1.f) alpha = 1.f;
 
+
+    // After 6 seconds, switch to CREDIT state
     if (elapsed > 6.f)
     {
-        done = true;
         next = CREDIT;
     }
 }
@@ -69,7 +97,7 @@ void opening_draw()
 
 void opening_free()
 {
-    // nothing to free per frame
+    free_mesh();
 }
 
 void opening_unload()

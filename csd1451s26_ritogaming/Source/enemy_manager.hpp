@@ -11,12 +11,12 @@
 #include "collision.hpp"
 #include "renderer.hpp"
 #include "enemy.hpp"
+#include "player.hpp"
 #include <algorithm>
 #include <random>
 #include <memory>
 #include <vector>
 
-struct Player;
 struct camera;
 class base_enemy;
 class ghost_boy;
@@ -42,7 +42,7 @@ struct GhostSlot {
     f32 respawn_timer;  // Timer before this slot can respawn
 };
 
-class enemy_manager {
+class EnemyManager {
 private:
     std::vector<std::unique_ptr<base_enemy>> enemies;
     std::vector<food_drop> food_drops;
@@ -60,8 +60,8 @@ private:
     bool is_in_level1{ true };
 
 public:
-    enemy_manager();
-    ~enemy_manager();
+    EnemyManager();
+    ~EnemyManager();
 
     void update(f32 dt, Player* player, camera* cam);
     void render();
@@ -86,10 +86,14 @@ public:
 
     void set_level(bool is_level1) { is_in_level1 = is_level1; }
 
+	std::vector<std::unique_ptr<base_enemy>> const & get_enemies() const { return enemies; }
+
 private:
     void update_food(f32 dt, Player* player);
     void render_food();
     void render_enemy(base_enemy* enemy);
 };
 
-extern enemy_manager g_enemy_manager;
+void entity_system_update(Player* player_ptr, EnemyManager* enem);
+
+extern EnemyManager enemy_manager;

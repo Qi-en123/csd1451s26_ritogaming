@@ -17,7 +17,7 @@ extern std::vector<Wall> g_walls;
 base_enemy::base_enemy(enemy_type enemy_type, f32 start_x, f32 start_y)
     : x(start_x), y(start_y), spawn_x(start_x), spawn_y(start_y),
     velocity_x(0), velocity_y(0), speed(50.0f), size(25.0f),
-    max_health(100.0f), current_health(100.0f), damage(10.0f),
+    max_health(2), current_health(2), damage(1),
     attack_cooldown(1.0f), attack_timer(0.0f),
     type(enemy_type), state(enemy_state::idle), active(true),
     visible_to_player(false), collision_radius(15.0f),
@@ -27,16 +27,14 @@ base_enemy::base_enemy(enemy_type enemy_type, f32 start_x, f32 start_y)
 {
 }
 
-void base_enemy::take_damage(f32 amount) {
+void base_enemy::take_damage(int amount) {
     if (!active) return;
-
     current_health -= amount;
-
     if (current_health <= 0) {
         current_health = 0;
         state = enemy_state::dead;
-        active = false;
     }
+
 }
 
 void base_enemy::move_towards(f32 target_x, f32 target_y, f32 dt) {
@@ -81,7 +79,7 @@ void base_enemy::move_away_from(f32 target_x, f32 target_y, f32 dt) {
     }
 }
 
-void base_enemy::flee_to_wall(f32 player_x, f32 player_y, f32 dt) {
+void base_enemy::flee_to_wall(f32 player_x, f32 player_y, f32 dt, f32& next_x, f32& next_y) {
     f32 dx = x - player_x;
     f32 dy = y - player_y;
     f32 dist = sqrtf(dx * dx + dy * dy);
@@ -95,22 +93,8 @@ void base_enemy::flee_to_wall(f32 player_x, f32 player_y, f32 dt) {
         dy /= dist;
     }
 
-    f32 next_x = x + dx * speed * dt;
-    f32 next_y = y + dy * speed * dt;
-
-    if (!check_player_collision(next_x, y, size / 2.0f)) {
-        x = next_x;
-    }
-    else {
-        active = false;
-    }
-
-    if (!check_player_collision(x, next_y, size / 2.0f)) {
-        y = next_y;
-    }
-    else {
-        active = false;
-    }
+    next_x = x + dx * speed * dt;
+    next_y = y + dy * speed * dt;
 }
 
 bool base_enemy::is_in_camera_view(camera* cam) const {
@@ -133,7 +117,7 @@ bool base_enemy::collides_with_player(Player* player) const {
     f32 dy = y - player->current_player->y;
     f32 dist = sqrtf(dx * dx + dy * dy);
 
-    return dist < (collision_radius + player->config.character_size / 2.0f);
+    return dist < (collision_radius + player->stats.character_size / 2.0f);
 }
 
 f32 base_enemy::distance_to_player(Player* player) const {
@@ -149,11 +133,11 @@ f32 base_enemy::distance_to_player(Player* player) const {
 // ============================================================================
 ghost_boy::ghost_boy(f32 start_x, f32 start_y)
     : base_enemy(enemy_type::ghost_boy, start_x, start_y),
-    flee_timer(0.0f), has_reached_wall(false)
+    flee_timer(0.0f)
 {
     speed = 80.0f;
-    max_health = 50.0f;
-    current_health = 50.0f;
+    max_health = 2;
+    current_health = 2;
     size = 50.0f;
     food_heal_percentage = 0.35f;  // 35% heal
     sight_range = 400.0f;
@@ -169,7 +153,23 @@ void ghost_boy::update(f32 dt, Player* player, camera* cam) {
 
     if (visible_to_player) {
         state = enemy_state::fleeing;
-        flee_to_wall(player->current_player->x, player->current_player->y, dt);
+		f32 next_x{}, next_y{};
+        flee_to_wall(player->current_player->x, player->current_player->y, dt, next_x, next_y);
+
+        // flee to wall resolution
+        if (!check_player_collision(next_x, y, size / 2.0f)) {
+            x = next_x;
+        }
+        else {
+            state = enemy_state::dead;
+        }
+
+        if (!check_player_collision(x, next_y, size / 2.0f)) {
+            y = next_y;
+        }
+        else {
+            state = enemy_state::dead;
+        }
     }
     else {
         state = enemy_state::idle;
@@ -274,7 +274,7 @@ void dragon::update(f32 dt, Player* player, camera* cam) {
     }
 }
 
-void dragon::take_damage(f32 amount) {
+void dragon::take_damage(int amount) {
     if (!active) return;
 
     hits_received++;

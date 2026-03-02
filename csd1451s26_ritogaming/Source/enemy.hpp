@@ -40,9 +40,10 @@ protected:
     f32 size;
 
     // Health & Combat
-    f32 max_health;
-    f32 current_health;
-    f32 damage;
+    int max_health;
+    int current_health;
+
+    int damage;
     f32 attack_cooldown;
     f32 attack_timer;
 
@@ -92,14 +93,12 @@ public:
     }
     virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
 
-    virtual void take_damage(f32 amount);
-    virtual bool is_dead() const { return current_health <= 0 || !active; }
-    virtual bool should_despawn() const { return !active; }
+    virtual void take_damage(int amount);
 
     // Movement helpers
     void move_towards(f32 target_x, f32 target_y, f32 dt);
     void move_away_from(f32 target_x, f32 target_y, f32 dt);
-    void flee_to_wall(f32 player_x, f32 player_y, f32 dt);
+    void flee_to_wall(f32 player_x, f32 player_y, f32 dt, f32& next_x, f32& next_y);
 
     // Collision & Detection
     bool is_in_camera_view(camera* cam) const;
@@ -110,8 +109,8 @@ public:
     f32 get_x() const { return x; }
     f32 get_y() const { return y; }
     f32 get_size() const { return size; }
-    f32 get_current_health() const { return current_health; }
-    f32 get_max_health() const { return max_health; }
+    int get_current_health() const { return current_health; }
+    int get_max_health() const { return max_health; }
     enemy_type get_type() const { return type; }
     enemy_state get_state() const { return state; }
     bool is_active() const { return active; }
@@ -132,7 +131,6 @@ public:
 class ghost_boy : public base_enemy {
 private:
     f32 flee_timer;
-    bool has_reached_wall;
 
 public:
     ghost_boy(f32 start_x, f32 start_y);
@@ -170,7 +168,7 @@ public:
     ~dragon() override = default;
 
     void update(f32 dt, struct Player* player, camera* cam) override;
-    void take_damage(f32 amount) override;
+    void take_damage(int amount) override;
 
-    bool has_sister_drop() const { return is_boss && is_dead(); }
+    bool has_sister_drop() const { return is_boss && state == enemy_state::dead; }
 };

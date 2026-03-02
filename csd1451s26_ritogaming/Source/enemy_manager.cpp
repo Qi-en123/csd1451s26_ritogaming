@@ -10,12 +10,28 @@
 
 extern s32 map[TILE_ROWS][TILE_COLS];
 
-enemy_manager g_enemy_manager;
+EnemyManager enemy_manager;
+
+/**************************************************************************/
+/*!
+  Updates the player system each frame.
+*/
+/**************************************************************************/
+void entity_system_update(Player* player_ptr, EnemyManager* enem)
+{
+    if (!player_ptr)
+        return;
+
+    f32 dt = (f32)AEFrameRateControllerGetFrameTime();
+
+    update_player_projectiles(player_ptr, dt);
+}
+
 
 // ============================================================================
 // CONSTRUCTOR / DESTRUCTOR
 // ============================================================================
-enemy_manager::enemy_manager() {
+EnemyManager::EnemyManager() :ghost_slots{} {
 
 
     ghost_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
@@ -23,7 +39,7 @@ enemy_manager::enemy_manager() {
     dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
 }
 
-enemy_manager::~enemy_manager() {
+EnemyManager::~EnemyManager() {
     clear_all();
     if (ghost_food_tex)  AEGfxTextureUnload(ghost_food_tex);
     if (bat_food_tex)    AEGfxTextureUnload(bat_food_tex);
@@ -33,7 +49,7 @@ enemy_manager::~enemy_manager() {
 // ============================================================================
 // GHOST SLOT INITIALIZATION
 // ============================================================================
-void enemy_manager::initialize_ghost_slots() {
+void EnemyManager::initialize_ghost_slots() {
 
     const f32 TILE_SIZE = 64.0f;
     const f32 MAP_START_X = -1600.0f / 2.0f;  // -800
@@ -84,7 +100,13 @@ void enemy_manager::initialize_ghost_slots() {
 // ============================================================================
 // UPDATE AND RENDER
 // ============================================================================
-void enemy_manager::update(f32 dt, Player* player, camera* cam) {
+void EnemyManager::update(f32 dt, Player* player, camera* cam) {
+    for (auto& e : enemies) {
+        if (e->get_state() == enemy_state::dead) {
+            e->set_active(false);
+        }
+    }
+
     // Only maintain ghost population in Level 1
     if (is_in_level1) {
         // Update all enemies
@@ -124,7 +146,7 @@ void enemy_manager::update(f32 dt, Player* player, camera* cam) {
     cleanup_dead_enemies();
 }
 
-void enemy_manager::render() {
+void EnemyManager::render() {
     for (auto& e : enemies) {
         if (e->is_active()) {
             render_enemy(e.get());
@@ -133,7 +155,7 @@ void enemy_manager::render() {
     render_food();
 }
 
-void enemy_manager::render_enemy(base_enemy* e) {
+void EnemyManager::render_enemy(base_enemy* e) {
     AEGfxTexture* tex = e->get_texture();
 
     if (tex)  render_sprite(rect_mesh_center, e->get_x(), e->get_y(), e->get_size(), e->get_size(), tex);
@@ -142,7 +164,7 @@ void enemy_manager::render_enemy(base_enemy* e) {
 // ============================================================================
 // SPAWNING FUNCTIONS
 // ============================================================================
-void enemy_manager::spawn_ghost_at_slot(int slot_index) {
+void EnemyManager::spawn_ghost_at_slot(int slot_index) {
     // Check if slot is already occupied
     if (ghost_slots[slot_index].ghost != nullptr) {
         return; // Slot already has a ghost
@@ -161,7 +183,7 @@ void enemy_manager::spawn_ghost_at_slot(int slot_index) {
     enemies.push_back(std::move(new_ghost));
 }
 
-void enemy_manager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom) {
+void EnemyManager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom) {
     // Check if a dragon already exists
     for (auto& enemy : enemies) {
         if (enemy && enemy->get_type() == enemy_type::dragon && enemy->is_active()) {
@@ -177,7 +199,7 @@ void enemy_manager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_to
 // ============================================================================
 // FOOD SYSTEM
 // ============================================================================
-void enemy_manager::spawn_food(f32 x, f32 y, f32 heal_percentage, const char* texture_path) {
+void EnemyManager::spawn_food(f32 x, f32 y, f32 heal_percentage, const char* texture_path) {
     food_drop food;
     food.x = x;
     food.y = y;
@@ -204,7 +226,7 @@ void enemy_manager::spawn_food(f32 x, f32 y, f32 heal_percentage, const char* te
     food_drops.push_back(food);
 }
 
-void enemy_manager::update_food(f32 dt, Player* player) {
+void EnemyManager::update_food(f32 dt, Player* player) {
     for (auto& food : food_drops) {
         if (!food.active) continue;
 
@@ -220,7 +242,7 @@ void enemy_manager::update_food(f32 dt, Player* player) {
         f32 dy = food.y - player->current_player->y;
         f32 dist = sqrtf(dx * dx + dy * dy);
 
-        if (dist < (food.size + player->config.character_size / 2.0f)) {
+        if (dist < (food.size + player->stats.character_size / 2.0f)) {
             printf("[Food] Player picked up food! Healing %.0f%%\n", food.heal_percentage * 100.0f);
             // TODO: Actually heal the player here
             food.active = false;
@@ -235,7 +257,7 @@ void enemy_manager::update_food(f32 dt, Player* player) {
     );
 }
 
-void enemy_manager::render_food() {
+void EnemyManager::render_food() {
     for (const auto& food : food_drops) {
         if (food.active && food.texture) {
             render_sprite(rect_mesh_center, food.x, food.y,
@@ -247,7 +269,7 @@ void enemy_manager::render_food() {
 // ============================================================================
 // COMBAT
 // ============================================================================
-void enemy_manager::check_player_attacks(Player* player, f32 attack_range, f32 damage) {
+void EnemyManager::check_player_attacks(Player* player, f32 attack_range, f32 damage) {
     for (auto& enemy : enemies) {
         if (!enemy || !enemy->is_active()) continue;
 
@@ -263,11 +285,11 @@ void enemy_manager::check_player_attacks(Player* player, f32 attack_range, f32 d
 // ============================================================================
 // CLEANUP AND MAINTENANCE
 // ============================================================================
-void enemy_manager::cleanup_dead_enemies() {
+void EnemyManager::cleanup_dead_enemies() {
     // Find which ghosts died and mark their slots as empty with respawn timer
     for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
         if (ghost_slots[i].ghost != nullptr) {
-            if (ghost_slots[i].ghost->is_dead()) {
+            if (ghost_slots[i].ghost->get_state() == enemy_state::dead) {
                 printf("[Enemy Manager] Ghost in slot %d died, respawning in %.1fs\n",
                     i, GHOST_RESPAWN_DELAY);
 
@@ -287,12 +309,12 @@ void enemy_manager::cleanup_dead_enemies() {
     // Remove dead enemies from the vector
     enemies.erase(
         std::remove_if(enemies.begin(), enemies.end(),
-            [](const auto& e) { return e->is_dead(); }),
+            [](const auto& e) { return e->get_state() == enemy_state::dead; }),
         enemies.end()
     );
 }
 
-void enemy_manager::maintain_ghost_population() {
+void EnemyManager::maintain_ghost_population() {
     // Only respawn ONE ghost at a time whose timer has expired
     for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
         if (ghost_slots[i].ghost == nullptr && ghost_slots[i].respawn_timer <= 0.0f) {
@@ -305,21 +327,21 @@ void enemy_manager::maintain_ghost_population() {
 // ============================================================================
 // UTILITY
 // ============================================================================
-size_t enemy_manager::get_active_enemy_count() const {
+size_t EnemyManager::get_active_enemy_count() const {
     return std::count_if(enemies.begin(), enemies.end(),
         [](const std::unique_ptr<base_enemy>& e) {
             return e && e->is_active();
         });
 }
 
-size_t enemy_manager::get_ghost_count() const {
+size_t EnemyManager::get_ghost_count() const {
     return std::count_if(enemies.begin(), enemies.end(),
         [](const auto& e) {
             return e->is_active() && e->get_type() == enemy_type::ghost_boy;
         });
 }
 
-void enemy_manager::clear_all() {
+void EnemyManager::clear_all() {
     enemies.clear();
     food_drops.clear();
 
@@ -333,7 +355,7 @@ void enemy_manager::clear_all() {
 // ============================================================================
 // PROJECTILE TO ENEMY
 // ============================================================================v
-bool enemy_manager::check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage) {
+bool EnemyManager::check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage) {
     // This is the SAME loop logic you posted!
     for (auto& enemy : enemies) {
         if (!enemy || !enemy->is_active()) continue;

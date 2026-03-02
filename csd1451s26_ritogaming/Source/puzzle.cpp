@@ -40,6 +40,7 @@ struct buttonTrigger {
 std::vector<buttonTrigger> btns{};
 
 
+#pragma region FILE READING & WRITING
 
 void load_puzzle_textures() {
 	char filename[128];
@@ -108,6 +109,11 @@ void initialize_puzzle_blocks(char const* filename) {
 
 				//std::cout << type << ' ' << row * tile_size << ' ' << col * tile_size << ' ' << elem << '\n';
 			}
+
+			else if (type == "PIT") {
+				puzzle tmp{ PIT,posx,posy,e,chara };
+				puzzle_blocks.push_back(tmp);
+			}
 		}
 	}
 
@@ -146,15 +152,23 @@ void initialize_puzzle_blocks(char const* filename) {
 	ifs.close();
 }
 
+#pragma endregion
+
+
 void render_puzzle_blocks() {
 	for (size_t i{}; i < puzzle_blocks.size(); ++i) {
 		puzzle& curr = puzzle_blocks[i];
 
+		//skips inactive puzzles
+		if (!curr.active) continue;
+
+		//only renders for characters based on who this is "hidden_from"
 		if (curr.hidden_from == player_instance.current_character) continue;
 		
 		color clr{ white };
 
-		if (!(curr.type == BUTTON_DOWN || curr.type == BUTTON_UP)) {
+		//for now, only pushables have elements
+		if (curr.type == PUSHABLE) {
 			switch (curr.element)
 			{
 			case WATER:
@@ -184,14 +198,20 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	for (size_t i{}; i < puzzle_blocks.size(); ++i)
 	{
 		puzzle& curr = puzzle_blocks[i];
+		//skips inactive blocks
+		if (!curr.active) continue;
 
 		if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
 			curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
 		{
-			if (curr.type == BUTTON_UP || curr.type == BUTTON_DOWN) {
+			if (curr.type == BUTTON_UP || curr.type == BUTTON_DOWN || curr.type == PIT_FILLED) {
 				continue;
 			}
 
+			if (curr.type == PIT) {
+				puzzle_index = i;
+				return true;
+			}
 			// Debug: print tile coordinates
 			//printf("Colliding with puzzle at (%.2f, %.2f)\n", e_block.position.x, e_block.position.y);
 			puzzle_index = i;
@@ -201,7 +221,7 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	return false; // no collision
 }
 
-void check_button_collision() {
+void check_button_pressed() {
 	f32& p1_x = player_instance.char1.x;
 	f32& p1_y = player_instance.char1.y;
 	f32& p2_x = player_instance.char2.x;
@@ -211,12 +231,15 @@ void check_button_collision() {
 	for (int i{}; i < button_indexes.size(); ++i) {
 		puzzle& curr = puzzle_blocks[button_indexes[i]];
 		
+		//skips inactive buttons (although all buttons shld be always active)
+		if (!curr.active) continue;
+		
 		//don't allow button to activate for certain characters
 		if (curr.hidden_from == player_instance.current_character) continue;
 
 		bool pressed{ false };
 
-		//Players collision (both p1 & p2)
+		//Check if either players are standing on button (both p1 & p2)
 		if (ss_collision(p1_x, p1_y, phs, phs,
 			curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f) ||
 			ss_collision(p2_x, p2_y, phs, phs,
@@ -225,9 +248,11 @@ void check_button_collision() {
 			pressed = true;
 		}
 
-		//Puzzle collision
+		//Check if any pushables are on top of button
 		for (int j{}; j < pushable_indexes.size(); ++j) {
 			puzzle& pushable = puzzle_blocks[pushable_indexes[j]];
+			//skips inactive pushables
+			if (!pushable.active) continue;
 
 			if (ss_collision(pushable.posx, pushable.posy, puzzle_size / 2.0f, puzzle_size / 2.0f,
 				curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
@@ -237,12 +262,13 @@ void check_button_collision() {
 			}
 		}
 
+		//Set button to down if pressed by anything
 		curr.type = pressed ? BUTTON_DOWN : BUTTON_UP;
 	}
 }
 
 void puzzle_button_manager() {
-	check_button_collision();
+	check_button_pressed();
 
 	//goes through each btn id
 	for (int j{}; j < btns.size(); ++j) {
@@ -251,6 +277,9 @@ void puzzle_button_manager() {
 		//goes through each btn
 		for (int i{}; i < button_indexes.size(); ++i) {
 			puzzle& curr = puzzle_blocks[button_indexes[i]];
+
+			//skips inactive buttons
+			if (!curr.active) continue;
 
 			//if triggered
 			if (curr.button_id == btns[j].id) {
@@ -273,7 +302,7 @@ void puzzle_button_manager() {
 }
 
 //make this private for nao
-bool puzzle_on_puzzle_collision(s32 index, f32 pos_x, f32 pos_y) {
+bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
 	f32 hts = tile_size / 2.0f;
 
 	for (int i{}; i < puzzle_blocks.size(); ++i) {
@@ -281,12 +310,42 @@ bool puzzle_on_puzzle_collision(s32 index, f32 pos_x, f32 pos_y) {
 
 		puzzle& curr = puzzle_blocks[i];
 
-		//button triggers done in another function to prevent confusion
-		if (curr.type == BUTTON_DOWN || curr.type == BUTTON_UP) continue; 
+		//skips inactive puzzles
+		if (!curr.active) continue;
 
-		if (ss_collision(curr.posx, curr.posy, hts, hts,
-			pos_x, pos_y, hts, hts)) {
-			return true;
+		//button triggers done in another function to prevent confusion
+		switch (curr.type) {
+
+		case BUTTON_DOWN:
+		case BUTTON_UP:
+		case PIT_FILLED:
+			continue;
+			break;
+
+		case PIT:
+			//check if pos.x and pos.y is inside the pit enough
+			//threshold represents how overlapped both axis must be to be considered "in"
+			if (fabsf(curr.posx - pos_x) / (puzzle_size + puzzle_size) < WITHIN_PIT_THRESHOLD &&
+				fabsf(curr.posy - pos_y) / (puzzle_size + puzzle_size) < WITHIN_PIT_THRESHOLD) {
+
+				//"remove" pushable, its now in the pit :(
+				puzzle_blocks[index].active = false;
+				//change type to filled
+				curr.type = PIT_FILLED;
+			}
+
+			break;
+
+		case PUSHABLE:
+			//check collision against other puzzles
+			if (ss_collision(curr.posx, curr.posy, hts, hts,
+				pos_x, pos_y, hts, hts)) {
+				return true;
+			}
+			break;
+
+		default:
+			break;
 		}
 	}
 	return false;
@@ -295,6 +354,7 @@ bool puzzle_on_puzzle_collision(s32 index, f32 pos_x, f32 pos_y) {
 void move_puzzle(s32 index, Direction direction, Element player_elem) {
 	puzzle& curr = puzzle_blocks[index];
 
+	//printf("%d", index);
 	if (curr.hidden_from == player_instance.current_character) return;
 	if (curr.type != PUSHABLE) return;
 	if (curr.element != NO_ELEMENT && curr.element != player_elem) return;
@@ -321,7 +381,7 @@ void move_puzzle(s32 index, Direction direction, Element player_elem) {
 
 	//Check if puzzle if blocked by: Wall | Puzzle | Player
 	if (!puzzle_to_wall_collision(curr.posx + dx, curr.posy + dy) &&
-		!puzzle_on_puzzle_collision(index, curr.posx + dx, curr.posy + dy) &&
+		!puzzle_collide_puzzles(index, curr.posx + dx, curr.posy + dy) &&
 		!puzzle_to_inactive_collision(curr.posx + dx, curr.posy + dy)) {
 		curr.posx += dx;
 		curr.posy += dy;
@@ -338,6 +398,7 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	if (puzzle.type != PUSHABLE) return;
 	if (puzzle.element != NO_ELEMENT && puzzle.element != player_elem) return;
 
+	//x & y axis distances between player and puzzle
 	f32 dx{ player_pos_x - puzzle.posx };
 	f32 dy{ player_pos_y - puzzle.posy };
 
@@ -357,6 +418,7 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 		if ((player_half_size + puzzle_size / 2.0f) - fabsf(dx) <
 			(player_half_size + puzzle_size / 2.0f) - fabsf(dy)) {
 
+			//comes here if x overlap is greater (player is left/right)
 			newX = (puzzle.posx > player_pos_x) ?
 				player_pos_x + min_dist : player_pos_x - min_dist;
 		}
@@ -366,7 +428,7 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 		}
 
 		if (!puzzle_to_wall_collision(newX, newY) &&
-			!puzzle_on_puzzle_collision(index, newX, newY)) {
+			!puzzle_collide_puzzles(index, newX, newY)) {
 			puzzle.posx = newX;
 			puzzle.posy = newY;
 		}

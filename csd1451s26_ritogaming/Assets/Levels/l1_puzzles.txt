@@ -1,6 +1,7 @@
-Puzzles: 2
+Puzzles: 3
 
 BUTTON   2 3 2 1
+PIT      5 10 0 0
 PUSHABLE 8 9 1 4
 
 Triggers: 1

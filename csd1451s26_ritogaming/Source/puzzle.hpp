@@ -9,6 +9,7 @@
 
 constexpr f32 PUZZLE_BLOCK_SPEED = 40.0f;
 constexpr f32 PUZZLE_GRAB_RANGE = 15.0f;
+constexpr f32 WITHIN_PIT_THRESHOLD = 0.15f;
 
 extern AEGfxTexture* puzzle_block_textures[];
 
@@ -16,6 +17,8 @@ enum PuzzleType {
 	PUSHABLE, //0
 	BUTTON_UP,
 	BUTTON_DOWN,
+	PIT,
+	PIT_FILLED,
 	PUZZLE_TYPE_COUNT
 };
 
@@ -39,20 +42,21 @@ struct puzzle {
 	PuzzleType type{}; //push, elemen, 
 	f32 posx{}, posy{};	
 	s32 hidden_from{}; //0,1,2
+	bool active{};
 
 	//might put inside union
 	union {
-		Element element;
-		s32 button_id;
+		Element element; //used for non buttons/non pits
+		s32 button_id; //used for BUTTON_UP||BUTTON_DOWN puzzles
 	};
 
 	//constructor for if not elem or btn
-	puzzle(PuzzleType t, f32 x, f32 y, Element elem, s32 chara) :
-		type{ t }, posx{ x }, posy{ y }, element{ elem }, hidden_from{ chara } {
+	explicit puzzle(PuzzleType t, f32 x, f32 y, Element elem, s32 chara) :
+		type{ t }, posx{ x }, posy{ y }, element{ elem }, hidden_from{ chara }, active{ true } {
 	}
 
-	puzzle(PuzzleType t, f32 x, f32 y, s32 btn_id, s32 chara) :
-		type{ t }, posx{ x }, posy{ y }, button_id{ btn_id }, hidden_from{ chara } {
+	explicit puzzle(PuzzleType t, f32 x, f32 y, s32 btn_id, s32 chara) :
+		type{ t }, posx{ x }, posy{ y }, button_id{ btn_id }, hidden_from{ chara }, active{ true } {
 	}
 };
 

@@ -197,6 +197,7 @@ bool puzzle_to_wall_collision(f32 newX, f32 newY) {
 	return false; // no collision
 }
 
+//Collision check against inactive player
 bool puzzle_to_inactive_collision(f32 newX, f32 newY) {
 	f32 puzzle_hw = (tile_size / 2.0f) - 2.0f;
 

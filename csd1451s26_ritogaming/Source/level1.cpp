@@ -16,7 +16,7 @@ update game logic, render, free resources
 #include "game_state_manager.hpp"
 #include "puzzle.hpp"
 #include "utils.hpp"
-#include "Minimap.hpp"
+#include "minimap.hpp"
 
 
 #define NUM_TILE_TYPES 10
@@ -84,7 +84,7 @@ void level1_initialize()
 
 	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
-	Minimap_Init(totalWorldW, totalWorldH, 200.0f);
+	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
 	initialize_dungeon_map();
 	generate_walls_from_map(map, 64.0f);
@@ -135,8 +135,9 @@ void level1_draw()
 
 	render_puzzle_blocks();
 	player_system_render(&player_instance);
-	//Minimap_Draw(&player_instance, map, TileTextures);
+	minimap_draw(&player_instance, map, TileTextures);
 	//Minimap_DrawWalls(map);
+
 
 	g_enemy_manager.render();
 }
@@ -150,8 +151,16 @@ void level1_free()
 void level1_unload()
 {
 	for (int i = 0; i < NUM_TILE_TYPES; ++i)
-		if (TileTextures[i])
+	{
+		// Only attempt to unload if the pointer is not null
+		if (TileTextures[i] != nullptr)
+		{
 			AEGfxTextureUnload(TileTextures[i]);
+			// CRITICAL: Reset to nullptr so we don't try to unload it again
+			TileTextures[i] = nullptr;
+		}
+	}
 	free_mesh();
+	minimap_unload();
 	unload_puzzle_textures();
 }

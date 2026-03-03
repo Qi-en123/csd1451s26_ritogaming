@@ -31,7 +31,7 @@
     <ClCompile Include="..\Source\map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Minimap.cpp">
+    <ClCompile Include="..\Source\minimap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\player.cpp">
@@ -75,7 +75,7 @@
     <ClInclude Include="..\Source\map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Minimap.hpp">
+    <ClInclude Include="..\Source\minimap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\player.hpp">

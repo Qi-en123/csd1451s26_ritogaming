@@ -23,6 +23,15 @@ typedef struct Projectile
     bool active;
 } Projectile;
 
+struct Particle {
+    f32 x, y;
+    f32 vx, vy;
+    f32 life;     // Current life (seconds)
+    f32 maxLife;  // Total duration
+    f32 size;
+    bool active;
+};
+
 typedef struct player_config
 {
     // Size settings
@@ -83,6 +92,7 @@ typedef struct Player
 
     // Projectile system
     std::vector<Projectile> projectiles;
+    std::vector<Particle> particles;
 
     // Last movement direction for shooting
     f32 last_dir_x{}, last_dir_y{};

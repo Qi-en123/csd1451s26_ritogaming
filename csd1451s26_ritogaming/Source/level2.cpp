@@ -15,7 +15,7 @@
 #include "game_state_manager.hpp"
 #include "puzzle.hpp"
 #include "utils.hpp"
-#include "Minimap.hpp"
+#include "minimap.hpp"
 #include "enemy_manager.hpp"
 
 #define NUM_TILE_TYPES 9
@@ -160,7 +160,7 @@ void level2_initialize()
 
     totalWorldW2 = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
     totalWorldH2 = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
-    Minimap_Init(totalWorldW2, totalWorldH2, 200.0f);
+    minimap_init(totalWorldW2, totalWorldH2, 200.0f);
 
     initialize_boss_map();
     generate_walls_from_map(boss_map, 64.0f);
@@ -213,7 +213,8 @@ void level2_draw()
     draw_boss_map(tile_size);
 
     player_system_render(&player_instance);
-
+    minimap_draw(&player_instance, map, TileTextures);
+    //Minimap_DrawWalls(map);
     // Render enemies (dragon)
     g_enemy_manager.render();
 }

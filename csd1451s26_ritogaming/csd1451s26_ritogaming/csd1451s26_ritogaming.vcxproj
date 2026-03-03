@@ -106,7 +106,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\level2.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
     <ClCompile Include="..\Source\map.cpp" />
-    <ClCompile Include="..\Source\Minimap.cpp" />
+    <ClCompile Include="..\Source\minimap.cpp" />
     <ClCompile Include="..\Source\player.cpp" />
     <ClCompile Include="..\Source\puzzle.cpp" />
     <ClCompile Include="..\Source\renderer.cpp" />
@@ -122,7 +122,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\level1.hpp" />
     <ClInclude Include="..\Source\level2.hpp" />
     <ClInclude Include="..\Source\map.hpp" />
-    <ClInclude Include="..\Source\Minimap.hpp" />
+    <ClInclude Include="..\Source\minimap.hpp" />
     <ClInclude Include="..\Source\player.hpp" />
     <ClInclude Include="..\Source\puzzle.hpp" />
     <ClInclude Include="..\Source\renderer.hpp" />

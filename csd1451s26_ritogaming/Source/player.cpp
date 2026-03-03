@@ -23,7 +23,7 @@
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
-#define DAMAGE 1000.0f // change this for fireball damage
+#define DAMAGE 20.0f // change this for fireball damage
 
 // Global player instance definition
 Player player_instance;
@@ -83,7 +83,7 @@ void player_system_init(Player* player_ptr, const player_config* config)
     player_ptr->char1.speed = player_ptr->config.move_speed;
     player_ptr->char1.character_id = 1;
     player_ptr->char1.element = WATER;
-    player_ptr->char1.texture = nullptr;
+    player_ptr->char1.texture = TileTextures[4];
 
     // --- Character 2 setup ---
     player_ptr->char2.x = player_ptr->config.char2_start_x;
@@ -91,7 +91,7 @@ void player_system_init(Player* player_ptr, const player_config* config)
     player_ptr->char2.speed = player_ptr->config.move_speed;
     player_ptr->char2.character_id = 2;
     player_ptr->char2.element = FIRE;
-    player_ptr->char2.texture = nullptr;
+    player_ptr->char2.texture = TileTextures[3];
 
     // Default to controlling Character 1
     player_ptr->current_player = &player_ptr->char1;
@@ -277,7 +277,34 @@ void player_handle_shooting(Player* player_ptr)
         player_ptr->projectiles.push_back(new_fire);
     }
 }
+void player_update_particles(Player* player_ptr, f32 dt) {
+    for (size_t i = 0; i < player_ptr->particles.size(); ++i) {
+        Particle& p = player_ptr->particles[i];
 
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+
+        if (p.life <= 0) {
+            player_ptr->particles.erase(player_ptr->particles.begin() + i);
+            i--;
+        }
+    }
+}
+
+void player_render_particles(Player* player_ptr) {
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+
+    for (const auto& p : player_ptr->particles) {
+        // Fade the alpha based on remaining life
+        float alpha = p.life / p.maxLife;
+        AEGfxSetColorToMultiply(1.0f, 0.3f, 0.0f, alpha); // Red-Orange fire
+
+        // Use your existing draw_circle or draw_rect helper
+        draw_circle(circle_mesh, p.x, p.y, p.size * alpha, p.size * alpha);
+    }
+}
+    
 /**************************************************************************/
 /*!
   Updates projectile positions and handles collisions.
@@ -294,6 +321,21 @@ void player_update_projectiles(Player* player_ptr, f32 dt)
 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
+
+        // --- PARTICLE SPAWNING ---
+        // Every frame, create a "trail" particle
+        Particle trail;
+        trail.x = p.x;
+        trail.y = p.y;
+        // Give it a tiny bit of random drift
+        trail.vx = ((float)rand() / RAND_MAX - 0.5f) * 20.0f;
+        trail.vy = ((float)rand() / RAND_MAX - 0.5f) * 20.0f;
+        trail.maxLife = 0.5f; // Particles last half a second
+        trail.life = trail.maxLife;
+        trail.size = 10.0f;
+        trail.active = true;
+
+        player_ptr->particles.push_back(trail);
 
         // Check if fireball hits wall
         if (check_projectile_collision(p.x, p.y, p.radius))
@@ -346,6 +388,7 @@ void player_system_render(Player* player_ptr)
 {
     if (!player_ptr)
         return;
+    player_render_particles(player_ptr);
 
     // Draw Character 1
     render_sprite(rect_mesh_center, player_ptr->char1.x, player_ptr->char1.y,
@@ -388,6 +431,7 @@ void player_system_update(Player* player_ptr)
     player_handle_shooting(player_ptr);
     player_update_projectiles(player_ptr, dt);
     player_system_update_transforms(player_ptr);
+    player_update_particles(player_ptr, dt);
 }
 
 /**************************************************************************/
@@ -400,19 +444,12 @@ void player_system_free(Player* player_ptr)
     if (!player_ptr)
         return;
 
-    // Unload character textures if they were loaded individually
-    if (player_ptr->char1.texture)
-    {
-        AEGfxTextureUnload(player_ptr->char1.texture);
-        player_ptr->char1.texture = nullptr;
-    }
+   
+    player_ptr->char1.texture = nullptr;
+    player_ptr->char2.texture = nullptr;
 
-    if (player_ptr->char2.texture)
-    {
-        AEGfxTextureUnload(player_ptr->char2.texture);
-        player_ptr->char2.texture = nullptr;
-    }
-
+    player_ptr->projectiles.clear(); // Clean up projectiles
+    player_ptr->particles.clear(); 
     // Clear active player reference
     player_ptr->current_player = nullptr;
 }

@@ -17,6 +17,7 @@ update game logic, render, free resources
 #include "puzzle.hpp"
 #include "utils.hpp"
 #include "Minimap.hpp"
+#include "ui_manager.hpp"
 
 
 #define NUM_TILE_TYPES 10
@@ -42,6 +43,7 @@ void level1_load()
 			printf("Failed to load: %s\n", filename);
 	}
 	load_puzzle_textures();
+	load_ui_textures(&ui_manager);
 }
 
 //void level1_initialize()
@@ -52,7 +54,7 @@ void level1_load()
 //	
 //	tile_size = 64.f;
 //	player_system_init(&player_instance);
-//	player_instance.config.character_size = tile_size - 8.0f;
+//	player_instance.stats.character_size = tile_size - 8.0f;
 //	// Camera follows the active character via the pointer
 //	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 //	init_mesh();
@@ -75,8 +77,8 @@ void level1_initialize()
 	zoom = 1.1f;
 
 	tile_size = 64.f;
-	player_system_init(&player_instance);
-	player_instance.config.character_size = tile_size - 8.0f;
+	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
+	player_instance.stats.character_size = tile_size - 8.0f;
 
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
@@ -92,10 +94,10 @@ void level1_initialize()
 	intialize_puzzle_blocks();
 	initialize_puzzle_blocks_new("Assets/Levels/l1_puzzles.txt");
 
+
 	// Clear any existing enemies and reinitialize with ghosts in top left room
-	g_enemy_manager.clear_all();
-	g_enemy_manager.set_level(true);  
-	g_enemy_manager.initialize_ghost_slots();
+	enemy_manager_instance.clear_all();
+	enemy_manager_instance.initialize_tutorial_area();
 }
 
 void level1_update()
@@ -108,10 +110,11 @@ void level1_update()
 		-6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
 	player_system_update(&player_instance);
+	entity_system_update(&player_instance, &enemy_manager_instance);
 
 	check_button_collision(player_instance.char1.x, player_instance.char1.y,
 		player_instance.char2.x, player_instance.char2.y,
-		player_instance.config.character_size / 2.0f);
+		player_instance.stats.character_size / 2.0f);
 	puzzle_button_manager();
 	
 
@@ -124,7 +127,7 @@ void level1_update()
 
 	check_and_open_doors(&player_instance);
 
-	g_enemy_manager.update(dt, &player_instance, &cam);
+	enemy_manager_instance.update(dt, &player_instance, &cam);
 }
 
 void level1_draw()
@@ -139,13 +142,17 @@ void level1_draw()
 	//Minimap_Draw(&player_instance, map, TileTextures);
 	//Minimap_DrawWalls(map);
 
-	g_enemy_manager.render();
+	enemy_manager_instance.render();
+
+	render_enemy_hp(&ui_manager, &enemy_manager_instance);
+	render_player_hud(&ui_manager, &player_instance);
 }
 
 void level1_free()
 {
 	player_system_free(&player_instance);
-	g_enemy_manager.clear_all();
+	free_ui_textures(&ui_manager);
+	enemy_manager_instance.clear_all();
 }
 
 void level1_unload()

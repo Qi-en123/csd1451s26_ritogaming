@@ -2,27 +2,29 @@
 \file:			player.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
+\
+\co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
+\               Ahmad (10% - projectile for player 2 ; seprated out by claire into different functions)
+\
 \brief:		    This header declares the player structure and public
                 functions for player initialization, input handling,
                 updating, rendering, and cleanup using AEEngine.
 **************************************************************************/
 #pragma once
 
-#include "AEEngine.h"
-#include "renderer.hpp"
-#include "map.hpp"
-#include "puzzle.hpp"
 #include <vector>
+#include "AEEngine.h"
+#include "puzzle.hpp"
 
-typedef struct Projectile
+struct Projectile
 {
     f32 x, y;
     f32 vx, vy;
     f32 radius;
     bool active;
-} Projectile;
+};
 
-typedef struct player_config
+struct PlayerStats
 {
     // Size settings
     f32 character_size = 25.f;  // Default character size
@@ -40,12 +42,15 @@ typedef struct player_config
     f32 move_speed = 13.f; // Player movement speed
 
     // This is for hp
-    f32 curr_health{};
-    f32 max_health{};
+    int char1_max_health{ 6 };
+    int char1_curr_health{6};
+
+    int char2_max_health{ 6 };
+    int char2_curr_health{6};
 };
 
 // Individual character structure
-typedef struct Character
+struct Character
 {
     f32 x{}, y{}; // Position
     f32 speed{};  // Movement speed
@@ -58,9 +63,9 @@ typedef struct Character
 };
 
 // Player system structure
-typedef struct Player
+struct Player
 {
-    player_config config{};
+    PlayerStats stats{};
 
     // Individual characters
     Character char1{};
@@ -101,7 +106,7 @@ extern Player player_instance;
     \param player_ptr Pointer to the player structure to initialize.
     \param config Optional configuration override (uses defaults if nullptr).
 **************************************************************************/
-void player_system_init(Player* player_ptr, const player_config* config = nullptr);
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxTexture* char_2_texture);
 
 /**************************************************************************
     \brief
@@ -155,7 +160,7 @@ void player_system_free(Player* player_ptr);
     \param player_ptr Pointer to the player structure.
     \param dt Delta time for frame-independent movement.
 **************************************************************************/
-void player_update_projectiles(Player* player_ptr, f32 dt);
+void update_player_projectiles(Player* player_ptr, f32 dt);
 
 /**************************************************************************
     \brief
@@ -172,3 +177,19 @@ void player_handle_shooting(Player* player_ptr);
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
 void player_render_projectiles(Player* player_ptr);
+
+/**************************************************************************
+    \brief
+    Applies damage to the currently active character following the
+    half-heart system. Damage carries over across hearts.
+
+    \param player_ptr Pointer to the player structure.
+    \param damage     Amount of damage (1 = half a heart).
+**************************************************************************/
+void player_take_damage(Player* player_ptr, int damage);
+
+/**************************************************************************
+    \brief
+    Returns true if both characters have no health remaining.
+**************************************************************************/
+bool player_is_dead(Player* player_ptr);

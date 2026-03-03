@@ -16,9 +16,6 @@
     <ClCompile Include="..\Source\game_state_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\health_system.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\level1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
     <ClCompile Include="..\Source\credit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ui_manager.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\camera.hpp">
@@ -64,9 +64,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\game_state_manager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\health_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\level1.hpp">
@@ -94,6 +91,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\credit.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ui_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\pch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

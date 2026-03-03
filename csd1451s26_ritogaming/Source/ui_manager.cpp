@@ -29,19 +29,35 @@ void render_enemy_hp(UIManager* ui_manager, EnemyManager* enemy_manager)
 		float heart_scale = ENTITY_HP_SCALE * enemy->get_size();
 		float canvas_width = hearts_to_draw * heart_scale;
 		float start_x = enemy->get_x() - canvas_width / 2 + heart_scale/2;
-		for (int i{1}; i < hearts_to_draw+1; ++i)
+		//for (int i{1}; i < hearts_to_draw+1; ++i)
+		//{
+		//	f32 x_position = start_x + i * heart_scale;
+		//	f32 y_position = enemy->get_y() + enemy->get_size() + heart_scale/2;
+		//	if (i<=full_hearts) {
+		//		render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, ui_manager->hp_full_texture);
+		//	}
+		//	else if(has_half_heart){
+		//		render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, ui_manager->hp_half_texture);
+		//	}
+		//	else {
+		//		render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, ui_manager->hp_empty_texture);
+		//	}
+		//}
+		for (int i{ 1 }; i < hearts_to_draw + 1; ++i)
 		{
 			f32 x_position = start_x + i * heart_scale;
-			f32 y_position = enemy->get_y() + enemy->get_size() + heart_scale/2;
-			if (i<=full_hearts) {
+			f32 y_position = enemy->get_y() + enemy->get_size() + heart_scale / 2;
+
+			// i=1 is leftmost, fill from left ? right
+			if (i <= full_hearts) 
 				render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, ui_manager->hp_full_texture);
-			}
-			else if(has_half_heart){
+			
+			else if (i == full_hearts + 1 && has_half_heart) 
 				render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, ui_manager->hp_half_texture);
-			}
-			else {
+			
+			else 
 				render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, ui_manager->hp_empty_texture);
-			}
+			
 		}
 	}
 }
@@ -57,13 +73,28 @@ void render_player_hud(UIManager* ui_manager, Player* player) {
 
 	render_ui_sprite(rect_mesh_center, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char1.texture);
 
-	for (int i{1}; i < hearts_to_draw+1; ++i)
+	//for (int i{1}; i < hearts_to_draw+1; ++i)
+	//{
+	//	f32 x_position = start_x + i * HUD_HEART_SIZE;
+	//	if (i <= full_hearts) {
+	//		render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_full_texture);
+	//	}
+	//	else if (has_half_heart) {
+	//		render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_half_texture);
+	//	}
+	//	else {
+	//		render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_empty_texture);
+	//	}
+	//}
+
+	for (int i{ 1 }; i < hearts_to_draw + 1; ++i)
 	{
 		f32 x_position = start_x + i * HUD_HEART_SIZE;
+
 		if (i <= full_hearts) {
 			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_full_texture);
 		}
-		else if (has_half_heart) {
+		else if (i == full_hearts + 1 && has_half_heart) {
 			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_half_texture);
 		}
 		else {
@@ -79,13 +110,26 @@ void render_player_hud(UIManager* ui_manager, Player* player) {
 
 	render_ui_sprite(rect_mesh_center, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char2.texture);
 	
-	for (int i{1}; i < hearts_to_draw+1; ++i)
+	//for (int i{1}; i < hearts_to_draw+1; ++i)
+	//{
+	//	f32 x_position = start_x + i * HUD_HEART_SIZE;
+	//	if (i <= full_hearts) {
+	//		render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_full_texture);
+	//	}
+	//	else if (has_half_heart) {
+	//		render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_half_texture);
+	//	}
+	//	else {
+	//		render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_empty_texture);
+	//	}
+	//}
+	for (int i{ 1 }; i < hearts_to_draw + 1; ++i)
 	{
 		f32 x_position = start_x + i * HUD_HEART_SIZE;
 		if (i <= full_hearts) {
 			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_full_texture);
 		}
-		else if (has_half_heart) {
+		else if (i == full_hearts + 1 && has_half_heart) {
 			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, ui_manager->hp_half_texture);
 		}
 		else {

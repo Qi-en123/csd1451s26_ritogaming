@@ -1,7 +1,11 @@
 /*!************************************************************************
 \file:          player.cpp
-\author:        Claire
+\author:        Claire 
 \par DP email:  c.cheong@digipen.edu
+\
+\co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
+\               Ahmad (10% - projectile for player 2 ; seprated out by claire into different functions)
+\
 \brief:         Implements the player system using AEEngine.
 
                 Responsibilities of this system:
@@ -12,28 +16,18 @@
                 - Handles initialization and cleanup of player resources
 **************************************************************************/
 
-#include "collision.hpp"
-#include "player.hpp"
+#include "pch.hpp"
 #include <crtdbg.h>
-#include "camera.hpp"
-#include "renderer.hpp"
-#include "enemy_manager.hpp"
-#include "puzzle.hpp"
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
-#define DAMAGE 1000.0f // change this for fireball damage
+#define DAMAGE 1 // change this for fireball damage
 
 // Global player instance definition
 Player player_instance;
 
-/**************************************************************************/
-/*!
-  Updates transformation matrices for both characters and the active
-  player indicator triangle.
-*/
-/**************************************************************************/
+
 static void player_system_update_transforms(Player* player_ptr)
 {
     if (!player_ptr)
@@ -55,51 +49,41 @@ static void player_system_update_transforms(Player* player_ptr)
     AEMtx33 triangle_translate;
     AEMtx33Trans(&triangle_translate,
         player_ptr->current_player->x,
-        player_ptr->current_player->y + player_ptr->config.triangle_offset);
+        player_ptr->current_player->y + player_ptr->stats.triangle_offset);
 
     AEMtx33Concat(&player_ptr->triangle_transform, &player_ptr->rotate, &player_ptr->triangle_scale);
     AEMtx33Concat(&player_ptr->triangle_transform, &triangle_translate, &player_ptr->triangle_transform);
 }
 
-/**************************************************************************/
-/*!
-  Initializes the player system using the provided configuration.
-*/
-/**************************************************************************/
-void player_system_init(Player* player_ptr, const player_config* config)
+
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxTexture* char_2_texture)
 {
     if (!player_ptr)
         return;
 
-    // Copy configuration values if provided
-    if (config)
-    {
-        player_ptr->config = *config;
-    }
-
     // --- Character 1 setup ---
-    player_ptr->char1.x = player_ptr->config.char1_start_x;
-    player_ptr->char1.y = player_ptr->config.char1_start_y;
-    player_ptr->char1.speed = player_ptr->config.move_speed;
+    player_ptr->char1.x = player_ptr->stats.char1_start_x;
+    player_ptr->char1.y = player_ptr->stats.char1_start_y;
+    player_ptr->char1.speed = player_ptr->stats.move_speed;
     player_ptr->char1.character_id = 1;
     player_ptr->char1.element = WATER;
-    player_ptr->char1.texture = nullptr;
+    player_ptr->char1.texture = char_1_texture;
 
     // --- Character 2 setup ---
-    player_ptr->char2.x = player_ptr->config.char2_start_x;
-    player_ptr->char2.y = player_ptr->config.char2_start_y;
-    player_ptr->char2.speed = player_ptr->config.move_speed;
+    player_ptr->char2.x = player_ptr->stats.char2_start_x;
+    player_ptr->char2.y = player_ptr->stats.char2_start_y;
+    player_ptr->char2.speed = player_ptr->stats.move_speed;
     player_ptr->char2.character_id = 2;
     player_ptr->char2.element = FIRE;
-    player_ptr->char2.texture = nullptr;
+    player_ptr->char2.texture = char_2_texture;
 
     // Default to controlling Character 1
     player_ptr->current_player = &player_ptr->char1;
     player_ptr->current_character = 1;
 
     // Precompute scale and rotation matrices
-    AEMtx33Scale(&player_ptr->character_scale, player_ptr->config.character_size, player_ptr->config.character_size);
-    AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->config.triangle_size, player_ptr->config.triangle_size);
+    AEMtx33Scale(&player_ptr->character_scale, player_ptr->stats.character_size, player_ptr->stats.character_size);
+    AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->stats.triangle_size, player_ptr->stats.triangle_size);
     AEMtx33Rot(&player_ptr->rotate, 0);
 
     // Initialize last direction for shooting
@@ -110,11 +94,7 @@ void player_system_init(Player* player_ptr, const player_config* config)
     player_system_update_transforms(player_ptr);
 }
 
-/**************************************************************************/
-/*!
-  Handles character switching input.
-*/
-/**************************************************************************/
+
 static void player_handle_character_switch(Player* player_ptr)
 {
     if (!player_ptr)
@@ -132,11 +112,7 @@ static void player_handle_character_switch(Player* player_ptr)
     }
 }
 
-/**************************************************************************/
-/*!
-  Handles movement input for the active character.
-*/
-/**************************************************************************/
+
 static void player_handle_movement(Player* player_ptr)
 {
     if (!player_ptr || !player_ptr->current_player)
@@ -148,38 +124,38 @@ static void player_handle_movement(Player* player_ptr)
 
     float nextX = *move_x;
     float nextY = *move_y;
-    float halfSize = player_ptr->config.character_size / 2.0f;
+    float halfSize = player_ptr->stats.character_size / 2.0f;
 
     // Track if player is dragging a puzzle block
     static bool is_dragging = false;
     static s32 puzzle_index;
 
     // Movement input
-    if (AEInputCheckCurr(AEVK_UP) || AEInputCheckCurr(AEVK_W))
+    if (AEInputCheckCurr(AEVK_W))
     {
-        nextY += is_dragging ? 1.0f : player_ptr->config.move_speed;
+        nextY += is_dragging ? 1.0f : player_ptr->stats.move_speed;
         player_ptr->last_dir_x = 0.0f;
         player_ptr->last_dir_y = 1.0f;
     }
-    if (AEInputCheckCurr(AEVK_DOWN) || AEInputCheckCurr(AEVK_S))
+    if (AEInputCheckCurr(AEVK_S))
     {
-        nextY -= is_dragging ? 1.0f : player_ptr->config.move_speed;
+        nextY -= is_dragging ? 1.0f : player_ptr->stats.move_speed;
         player_ptr->last_dir_x = 0.0f;
         player_ptr->last_dir_y = -1.0f;
     }
-    if (AEInputCheckCurr(AEVK_LEFT) || AEInputCheckCurr(AEVK_A))
+    if (AEInputCheckCurr(AEVK_A))
     {
-        nextX -= is_dragging ? 1.0f : player_ptr->config.move_speed;
+        nextX -= is_dragging ? 1.0f : player_ptr->stats.move_speed;
         player_ptr->last_dir_x = -1.0f;
         player_ptr->last_dir_y = 0.0f;
     }
-    if (AEInputCheckCurr(AEVK_RIGHT) || AEInputCheckCurr(AEVK_D))
+    if (AEInputCheckCurr(AEVK_D))
     {
-        nextX += is_dragging ? 1.0f : player_ptr->config.move_speed;
+        nextX += is_dragging ? 1.0f : player_ptr->stats.move_speed;
         player_ptr->last_dir_x = 1.0f;
         player_ptr->last_dir_y = 0.0f;
     }
-
+    // ------------------------------------- Jerods part -------------------------------------
     // Horizontal Movement with collision
     if (!check_player_collision(nextX, *move_y, halfSize) &&
         !player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
@@ -235,11 +211,7 @@ static void player_handle_movement(Player* player_ptr)
     }
 }
 
-/**************************************************************************/
-/*!
-  Handles player input for character switching and movement.
-*/
-/**************************************************************************/
+
 void player_system_handle_input(Player* player_ptr)
 {
     if (!player_ptr)
@@ -249,11 +221,7 @@ void player_system_handle_input(Player* player_ptr)
     player_handle_movement(player_ptr);
 }
 
-/**************************************************************************/
-/*!
-  Handles shooting logic (CHARACTER 2 ONLY).
-*/
-/**************************************************************************/
+//------------------------------------------ Ahmad's functions ------------------------------------------------------
 void player_handle_shooting(Player* player_ptr)
 {
     if (!player_ptr)
@@ -278,12 +246,8 @@ void player_handle_shooting(Player* player_ptr)
     }
 }
 
-/**************************************************************************/
-/*!
-  Updates projectile positions and handles collisions.
-*/
-/**************************************************************************/
-void player_update_projectiles(Player* player_ptr, f32 dt)
+
+void update_player_projectiles(Player* player_ptr, f32 dt)
 {
     if (!player_ptr)
         return;
@@ -301,7 +265,7 @@ void player_update_projectiles(Player* player_ptr, f32 dt)
             p.active = false;
         }
         //
-        if (p.active && g_enemy_manager.check_projectile_hit(p.x, p.y, p.radius, DAMAGE)) {
+        if (p.active && enemy_manager_instance.check_projectile_hit(p.x, p.y, p.radius, DAMAGE)) {
             p.active = false; // Destroy fireball on hit
         }
 
@@ -349,18 +313,18 @@ void player_system_render(Player* player_ptr)
 
     // Draw Character 1
     render_sprite(rect_mesh_center, player_ptr->char1.x, player_ptr->char1.y,
-        player_ptr->config.character_size, player_ptr->config.character_size, TileTextures[4]);
+        player_ptr->stats.character_size, player_ptr->stats.character_size, player_ptr->char1.texture);
 
     // Draw Character 2
     render_sprite(rect_mesh_center, player_ptr->char2.x, player_ptr->char2.y,
-        player_ptr->config.character_size, player_ptr->config.character_size, TileTextures[3]);
+        player_ptr->stats.character_size, player_ptr->stats.character_size, player_ptr->char2.texture);
 
     // Render projectiles
     player_render_projectiles(player_ptr);
 
     // Position the indicator triangle above the active player
     f32 tri_x = player_ptr->current_player->x;
-    f32 tri_y = player_ptr->current_player->y + player_ptr->config.triangle_offset;
+    f32 tri_y = player_ptr->current_player->y + player_ptr->stats.triangle_offset;
 
     // Green triangle marks the currently controlled character
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -368,8 +332,8 @@ void player_system_render(Player* player_ptr)
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 
     draw_triangle(tri_x, tri_y,
-        player_ptr->config.triangle_size,
-        player_ptr->config.triangle_size);
+        player_ptr->stats.triangle_size,
+        player_ptr->stats.triangle_size);
 }
 
 /**************************************************************************/
@@ -381,12 +345,9 @@ void player_system_update(Player* player_ptr)
 {
     if (!player_ptr)
         return;
-
-    f32 dt = (f32)AEFrameRateControllerGetFrameTime();
-
+    
     player_system_handle_input(player_ptr);
     player_handle_shooting(player_ptr);
-    player_update_projectiles(player_ptr, dt);
     player_system_update_transforms(player_ptr);
 }
 
@@ -415,4 +376,39 @@ void player_system_free(Player* player_ptr)
 
     // Clear active player reference
     player_ptr->current_player = nullptr;
+}
+
+void player_take_damage(Player* player_ptr, int damage)
+{
+    if (!player_ptr) return;
+
+    int* curr_hp = (player_ptr->current_character == 1)
+        ? &player_ptr->stats.char1_curr_health
+        : &player_ptr->stats.char2_curr_health;
+
+    *curr_hp -= damage;
+    if (*curr_hp < 0) *curr_hp = 0;
+
+    // If selected character is dead, switch to the other one if they're alive
+    if (*curr_hp <= 0)
+    {
+        if (player_ptr->current_character == 1 && player_ptr->stats.char2_curr_health > 0)
+        {
+            player_ptr->current_character = 2;
+            player_ptr->current_player = &player_ptr->char2;
+        }
+        else if (player_ptr->current_character == 2 && player_ptr->stats.char1_curr_health > 0)
+        {
+            player_ptr->current_character = 1;
+            player_ptr->current_player = &player_ptr->char1;
+        }
+        // both are 0 ? player_is_dead() will return true, handle game over elsewhere
+    }
+}
+
+bool player_is_dead(Player* player_ptr)
+{
+    if (!player_ptr) return false;
+    return (player_ptr->stats.char1_curr_health <= 0 &&
+        player_ptr->stats.char2_curr_health <= 0);
 }

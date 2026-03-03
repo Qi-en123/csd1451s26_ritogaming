@@ -18,6 +18,7 @@ This file defines functions to:
 #include "map.hpp"
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
+#include "renderer.hpp"
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
@@ -204,7 +205,7 @@ bool puzzle_to_inactive_collision(f32 newX, f32 newY) {
     //get inactive player
 	Character& ip = (player_instance.current_character == 1)
 		? player_instance.char2 : player_instance.char1;
-	f32 phs = player_instance.config.character_size / 2.0f;
+	f32 phs = player_instance.stats.character_size / 2.0f;
 
 	if (ss_collision(newX, newY, puzzle_hw, puzzle_hw,
 		ip.x, ip.y, phs, phs)) {

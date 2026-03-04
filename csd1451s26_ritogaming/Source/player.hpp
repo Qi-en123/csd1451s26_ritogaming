@@ -24,6 +24,16 @@ struct Projectile
     bool active;
 };
 
+
+struct Particle {
+    f32 x, y;
+    f32 vx, vy;
+    f32 life;     // Current life (seconds)
+    f32 maxLife;  // Total duration
+    f32 size;
+    bool active;
+};
+
 struct PlayerStats
 {
     // Size settings
@@ -86,8 +96,12 @@ struct Player
 	AEMtx33 triangle_transform{};
 	AEMtx33 rotate{};
 
-	// Projectile system
-	std::vector<Projectile> projectiles;
+    // Projectile system
+    std::vector<Projectile> projectiles;
+    std::vector<Particle> particles;
+
+    int fireball_count{ 5 };
+    f32 shoot_cooldown{ 0.0f };
 
 	// Last movement direction for shooting
 	f32 last_dir_x{}, last_dir_y{};
@@ -169,7 +183,7 @@ void update_player_projectiles(Player* player_ptr, f32 dt);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_handle_shooting(Player* player_ptr);
+void player_handle_shooting(Player* player_ptr, f32 dt);
 
 /**************************************************************************
     \brief

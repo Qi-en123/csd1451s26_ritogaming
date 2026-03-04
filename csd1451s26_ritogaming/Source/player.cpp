@@ -221,33 +221,104 @@ void player_system_handle_input(Player* player_ptr)
     player_handle_movement(player_ptr);
 }
 
-//------------------------------------------ Ahmad's functions ------------------------------------------------------
-void player_handle_shooting(Player* player_ptr)
+/**************************************************************************/
+/*!
+  Handles shooting logic (CHARACTER 2 ONLY).
+*/
+/**************************************************************************/
+void player_handle_shooting(Player* player_ptr, f32 dt)
 {
     if (!player_ptr)
         return;
+    // Recharge one fireball every 1 second (up to max 5)
+    player_ptr->shoot_cooldown += dt;
+    if (player_ptr->shoot_cooldown >= 1.0f && player_ptr->fireball_count < 5)
+    {
+        player_ptr->fireball_count++;
+        player_ptr->shoot_cooldown = 0.0f; // reset timer for next recharge
+    }
 
     // Only character 2 can shoot
-    if (player_ptr->current_character == 2 && AEInputCheckTriggered(AEVK_F))
+    if (player_ptr->current_character == 2 && AEInputCheckTriggered(AEVK_LBUTTON)
+        && player_ptr->fireball_count > 0)
     {
+
+        // --- Get mouse position in world space ---
+        s32 mouseScreenX, mouseScreenY;
+        AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
+
+        f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
+        f32 halfHeight = (f32)AEGfxGetWindowHeight() / 2.0f;
+
+        f32 mouseWorldX = (f32)mouseScreenX - halfWidth + cam.pos.x;
+        f32 mouseWorldY = halfHeight - (f32)mouseScreenY + cam.pos.y;
+
+        // --- Calculate direction from player to mouse ---
+        f32 dx = mouseWorldX - player_ptr->char2.x;
+        f32 dy = mouseWorldY - player_ptr->char2.y;
+
+        // Normalize the direction vector
+        f32 length = sqrtf(dx * dx + dy * dy);
+        if (length < 0.0001f) return; // safety check: don't shoot if cursor is on player
+
+        f32 dirX = dx / length;
+        f32 dirY = dy / length;
+
+        // --- Update last direction (so movement-facing still works) ---
+        player_ptr->last_dir_x = dirX;
+        player_ptr->last_dir_y = dirY;
+
+        // --- Spawn projectile ---
         Projectile new_fire;
         new_fire.active = true;
         new_fire.radius = 8.0f;
 
         f32 spawn_offset = 30.0f;
-        new_fire.x = player_ptr->char2.x + (player_ptr->last_dir_x * spawn_offset);
-        new_fire.y = player_ptr->char2.y + (player_ptr->last_dir_y * spawn_offset);
+        new_fire.x = player_ptr->char2.x + (dirX * spawn_offset);
+        new_fire.y = player_ptr->char2.y + (dirY * spawn_offset);
 
         f32 shotSpeed = 600.0f;
-        new_fire.vx = player_ptr->last_dir_x * shotSpeed;
-        new_fire.vy = player_ptr->last_dir_y * shotSpeed;
+        new_fire.vx = dirX * shotSpeed;
+        new_fire.vy = dirY * shotSpeed;
 
         player_ptr->projectiles.push_back(new_fire);
+        player_ptr->fireball_count--;
+    }
+}
+void player_update_particles(Player* player_ptr, f32 dt) {
+    for (size_t i = 0; i < player_ptr->particles.size(); ++i) {
+        Particle& p = player_ptr->particles[i];
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+
+        if (p.life <= 0) {
+            player_ptr->particles.erase(player_ptr->particles.begin() + i);
+            i--;
+        }
     }
 }
 
+void player_render_particles(Player* player_ptr) {
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-void update_player_projectiles(Player* player_ptr, f32 dt)
+    for (const auto& p : player_ptr->particles) {
+        // Fade the alpha based on remaining life
+        float alpha = p.life / p.maxLife;
+        AEGfxSetColorToMultiply(1.0f, 0.3f, 0.0f, alpha); // Red-Orange fire
+
+        // Use your existing draw_circle or draw_rect helper
+        draw_circle(circle_mesh, p.x, p.y, p.size * alpha, p.size * alpha);
+    }
+}
+    
+/**************************************************************************/
+/*!
+  Updates projectile positions and handles collisions.
+*/
+/**************************************************************************/
+void player_update_projectiles(Player* player_ptr, f32 dt)
 {
     if (!player_ptr)
         return;
@@ -258,6 +329,21 @@ void update_player_projectiles(Player* player_ptr, f32 dt)
 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
+
+        // --- PARTICLE SPAWNING ---
+        // Every frame, create a "trail" particle
+        Particle trail;
+        trail.x = p.x;
+        trail.y = p.y;
+        // Give it a tiny bit of random drift
+        trail.vx = ((float)rand() / RAND_MAX - 0.5f) * 20.0f;
+        trail.vy = ((float)rand() / RAND_MAX - 0.5f) * 20.0f;
+        trail.maxLife = 0.5f; // Particles last half a second
+        trail.life = trail.maxLife;
+        trail.size = 10.0f;
+        trail.active = true;
+
+        player_ptr->particles.push_back(trail);
 
         // Check if fireball hits wall
         if (check_projectile_collision(p.x, p.y, p.radius))
@@ -300,6 +386,20 @@ void player_render_projectiles(Player* player_ptr)
         }
     }
 }
+/**************************************************************************/
+/*!
+  Renders all active projectile counts.
+*/
+/**************************************************************************/
+void player_render_fireball_count(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
+
+    render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
+}
 
 /**************************************************************************/
 /*!
@@ -310,6 +410,8 @@ void player_system_render(Player* player_ptr)
 {
     if (!player_ptr)
         return;
+    player_render_particles(player_ptr);
+    player_render_fireball_count(player_ptr);
 
     // Draw Character 1
     render_sprite(rect_mesh_center, player_ptr->char1.x, player_ptr->char1.y,
@@ -347,8 +449,10 @@ void player_system_update(Player* player_ptr)
         return;
     
     player_system_handle_input(player_ptr);
-    player_handle_shooting(player_ptr);
+    player_handle_shooting(player_ptr, dt);
+    player_update_projectiles(player_ptr, dt);
     player_system_update_transforms(player_ptr);
+    player_update_particles(player_ptr, dt);
 }
 
 /**************************************************************************/
@@ -361,19 +465,12 @@ void player_system_free(Player* player_ptr)
     if (!player_ptr)
         return;
 
-    // Unload character textures if they were loaded individually
-    if (player_ptr->char1.texture)
-    {
-        AEGfxTextureUnload(player_ptr->char1.texture);
-        player_ptr->char1.texture = nullptr;
-    }
+   
+    player_ptr->char1.texture = nullptr;
+    player_ptr->char2.texture = nullptr;
 
-    if (player_ptr->char2.texture)
-    {
-        AEGfxTextureUnload(player_ptr->char2.texture);
-        player_ptr->char2.texture = nullptr;
-    }
-
+    player_ptr->projectiles.clear(); // Clean up projectiles
+    player_ptr->particles.clear(); 
     // Clear active player reference
     player_ptr->current_player = nullptr;
 }

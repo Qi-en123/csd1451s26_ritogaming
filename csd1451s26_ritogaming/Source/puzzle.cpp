@@ -226,7 +226,7 @@ void check_button_pressed() {
 	f32& p1_y = player_instance.char1.y;
 	f32& p2_x = player_instance.char2.x;
 	f32& p2_y = player_instance.char2.y;
-	f32 phs = player_instance.config.character_size / 2.0f;
+	f32 phs = player_instance.stats.character_size / 2.0f;
 
 	for (int i{}; i < button_indexes.size(); ++i) {
 		puzzle& curr = puzzle_blocks[button_indexes[i]];

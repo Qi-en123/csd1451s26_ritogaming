@@ -3,7 +3,7 @@
 \author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
 \brief:						This file defines the 6 cycle function that
-							Loads, initializes, updates, draws, and unloads the mainmenu game state, which features an animated knight and ghost, interactive buttons, 
+							Loads, initializes, updates, draws, and unloads the mainmenu game state, which features an animated knight and ghoul, interactive buttons, 
                             and a custom cursor, all rendered using AEEngine.
 **************************************************************************/
 
@@ -20,7 +20,7 @@ namespace {
     AEGfxTexture* ground = nullptr;
     AEGfxTexture* wall = nullptr;
     AEGfxTexture* door = nullptr;
-    AEGfxTexture* ghost = nullptr;
+    AEGfxTexture* ghoul = nullptr;
     AEGfxTexture* knight = nullptr;
     AEGfxTexture* button = nullptr;
     AEGfxTexture* cursor = nullptr;
@@ -31,11 +31,11 @@ namespace {
 	// Animation variables
 	f32 knight_scale = 200.f; //  normal size for knight
 	f32 knight_x = -700.f; // starting x position for knight
-    f32 ghost_scale = 10.f;  //  start small
-    f32 ghost_x = -400.f;    //  starting x position
+    f32 ghoul_scale = 10.f;  //  start small
+    f32 ghoul_x = -400.f;    //  starting x position
     bool knight_returning = false; // track if knight is running back
-	f32 ghost_y = -40.f;//  base y position for ghost
-	f32 ghost_bounce_timer = 0.f; // timer for sine wave bounce
+	f32 ghoul_y = -40.f;//  base y position for ghoul
+	f32 ghoul_bounce_timer = 0.f; // timer for sine wave bounce
 
 
     // Button positions
@@ -57,15 +57,15 @@ namespace {
     const int MAX_DUST = 60;
     DustParticle dust_particles[MAX_DUST];
 
-    // --- Ghost Trail ---
-    struct GhostTrail {
+    // --- ghoul Trail ---
+    struct ghoulTrail {
         f32 x, y;
         f32 scale;
         f32 alpha;
         bool active;
     };
     const int MAX_TRAIL = 5;
-    GhostTrail ghost_trail[MAX_TRAIL];
+    ghoulTrail ghoul_trail[MAX_TRAIL];
     f32 trail_spawn_timer = 0.f;
     
     bool show_exit_confirm = false;
@@ -97,7 +97,7 @@ void mainmenu_load()
     ground = AEGfxTextureLoad("Assets/Tiles/tile_0002.png");
     wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
     door = AEGfxTextureLoad("Assets/Tiles/tile_0007.png");
-    ghost = AEGfxTextureLoad("Assets/Tiles/tile_0006.png");
+    ghoul = AEGfxTextureLoad("Assets/Tiles/tile_0006.png");
     knight = AEGfxTextureLoad("Assets/Tiles/tile_0004.png");
     button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
@@ -126,11 +126,11 @@ void mainmenu_init()
 
     zoom = 1.0f;      // Set camera zoom to normal scale (1.0 = no zoom in/out)
 
-	ghost_scale = 10.f; // Start ghost small
+	ghoul_scale = 10.f; // Start ghoul small
 
-	ghost_x = -400.f; // Reset ghost to original position and small size
+	ghoul_x = -400.f; // Reset ghoul to original position and small size
 
-    ghost_y = -40.f;//  base y position for ghost
+    ghoul_y = -40.f;//  base y position for ghoul
 
 	knight_scale = 200.f; // Set knight to normal size
 
@@ -139,7 +139,7 @@ void mainmenu_init()
     AEInputShowCursor(false); // Hide system cursor, we'll draw our own
     // Clear particles and trail on init
     for (int i = 0; i < MAX_DUST; ++i)   dust_particles[i].active = false;
-    for (int i = 0; i < MAX_TRAIL; ++i)  ghost_trail[i].active = false;
+    for (int i = 0; i < MAX_TRAIL; ++i)  ghoul_trail[i].active = false;
     trail_spawn_timer = 0.f;
 }
 
@@ -206,24 +206,24 @@ void mainmenu_update()
             //  Knight back at original position, reset everything
 			knight_x = -700.f; // reset to original position
 			knight_returning = false; // stop returning
-            ghost_scale = 10.f;  // ghost spawns small again
-			ghost_x = -400.f; // reset ghost position
+            ghoul_scale = 10.f;  // ghoul spawns small again
+			ghoul_x = -400.f; // reset ghoul position
         }
         return;
     }
 
-    // Ghost grows to full size first
-	if (ghost_scale < 200.f) // grow until full size (200)
+    // ghoul grows to full size first
+	if (ghoul_scale < 200.f) // grow until full size (200)
     {
-		ghost_scale += 100.f * dt; // grow at 100 units/sec
-		return; // wait until ghost fully grown before moving
+		ghoul_scale += 100.f * dt; // grow at 100 units/sec
+		return; // wait until ghoul fully grown before moving
     }
 
-    // Ghost runs away, knight chases
-	ghost_x += 200.f * dt; // ghost runs right at 120 units/sec
+    // ghoul runs away, knight chases
+	ghoul_x += 200.f * dt; // ghoul runs right at 120 units/sec
 	knight_x += 200.f * dt; // knight chases at same speed
-	ghost_bounce_timer += dt; // increase bounce timer for sine wave
-    ghost_y = -50.f + sinf(ghost_bounce_timer * 5.f) * 20.f; // bounce up and down like sin wave
+	ghoul_bounce_timer += dt; // increase bounce timer for sine wave
+    ghoul_y = -50.f + sinf(ghoul_bounce_timer * 5.f) * 20.f; // bounce up and down like sin wave
 
     //  knight exits screen,  knight starts returning
     if (knight_x > 1000.f)
@@ -237,7 +237,7 @@ void mainmenu_update()
     // --- Spawn dust under knight feet while running ---
     static f32 dust_timer = 0.f;
     dust_timer += dt;
-    if (!knight_returning && ghost_scale >= 200.f && dust_timer > 0.1f)
+    if (!knight_returning && ghoul_scale >= 200.f && dust_timer > 0.1f)
     {
         spawn_dust(knight_x - 40.f, -150.f); // left foot  — was -10.f
         spawn_dust(knight_x - 60.f, -150.f); // right foot — was +10.f
@@ -258,20 +258,20 @@ void mainmenu_update()
             dust_particles[i].active = false;
     }
 
-    // --- Spawn ghost trail every 0.08s while ghost is full size ---
+    // --- Spawn ghoul trail every 0.08s while ghoul is full size ---
     trail_spawn_timer += dt;
-    if (ghost_scale >= 200.f && trail_spawn_timer > 0.08f)
+    if (ghoul_scale >= 200.f && trail_spawn_timer > 0.08f)
     {
         // Shift old trail entries back
         for (int i = MAX_TRAIL - 1; i > 0; --i)
-            ghost_trail[i] = ghost_trail[i - 1];
+            ghoul_trail[i] = ghoul_trail[i - 1];
 
         // Insert newest position at front
-        ghost_trail[0].x = ghost_x;
-        ghost_trail[0].y = ghost_y;
-        ghost_trail[0].scale = ghost_scale;
-        ghost_trail[0].alpha = 0.35f; // trail starts semi-transparent
-        ghost_trail[0].active = true;
+        ghoul_trail[0].x = ghoul_x;
+        ghoul_trail[0].y = ghoul_y;
+        ghoul_trail[0].scale = ghoul_scale;
+        ghoul_trail[0].alpha = 0.35f; // trail starts semi-transparent
+        ghoul_trail[0].active = true;
 
         trail_spawn_timer = 0.f;
     }
@@ -279,12 +279,12 @@ void mainmenu_update()
     // --- Fade out trail over time ---
     for (int i = 0; i < MAX_TRAIL; ++i)
     {
-        if (!ghost_trail[i].active) continue;
-        ghost_trail[i].alpha -= dt * 0.8f;
-        if (ghost_trail[i].alpha <= 0.f)
-            ghost_trail[i].active = false;
+        if (!ghoul_trail[i].active) continue;
+        ghoul_trail[i].alpha -= dt * 0.8f;
+        if (ghoul_trail[i].alpha <= 0.f)
+            ghoul_trail[i].active = false;
     }
-    if (!knight_returning && ghost_scale >= 200.f)
+    if (!knight_returning && ghoul_scale >= 200.f)
         knight_bob_timer += dt;
     else
         knight_bob_timer = 0.f;
@@ -327,7 +327,7 @@ void mainmenu_draw()
         IsButtonHovered(100.f, -50.f, 200.f, 80.f));
 }
 
-	// Draw background, knight, and ghost with blending for transparency
+	// Draw background, knight, and ghoul with blending for transparency
      // Draw wall tiles across top portion of screen
     for (f32 x = -800.f; x <= 800.f; x += 100.f)
     {
@@ -379,26 +379,26 @@ void mainmenu_draw()
 
         render_blending_sprite(knight, draw_w, draw_h, 1.0f, knight_x, knight_y);
     }
-    // --- Draw ghost trail (before ghost so it appears behind) ---
+    // --- Draw ghoul trail (before ghoul so it appears behind) ---
     for (int i = MAX_TRAIL - 1; i >= 0; --i)
     {
-        if (!ghost_trail[i].active) continue;
-        if (ghost)
-            render_blending_sprite(ghost,
-                ghost_trail[i].scale,
-                ghost_trail[i].scale,
-                ghost_trail[i].alpha,
-                ghost_trail[i].x,
-                ghost_trail[i].y);
+        if (!ghoul_trail[i].active) continue;
+        if (ghoul)
+            render_blending_sprite(ghoul,
+                ghoul_trail[i].scale,
+                ghoul_trail[i].scale,
+                ghoul_trail[i].alpha,
+                ghoul_trail[i].x,
+                ghoul_trail[i].y);
     }
 
 
 
 
-    if (ghost)
+    if (ghoul)
     {
-        f32 ghost_alpha = ghost_scale / 200.f; //  0.0 to 1.0 based on scale
-        render_blending_sprite(ghost, ghost_scale, ghost_scale, ghost_alpha, ghost_x, ghost_y);
+        f32 ghoul_alpha = ghoul_scale / 200.f; //  0.0 to 1.0 based on scale
+        render_blending_sprite(ghoul, ghoul_scale, ghoul_scale, ghoul_alpha, ghoul_x, ghoul_y);
     }
 
 	// Draw buttons and labels
@@ -526,10 +526,10 @@ void mainmenu_unload()
         AEGfxTextureUnload(knight);
         knight = nullptr;
     }
-    if (ghost)
+    if (ghoul)
     {
-        AEGfxTextureUnload(ghost);
-        ghost = nullptr;
+        AEGfxTextureUnload(ghoul);
+        ghoul = nullptr;
     }
 
     if (button)

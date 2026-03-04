@@ -158,7 +158,7 @@ void level1_draw()
 void level1_free()
 {
 	player_system_free(&player_instance);
-	g_enemy_manager.clear_all();
+	//g_enemy_manager.clear_all();
 	free_mesh();
 	free_ui_textures(&ui_manager);
 	enemy_manager_instance.clear_all();

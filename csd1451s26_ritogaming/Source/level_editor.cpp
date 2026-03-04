@@ -342,28 +342,28 @@ void level_editor_draw()
         mouse_to_world(wx_m, wy_m);
         int row, col;
         if (world_to_tile(wx_m, wy_m, row, col))
-        {
-            f32 cx = grid_start_x + col * tile_draw_size + tile_draw_size * 0.5f + cam_offset_x;
-            f32 cy = grid_start_y - row * tile_draw_size - tile_draw_size * 0.5f + cam_offset_y;
+		{
+			f32 cx = grid_start_x + col * tile_draw_size + tile_draw_size * 0.5f + cam_offset_x;
+			f32 cy = grid_start_y - row * tile_draw_size - tile_draw_size * 0.5f + cam_offset_y;
 
-            // FIND:
-            if (TileTextures[2] && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-                render_blending_sprite(TileTextures[2], tile_draw_size, tile_draw_size, 0.3f, cx, cy);
 
-            // REPLACE WITH:
-            if (selected_tile == 0)
-            {
-                // Erase — show red tint using floor tile
-                if (TileTextures[2] && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-                    render_blending_sprite(TileTextures[2], tile_draw_size, tile_draw_size, 0.3f, cx, cy);
-            }
-            else if (TileTextures[selected_tile] && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-            {
-                render_blending_sprite(TileTextures[selected_tile], tile_draw_size, tile_draw_size, 0.5f, cx, cy);
+			// FIND:
+			if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
+				render_blending_sprite(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
+
+			// REPLACE WITH:
+			if (selected_tile == 0)
+			{
+				// Erase — show red tint using floor tile
+				if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
+					render_blending_sprite(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
+			}
+			else if (TileTextures[selected_tile] && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
+			{
+				render_blending_sprite(TileTextures[selected_tile], tile_draw_size, tile_draw_size, 0.5f, cx, cy);
             }
         }
     }
-
 
 
 

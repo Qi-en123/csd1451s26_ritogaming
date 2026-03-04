@@ -1,11 +1,6 @@
 #include <crtdbg.h>
 
 #include "AEEngine.h"
-#include "map.hpp"
-#include "renderer.hpp"
-#include "camera.hpp"
-#include "player.hpp"
-#include "collision.hpp"
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 

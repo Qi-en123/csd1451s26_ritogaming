@@ -77,7 +77,7 @@ void entity_system_update(Player* player_ptr, EnemyManager* enem)
     (void)enem;
     f32 dt = (f32)AEFrameRateControllerGetFrameTime();
 
-    update_player_projectiles(player_ptr, dt);
+    player_update_projectiles(player_ptr, dt);
 }
 
 

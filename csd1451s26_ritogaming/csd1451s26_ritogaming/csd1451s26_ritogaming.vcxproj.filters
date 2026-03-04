@@ -43,9 +43,9 @@
     <ClCompile Include="..\Source\credit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\opening.cpp" />
-          <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="..\Source\opening.cpp">
+	  <Filter>Source Files</Filter>
+	</ClCompile>
     <ClCompile Include="..\Source\mainmenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

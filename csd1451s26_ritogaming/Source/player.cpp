@@ -17,7 +17,9 @@
 **************************************************************************/
 
 #include "pch.hpp"
+#include "utils.hpp"
 #include <crtdbg.h>
+#include <string>
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
@@ -309,7 +311,7 @@ void player_render_particles(Player* player_ptr) {
         AEGfxSetColorToMultiply(1.0f, 0.3f, 0.0f, alpha); // Red-Orange fire
 
         // Use your existing draw_circle or draw_rect helper
-        draw_circle(circle_mesh, p.x, p.y, p.size * alpha, p.size * alpha);
+        draw_circle(p.x, p.y, p.size * alpha, p.size * alpha);
     }
 }
     

@@ -175,7 +175,7 @@ void player_system_free(Player* player_ptr);
     \param player_ptr Pointer to the player structure.
     \param dt Delta time for frame-independent movement.
 **************************************************************************/
-void update_player_projectiles(Player* player_ptr, f32 dt);
+void player_update_projectiles(Player* player_ptr, f32 dt);
 
 /**************************************************************************
     \brief

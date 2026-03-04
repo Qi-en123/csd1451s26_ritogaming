@@ -136,7 +136,7 @@ void credit_draw()
     {
         for (f32 y = -800.f; y < 800.f; y += 100.f)
         {
-            if (wall) render_blending_sprite(wall, 100.f, 100.f, 0.5f, x, y);
+            if (wall) render_blending_sprite(wall, 100.f, 100.f, 0.3f, x, y);
         }
     }
 

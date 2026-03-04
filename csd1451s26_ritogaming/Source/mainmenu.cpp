@@ -292,40 +292,7 @@ void mainmenu_update()
 
 void mainmenu_draw()
 {
-    if (show_exit_confirm)
-{
-   
-
-    // Popup box
-    render_blending_sprite(button, 600.f, 300.f, 1.0f, 0.f, 0.f);
-
-    // Text
-    if (font != -1)
-    {
-        AEGfxPrint(font, "Are you sure you want to quit?",
-            -0.35f, 0.1f,
-            1.f,
-            0.f, 0.f, 0.f, 1.f);
-
-        AEGfxPrint(font, "Yes",
-            -0.18f, -0.1f,
-            1.f,
-            0.f, 0.f, 0.f, 1.f);
-
-        AEGfxPrint(font, "No",
-            0.12f, -0.1f,
-            1.f,
-            0.f, 0.f, 0.f, 1.f);
-    }
-
-    // Yes button
-    render_blending_sprite(button, 200.f, 80.f, 1.0f, -100.f, -50.f,
-        IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
-
-    // No button
-    render_blending_sprite(button, 200.f, 80.f, 1.0f, 100.f, -50.f,
-        IsButtonHovered(100.f, -50.f, 200.f, 80.f));
-}
+  
 
 	// Draw background, knight, and ghoul with blending for transparency
      // Draw wall tiles across top portion of screen
@@ -480,7 +447,7 @@ void mainmenu_draw()
                 0.f, 0.f, 0.f, 1.f);
 
             AEGfxPrint(font, "No",
-                0.12f, -0.14f,
+                0.15f, -0.14f,
                 1.f,
                 0.f, 0.f, 0.f, 1.f);
         }

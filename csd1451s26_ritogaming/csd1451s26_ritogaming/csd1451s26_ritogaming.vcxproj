@@ -102,7 +102,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\enemy.cpp" />
     <ClCompile Include="..\Source\enemy_manager.cpp" />
     <ClCompile Include="..\Source\game_state_manager.cpp" />
-    <ClCompile Include="..\Source\health_system.cpp" />
     <ClCompile Include="..\Source\level1.cpp" />
     <ClCompile Include="..\Source\level2.cpp" />
     <ClCompile Include="..\Source\level_editor.cpp" />
@@ -115,6 +114,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\puzzle.cpp" />
     <ClCompile Include="..\Source\renderer.cpp" />
     <ClCompile Include="..\Source\utils.cpp" />
+    <ClCompile Include="..\Source\ui_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\camera.hpp" />
@@ -124,7 +124,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\enemy_manager.hpp" />
     <ClInclude Include="..\Source\game_state_list.hpp" />
     <ClInclude Include="..\Source\game_state_manager.hpp" />
-    <ClInclude Include="..\Source\health_system.hpp" />
     <ClInclude Include="..\Source\level1.hpp" />
     <ClInclude Include="..\Source\level2.hpp" />
     <ClInclude Include="..\Source\level_editor.hpp" />
@@ -132,9 +131,11 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\map.hpp" />
     <ClInclude Include="..\Source\Minimap.hpp" />
     <ClInclude Include="..\Source\opening.hpp" />
+    <ClInclude Include="..\Source\pch.hpp" />
     <ClInclude Include="..\Source\player.hpp" />
     <ClInclude Include="..\Source\puzzle.hpp" />
     <ClInclude Include="..\Source\renderer.hpp" />
+    <ClInclude Include="..\Source\ui_manager.hpp" />
     <ClInclude Include="..\Source\utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

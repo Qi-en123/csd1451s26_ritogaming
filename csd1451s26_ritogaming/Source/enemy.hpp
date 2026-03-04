@@ -7,22 +7,29 @@
 
 #pragma once
 
-#include "AEEngine.h"
-#include "player.hpp"
-#include "camera.hpp"
-#include "collision.hpp"
-#include "map.hpp"
 #include <cmath>
 #include <vector>
 #include <cstring> 
+#include "AEEngine.h"
+#include "camera.hpp"
 
-enum class enemy_type {
-    ghost_boy,
-    bat,
-    dragon
-};
+constexpr int  player_heart_damage { 50 };
+constexpr f32  food_health_percent { 0.50f };
+constexpr f32  food_lifetime { 10.f };
 
-enum class enemy_state {
+//------------------------------- Pathfinding --------------------------------
+// Move position (x, y) toward a target, wall-checking along each axis
+void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size, f32 target_x, f32 target_y, f32 dt);
+
+// Move position (x, y) away from a source, wall-checking along each axis
+void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size, f32 from_x, f32 from_y, f32 dt);
+
+// Compute the next flee position (caller decides whether to apply it)
+void enemy_flee_to_wall(f32 x, f32 y, f32 speed, f32 player_x, f32 player_y, f32 dt,
+                        f32& next_x, f32& next_y);
+
+//------------------------------- Enemy State --------------------------------
+enum enemy_state {
     idle,
     chasing,
     fleeing,
@@ -30,7 +37,12 @@ enum class enemy_state {
     dead
 };
 
+//------------------------------- Enemy Type --------------------------------
 class base_enemy {
+public:
+    static constexpr int  enemy_max_hp        { 100 };
+    static constexpr int  enemy_damage_per_hit{ 50 };
+
 protected:
     // Position & Movement
     f32 x, y;
@@ -39,15 +51,13 @@ protected:
     f32 speed;
     f32 size;
 
-    // Health & Combat
-    f32 max_health;
-    f32 current_health;
-    f32 damage;
+    int current_health;
+	int max_health;
+
     f32 attack_cooldown;
     f32 attack_timer;
 
     // State
-    enemy_type type;
     enemy_state state;
     bool active;
     bool visible_to_player;
@@ -55,78 +65,77 @@ protected:
     // Collision & Detection
     f32 collision_radius;
     f32 sight_range;
-    f32 reset_range;
 
     // Graphics
-    const char* texture;
-    f32 animation_timer;
+    const char* texture_path;
+    AEGfxTexture* texture;
 
     // Food Drop
-    f32 food_heal_percentage;
     const char* food_texture_path;
+    AEGfxTexture* food_texture;
 
 public:
-    base_enemy(enemy_type enemy_type, f32 start_x, f32 start_y);
+    base_enemy(f32 start_x, f32 start_y);
     virtual ~base_enemy() = default;
 
-    // Pure virtual - must be overridden
+    // Pure virtual
+    virtual void load_textures() {
+        if (texture_path && !texture)                texture = AEGfxTextureLoad(texture_path);
+        if (food_texture_path && !food_texture) food_texture = AEGfxTextureLoad(food_texture_path);
+    }
+
+    virtual void unload_textures() {
+        if (texture) { AEGfxTextureUnload(texture);                texture = nullptr; }
+        if (food_texture) { AEGfxTextureUnload(food_texture); food_texture = nullptr; }
+    }
     virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
+    virtual void take_damage(int amount);
 
-    // Common functions
-    virtual void take_damage(f32 amount);
-    virtual bool is_dead() const { return current_health <= 0 || !active; }
-    virtual bool should_despawn() const { return !active; }
+    // Type identification without an enum – override in derived classes
+    virtual bool is_ghost() const { return false; }
 
-    // Movement helpers
-    void move_towards(f32 target_x, f32 target_y, f32 dt);
-    void move_away_from(f32 target_x, f32 target_y, f32 dt);
-    void flee_to_wall(f32 player_x, f32 player_y, f32 dt);
+    virtual int get_max_health() const { return max_health; }
 
     // Collision & Detection
-    bool is_in_camera_view(camera* cam) const;
-    bool collides_with_player(struct Player* player) const;
-    f32 distance_to_player(struct Player* player) const;
+    bool is_in_camera_view(camera* cam)               const;
+    bool collides_with_player(struct Player* player)  const;
+    f32  distance_to_player(struct Player* player)    const;
 
     // Getters
-    f32 get_x() const { return x; }
-    f32 get_y() const { return y; }
-    f32 get_size() const { return size; }
-    f32 get_current_health() const { return current_health; }
-    f32 get_max_health() const { return max_health; }
-    enemy_type get_type() const { return type; }
-    enemy_state get_state() const { return state; }
-    bool is_active() const { return active; }
-    f32 get_food_heal_percentage() const { return food_heal_percentage; }
-    const char* get_texture_path() const { return texture; }
-    const char* get_food_texture_path() const { return food_texture_path; }
+    f32         get_x()              const { return x; }
+    f32         get_y()              const { return y; }
+    f32         get_size()           const { return size; }
+    int         get_current_health() const { return current_health; }
+    enemy_state get_state()          const { return state; }
+    bool        is_active()          const { return active; }
 
-    // Setters
-    void set_active(bool val) { active = val; }
-    void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; }
+    const char* get_texture_path()      const { return texture_path; }
+    const char* get_food_texture_path() const { return food_texture_path; }
+    AEGfxTexture* get_texture()           const { return texture; }
+    AEGfxTexture* get_food_texture()      const { return food_texture; }
+
+    void set_active(bool val)               { active = val; }
+    void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; } 
 };
 
 // ============================================================================
-// GHOST BOY ENEMY
+// GHOST BOY  –  flees the moment it enters the player's camera view
 // ============================================================================
-class ghost_boy : public base_enemy {
-private:
-    f32 flee_timer;
-    bool has_reached_wall;
-
+class ghost : public base_enemy
+{
 public:
-    ghost_boy(f32 start_x, f32 start_y);
-    ~ghost_boy() override = default;
+    ghost(f32 start_x, f32 start_y);
+    ~ghost() override = default;
 
     void update(f32 dt, struct Player* player, camera* cam) override;
+    bool is_ghost() const override { return true; }
 };
 
 // ============================================================================
-// BAT ENEMY
+// BAT  –  chases and attacks the player; optional to defeat
 // ============================================================================
-class bat : public base_enemy {
-private:
-    f32 aggro_timer;
-
+class bat : public base_enemy
+{
 public:
     bat(f32 start_x, f32 start_y);
     ~bat() override = default;
@@ -135,21 +144,23 @@ public:
 };
 
 // ============================================================================
-// DRAGON BOSS ENEMY
+// DRAGON (Boss)  –  chases the player within fixed room boundaries
 // ============================================================================
-class dragon : public base_enemy {
+class dragon : public base_enemy
+{
 private:
-    f32 room_left, room_right, room_top, room_bottom;
-    s32 hits_received;
-    s32 hits_until_attack;
+    f32  room_left, room_right, room_top, room_bottom;
+    s32  hits_received;
+    s32  hits_until_attack;
     bool is_boss;
 
 public:
-    dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
+    dragon(f32 start_x, f32 start_y,
+        f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
     ~dragon() override = default;
 
     void update(f32 dt, struct Player* player, camera* cam) override;
-    void take_damage(f32 amount) override;
+    void take_damage(int amount) override;
 
-    bool has_sister_drop() const { return is_boss && is_dead(); }
+    bool has_dropped_sister() const { return is_boss && state == dead; }
 };

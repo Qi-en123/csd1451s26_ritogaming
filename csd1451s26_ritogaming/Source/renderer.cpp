@@ -329,7 +329,29 @@ void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	}
 }
 
+void render_ui_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color) {
+	//CULLING
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+	AEMtx33 transform;
+	AEMtx33Identity(&transform);
 
+	AEMtx33 translate;
+	AEMtx33Trans(&translate, trans_x, trans_y);
+
+	AEMtx33 scale;
+	AEMtx33Scale(&scale, scale_x, scale_y);
+
+	AEMtx33Concat(&transform, &transform, &translate);
+	AEMtx33Concat(&transform, &transform, &scale);
+
+	//AEMtx33Concat(&transform, &translate, &scale);
+	AEGfxSetColorToMultiply(color.r, color.g, color.b, 1.0f);
+	AEGfxTextureSet(texture, 0, 0);
+	AEGfxSetTransform(transform.m);
+	AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
+	AEGfxTextureSet(nullptr, 0, 0);
+}
 
 void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,
 	f32 scale, color color) {

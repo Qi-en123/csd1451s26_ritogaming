@@ -123,6 +123,12 @@ void render_square_sprite(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y,
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = { 1.0f,1.0f,1.0f,1.0f });
 
+//rect_mesh - Corner or Center mode (USE RECT MESH)
+//texture is loaded outside this function
+void render_ui_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = { 1.0f,1.0f,1.0f,1.0f });
+
+
 //pos_x - posX in normalized coords (-1.0f to 1.0f)
 //pos_y - posY in normalized coords (-1.0f to 1.0f)
 //Text pos is in the middle

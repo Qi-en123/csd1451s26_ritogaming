@@ -2,30 +2,46 @@
 \file:          enemy_manager.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-\brief:         Manages spawning, updating, and rendering enemies and food drops
+\brief:         EnemyManager – zone-based spawning, food drops, combat helpers
+\
+\               Zone layout (based on map.cpp):
+\
+\               tutorial_area  – Player Room 2 (rows 18-26, cols 2-9)
+\                   + vertical corridor (rows 11-17, cols 4-7)
+\                   ? 8 ghost boys, respawn after RESPAWN_DELAY
+\
+\               combat_area    – Player Room 1 (rows 3-10, cols 2-9)
+\                   + horizontal corridor (row 7, cols 9-24)
+\                   ? 5 bats, respawn after RESPAWN_DELAY
+\
+\                boss_room      – Boss room (level 2)
+\                   ? 1 dragon, no respawn
 **************************************************************************/
 
 #pragma once
 
-#include "AEEngine.h"
-#include "collision.hpp"
-#include "renderer.hpp"
-#include "enemy.hpp"
 #include <algorithm>
 #include <random>
 #include <memory>
 #include <vector>
+#include "AEEngine.h"
 
-struct Player;
 struct camera;
-class base_enemy;
-class ghost_boy;
-class bat;
-class dragon;
 
 constexpr s32 NUM_GHOST_SLOTS = 10;
+constexpr s32 NUM_BAT_SLOTS = 5;
+
 constexpr f32 SPAWN_CHECK_INTERVAL = 3.0f;
-constexpr f32 GHOST_RESPAWN_DELAY = 5.0f;  
+constexpr f32 RESPAWN_DELAY = 5.0f;  
+
+constexpr f32 FOOD_LIFTIME = 10.0f;
+constexpr f32 FOOD_HEAL_PERCENTAGE = 0.50f;
+
+enum game_zone {
+    tutorial_area,
+    combat_area,
+    boss_room
+};
 
 struct food_drop {
     f32 x, y;
@@ -36,60 +52,72 @@ struct food_drop {
     AEGfxTexture* texture;
 };
 
-struct GhostSlot {
-    f32 spawn_x, spawn_y;         
-    base_enemy* ghost;  // Pointer to the ghost occupying this slot (nullptr if empty)
+struct enemy_slot {     
+    base_enemy* enemy;  // Pointer to the ghost occupying this slot (nullptr if empty)
     f32 respawn_timer;  // Timer before this slot can respawn
 };
 
-class enemy_manager {
+class EnemyManager {
 private:
     std::vector<std::unique_ptr<base_enemy>> enemies;
-    std::vector<food_drop> food_drops;
+    std::vector<food_drop>                   food_drops;
 
-    // Fixed ghost spawn slots
-    GhostSlot ghost_slots[NUM_GHOST_SLOTS];
+    enemy_slot ghost_slots[NUM_GHOST_SLOTS];
+	enemy_slot bat_slots  [NUM_BAT_SLOTS];
 
     // Food textures
-    AEGfxTexture* ghost_food_tex{};
-    AEGfxTexture* bat_food_tex{};
+    AEGfxTexture* ghost_food_tex {};
+    AEGfxTexture* bat_food_tex   {};
     AEGfxTexture* dragon_food_tex{};
 
     f32 spawn_check_timer{};
 
-    bool is_in_level1{ true };
+    game_zone current_zone     { tutorial_area };
+    bool      boss_room_entered{ false };
+    int       enemies_defeated { 0 };
 
 public:
-    enemy_manager();
-    ~enemy_manager();
+    EnemyManager ();
+    ~EnemyManager();
 
     void update(f32 dt, Player* player, camera* cam);
     void render();
 
+    void      set_zone(game_zone zone) { current_zone = zone; }
+    game_zone get_zone()         const { return current_zone; }
+
+    void initialize_tutorial_area(); // 8 ghosts – bottom room + vertical corridor
+    void initialize_combat_area();   // 5 bats   – upper room + horizontal corridor
+
     void spawn_ghost_at_slot(int slot_index);
-    void spawn_bat(f32 x, f32 y);
-    void spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
+    void spawn_bat_at_slot  (int slot_index);
+    void spawn_dragon       (f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
 
-    void spawn_food(f32 x, f32 y, f32 heal_percentage, const char* texture_path);
+    void spawn_food(f32 x, f32 y, AEGfxTexture* texture);
+
     void check_player_attacks(Player* player, f32 attack_range, f32 damage);
-
     bool check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage);
 
     void cleanup_dead_enemies();
     void clear_all();
 
     void maintain_ghost_population();
-    void initialize_ghost_slots();
+    void maintain_bat_population  ();
+
 
     size_t get_active_enemy_count() const;
     size_t get_ghost_count() const;
+	size_t get_bat_count()   const;
+    bool   is_boss_room_entered()   const { return boss_room_entered; }
+    int    get_enemies_defeated()   const { return enemies_defeated; }
 
-    void set_level(bool is_level1) { is_in_level1 = is_level1; }
+	std::vector<std::unique_ptr<base_enemy>> const & get_enemies() const { return enemies; }
 
 private:
     void update_food(f32 dt, Player* player);
     void render_food();
     void render_enemy(base_enemy* enemy);
 };
+extern EnemyManager enemy_manager_instance;
 
-extern enemy_manager g_enemy_manager;
+void entity_system_update(Player* player_ptr, EnemyManager* enem);

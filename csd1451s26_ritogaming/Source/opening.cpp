@@ -20,7 +20,7 @@ namespace {
 }
 void opening_load()
 {
-    logo = AEGfxTextureLoad("Assets/DigiPen_BLACK.png");
+    logo = AEGfxTextureLoad("Assets/Admin/DigiPen_BLACK.png");
  
 }
 

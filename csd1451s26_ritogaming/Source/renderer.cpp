@@ -308,14 +308,20 @@ void get_zoom(f32 dt) {
 }
 
 // for blending
-void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x , f32 trans_y )
+void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x , f32 trans_y, bool highlighted)
 {
 	if (!texture || !rect_mesh_center) return;
 
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+
+	if (highlighted)
+		AEGfxSetColorToAdd(0.3f, 0.3f, 0.3f, 0.f);
+	else
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+
+
 	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 	AEGfxSetTransparency(alpha);
 	AEGfxTextureSet(texture, 0, 0);
 

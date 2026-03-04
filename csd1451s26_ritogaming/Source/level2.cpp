@@ -125,7 +125,7 @@ void level2_load()
 //	//ShiftMapRight(2);
 //}
 
-void level2_initialize()
+void level2_init()
 {
     zoom = 1.0f;
     tile_size = 64.f;

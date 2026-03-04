@@ -124,4 +124,4 @@ void render_text_corner(char const* text, s8 font, f32 pos_x, f32 pos_y,
 void get_zoom(f32 dt);
 
 
-void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x = 0.f, f32 trans_y = 0.f);
+void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);

@@ -10,7 +10,7 @@
 
 void level2_load();
 
-void level2_initialize();
+void level2_init();
 
 void level2_update();
 

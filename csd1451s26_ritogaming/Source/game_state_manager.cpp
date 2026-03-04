@@ -13,6 +13,7 @@
 #include "credit.hpp"
 #include "opening.hpp"
 #include "mainmenu.hpp"
+#include "level_editor.hpp"
 
 // ----------------------------------------------------------------------------
 // Current, previous, and next game state identifiers
@@ -48,7 +49,7 @@ void gsm_update()
 	{
 	case GS_LEVEL1:
 		fpLoad = level1_load;
-		fpInitialize = level1_initialize;
+		fpInitialize = level1_init;
 		fpUpdate = level1_update;
 		fpDraw = level1_draw;
 		fpFree = level1_free;
@@ -57,7 +58,7 @@ void gsm_update()
 
 	case GS_BOSS_ROOM:
 		fpLoad = level2_load;
-		fpInitialize = level2_initialize;
+		fpInitialize = level2_init;
 		fpUpdate = level2_update;
 		fpDraw = level2_draw;
 		fpFree = level2_free;
@@ -65,7 +66,7 @@ void gsm_update()
 		break;
 	case CREDIT:
 		fpLoad = credit_load;
-		fpInitialize = credit_initialize;
+		fpInitialize = credit_init;
 		fpUpdate = credit_update;
 		fpDraw = credit_draw;
 		fpFree = credit_free;
@@ -86,6 +87,14 @@ void gsm_update()
 		fpDraw = mainmenu_draw;
 		fpFree = mainmenu_free;
 		fpUnload = mainmenu_unload;
+		break;
+	case GS_LEVEL_EDITOR:
+		fpLoad = level_editor_load;
+		fpInitialize = level_editor_init;
+		fpUpdate = level_editor_update;
+		fpDraw = level_editor_draw;
+		fpFree = level_editor_free;
+		fpUnload = level_editor_unload;
 		break;
 	case GS_RESTART:
 		break;

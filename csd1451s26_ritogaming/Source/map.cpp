@@ -10,12 +10,142 @@
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "map.hpp"
-    
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <iostream>   
+
 // Dummy map
 s32 map[TILE_ROWS][TILE_COLS];
 s32 boss_map[TILE_ROWS][TILE_COLS];
 f32 tile_size{};
 AEGfxTexture* TileTextures[NUM_TILE_TYPES];
+
+bool load_tile_textures(const char* folderPath)
+{
+    for (int i = 0; i < NUM_TILE_TYPES; ++i)
+    {
+        // Build file path: folderPath + "tile_i.png"
+        char filename[256];
+        snprintf(filename, sizeof(filename), "%s/tile_%04d.png", folderPath, i);
+
+        // Load the texture
+        TileTextures[i] = AEGfxTextureLoad(filename);
+
+        if (!TileTextures[i])
+        {
+            std::cerr << "Failed to load tile texture: " << filename << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void free_tile_textures()
+{
+    for (int i = 0; i < NUM_TILE_TYPES; ++i)
+    {
+        if (TileTextures[i])
+        {
+            AEGfxTextureUnload(TileTextures[i]); // unload texture
+            TileTextures[i] = nullptr;           // avoid dangling pointer
+        }
+    }
+}
+
+
+bool load_map_from_file(const char* filename, s32 map[TILE_ROWS][TILE_COLS])
+{
+	std::ifstream file(filename); // Open the map file for reading
+	if (!file.is_open()) { // Check if the file was successfully opened
+		std::cerr << "Failed to open map file: " << filename << "\n"; // Print an error message if the file cannot be opened
+		return false; // Return false to indicate failure
+    }
+
+	std::string line; // Variable to hold each line read from the file
+	int row = 0; // Row index for the map array
+
+	while (std::getline(file, line) && row < TILE_ROWS) // Read each line of the file
+    {
+		std::istringstream ss(line); // ss acts as a stream for the current line
+		int col = 0; // Column index for the map array
+		int tileType; // Variable to hold the tile type read from the line
+
+		while (ss >> tileType && col < TILE_COLS)  // Read each tile type in the line
+        {
+			map[row][col] = tileType; // Store the tile type in the map array
+			++col; // Move to the next column
+        }
+
+        // Fill remaining columns with EMPTY if line too short
+        while (col < TILE_COLS)
+        {
+			map[row][col] = EMPTY; // Fill with EMPTY tile type
+			++col; // Move to the next column
+        }
+
+		++row; // Move to the next row
+    }
+
+    // Fill remaining rows with EMPTY if file has fewer rows
+	while (row < TILE_ROWS) 
+    {
+		for (int c = 0; c < TILE_COLS; ++c) // Fill remaining columns with EMPTY
+            map[row][c] = EMPTY;
+		++row; // Move to the next row
+    }
+
+	file.close(); // Close the file after reading
+	return true; // Return true to indicate successful loading
+}
+
+bool save_map_to_file(s32 map[TILE_ROWS][TILE_COLS])
+{
+    s32 level = 1;
+    std::string filename{};
+
+    // Find next available level file
+    while (true)
+    {
+        filename = "Assets/Levels/lvl" + std::to_string(level) + ".txt";
+        std::ifstream check_file{ filename };
+
+        if (!check_file) // File does NOT exist -> safe to use
+            break;
+
+        ++level;
+    }
+
+    // Now open that filename for writing
+    std::ofstream file{ filename };
+
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open map file for writing: " << filename << "\n";
+        return false;
+    }
+
+    // Write map data
+    for (int row = 0; row < TILE_ROWS; ++row)
+    {
+        for (int col = 0; col < TILE_COLS; ++col)
+        {
+            file << map[row][col];
+
+            if (col < TILE_COLS - 1)
+                file << " ";
+        }
+        file << "\n";
+    }
+
+    file.close();
+
+    std::cout << "Saved to: " << filename << "\n";
+    return true;
+}
+
+
 // ------------------------------------------------------------
 // Draw the entire map perfectly centered
 // ------------------------------------------------------------

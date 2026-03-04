@@ -14,6 +14,7 @@ update game logic, render, free resources
 #include "enemy_manager.hpp"
 #include "collision.hpp"
 #include "game_state_manager.hpp"
+#include "game_state_list.hpp"
 #include "puzzle.hpp"
 #include "utils.hpp"
 #include "Minimap.hpp"
@@ -23,24 +24,16 @@ update game logic, render, free resources
 #define TILE_ROWS 36
 #define TILE_COLS 64
 
-f32 totalWorldW;
-f32 totalWorldH;
-f32 dt;
+
+	f32 totalWorldW;
+	f32 totalWorldH;
+	f32 dt;
 
 void level1_load()
 {
-	for (int i = 0; i < NUM_TILE_TYPES; i++)
-		TileTextures[i] = nullptr;
-
-	// Load textures properly
-	char filename[128];
-	for (int i = 0; i < NUM_TILE_TYPES; ++i)
-	{
-		sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
-		TileTextures[i] = AEGfxTextureLoad(filename);
-		if (!TileTextures[i])
-			printf("Failed to load: %s\n", filename);
-	}
+	if (!load_tile_textures("Assets/Tiles"))
+		next = GS_QUIT; // If tile textures fail to load, quit the game
+		
 	load_puzzle_textures();
 }
 
@@ -69,7 +62,7 @@ void level1_load()
 //	// Clear any existing enemies
 //	g_enemy_manager.clear_all();
 //}
-void level1_initialize()
+void level1_init()
 {
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
@@ -155,13 +148,11 @@ void level1_free()
 {
 	player_system_free(&player_instance);
 	g_enemy_manager.clear_all();
+	free_mesh();
 }
 
 void level1_unload()
 {
-	for (int i = 0; i < NUM_TILE_TYPES; ++i)
-		if (TileTextures[i])
-			AEGfxTextureUnload(TileTextures[i]);
-	free_mesh();
+	free_tile_textures();
 	unload_puzzle_textures();
 }

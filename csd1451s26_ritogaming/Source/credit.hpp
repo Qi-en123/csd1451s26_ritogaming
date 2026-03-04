@@ -10,7 +10,7 @@
 #pragma once
 
 void credit_load();
-void credit_initialize();
+void credit_init();
 void credit_update();
 void credit_draw();
 void credit_free();

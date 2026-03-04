@@ -9,13 +9,17 @@
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 
-int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR lpCmdLine,
+    _In_ int nCmdShow)
 {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, nullptr);
     AESysSetWindowTitle("Ahmad's Dungeon");
     //gsm_initialize(CREDIT);
-    gsm_initialize(GS_LEVEL1);
+    //gsm_initialize(GS_LEVEL1);
+    gsm_initialize(GS_LEVEL_EDITOR);
 
     // Create player
    
@@ -35,7 +39,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow)
         {
             AESysFrameStart(); // start of frame
 
-           
+            if (!AESysDoesWindowExist())
+                next = GS_QUIT;
+
             if (fpUpdate) fpUpdate();
             if (fpDraw) fpDraw();
 

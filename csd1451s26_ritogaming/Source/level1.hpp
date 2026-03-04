@@ -14,7 +14,7 @@ and Restart, providing a central list of all possible game states.
 void level1_load();
 
 
-void level1_initialize();
+void level1_init();
 
 
 void level1_update();

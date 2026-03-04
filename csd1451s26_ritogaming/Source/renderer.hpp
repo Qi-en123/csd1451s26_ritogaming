@@ -4,6 +4,8 @@
 \par DP email:				jerodyaowei.lim@digipen.edu
 \co-author:					Claire
 \par co-author DP email:	c.cheong@digipen.edu
+\co-author:					Goh Qi En
+\par co-author DP email:	g.qien@digipen.edu
 \brief:						This header declares rendering-related data
 							structures and drawing functions using
 							AEEngine.
@@ -134,3 +136,6 @@ void render_text_corner(char const* text, s8 font, f32 pos_x, f32 pos_y,
 	f32 scale, color color);
 
 void get_zoom(f32 dt);
+
+
+void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);

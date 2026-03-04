@@ -94,6 +94,9 @@ typedef struct Player
     std::vector<Projectile> projectiles;
     std::vector<Particle> particles;
 
+    int fireball_count{ 5 };
+    f32 shoot_cooldown{ 0.0f };
+
     // Last movement direction for shooting
     f32 last_dir_x{}, last_dir_y{};
 } Player;
@@ -174,7 +177,7 @@ void player_update_projectiles(Player* player_ptr, f32 dt);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_handle_shooting(Player* player_ptr);
+void player_handle_shooting(Player* player_ptr, f32 dt);
 
 /**************************************************************************
     \brief

@@ -164,15 +164,15 @@ void level_editor_update()
     // --- Save with S key ---
     if (AEInputCheckTriggered(AEVK_S))
     {
-        save_success = save_map_to_file(editor_map);
-        save_msg_timer = SAVE_MSG_DUR;
-        // debug message
-        /*if (!save_success) {
-            printf("Failed to save map!\n");
+        if (wizard_placed && knight_placed && door_placed)
+        {
+            save_success = save_map_to_file(editor_map);
         }
-        if(save_success) {
-            printf("Map saved successfully!\n");
-        }*/
+        else
+        {
+            save_success = false; // show fail message
+        }
+        save_msg_timer = SAVE_MSG_DUR;
     }
 
 
@@ -488,7 +488,10 @@ void level_editor_draw()
     // Save feedback — centered on screen, fades after 2 seconds
     if (save_msg_timer > 0.f && font != -1)
     {
-        const char* msg = save_success ? "Map Saved!" : "Save FAILED!";
+        const char* msg = save_success ? "Map Saved!" :
+            (!wizard_placed ? "Place Wizard first!" :
+                (!knight_placed ? "Place Knight first!" :
+                    (!door_placed ? "Place Door first!" : "Save FAILED!")));
         f32 r = save_success ? 0.3f : 1.0f;
         f32 g = save_success ? 1.0f : 0.3f;
         f32 b = 0.3f;

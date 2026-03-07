@@ -155,7 +155,7 @@ void level1_draw()
 
 void level1_free()
 {
-	player_system_free(&player_instance);
+	
 	//g_enemy_manager.clear_all();
 	free_mesh();
 	free_ui_textures(&ui_manager);
@@ -168,4 +168,5 @@ void level1_unload()
 	//free_mesh();
 	minimap_unload();
 	unload_puzzle_textures();
+	player_system_free(&player_instance);
 }

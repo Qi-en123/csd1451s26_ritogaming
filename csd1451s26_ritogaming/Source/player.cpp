@@ -539,7 +539,7 @@ void spawn_player_from_map(Player* player_ptr, f32 tile_size)
                 player_ptr->char2.y = y;
 
                 // Remove spawn tile
-                map[r][c] = FLOOR;
+                //map[r][c] = FLOOR;
 
                 return;
             }

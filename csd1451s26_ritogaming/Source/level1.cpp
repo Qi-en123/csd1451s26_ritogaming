@@ -29,7 +29,6 @@ update game logic, render, free resources
 	f32 totalWorldW;
 	f32 totalWorldH;
 	f32 dt;
-
 void level1_load()
 {
 	if (!load_tile_textures("Assets/Tiles"))
@@ -68,11 +67,17 @@ void level1_init()
 {
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
+	if (selected_level_path.empty())
+		initialize_dungeon_map(); // default hardcoded map
+	else
+		load_map_from_file(selected_level_path.c_str(), map);
+	generate_walls_from_map(map, 64.0f);
 
+	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
 	tile_size = 64.f;
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
+	spawn_player_from_map(&player_instance, tile_size);
 	player_instance.stats.character_size = tile_size - 8.0f;
-
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
@@ -81,10 +86,7 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
-	initialize_dungeon_map();
-	generate_walls_from_map(map, 64.0f);
-
-	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
+	
 
 
 	// // Clear any existing enemies and reinitialize with ghosts in top left room
@@ -130,6 +132,8 @@ void level1_update()
 	//printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 
 	check_and_open_doors(&player_instance);
+
+
 
 	enemy_manager_instance.update(dt, &player_instance, &cam);
 }

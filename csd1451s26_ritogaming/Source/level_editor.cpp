@@ -3,7 +3,8 @@
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This file defines functions to load, initialize, update, draw, free, and unload
-                the game's level editor which saves the current map array to a text file.
+				the game's level interface which allows users to create custom maps by painting tiles on a grid and saving them to a file. 
+                The editor features a tile palette, camera panning, and visual feedback for tile placement and saving status.
 **************************************************************************/
 
 #include "AEEngine.h"

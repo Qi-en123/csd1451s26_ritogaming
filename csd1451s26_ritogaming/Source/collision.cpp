@@ -19,6 +19,7 @@ This file defines functions to:
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "renderer.hpp"
+#include "utils.hpp"
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
@@ -332,5 +333,32 @@ void check_and_open_doors(Player* player)
     if (map[playerRow][playerCol] == OPENED_DOOR)
     {
         next = GS_BOSS_ROOM;
+    }
+}
+
+// check which level to enter next
+void check_next_level(Player* player)
+{
+    if (!player || !player->current_player) return;
+
+    int playerRow, playerCol;
+    if (!world_to_tile(player->current_player->x, player->current_player->y, playerRow, playerCol))
+        return;
+
+    if (map[playerRow][playerCol] == OPENED_DOOR)
+    {
+        current_level_index++;
+
+        if (current_level_index >= (int)level_paths.size())
+        {
+            // No more custom levels — go to boss room
+            next = GS_BOSS_ROOM;
+        }
+        else
+        {
+            // Load next custom level
+            selected_level_path = level_paths[current_level_index];
+            next = GS_RESTART;
+        }
     }
 }

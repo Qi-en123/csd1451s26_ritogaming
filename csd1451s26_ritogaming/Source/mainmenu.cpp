@@ -25,6 +25,7 @@ namespace {
     AEGfxTexture* button = nullptr;
     AEGfxTexture* cursor = nullptr;
     AEGfxTexture* banner = nullptr;
+    AEGfxTexture* panel = nullptr;
 
     static s8  font = -1;
     
@@ -102,6 +103,7 @@ void mainmenu_load()
     button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     banner = AEGfxTextureLoad("Assets/Admin/banner_classic_curtain.png");
+    panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
 
  
 	// Load font from Assets folder
@@ -422,7 +424,7 @@ void mainmenu_draw()
         draw_square(0.f, 0.f, 1600.f, 900.f); // use your square_mesh
 
         // Popup box
-        render_blending_sprite(button, 800.f, 400.f, 1.0f, 0.f, 0.f);
+        render_blending_sprite(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
 
 
         // Yes button
@@ -515,6 +517,11 @@ void mainmenu_unload()
     {
         AEGfxTextureUnload(banner);
         banner = nullptr;
+    }
+    if (panel)
+    {
+        AEGfxTextureUnload(panel);
+        panel = nullptr;
     }
 
     if (font != -1)

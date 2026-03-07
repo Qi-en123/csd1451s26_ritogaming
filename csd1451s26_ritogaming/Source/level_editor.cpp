@@ -57,6 +57,8 @@ namespace {
 
     /// --- Painting control ---
     static bool can_paint = false;
+
+	s32** editor_map = nullptr; // for creating new map
 }
 
 // -------------------------------------------------------
@@ -104,10 +106,16 @@ void level_editor_init()
     AEGfxSetBackgroundColor(0.08f, 0.09f, 0.12f);
     AEInputShowCursor(false); // we'll draw our own cursor, so hide the default one
 
+    editor_map = new int* [TILE_ROWS];
+    for (int r = 0; r < TILE_ROWS; ++r)
+    {
+        editor_map[r] = new int[TILE_COLS] {};  // {} zero-initializes
+    }
+
     // set default map data (all 0)
     for (int r = 0; r < TILE_ROWS; ++r)
         for (int c = 0; c < TILE_COLS; ++c)
-            map[r][c] = 0;
+            editor_map[r][c] = 0;
 
     // Fit tile size so entire map fits in visible area
     const f32 SCREEN_W = (f32)AEGfxGetWindowWidth();
@@ -156,15 +164,15 @@ void level_editor_update()
     // --- Save with S key ---
     if (AEInputCheckTriggered(AEVK_S))
     {
-        save_success = save_map_to_file(map);
-        save_msg_timer = SAVE_MSG_DUR;
-        // debug message
-        /*if (!save_success) {
-            printf("Failed to save map!\n");
+        if (wizard_placed && knight_placed && door_placed)
+        {
+            save_success = save_map_to_file(editor_map);
         }
-        if(save_success) {
-            printf("Map saved successfully!\n");
-        }*/
+        else
+        {
+            save_success = false; // show fail message
+        }
+        save_msg_timer = SAVE_MSG_DUR;
     }
 
 
@@ -210,7 +218,7 @@ void level_editor_update()
         // LEFT CLICK PAINT
         if (can_paint && AEInputCheckCurr(AEVK_LBUTTON))
         {
-            int current = map[row][col];
+            int current = editor_map[row][col];
             int placing = selected_tile;
 
             bool blocked =
@@ -224,7 +232,7 @@ void level_editor_update()
                 if (current == 4) knight_placed = false;
                 if (current == 8) door_placed = false;
 
-                map[row][col] = placing;
+                editor_map[row][col] = placing;
 
                 if (placing == 3) wizard_placed = true;
                 if (placing == 4) knight_placed = true;
@@ -235,13 +243,13 @@ void level_editor_update()
         // RIGHT CLICK ERASE
         if (can_paint && AEInputCheckCurr(AEVK_RBUTTON))
         {
-            int current = map[row][col];
+            int current = editor_map[row][col];
 
             if (current == 3) wizard_placed = false;
             if (current == 4) knight_placed = false;
             if (current == 8) door_placed = false;
 
-            map[row][col] = 0;
+            editor_map[row][col] = 0;
         }
     }
     // --- Fill entire grid with selected tile (F key) ---
@@ -254,8 +262,8 @@ void level_editor_update()
 
         for (int r = 0; r < TILE_ROWS; ++r)
             for (int c = 0; c < TILE_COLS; ++c)
-                if (map[r][c] == 0)
-                    map[r][c] = selected_tile;
+                if (editor_map[r][c] == 0)
+                    editor_map[r][c] = selected_tile;
     }
 
     // --- Clear entire grid (C key) ---
@@ -263,7 +271,7 @@ void level_editor_update()
     {
         for (int r = 0; r < TILE_ROWS; ++r)
             for (int c = 0; c < TILE_COLS; ++c)
-                map[r][c] = 0;
+                editor_map[r][c] = 0;
         wizard_placed = false; // reset flags too
         knight_placed = false;
         door_placed = false;
@@ -330,7 +338,7 @@ void level_editor_draw()
             if (wx < grid_left || wx > grid_right) continue;
             if (wy > grid_top || wy < grid_bot) continue;
 
-            int tile = map[r][c];
+            int tile = editor_map[r][c];
             if (tile != 0 && TileTextures[tile])
                 render_blending_sprite(TileTextures[tile], tile_draw_size, tile_draw_size, 1.0f, wx, wy);
         }
@@ -480,7 +488,10 @@ void level_editor_draw()
     // Save feedback — centered on screen, fades after 2 seconds
     if (save_msg_timer > 0.f && font != -1)
     {
-        const char* msg = save_success ? "Map Saved!" : "Save FAILED!";
+        const char* msg = save_success ? "Map Saved!" :
+            (!wizard_placed ? "Place Wizard first!" :
+                (!knight_placed ? "Place Knight first!" :
+                    (!door_placed ? "Place Door first!" : "Save FAILED!")));
         f32 r = save_success ? 0.3f : 1.0f;
         f32 g = save_success ? 1.0f : 0.3f;
         f32 b = 0.3f;
@@ -500,6 +511,13 @@ void level_editor_draw()
 void level_editor_free()
 {
     free_mesh(); // Free any dynamically allocated memory for meshes
+    if (editor_map)
+    {
+        for (int r = 0; r < TILE_ROWS; ++r)
+            delete[] editor_map[r];
+        delete[] editor_map;
+        editor_map = nullptr;
+    }
 }
 
 void level_editor_unload()

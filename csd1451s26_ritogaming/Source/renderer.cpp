@@ -167,12 +167,12 @@ void init_mesh() {
 }
 
 void free_mesh() {
-	AEGfxMeshFree(circle_mesh);
-	AEGfxMeshFree(rect_mesh_corner);
-	AEGfxMeshFree(rect_mesh_center);
-	AEGfxMeshFree(square_mesh);
-	AEGfxMeshFree(triangle_mesh);
-	AEGfxMeshFree(light_source_mesh);
+	if (light_source_mesh) { AEGfxMeshFree(light_source_mesh); light_source_mesh = nullptr; }
+	if (circle_mesh) { AEGfxMeshFree(circle_mesh);       circle_mesh = nullptr; }
+	if (rect_mesh_corner) { AEGfxMeshFree(rect_mesh_corner);  rect_mesh_corner = nullptr; }
+	if (rect_mesh_center) { AEGfxMeshFree(rect_mesh_center);  rect_mesh_center = nullptr; }
+	if (square_mesh) { AEGfxMeshFree(square_mesh);       square_mesh = nullptr; }
+	if (triangle_mesh) { AEGfxMeshFree(triangle_mesh);     triangle_mesh = nullptr; }
 }
 
 bool on_screen(f32 x, f32 y) {

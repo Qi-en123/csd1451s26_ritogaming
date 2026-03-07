@@ -400,7 +400,7 @@ void player_render_fireball_count(Player* player_ptr)
 
     std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
 
-    render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
+    //render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
 }
 
 /**************************************************************************/

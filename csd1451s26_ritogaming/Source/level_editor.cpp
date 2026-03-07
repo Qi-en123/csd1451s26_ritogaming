@@ -328,6 +328,7 @@ void level_editor_draw()
     {
         for (int c = 0; c < TILE_COLS; ++c)
         {
+
             f32 wx = grid_start_x + c * tile_draw_size + (tile_draw_size * 0.5f) + cam_offset_x;
             f32 wy = grid_start_y - r * tile_draw_size - (tile_draw_size * 0.5f) + cam_offset_y;
             // to optimize, skip drawing tiles that are outside the visible world bounds (including right panel area)

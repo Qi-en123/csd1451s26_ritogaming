@@ -113,7 +113,12 @@ static void build_level_list()
     // Sort alphabetically so lvl_01 < lvl_02 etc.
     std::sort(saved_levels.begin(), saved_levels.end(),
         [](const LevelEntry& a, const LevelEntry& b) {
-            return a.path < b.path;
+            auto get_num = [](const std::string& s) {
+                size_t start = s.find("lvl") + 3;
+                size_t end = s.find(".txt");
+                return std::stoi(s.substr(start, end - start));
+                };
+            return get_num(a.path) < get_num(b.path);
         });
 
     // Assign display names as Level 2, 3, 4...
@@ -216,7 +221,8 @@ void levels_update()
 
                 if (IsButtonClicked(cx, cy, CELL_W, CELL_H))
                 {
-                    current_level_index = idx;
+                    printf("clicked display idx: %d path: %s\n", idx,
+                        levels[idx].path.empty() ? "DEFAULT" : levels[idx].path.c_str());
                     selected_level_path = levels[idx].path;
                     next = GS_LEVEL1;
                 }
@@ -373,4 +379,40 @@ void levels_unload()
     if (bg_wall) { AEGfxTextureUnload(bg_wall); bg_wall = nullptr; }
     if (scroll_bar) { AEGfxTextureUnload(scroll_bar);    scroll_bar = nullptr; }
     if (font != -1) { AEGfxDestroyFont(font); font = -1; }
+}
+
+void ensure_level_paths_loaded()
+{
+    if (!level_paths.empty()) return; // already loaded from levels screen, don't rebuild
+
+    // Only runs if coming from outside levels screen (e.g. direct GS_LEVEL1 start)
+    WIN32_FIND_DATAA find_data;
+    HANDLE hFind = FindFirstFileA("Assets/Levels/lvl*.txt", &find_data);
+
+    std::vector<std::string> paths;
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+            {
+                paths.push_back(std::string("Assets/Levels/") + find_data.cFileName);
+            }
+        } while (FindNextFileA(hFind, &find_data));
+        FindClose(hFind);
+    }
+
+    std::sort(paths.begin(), paths.end(), [](const std::string& a, const std::string& b) {
+        auto get_num = [](const std::string& s) {
+            size_t start = s.find("lvl") + 3;
+            size_t end = s.find(".txt");
+            return std::stoi(s.substr(start, end - start));
+            };
+        return get_num(a) < get_num(b);
+        });
+
+    level_paths.clear();
+    level_paths.push_back(""); // index 0 = default Level 1
+    for (auto& p : paths)
+        level_paths.push_back(p);
 }

@@ -14,3 +14,4 @@ void levels_update();
 void levels_draw();
 void levels_free();
 void levels_unload();
+void ensure_level_paths_loaded();

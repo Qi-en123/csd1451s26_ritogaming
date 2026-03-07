@@ -19,7 +19,7 @@ update game logic, render, free resources
 #include "utils.hpp"
 #include "ui_manager.hpp"
 #include "minimap.hpp"
-
+#include "levels.hpp"
 
 #define NUM_TILE_TYPES 10
 #define TILE_ROWS 36
@@ -65,14 +65,22 @@ void level1_load()
 //}
 void level1_init()
 {
+	door_triggered = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
+	ensure_level_paths_loaded();
+
+	printf("level_paths size: %d, current_level_index: %s\n",
+		(int)level_paths.size(), selected_level_path.c_str());
 	if (selected_level_path.empty())
 		initialize_dungeon_map(); // default hardcoded map
 	else
 		load_map_from_file(selected_level_path.c_str(), map);
 	generate_walls_from_map(map, 64.0f);
-
+	for (int r = 0; r < TILE_ROWS; ++r)
+		for (int c = 0; c < TILE_COLS; ++c)
+			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
+				printf("door at row:%d col:%d\n", r, c);
 	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
 	tile_size = 64.f;
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);

@@ -49,6 +49,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         previous = current;
         current = next;
+        if (current == GS_RESTART)
+        {
+            current = previous; // restart = reload same state
+            next = previous;
+        }
+
     }
 
  

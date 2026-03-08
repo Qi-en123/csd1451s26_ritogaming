@@ -16,8 +16,8 @@ extern AEGfxTexture* puzzle_block_textures[];
 enum PuzzleType {
 	PUSHABLE, //0
 	BUTTON_UP,
-	BUTTON_DOWN,
 	PIT,
+	BUTTON_DOWN,
 	PIT_FILLED,
 	PUZZLE_TYPE_COUNT
 };

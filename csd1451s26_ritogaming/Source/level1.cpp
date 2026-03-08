@@ -103,6 +103,8 @@ void level1_init()
 	lights.push_back(l1);
 	lights.push_back(l2);
 	lights.push_back(l3);
+
+	AEInputShowCursor(true);
 }
 
 void level1_update()

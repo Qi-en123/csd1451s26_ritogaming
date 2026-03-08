@@ -296,6 +296,7 @@ void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color) {
 	//CULLING
 	if (on_screen(trans_x, trans_y)) {
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		AEMtx33 transform;
 		AEMtx33Identity(&transform);
@@ -332,7 +333,7 @@ void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 
 void render_ui_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color) {
-	//CULLING
+
 	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 	AEMtx33 transform;
 	AEMtx33Identity(&transform);
@@ -405,9 +406,13 @@ void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 al
 
 	AEMtx33 transform, scale, translate;
 	AEMtx33Identity(&transform);
+
 	AEMtx33Scale(&scale, width, height);
 	AEMtx33Trans(&translate, trans_x, trans_y); 
-	AEMtx33Concat(&transform, &translate, &scale);
+
+	AEMtx33Concat(&transform, &transform, &translate);
+	AEMtx33Concat(&transform, &transform, &scale);
+
 	AEGfxSetTransform(transform.m);
 
 	AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);

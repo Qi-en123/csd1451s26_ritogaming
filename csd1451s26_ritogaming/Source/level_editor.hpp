@@ -8,6 +8,11 @@
 
 #pragma once
 
+enum EditorState {
+	EDIT_TILES,
+	EDIT_PUZZLES
+};
+
 void level_editor_load();
 void level_editor_init();
 void level_editor_update();

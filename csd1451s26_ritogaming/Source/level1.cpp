@@ -81,8 +81,8 @@ void level1_init()
 		for (int c = 0; c < TILE_COLS; ++c)
 			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
 				printf("door at row:%d col:%d\n", r, c);
-	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
 	tile_size = 64.f;
+	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
 	spawn_player_from_map(&player_instance, tile_size);
 	player_instance.stats.character_size = tile_size - 8.0f;
@@ -109,7 +109,7 @@ void level1_init()
 	light l1{ {-300.0f,-300.0f}, {0.5f,0.5f,0.0f,1.0f}, 11, 2.0f };
 	light l2{ {-700.0f,-300.0f}, {white}, 11, 2.0f };
 	light l3{ {-700.0f, 300.0f}, {white}, 11, 2.0f };
-	
+	lights.clear();
 	lights.push_back(l1);
 	lights.push_back(l2);
 	lights.push_back(l3);

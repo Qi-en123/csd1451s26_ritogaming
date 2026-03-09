@@ -22,20 +22,20 @@ namespace {
     static s8 font = -1;
 
     // --- Tile Palette ---
-    const int PALETTE_COUNT = 7;
-    const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 8 ,9 };
-    const char* palette_labels[PALETTE_COUNT] = { "Erase", "Wall", "Floor", "Wizard", "Knight", "Door", "Spikes" };
-    int selected_tile = 1; // default to wall
+	const int PALETTE_COUNT = 7; // number of items in the palette
+	const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 7 ,9 }; // tile id to draw for each palette item
+	const char* palette_labels[PALETTE_COUNT] = { "Erase", "Wall", "Floor", "Wizard", "Knight", "Door", "Spikes" }; // labels for palette items
+    int selected_tile = 1; // default to wall (which tile is selected to draw)
 
     // --- Palette UI (right side panel) ---
     const f32 PANEL_X = 650;  // center X of palette panel
     const f32 PALETTE_TOP_Y = 300.f;  // top item Y
-    const f32 PAL_W = 200.f;
-    const f32 PAL_H = 55.f;
-    const f32 PAL_GAP = 68.f;
+	const f32 PAL_W = 200.f; // width of palette item
+	const f32 PAL_H = 55.f;  // height of palette item
+	const f32 PAL_GAP = 68.f; // vertical gap between palette items
 
     // One-time placement limits
-    bool wizard_placed = false;
+    bool wizard_placed = false; 
     bool knight_placed = false;
     bool door_placed = false;
 
@@ -43,11 +43,11 @@ namespace {
     // --- Grid rendering ---
     // calculated in init
     f32 tile_draw_size = 0.f;
-    f32 grid_start_x = 0.f;
-    f32 grid_start_y = 0.f;
+	f32 grid_start_x = 0.f;  // top-left corner of the grid in world coordinates 
+	f32 grid_start_y = 0.f;  // top-left corner of the grid in world coordinates 
 
     // --- Save feedback ---
-    bool save_success = false;
+    bool save_success = false; 
     f32  save_msg_timer = 0.f;
     const f32 SAVE_MSG_DUR = 2.f;
 
@@ -113,10 +113,6 @@ void level_editor_init()
         editor_map[r] = new int[TILE_COLS] {};  // {} zero-initializes
     }
 
-    // set default map data (all 0)
-    for (int r = 0; r < TILE_ROWS; ++r)
-        for (int c = 0; c < TILE_COLS; ++c)
-            editor_map[r][c] = 0;
 
     // Fit tile size so entire map fits in visible area
     const f32 SCREEN_W = (f32)AEGfxGetWindowWidth();
@@ -132,11 +128,11 @@ void level_editor_init()
 
     grid_start_x = -750.f;  // flush to left edge of world
     grid_start_y = 350.f;   // centered vertically
-    cam_offset_x = 0.f;
-    cam_offset_y = 0.f;
-    selected_tile = 1;
-    save_success = false;
-    save_msg_timer = 0.f;
+	cam_offset_x = 0.f;     // camera position offsets for panning
+    cam_offset_y = 0.f;     
+	selected_tile = 1;      // default to wall
+	save_success = false;   // save feedback
+	save_msg_timer = 0.f;   // save message timer
 
     wizard_placed = false;
     knight_placed = false;
@@ -149,6 +145,19 @@ void level_editor_init()
     cam_offset_y = 0.f;
     can_paint = false;
 
+    if (!selected_level_path.empty())
+    {
+        load_map_to_editor(selected_level_path.c_str(), editor_map);
+
+        // Restore placement flags
+        for (int r = 0; r < TILE_ROWS; ++r)
+            for (int c = 0; c < TILE_COLS; ++c)
+            {
+                if (editor_map[r][c] == 3) wizard_placed = true;
+                if (editor_map[r][c] == 4) knight_placed = true;
+                if (editor_map[r][c] == 7) door_placed = true;
+            }
+    }
 }
 
 void level_editor_update()
@@ -160,18 +169,28 @@ void level_editor_update()
 
     // --- ESC to exit ---
     if (AEInputCheckTriggered(AEVK_ESCAPE))
-        next = MAINMENU; // adjust to your menu state
+        next = GS_LEVELS; // adjust to your menu state
 
     // --- Save with S key ---
     if (AEInputCheckTriggered(AEVK_S))
     {
         if (wizard_placed && knight_placed && door_placed)
         {
-            save_success = save_map_to_file(editor_map);
+            if (!selected_level_path.empty())
+            {
+                save_success = save_map_to_file_overwrite(editor_map, selected_level_path);
+            }
+            else
+            {
+                std::string new_path;
+                save_success = save_map_to_file(editor_map, new_path);
+                if (save_success)
+                    selected_level_path = new_path; // switch to edit mode
+            }
         }
         else
         {
-            save_success = false; // show fail message
+            save_success = false;
         }
         save_msg_timer = SAVE_MSG_DUR;
     }
@@ -225,7 +244,7 @@ void level_editor_update()
             bool blocked =
                 (placing == 3 && wizard_placed && current != 3) ||
                 (placing == 4 && knight_placed && current != 4) ||
-                (placing == 8 && door_placed && current != 8);
+                (placing == 7 && door_placed && current != 7);
 
             if (!blocked)
             {
@@ -237,7 +256,7 @@ void level_editor_update()
 
                 if (placing == 3) wizard_placed = true;
                 if (placing == 4) knight_placed = true;
-                if (placing == 8) door_placed = true;
+                if (placing == 7) door_placed = true;
             }
         }
 
@@ -258,7 +277,7 @@ void level_editor_update()
     {
         // Block fill entirely for unique tiles
         // Block fill entirely for unique tiles
-        if (selected_tile == 3 || selected_tile == 4 || selected_tile == 8)
+        if (selected_tile == 3 || selected_tile == 4 || selected_tile == 7)
             return; // do nothing
 
         for (int r = 0; r < TILE_ROWS; ++r)
@@ -388,7 +407,7 @@ void level_editor_draw()
 
         bool is_locked = (palette_ids[i] == 3 && wizard_placed) ||
             (palette_ids[i] == 4 && knight_placed) ||
-            (palette_ids[i] == 8 && door_placed);
+            (palette_ids[i] == 7 && door_placed);
 
         // Selected glow border
         if (is_selected && TileTextures[2])

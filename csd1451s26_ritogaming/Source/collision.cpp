@@ -326,7 +326,7 @@ void check_and_open_doors(Player* player)
     if (!world_to_tile(player->current_player->x, player->current_player->y, playerRow, playerCol))
         return;
 
-    if (map[playerRow][playerCol] == DOOR || map[playerRow][playerCol] == OPENED_DOOR)
+    if ( map[playerRow][playerCol] == OPENED_DOOR)
     {
         if (!door_triggered)
         {

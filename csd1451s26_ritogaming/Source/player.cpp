@@ -546,3 +546,4 @@ void spawn_player_from_map(Player* player_ptr, f32 tile_size)
         }
     }
 }
+

@@ -45,10 +45,8 @@ void render_enemy_hp(UIManager* ui_manager, EnemyManager* enemy_manager)
 		//}
 		for (int i{ 1 }; i < hearts_to_draw + 1; ++i)
 		{
-			f32 x_position = start_x + i * heart_scale;
-			f32 y_position = enemy->get_y() + enemy->get_size() + heart_scale / 2;
-
-			// i=1 is leftmost, fill from left ? right
+			f32 x_position = start_x + (i-1) * heart_scale;
+			f32 y_position = enemy->get_y() + enemy->get_size() / 2 + heart_scale / 2;
 			if (i <= full_hearts) 
 				render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, ui_manager->hp_full_texture);
 			

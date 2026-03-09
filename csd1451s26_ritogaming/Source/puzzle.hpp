@@ -6,6 +6,7 @@
 **************************************************************************/
 #pragma once
 #include "AEEngine.h"
+#include <vector>
 
 constexpr f32 PUZZLE_BLOCK_SPEED = 40.0f;
 constexpr f32 PUZZLE_GRAB_RANGE = 15.0f;
@@ -17,6 +18,7 @@ enum PuzzleType {
 	PUSHABLE, //0
 	BUTTON_UP,
 	PIT,
+	SPIKE,
 	BUTTON_DOWN,
 	PIT_FILLED,
 	PUZZLE_TYPE_COUNT
@@ -24,9 +26,7 @@ enum PuzzleType {
 
 enum Element {
 	WATER, //0
-	EARTH,
 	FIRE,
-	AIR,
 	NO_ELEMENT
 };
 
@@ -35,6 +35,14 @@ enum Direction {
 	RIGHT,
 	UP,
 	DOWN
+};
+
+//store vec of pairs containing:
+//button_id
+//vector of spike/s coordinates to de/activate
+struct buttonTrigger {
+	s32 id;
+	std::vector<std::pair<int, int>> coords;
 };
 
 //type, pos, is_elem, element
@@ -72,6 +80,21 @@ void load_puzzle_textures();
 
 void initialize_puzzle_blocks(char const* filename);
 
+void place_puzzle(s32 row, s32 col, PuzzleType type, std::vector<puzzle>& puzzles);
+
+void remove_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles);
+
+puzzle* get_editing_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles);
+
+void pair_spike_to_button(s32 row, s32 col, buttonTrigger& bt);
+
+void remove_spike_button_pair(s32 row, s32 col, buttonTrigger& bt);
+
+bool spike_is_paired(s32 row, s32 col, buttonTrigger const& bt);
+
+bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
+	std::vector<buttonTrigger> const& bt);
+
 void render_puzzle_blocks();
 
 //void check_puzzle_collision(player* player);
@@ -88,3 +111,6 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	bool& dragging, s32 index, Element player_elem);
 
 void unload_puzzle_textures();
+
+Element previous_element(Element elem);
+Element next_element(Element elem);

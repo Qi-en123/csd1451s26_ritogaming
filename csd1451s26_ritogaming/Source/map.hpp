@@ -15,7 +15,8 @@ extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 extern AEGfxVertexList* TileMesh;
 extern s32 map[TILE_ROWS][TILE_COLS];
 extern s32 boss_map[TILE_ROWS][TILE_COLS];
-extern f32 tile_size;
+//extern f32 tile_size;
+constexpr f32 tile_size = 64.0f;
 void initialize_boss_map();
 void initialize_dungeon_map();
 

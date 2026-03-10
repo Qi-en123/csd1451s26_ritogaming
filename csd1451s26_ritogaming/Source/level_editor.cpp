@@ -26,7 +26,7 @@ namespace {
 
 	// --- Tile Palette ---
 	const int PALETTE_COUNT = 6;
-	const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 8};
+	const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 7};
 	const char* palette_labels[PALETTE_COUNT] = { "Erase", "Wall", "Floor", "Wizard", "Knight", "Door" };
 	int selected_tile = 1; // default to wall
 
@@ -587,19 +587,19 @@ void level_editor_update()
 				bool blocked =
 					(placing == 3 && wizard_placed && current != 3) ||
 					(placing == 4 && knight_placed && current != 4) ||
-					(placing == 8 && door_placed && current != 8);
+					(placing == 7 && door_placed && current != 7);
 
 				if (!blocked)
 				{
 					if (current == 3) wizard_placed = false;
 					if (current == 4) knight_placed = false;
-					if (current == 8) door_placed = false;
+					if (current == 7) door_placed = false;
 
 					editor_map[row][col] = placing;
 
 					if (placing == 3) wizard_placed = true;
 					if (placing == 4) knight_placed = true;
-					if (placing == 8) door_placed = true;
+					if (placing == 7) door_placed = true;
 				}
 			}
 
@@ -610,7 +610,7 @@ void level_editor_update()
 
 				if (current == 3) wizard_placed = false;
 				if (current == 4) knight_placed = false;
-				if (current == 8) door_placed = false;
+				if (current == 7) door_placed = false;
 
 				editor_map[row][col] = 0;
 			}
@@ -621,7 +621,7 @@ void level_editor_update()
 		{
 			// Block fill entirely for unique tiles
 			// Block fill entirely for unique tiles
-			if (selected_tile == 3 || selected_tile == 4 || selected_tile == 8)
+			if (selected_tile == 3 || selected_tile == 4 || selected_tile == 7)
 				return; // do nothing
 
 			for (int r = 0; r < TILE_ROWS; ++r)
@@ -961,7 +961,7 @@ void level_editor_draw()
 
 			bool is_locked = (palette_ids[i] == 3 && wizard_placed) ||
 				(palette_ids[i] == 4 && knight_placed) ||
-				(palette_ids[i] == 8 && door_placed);
+				(palette_ids[i] == 7 && door_placed);
 
 			// Selected glow border
 			if (is_selected && TileTextures[2])

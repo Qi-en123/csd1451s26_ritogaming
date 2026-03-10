@@ -41,6 +41,7 @@ update game logic, render, free resources
 
 void level1_load()
 {
+	end_screen_load();
 	if (!load_tile_textures("Assets/Tiles"))
 		next = GS_QUIT; // If tile textures fail to load, quit the game
 		
@@ -142,6 +143,8 @@ void level1_init()
 
 void level1_update()
 {
+	pause_update();
+	if (is_paused) return;
 
 	dt = (f32)AEFrameRateControllerGetFrameTime();
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
@@ -181,7 +184,6 @@ void level1_update()
 
 void level1_draw()
 {
-
 	AEGfxReset();
 	draw_map(tile_size);	
 	// Debug: draw all walls as semi-transparent red
@@ -200,6 +202,7 @@ void level1_draw()
 	//Minimap_DrawWalls(map);
 
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
+	pause_draw();
 
 }
 
@@ -214,6 +217,7 @@ void level1_free()
 
 void level1_unload()
 {
+	end_screen_unload();
 	free_tile_textures();
 	//free_mesh();
 	minimap_unload();

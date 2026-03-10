@@ -19,7 +19,7 @@ update game logic, render, free resources
 #include "utils.hpp"
 #include "ui_manager.hpp"
 #include "minimap.hpp"
-
+#include "levels.hpp"
 
 #define NUM_TILE_TYPES 10
 #define TILE_ROWS 36
@@ -29,7 +29,6 @@ update game logic, render, free resources
 	f32 totalWorldW;
 	f32 totalWorldH;
 	f32 dt;
-
 void level1_load()
 {
 	if (!load_tile_textures("Assets/Tiles"))
@@ -66,13 +65,27 @@ void level1_load()
 //}
 void level1_init()
 {
+	door_triggered = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
+	ensure_level_paths_loaded();
 
+	printf("level_paths size: %d, current_level_index: %s\n",
+		(int)level_paths.size(), selected_level_path.c_str());
+	if (selected_level_path.empty())
+		initialize_dungeon_map(); // default hardcoded map
+	else
+		load_map_from_file(selected_level_path.c_str(), map);
+	generate_walls_from_map(map, 64.0f);
+	for (int r = 0; r < TILE_ROWS; ++r)
+		for (int c = 0; c < TILE_COLS; ++c)
+			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
+				printf("door at row:%d col:%d\n", r, c);
 	//tile_size = 64.f;
+	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
+	spawn_player_from_map(&player_instance, tile_size);
 	player_instance.stats.character_size = tile_size - 8.0f;
-
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
@@ -81,10 +94,7 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
-	initialize_dungeon_map();
-	generate_walls_from_map(map, 64.0f);
-
-	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
+	
 
 
 	// // Clear any existing enemies and reinitialize with ghosts in top left room
@@ -99,7 +109,7 @@ void level1_init()
 	light l1{ {-300.0f,-300.0f}, {0.5f,0.5f,0.0f,1.0f}, 11, 2.0f };
 	light l2{ {-700.0f,-300.0f}, {white}, 11, 2.0f };
 	light l3{ {-700.0f, 300.0f}, {white}, 11, 2.0f };
-	
+	lights.clear();
 	lights.push_back(l1);
 	lights.push_back(l2);
 	lights.push_back(l3);
@@ -130,7 +140,9 @@ void level1_update()
 
 	check_and_open_doors(&player_instance);
 
-	//enemy_manager_instance.update(dt, &player_instance, &cam);
+
+
+	enemy_manager_instance.update(dt, &player_instance, &cam);
 }
 
 void level1_draw()

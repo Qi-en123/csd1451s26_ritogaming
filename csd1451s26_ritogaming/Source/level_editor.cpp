@@ -3,7 +3,8 @@
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This file defines functions to load, initialize, update, draw, free, and unload
-				the game's level editor which saves the current map array to a text file.
+				the game's level interface which allows users to create custom maps by painting tiles on a grid and saving them to a file. 
+                The editor features a tile palette, camera panning, and visual feedback for tile placement and saving status.
 **************************************************************************/
 
 #include "AEEngine.h"
@@ -402,10 +403,6 @@ void level_editor_init()
 		editor_map[r] = new int[TILE_COLS] {};  // {} zero-initializes
 	}
 
-	// set default map data (all 0)
-	for (int r = 0; r < TILE_ROWS; ++r)
-		for (int c = 0; c < TILE_COLS; ++c)
-			editor_map[r][c] = 0;
 
 	//Default init puzzle editor map (FOR PUZZLES)
 	puzzle_editor_map = new PuzzleType * [TILE_ROWS];
@@ -458,6 +455,21 @@ void level_editor_init()
 	editorState = EDIT_TILES;
 	editing = false;
 	editing_puzzle = nullptr;
+	
+	//If editing existing level (from level interface)
+    if (!selected_level_path.empty())
+    {
+        load_map_to_editor(selected_level_path.c_str(), editor_map);
+
+        // Restore placement flags
+        for (int r = 0; r < TILE_ROWS; ++r)
+            for (int c = 0; c < TILE_COLS; ++c)
+            {
+                if (editor_map[r][c] == 3) wizard_placed = true;
+                if (editor_map[r][c] == 4) knight_placed = true;
+                if (editor_map[r][c] == 7) door_placed = true;
+            }
+    }
 }
 
 void level_editor_update()
@@ -470,24 +482,34 @@ void level_editor_update()
 
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
+	
 	// --- ESC to exit ---
-	if (AEInputCheckTriggered(AEVK_ESCAPE))
-		next = MAINMENU; // adjust to your menu state
+    if (AEInputCheckTriggered(AEVK_ESCAPE))
+        next = GS_LEVELS; // adjust to your menu state
 
-	// --- Save with S key ---
-	if (AEInputCheckTriggered(AEVK_S))
-	{
-		if (wizard_placed && knight_placed && door_placed)
-		{
-			save_success = save_map_to_file(editor_map) &&
-				save_puzzle_blocks(puzzles, button_triggers);
-		}
-		else
-		{
-			save_success = false; // show fail message
-		}
-		save_msg_timer = SAVE_MSG_DUR;
-	}
+    // --- Save with S key ---
+    if (AEInputCheckTriggered(AEVK_S))
+    {
+        if (wizard_placed && knight_placed && door_placed)
+        {
+            if (!selected_level_path.empty())
+            {
+                save_success = save_map_to_file_overwrite(editor_map, selected_level_path);
+            }
+            else
+            {
+                std::string new_path;
+                save_success = save_map_to_file(editor_map, new_path);
+                if (save_success)
+                    selected_level_path = new_path; // switch to edit mode
+            }
+        }
+        else
+        {
+            save_success = false;
+        }
+        save_msg_timer = SAVE_MSG_DUR;
+    }
 
 
 	// --- Tick save message ---
@@ -642,7 +664,6 @@ void level_editor_update()
 					}
 				}
 			}
-
 
 			// --- Clear entire grid (C key) ---
 			if (AEInputCheckTriggered(AEVK_C))
@@ -866,7 +887,7 @@ void level_editor_draw()
 			if (editorState == EDIT_TILES) {
 				if (selected_tile == 0)
 				{
-					// Erase — show red tint using floor tile
+					// Erase ï¿½ show red tint using floor tile
 					if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
 						render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
 				}
@@ -901,7 +922,7 @@ void level_editor_draw()
 	}
 
 	// =====================================================
-	// Outer border — only draw OUTSIDE the grid area
+	// Outer border ï¿½ only draw OUTSIDE the grid area
 	// =====================================================
 	{
 
@@ -945,7 +966,7 @@ void level_editor_draw()
 			if (hovered && !is_selected && TileTextures[2])
 				render_editor_ui(TileTextures[2], PAL_W, PAL_H, 0.2f, PANEL_X, py);
 
-			// Tile icon — dimmed if locked
+			// Tile icon ï¿½ dimmed if locked
 			f32 icon_alpha = is_locked ? 0.3f : 1.0f;
 			if (palette_ids[i] == 0)
 			{
@@ -966,14 +987,14 @@ void level_editor_draw()
 			{
 				f32 norm_y = (py - 10.f) / 450.f;
 
-				// Label — grey if locked, yellow if selected, white otherwise
+				// Label ï¿½ grey if locked, yellow if selected, white otherwise
 				f32 r = is_locked ? 0.4f : (is_selected ? 1.0f : 0.85f);
 				f32 g = is_locked ? 0.4f : (is_selected ? 0.9f : 0.85f);
 				f32 b = is_locked ? 0.4f : (is_selected ? 0.2f : 0.85f);
 				f32 text_wx = PANEL_X - PAL_W * 0.5f + PAL_H + 8.f;
 				AEGfxPrint(font, palette_labels[i], text_wx / 800.f, norm_y, 1.f, r, g, b, 1.f);
 
-				// Right side — green "1/1" if locked, grey hotkey if not
+				// Right side ï¿½ green "1/1" if locked, grey hotkey if not
 				if (is_locked)
 				{
 					f32 hx = (PANEL_X + PAL_W * 0.5f - 45.f) / 800.f;
@@ -1005,7 +1026,7 @@ void level_editor_draw()
 			if (hovered && !is_selected && TileTextures[2])
 				render_editor_ui(TileTextures[2], PAL_W, PAL_H, 0.2f, PANEL_X, py);
 
-			// Tile icon — dimmed if locked
+			// Tile icon ï¿½ dimmed if locked
 			f32 icon_alpha = 1.0f;
 
 			if (puzzle_palette_ids[i] == PUZZLE_TYPE_COUNT)
@@ -1027,7 +1048,7 @@ void level_editor_draw()
 			{
 				f32 norm_y = (py - 10.f) / 450.f;
 
-				// Label — grey if locked, yellow if selected, white otherwise
+				// Label ï¿½ grey if locked, yellow if selected, white otherwise
 				f32 r = (is_selected ? 1.0f : 0.85f);
 				f32 g = (is_selected ? 0.9f : 0.85f);
 				f32 b = (is_selected ? 0.2f : 0.85f);
@@ -1094,7 +1115,7 @@ void level_editor_draw()
 		f32 world_y = -(f32)mouse_y + 450.f;
 		render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x + 25.f, world_y - 25.f);
 	}
-	// Save feedback — centered on screen, fades after 2 seconds
+	// Save feedback ï¿½ centered on screen, fades after 2 seconds
 	if (save_msg_timer > 0.f && font != -1)
 	{
 		const char* msg = save_success ? "Map Saved!" :

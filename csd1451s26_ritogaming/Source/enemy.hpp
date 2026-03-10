@@ -76,12 +76,17 @@ protected:
 
 public:
     base_enemy(f32 start_x, f32 start_y);
-    virtual ~base_enemy() = default;
+    virtual ~base_enemy() {
+        if (texture) { AEGfxTextureUnload(texture); texture = nullptr; }
+        // food_texture is owned by EnemyManager — do NOT unload here
+        food_texture = nullptr;
+    }
+    void set_food_texture(AEGfxTexture* tex) { food_texture = tex; }
 
     // Pure virtual
     virtual void load_textures() {
         if (texture_path && !texture)                texture = AEGfxTextureLoad(texture_path);
-        if (food_texture_path && !food_texture) food_texture = AEGfxTextureLoad(food_texture_path);
+     
     }
 
     virtual void unload_textures() {
@@ -164,3 +169,5 @@ public:
 
     bool has_dropped_sister() const { return is_boss && state == dead; }
 };
+
+

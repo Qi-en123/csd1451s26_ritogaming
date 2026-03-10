@@ -179,6 +179,7 @@ void EnemyManager::spawn_ghost_at_slot(int slot_index) {
 
     auto g = std::make_unique<ghost>(pos.x, pos.y);
     g->load_textures();
+    g->set_food_texture(ghost_food_tex); // manager owns this texture
     ghost_slots[slot_index].enemy = g.get();
     enemies.push_back(std::move(g));
 }

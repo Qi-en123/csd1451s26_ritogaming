@@ -1,5 +1,10 @@
 #include "AEEngine.h"
+#include <string>
+#include <vector>
 
+std::vector<std::string> level_paths;
+int current_level_index = 0;
+std::string selected_level_path = "";
 int IsButtonClicked(f32 rectX, f32 rectY, f32 rectW, f32 rectH)
 {
     // Get mouse position in screen coordinates

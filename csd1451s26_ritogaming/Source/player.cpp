@@ -400,7 +400,7 @@ void player_render_fireball_count(Player* player_ptr)
 
     std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
 
-    render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
+    //render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
 }
 
 /**************************************************************************/
@@ -511,3 +511,39 @@ bool player_is_dead(Player* player_ptr)
     return (player_ptr->stats.char1_curr_health <= 0 &&
         player_ptr->stats.char2_curr_health <= 0);
 }
+
+void spawn_player_from_map(Player* player_ptr, f32 tile_size)
+{
+    // World bounds
+    float world_left = -800.0f;
+    float world_top = 450.0f;
+    
+
+    for (int r = 0; r < TILE_ROWS; r++)
+    {
+        for (int c = 0; c < TILE_COLS; c++)
+        {
+            if (map[r][c] == KNIGHT || map[r][c] == WIZARD)
+            {
+                // Compute world coordinates based on top-left origin
+                float x = world_left + c * tile_size ;
+
+                // Y needs to decrease from top to bottom
+                float y = world_top - (r * tile_size);
+
+                // Assign positions
+                player_ptr->char1.x = x;
+                player_ptr->char1.y = y;
+
+                player_ptr->char2.x = x + tile_size; // offset second character
+                player_ptr->char2.y = y;
+
+                // Remove spawn tile
+                //map[r][c] = FLOOR;
+
+                return;
+            }
+        }
+    }
+}
+

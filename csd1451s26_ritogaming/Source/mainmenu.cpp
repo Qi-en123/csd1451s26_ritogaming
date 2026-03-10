@@ -179,7 +179,7 @@ void mainmenu_update()
         next = GS_LEVEL1;
 	if (IsButtonClicked(button_x, button_y[1], button_w, button_h)) // Levels
     {
-        next = GS_LEVEL_EDITOR;
+        next = GS_LEVELS;
     }
       
     if (IsButtonClicked(button_x, button_y[2], button_w, button_h)) // Guide

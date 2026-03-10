@@ -78,7 +78,7 @@ void initialize_puzzle_blocks(char const* filename) {
 
 		f32 posx = startX + col * tile_size;
 		f32 posy = startY - row * tile_size;
-
+		printf("type:%s row:%d col:%d -> posx:%f posy:%f\n", type.c_str(), row, col, posx, posy);
 		//buttons have no elems (by design)
 		if (type == "BUTTON") {
 			s32 id;
@@ -107,7 +107,7 @@ void initialize_puzzle_blocks(char const* filename) {
 				puzzle_blocks.push_back(tmp);
 				pushable_indexes.push_back(i);
 
-				std::cout << type << ' ' << row * tile_size << ' ' << col * tile_size << ' ' << elem << '\n';
+				std::cout << type << ' ' << row << ' ' << col << ' ' << elem << '\n';
 			}
 
 			else if (type == "PIT"){
@@ -351,7 +351,7 @@ bool overwrite_puzzle_blocks(std::vector<puzzle> const& puzzles,
 bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 	std::vector<buttonTrigger> const& bt,
 	std::string& out_filename) {
-
+	printf("tile_size at save: %f\n", tile_size);
 	// Find highest existing lvl number and go one above it
 	s32 highest = 0;
 	WIN32_FIND_DATAA find_data;
@@ -392,8 +392,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 		if (p.type == BUTTON_UP || p.type == BUTTON_DOWN) {
 			//I need a world to grid helper fnc to conver pos.x to rows etc.
 			ofs << "BUTTON\t " 
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.button_id << '\n';
 		}
 	}
@@ -401,8 +401,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 	for (const puzzle& p : puzzles) {
 		if (p.type == PIT || p.type == PIT_FILLED) {
 			ofs << "PIT\t "
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.element << '\n';
 		}
 	}
@@ -410,8 +410,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 	for (const puzzle& p : puzzles) {
 		if (p.type == SPIKE) {
 			ofs << "SPIKE\t"
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.element << '\n';
 		}
 	}
@@ -420,8 +420,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 	for (const puzzle& p : puzzles) {
 		if (p.type == PUSHABLE) {
 			ofs << "PUSHABLE "
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.element << '\n';
 		}
 	}

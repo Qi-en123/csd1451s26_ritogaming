@@ -17,7 +17,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AESysSetWindowTitle("Ahmad's Dungeon");
     //gsm_initialize(CREDIT);
     //gsm_initialize(GS_LEVEL1);
-    gsm_initialize(GS_LEVEL_EDITOR);
+    gsm_initialize(MAINMENU);
     audio_init();
 
     // Create player
@@ -55,6 +55,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         previous = current;
         current = next;
+        if (current == GS_RESTART)
+        {
+            current = previous; // restart = reload same state
+            next = previous;
+        }
+
     }
 
  

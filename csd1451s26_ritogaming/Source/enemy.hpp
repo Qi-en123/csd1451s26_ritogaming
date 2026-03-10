@@ -78,7 +78,7 @@ public:
     base_enemy(f32 start_x, f32 start_y);
     virtual ~base_enemy() {
         if (texture) { AEGfxTextureUnload(texture); texture = nullptr; }
-        // food_texture is owned by EnemyManager — do NOT unload here
+        // food_texture is owned by EnemyManager ï¿½ do NOT unload here
         food_texture = nullptr;
     }
     void set_food_texture(AEGfxTexture* tex) { food_texture = tex; }
@@ -87,6 +87,7 @@ public:
     virtual void load_textures() {
         if (texture_path && !texture)                texture = AEGfxTextureLoad(texture_path);
 
+     
     }
 
     virtual void unload_textures() {
@@ -96,7 +97,7 @@ public:
     virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
     virtual void take_damage(int amount);
 
-    // Type identification without an enum – override in derived classes
+    // Type identification without an enum ï¿½ override in derived classes
     virtual bool is_ghost() const { return false; }
 
     virtual int get_max_health() const { return max_health; }
@@ -124,7 +125,7 @@ public:
 };
 
 // ============================================================================
-// GHOST BOY  –  flees the moment it enters the player's camera view
+// GHOST BOY  ï¿½  flees the moment it enters the player's camera view
 // ============================================================================
 class ghost : public base_enemy
 {
@@ -137,7 +138,7 @@ public:
 };
 
 // ============================================================================
-// BAT  –  chases and attacks the player; optional to defeat
+// BAT  ï¿½  chases and attacks the player; optional to defeat
 // ============================================================================
 class bat : public base_enemy
 {
@@ -149,7 +150,7 @@ public:
 };
 
 // ============================================================================
-// DRAGON (Boss)  –  chases the player within fixed room boundaries
+// DRAGON (Boss)  ï¿½  chases the player within fixed room boundaries
 // ============================================================================
 class dragon : public base_enemy
 {
@@ -169,3 +170,5 @@ public:
 
     bool has_dropped_sister() const { return is_boss && state == dead; }
 };
+
+

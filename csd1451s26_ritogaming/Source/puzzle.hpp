@@ -7,6 +7,7 @@
 #pragma once
 #include "AEEngine.h"
 #include <vector>
+#include <string>
 
 constexpr f32 PUZZLE_BLOCK_SPEED = 40.0f;
 constexpr f32 PUZZLE_GRAB_RANGE = 15.0f;
@@ -92,8 +93,13 @@ void remove_spike_button_pair(s32 row, s32 col, buttonTrigger& bt);
 
 bool spike_is_paired(s32 row, s32 col, buttonTrigger const& bt);
 
+bool overwrite_puzzle_blocks(std::vector<puzzle> const& puzzles,
+	std::vector<buttonTrigger> const& bt,
+	const std::string& filename);
+
 bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
-	std::vector<buttonTrigger> const& bt);
+	std::vector<buttonTrigger> const& bt,
+	std::string& out_filename);
 
 void render_puzzle_blocks();
 

@@ -57,11 +57,11 @@ static const AEVec2 ghost_spawn_pool[NUM_GHOST_SLOTS] =
 
 static const AEVec2 bat_spawn_pool[NUM_BAT_SLOTS] =
 {
+    tile_spot(14, 27),
+    tile_spot(14, 28),
     tile_spot(13, 27),
-    tile_spot(13, 28),
-    tile_spot(13, 27),
-    tile_spot(13, 26),
-    tile_spot(12, 26),
+    tile_spot(14, 26),
+    tile_spot(15, 26),
 };
 
 /**************************************************************************/

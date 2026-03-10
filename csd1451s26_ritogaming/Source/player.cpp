@@ -20,6 +20,7 @@
 #include "utils.hpp"
 #include <crtdbg.h>
 #include <string>
+#include "audio_manager.hpp"
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
@@ -82,6 +83,10 @@ void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxT
     // Default to controlling Character 1
     player_ptr->current_player = &player_ptr->char1;
     player_ptr->current_character = 1;
+
+    // Reset HP on init
+    player_ptr->stats.char1_curr_health = player_ptr->stats.char1_max_health;
+    player_ptr->stats.char2_curr_health = player_ptr->stats.char2_max_health;
 
     // Precompute scale and rotation matrices
     AEMtx33Scale(&player_ptr->character_scale, player_ptr->stats.character_size, player_ptr->stats.character_size);
@@ -285,6 +290,7 @@ void player_handle_shooting(Player* player_ptr, f32 dt)
 
         player_ptr->projectiles.push_back(new_fire);
         player_ptr->fireball_count--;
+        play_sfx(g_audio.sfx_fireball);
     }
 }
 void player_update_particles(Player* player_ptr, f32 dt) {
@@ -480,6 +486,12 @@ void player_system_free(Player* player_ptr)
 void player_take_damage(Player* player_ptr, int damage)
 {
     if (!player_ptr) return;
+
+    // Play different hurt sound depending on active character
+    if (player_ptr->current_character == 1)
+        play_sfx(g_audio.sfx_knight_hurt); // Knight hurt sound
+    else
+        play_sfx(g_audio.sfx_mage_hurt); // Mage hurt sound
 
     int* curr_hp = (player_ptr->current_character == 1)
         ? &player_ptr->stats.char1_curr_health

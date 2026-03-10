@@ -12,10 +12,11 @@
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "utils.hpp"
+#include "audio_manager.hpp"
 
 
 
-namespace {
+namespace{
 	// Textures and Fonts
     AEGfxTexture* ground = nullptr;
     AEGfxTexture* wall = nullptr;
@@ -70,8 +71,8 @@ namespace {
     
     bool show_exit_confirm = false;
 
-
 }
+
 void spawn_dust(f32 x, f32 y)
 {
     for (int i = 0; i < MAX_DUST; ++i)
@@ -141,6 +142,8 @@ void mainmenu_init()
     for (int i = 0; i < MAX_DUST; ++i)   dust_particles[i].active = false;
     for (int i = 0; i < MAX_TRAIL; ++i)  ghoul_trail[i].active = false;
     trail_spawn_timer = 0.f;
+
+    play_bgm(g_audio.bgm_mainmenu);
 }
 
 
@@ -149,10 +152,32 @@ void mainmenu_init()
 // =========================================================
 void mainmenu_update()
 {
+    audio_update();
     dt = (f32)AEFrameRateControllerGetFrameTime();
 
     // Get mouse position 
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
+
+    // Track hover state to play sound only once when first hovered
+    static int last_hovered = -1;
+    int current_hovered = -1;
+
+    for (int i = 0; i < 5; ++i)
+    {
+        if (IsButtonHovered(button_x, button_y[i], button_w, button_h))
+        {
+            current_hovered = i;
+            break;
+        }
+    }
+
+    // Only play sound when hovering a NEW button
+    if (current_hovered != last_hovered && current_hovered != -1)
+    {
+        play_sfx(g_audio.sfx_button_hover);
+    }
+
+    last_hovered = current_hovered;
 
     if (show_exit_confirm)
     {
@@ -174,22 +199,29 @@ void mainmenu_update()
 
     // Check button clicks
     if (IsButtonClicked(button_x, button_y[0], button_w, button_h)) // Play
+    {
+        play_sfx(g_audio.sfx_button_click);
         next = GS_LEVEL1;
+    }
 	if (IsButtonClicked(button_x, button_y[1], button_w, button_h)) // Levels
     {
+        play_sfx(g_audio.sfx_button_click);
         next = GS_LEVEL_EDITOR;
     }
       
     if (IsButtonClicked(button_x, button_y[2], button_w, button_h)) // Guide
     {
+        play_sfx(g_audio.sfx_button_click);
        //next = GS_GUIDE;
     }
     if (IsButtonClicked(button_x, button_y[3], button_w, button_h)) // Credits
     {
+        play_sfx(g_audio.sfx_button_click);
         next = CREDIT;
     }
     if (IsButtonClicked(button_x, button_y[4], button_w, button_h))
     {
+        play_sfx(g_audio.sfx_button_click);
         show_exit_confirm = true;   // show confirmation instead of quitting
     }
 
@@ -468,10 +500,12 @@ void mainmenu_draw()
 void mainmenu_free()
 {
 	free_mesh(); // Free any dynamically allocated memory for meshes
+    stop_bgm();
 }
 
 void mainmenu_unload()
 {
+    
 	// Unload textures to free memory
     if (ground)
     {

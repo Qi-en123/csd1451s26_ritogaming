@@ -18,6 +18,8 @@
 #include "minimap.hpp"
 #include "enemy_manager.hpp"
 #include "ui_manager.hpp"
+#include "game_state_list.hpp"
+#include "end_screen.hpp"
 
 #define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
@@ -208,6 +210,20 @@ void level2_update()
 
     // Update enemy manager (for the dragon)
     enemy_manager_instance.update(dt, &player_instance, &cam);
+
+    // Lose condition
+    if (player_is_dead(&player_instance))
+    {
+        is_win = false;
+        next = GS_LOSE;
+    }
+
+    // Win condition (level 2 only)
+    if (enemy_manager_instance.get_active_enemy_count() == 0)
+    {
+        is_win = true;
+        next = GS_WIN;
+    }
 }
 
 void level2_draw()

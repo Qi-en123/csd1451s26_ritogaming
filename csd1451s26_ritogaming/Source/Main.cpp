@@ -8,18 +8,22 @@
 #include "collision.hpp"
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
+#include "audio_manager.hpp"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
     _In_ LPWSTR lpCmdLine,
     _In_ int nCmdShow)
 {
+
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    //_CrtSetBreakAlloc(2647);
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, nullptr);
     AESysSetWindowTitle("Ahmad's Dungeon");
     //gsm_initialize(CREDIT);
     //gsm_initialize(GS_LEVEL1);
     gsm_initialize(GS_LEVEL_EDITOR);
+    audio_init();
 
     // Create player
    
@@ -45,6 +49,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             if (fpUpdate) fpUpdate();
             if (fpDraw) fpDraw();
 
+            audio_update();
+
             AESysFrameEnd();   // end of frame
         }
 
@@ -57,7 +63,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
  
-
+    audio_free();
     AESysExit();
     return 0;
 }

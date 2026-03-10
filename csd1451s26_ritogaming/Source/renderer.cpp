@@ -172,6 +172,7 @@ void free_mesh() {
 	AEGfxMeshFree(rect_mesh_center);
 	AEGfxMeshFree(square_mesh);
 	AEGfxMeshFree(triangle_mesh);
+	AEGfxMeshFree(light_source_mesh);
 }
 
 bool on_screen(f32 x, f32 y) {

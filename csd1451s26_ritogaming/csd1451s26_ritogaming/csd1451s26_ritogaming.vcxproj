@@ -96,9 +96,11 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\audio_manager.cpp" />
     <ClCompile Include="..\Source\camera.cpp" />
     <ClCompile Include="..\Source\collision.cpp" />
     <ClCompile Include="..\Source\credit.cpp" />
+    <ClCompile Include="..\Source\end_screen.cpp" />
     <ClCompile Include="..\Source\enemy.cpp" />
     <ClCompile Include="..\Source\enemy_manager.cpp" />
     <ClCompile Include="..\Source\game_state_manager.cpp" />
@@ -117,9 +119,11 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\ui_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\audio_manager.hpp" />
     <ClInclude Include="..\Source\camera.hpp" />
     <ClInclude Include="..\Source\collision.hpp" />
     <ClInclude Include="..\Source\credit.hpp" />
+    <ClInclude Include="..\Source\end_screen.hpp" />
     <ClInclude Include="..\Source\enemy.hpp" />
     <ClInclude Include="..\Source\enemy_manager.hpp" />
     <ClInclude Include="..\Source\game_state_list.hpp" />

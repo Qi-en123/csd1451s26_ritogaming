@@ -19,6 +19,9 @@ update game logic, render, free resources
 #include "utils.hpp"
 #include "ui_manager.hpp"
 #include "minimap.hpp"
+#include "audio_manager.hpp"
+#include "end_screen.hpp"
+#include "mainmenu.hpp"
 
 
 #define NUM_TILE_TYPES 10
@@ -29,6 +32,11 @@ update game logic, render, free resources
 	f32 totalWorldW;
 	f32 totalWorldH;
 	f32 dt;
+	
+	namespace {
+		s32 mouse_x, mouse_y;       
+		bool cursor_active = false; 
+	}
 
 void level1_load()
 {
@@ -66,6 +74,7 @@ void level1_load()
 //}
 void level1_init()
 {
+	AEInputShowCursor(false);
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 
@@ -103,11 +112,15 @@ void level1_init()
 	lights.push_back(l1);
 	lights.push_back(l2);
 	lights.push_back(l3);
+
 }
 
 void level1_update()
 {
+
 	dt = (f32)AEFrameRateControllerGetFrameTime();
+	AEInputGetCursorPosition(&mouse_x, &mouse_y);
+	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
 
 	// Camera follows current_player - automatically updates when you switch characters!
@@ -132,10 +145,26 @@ void level1_update()
 	check_and_open_doors(&player_instance);
 
 	enemy_manager_instance.update(dt, &player_instance, &cam);
+
+	// Lose condition
+	if (player_is_dead(&player_instance))
+	{
+		is_win = false;
+		next = GS_LOSE;
+	}
+
+	// Win condition (level 2 only)
+	if (enemy_manager_instance.get_active_enemy_count() == 0)
+	{
+		is_win = true;
+		next = GS_WIN;
+	}
+
 }
 
 void level1_draw()
 {
+
 	AEGfxReset();
 	draw_map(tile_size);	
 	// Debug: draw all walls as semi-transparent red
@@ -149,8 +178,12 @@ void level1_draw()
 
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_player_hud(&ui_manager, &player_instance);
+	render_character_ui(&ui_manager, &player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
 	//Minimap_DrawWalls(map);
+
+	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
+
 }
 
 void level1_free()

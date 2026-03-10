@@ -110,9 +110,13 @@ static void build_level_list()
     {
         LevelEntry e;
         e.name = default_levels[i];
-        e.path = ""; // empty path = use initialize_dungeon_map()
+        e.path = "Assets/Levels/default.txt";
         levels.push_back(e);
-        puzzles.push_back(e);
+
+        LevelEntry pe;
+        pe.name = default_levels[i];
+        pe.path = "Assets/Levels/puzzle.txt";
+        puzzles.push_back(pe);
     }
 
     // Win32 directory scan for saved custom level files
@@ -152,7 +156,7 @@ static void build_level_list()
         });
 
     // Assign user-friendly display names starting at "Level 1"
-    int level_num = 1;
+    int level_num = 2;
     for (auto& e : saved_levels)
     {
         e.name = "Level " + std::to_string(level_num++);
@@ -317,7 +321,7 @@ void levels_update()
             {
                 int idx = (scroll_row + row) * COLS + col;
                 if (idx >= (int)levels.size()) continue;
-                if (levels[idx].path.empty()) continue;
+                if (idx == 0) continue; // default level can't be edited/deleted
 
                 f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
                 f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
@@ -453,7 +457,7 @@ void levels_draw()
                             (cy - 10.f) / 450.f,
                             1.f, 1.f, 1.f, 1.f, 1.f);
 
-                        if (!levels[idx].path.empty())
+                        if (idx > 0) // index 0 is always the default level
                         {
                             f32 tw2 = 0.f, th2 = 0.f;
                             AEGfxGetPrintSize(font, "[Custom]", 0.7f, &tw2, &th2);
@@ -605,12 +609,7 @@ void levels_draw()
                         preview_map[r][c] = 0;
 
                 if (levels[idx].path.empty())
-                {
-                    initialize_dungeon_map();
-                    for (int r = 0; r < TILE_ROWS; ++r)
-                        for (int c = 0; c < TILE_COLS; ++c)
-                            preview_map[r][c] = map[r][c];
-                }
+                    load_map_from_file("Assets/Levels/default.txt", preview_map);
                 else
                     load_map_from_file(levels[idx].path.c_str(), preview_map);
             }
@@ -721,7 +720,7 @@ void ensure_level_paths_loaded()
 
     // Index 0 = default built-in level (empty path = initialize_dungeon_map)
     level_paths.clear();
-    level_paths.push_back("");
+    level_paths.push_back("Assets/Levels/default.txt");
     for (auto& p : paths)
         level_paths.push_back(p);
 
@@ -767,7 +766,7 @@ void ensure_level_paths_loaded()
 
     // Index 0 = default built-in level (empty path = initialize_dungeon_map)
     level_puzzle_paths.clear();
-    level_puzzle_paths.push_back("");
+    level_puzzle_paths.push_back("Assets/Levels/puzzle.txt");
     for (auto& p : paths)
         level_puzzle_paths.push_back(p);
 }

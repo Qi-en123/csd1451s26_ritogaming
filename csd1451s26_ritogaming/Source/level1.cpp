@@ -89,15 +89,12 @@ void level1_init()
 	printf("level_puzzles size: %d, current_level_index: %s\n",
 		(int)level_puzzle_paths.size(), selected_level_puzzle_path.c_str());
 
-	if (selected_level_path.empty() ||
-		selected_level_puzzle_path.empty()) {
-		initialize_dungeon_map(); // default hardcoded map
-		initialize_puzzle_blocks("Assets/Levels/puzzle.txt");
+	if (selected_level_path.empty() || selected_level_puzzle_path.empty()) {
+		selected_level_path = "Assets/Levels/default.txt";
+		selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
 	}
-	else {
-		load_map_from_file(selected_level_path.c_str(), map);
-		initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
-	}
+	load_map_from_file(selected_level_path.c_str(), map);
+	initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
 
 	generate_walls_from_map(map, 64.0f);
 

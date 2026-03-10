@@ -8,7 +8,7 @@
 #pragma once
 #include "AEEngine.h"
 #include <string>
-#define NUM_TILE_TYPES 10
+#define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
 #define TILE_COLS 64
 
@@ -18,7 +18,6 @@ extern s32 map[TILE_ROWS][TILE_COLS];
 extern s32 boss_map[TILE_ROWS][TILE_COLS];
 constexpr f32 tile_size = 64.0f;
 void initialize_boss_map();
-void initialize_dungeon_map();
 
 void draw_boss_map(f32 tile_size);
 void draw_map(f32 tile_size);
@@ -41,7 +40,6 @@ enum TILE_ID
     WIZARD = 4,
     OPENED_DOOR = 7,
     DOOR = 8,
-    SPECIAL_DOOR=9,
 };
 
 

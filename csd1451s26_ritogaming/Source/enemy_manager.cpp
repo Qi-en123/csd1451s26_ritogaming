@@ -45,25 +45,24 @@ static AEVec2 tile_spot(s32 row, s32 col)
 // ============================================================================
 static const AEVec2 ghost_spawn_pool[NUM_GHOST_SLOTS] =
 {
-    tile_spot(22, 5),
-    tile_spot(20, 4),
-    tile_spot(24, 7),
-    tile_spot(20, 8),
-    tile_spot(24, 3),
-    tile_spot(23, 6),
-    tile_spot(16, 5),
-    tile_spot(14, 6),
+    tile_spot(23, 25),
+    tile_spot(23, 29),
+    tile_spot(24, 27),
+    tile_spot(25, 25),
+    tile_spot(25, 29),
+    tile_spot(26, 27),
+    tile_spot(27, 25),
+    tile_spot(27, 29),
 };
 
 static const AEVec2 bat_spawn_pool[NUM_BAT_SLOTS] =
 {
-    tile_spot(8, 3),
-    tile_spot(8, 8),
-    tile_spot(5, 7),
-    tile_spot(12, 5),
-    tile_spot(15, 5),
+    tile_spot(13, 27),
+    tile_spot(13, 28),
+    tile_spot(13, 27),
+    tile_spot(13, 26),
+    tile_spot(12, 26),
 };
-
 
 /**************************************************************************/
 /*!

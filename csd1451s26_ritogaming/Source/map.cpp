@@ -305,172 +305,6 @@ void draw_boss_map(f32 tile_size)
     }
 }
 
-// ------------------------------------------------------------
-// Initialize the dungeon map layout
-// ------------------------------------------------------------
-void initialize_dungeon_map()
-{
-    // ============================================================
-    // PLAYER ROOM 1 (Top Left) 
-    // ============================================================
-
-// Floor
-    for (int r = 3; r <= 10; ++r)
-        for (int c = 2; c <= 9; ++c)
-            map[r][c] = FLOOR;
-
-    // Top and bottom walls
-    for (int c = 1; c <= 10; ++c)
-    {
-        map[2][c] = WALL;  // top wall
-        map[11][c] = WALL; // bottom wall
-    }
-
-    // walls inside player room 1
-    for (int r = 2; r <= 6; ++r)
-    {
-        map[r][3] = WALL;  // top wall
-        map[r][8] = WALL; // bottom wall
-    }
-
-
-
-    // Left wall
-    for (int r = 3; r <= 11; ++r)
-        map[r][1] = WALL;
-
-    // Right wall
-    for (int r = 3; r <= 11; ++r)
-        map[r][10] = WALL;
-
-    // Bottom door (inside floor)
-    for (int c = 4; c <= 7; ++c)
-        map[10][c] = FLOOR;
-
-    // Right door
-    map[6][10] = FLOOR;
-
-    // ============================================================
-    // PLAYER ROOM 2 (Bottom Left)
-    // ============================================================
-
-   // Floor area
-    for (int r = 18; r < 27; ++r)      
-        for (int c = 2; c < 10; ++c)
-            map[r][c] = FLOOR; // floor tile
-
-    // Top horizontal wall
-    for (int c = 1; c <= 10; ++c)
-        map[18][c] = WALL;
-
-    // Bottom horizontal wall
-    for (int c = 1; c <= 10; ++c)
-        map[26][c] = WALL;                
-
-    // Top opening (4 tiles wide, centered)
-    for (int c = 4; c <= 7; ++c)
-        map[18][c] = SPECIAL_DOOR;
-
-    // Left vertical wall
-    for (int r = 18; r <= 26; ++r)     
-        map[r][1] = WALL;
-
-    // Right vertical wall
-    for (int r = 18; r <= 26; ++r)     
-        map[r][10] = WALL;
-
-    map[21][10] = map[22][10] = FLOOR;    
-
-    // ============================================================
-    // VERTICAL CORRIDOR (connecting player rooms)
-    // ============================================================
-
-    // Corridor floor (expanded width)
-    for (int r = 11; r < 18; ++r)
-        for (int c = 4; c < 8; ++c)
-            map[r][c] = FLOOR;
-
-    // Left and right corridor walls
-    for (int r = 11; r < 18; ++r)
-        map[r][3] = map[r][8] = WALL;
-
-
-    // ============================================================
-    // BOSS ROOM 1 (Top Right) 
-    // ============================================================
-
-    // Floor area
-    for (int r = 3; r < 12; ++r)
-        for (int c = 25; c < 31; ++c)
-            map[r][c] = FLOOR;
-
-    // Top and bottom horizontal walls
-    for (int c = 24; c <= 31; ++c) {
-        map[2][c] = WALL;
-        map[12][c] = WALL; // bottom wall
-    }
-
-    // Left and right vertical walls
-    for (int r = 2; r <= 12; ++r)
-        map[r][24] = map[r][31] = WALL;
-
-
-    map[7][28] = OPENED_DOOR;
-
-    // ============================================================
-    // Horizontal corridor to Boss Room 1 
-    // ============================================================
-
-    // Corridor floor
-    for (int c = 9; c < 25; ++c)
-            map[7][c] = FLOOR;
-
-    // Top and bottom corridor walls
-    for (int c = 10; c < 25; ++c) {
-        map[6][c] = WALL;  // top wall
-        map[8][c] = WALL;  // bottom wall (moved down)
-    }
-
-   
-    map[7][10] = SPECIAL_DOOR;
-
-    // ============================================================
-    // BOSS ROOM 2 (Bottom Right)
-    // ============================================================
-
-    // Floor area
-    for (int r = 18; r < 24; ++r)
-        for (int c = 25; c < 32; ++c)
-            map[r][c] = FLOOR;
-
-    // Top and bottom horizontal walls
-    for (int c = 24; c <= 32; ++c) {
-        map[17][c] = WALL;
-        map[24][c] = WALL;
-    }
-
-    // Left and right vertical walls
-    for (int r = 17; r <= 24; ++r)
-        map[r][24] = map[r][32] = WALL;
-
-    // ============================================================
-    // Horizontal corridor to Boss Room 2 
-    // ============================================================
-
-    // Corridor floor
-    for (int c = 9; c < 25; ++c)
-            map[21][c] = FLOOR;
-
-    // Top and bottom corridor walls
-    for (int c = 10; c < 25; ++c) {
-        map[20][c] = WALL; // top wall
-        map[22][c] = WALL; // bottom wall
-    }
-
-
-
-}
-
 
 // ------------------------------------------------------------
 // Initialize a simplified boss map layout (one big room)
@@ -558,7 +392,6 @@ void preview_default_level(s32 out_map[][TILE_COLS])
         for (int c = 2; c < 10; ++c)
             out_map[r][c] = FLOOR;
     for (int c = 1; c <= 10; ++c) { out_map[18][c] = WALL; out_map[26][c] = WALL; }
-    for (int c = 4; c <= 7; ++c)    out_map[18][c] = SPECIAL_DOOR;
     for (int r = 18; r <= 26; ++r) { out_map[r][1] = WALL; out_map[r][10] = WALL; }
     out_map[21][10] = out_map[22][10] = FLOOR;
 
@@ -580,7 +413,6 @@ void preview_default_level(s32 out_map[][TILE_COLS])
     // HORIZONTAL CORRIDOR TO BOSS ROOM 1
     for (int c = 9; c < 25; ++c)  out_map[7][c] = FLOOR;
     for (int c = 10; c < 25; ++c) { out_map[6][c] = WALL; out_map[8][c] = WALL; }
-    out_map[7][10] = SPECIAL_DOOR;
 
     // BOSS ROOM 2
     for (int r = 18; r < 24; ++r)

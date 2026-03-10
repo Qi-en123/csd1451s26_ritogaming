@@ -91,7 +91,7 @@ void level1_init()
 	if (selected_level_path.empty() ||
 		selected_level_puzzle_path.empty()) {
 		initialize_dungeon_map(); // default hardcoded map
-		initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
+		initialize_puzzle_blocks("Assets/Levels/puzzle.txt");
 	}
 	else {
 		load_map_from_file(selected_level_path.c_str(), map);

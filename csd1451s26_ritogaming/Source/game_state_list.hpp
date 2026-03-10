@@ -13,6 +13,7 @@ enum GS_STATES
     OPENING,
 	MAINMENU,
     GS_LEVEL1,   // First level of the game
+	GS_LEVELS,    // Level selection screen
     CREDIT,
     GS_LEVEL_EDITOR, // Level editor state
     GS_BOSS_ROOM,    // Boss room state

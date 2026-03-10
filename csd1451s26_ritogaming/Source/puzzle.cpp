@@ -17,6 +17,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <Windows.h>
 
 //textures for all puzzle types (elements are tints)
 AEGfxTexture* puzzle_block_textures[PUZZLE_TYPE_COUNT]{};
@@ -47,6 +48,7 @@ void load_puzzle_textures() {
 }
 
 void initialize_puzzle_blocks(char const* filename) {
+	printf("%f\n", tile_size);
 	puzzle_size = tile_size - 8.0f;
 
 	std::ifstream ifs{ filename };
@@ -64,15 +66,19 @@ void initialize_puzzle_blocks(char const* filename) {
 	f32 startX = -1600.f / 2.f;
 	f32 startY = 900.f / 2.f;
 
+	puzzle_blocks.clear();
+	button_indexes.clear();
+	pushable_indexes.clear();
+
 	//Reads and stores values to init puzzle blocks
 	for (int i{}; i < num_puzzle_blocks; ++i) {
 		std::string type;
 		s32 row, col, chara;
 		ifs >> type >> row >> col >> chara;
 
-		f32 posx = startX + row * tile_size;
-		f32 posy = startY - col * tile_size;
-
+		f32 posx = startX + col * tile_size;
+		f32 posy = startY - row * tile_size;
+		printf("type:%s row:%d col:%d -> posx:%f posy:%f\n", type.c_str(), row, col, posx, posy);
 		//buttons have no elems (by design)
 		if (type == "BUTTON") {
 			s32 id;
@@ -82,7 +88,7 @@ void initialize_puzzle_blocks(char const* filename) {
 			puzzle_blocks.push_back(tmp);
 			button_indexes.push_back(i);
 
-			//std::cout << type << ' ' << row << ' ' << col << ' ' << id << '\n';
+			std::cout << type << ' ' << row << ' ' << col << ' ' << id << '\n';
 		}
 
 		//every other puzzle type may have elems
@@ -101,7 +107,7 @@ void initialize_puzzle_blocks(char const* filename) {
 				puzzle_blocks.push_back(tmp);
 				pushable_indexes.push_back(i);
 
-				//std::cout << type << ' ' << row * tile_size << ' ' << col * tile_size << ' ' << elem << '\n';
+				std::cout << type << ' ' << row << ' ' << col << ' ' << elem << '\n';
 			}
 
 			else if (type == "PIT"){
@@ -162,8 +168,8 @@ void place_puzzle(s32 row, s32 col, PuzzleType type, std::vector<puzzle>& puzzle
 	f32 startX = -1600.f / 2.f;
 	f32 startY = 900.f / 2.f;
 
-	f32 posx = startX + row * tile_size;
-	f32 posy = startY - col * tile_size;
+	f32 posx = startX + col * tile_size;
+	f32 posy = startY - row * tile_size;
 
 	switch (type) {
 	case PUSHABLE:
@@ -195,8 +201,8 @@ void remove_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
 	f32 startX = -1600.f / 2.f;
 	f32 startY = 900.f / 2.f;
 
-	f32 posx = startX + row * tile_size;
-	f32 posy = startY - col * tile_size;
+	f32 posx = startX + col * tile_size;
+	f32 posy = startY - row * tile_size;
 
 	for (s32 i{}; i < puzzles.size(); ++i) {
 
@@ -212,18 +218,18 @@ void remove_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
 
 puzzle* get_editing_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
 
-	printf("%d, %d\n", row, col);
+	//printf("%d, %d\n", row, col);
 
 	f32 startX = -1600.f / 2.f;
 	f32 startY = 900.f / 2.f;
 	
-	f32 posx = startX + row * tile_size;
-	f32 posy = startY - col * tile_size;
+	f32 posx = startX + col * tile_size;
+	f32 posy = startY - row * tile_size;
 
-	printf("Current: %f, %f\n", posx, posy);
+	//printf("Current: %f, %f\n", posx, posy);
 
 	for (puzzle& p : puzzles) {
-		printf("Check with: %f, %f\n", p.posx, p.posy);
+		//printf("Check with: %f, %f\n", p.posx, p.posy);
 
 		if (posx == p.posx && posy == p.posy) {
 			return &p;
@@ -260,33 +266,113 @@ bool spike_is_paired(s32 row, s32 col, buttonTrigger const& bt) {
 
 }
 
-static s32 convert_to_row(f32 x) {
-	f32 startX = -1600.f / 2.f;
+static s32 convert_to_col(f32 x) {
+	f32 startX = -800.0f;
 	return static_cast<s32>((x - startX) / tile_size);
 }
 
-static s32 convert_to_col(f32 y) {
-	f32 startY = 900.f / 2.f;
+static s32 convert_to_row(f32 y) {
+	f32 startY = 450.0f;
 	return static_cast<s32>((startY - y) / tile_size);
 }
 
-bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
-	std::vector<buttonTrigger> const& bt) {
+bool overwrite_puzzle_blocks(std::vector<puzzle> const& puzzles,
+	std::vector<buttonTrigger> const& bt,
+	const std::string& filename) {
 
-	//get number of levels
-	s32 level = 1;
-	std::string filename{};
+	std::ofstream file{ filename };
 
-	while (true) {
-		filename = "Assets/Levels/l" + std::to_string(level) + "_puzzles.txt";
-		std::ifstream file{ filename };
-
-		if (!file) {
-			break;
-		}
-
-		++level;
+	if (!file.is_open())
+	{
+		std::cerr << "Failed to open map file for overwrite: " << filename << "\n";
+		return false;
 	}
+
+	file << "Puzzles: " << puzzles.size() << "\n\n";
+
+	//Write buttons to text
+	//abit inefficient but am looping thrice to print in order
+	//so i can render in order
+	for (const puzzle& p : puzzles) {
+		if (p.type == BUTTON_UP || p.type == BUTTON_DOWN) {
+			//I need a world to grid helper fnc to conver pos.x to rows etc.
+			file << "BUTTON\t "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.button_id << '\n';
+		}
+	}
+	//Write Pit 2nd last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PIT || p.type == PIT_FILLED) {
+			file << "PIT\t "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	for (const puzzle& p : puzzles) {
+		if (p.type == SPIKE) {
+			file << "SPIKE\t"
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	//Save pushable last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PUSHABLE) {
+			file << "PUSHABLE "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+
+	//save triggers here
+	file << "\nTriggers: " << bt.size();
+	for (buttonTrigger const& b : bt) {
+		//print id
+		file << '\n' << b.id << ": ";
+
+		//print coords
+		for (std::pair<int, int> const& c : b.coords) {
+			file << '(' << c.first << ',' << c.second << ')';
+		}
+	}
+
+	file.close();
+	return true;
+}
+
+bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
+	std::vector<buttonTrigger> const& bt,
+	std::string& out_filename) {
+	printf("tile_size at save: %f\n", tile_size);
+	// Find highest existing lvl number and go one above it
+	s32 highest = 0;
+	WIN32_FIND_DATAA find_data;
+	HANDLE hFind = FindFirstFileA("Assets/Levels/l*_puzzles.txt", &find_data);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do {
+			std::string fname = find_data.cFileName; // file name
+			size_t start = fname.find("l") + 1; // position of the number 
+			size_t end = fname.find("_puzzles.txt"); //position of the end of number
+			if (start != std::string::npos && end != std::string::npos) // ensure both number and .txt exist
+			{
+				int n = std::stoi(fname.substr(start, end - start)); // extract the number from the filename
+				if (n > highest) highest = n; // update highest if this file's number is greater
+			}
+		} while (FindNextFileA(hFind, &find_data));
+		FindClose(hFind);
+	}
+
+	std::string filename = "Assets/Levels/l" + std::to_string(highest + 1) + "_puzzles.txt";
+	out_filename = filename; // return the filename used
 
 	//filename now represents next available level
 	//std::cout << filename << '\n';
@@ -306,8 +392,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 		if (p.type == BUTTON_UP || p.type == BUTTON_DOWN) {
 			//I need a world to grid helper fnc to conver pos.x to rows etc.
 			ofs << "BUTTON\t " 
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.button_id << '\n';
 		}
 	}
@@ -315,8 +401,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 	for (const puzzle& p : puzzles) {
 		if (p.type == PIT || p.type == PIT_FILLED) {
 			ofs << "PIT\t "
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.element << '\n';
 		}
 	}
@@ -324,8 +410,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 	for (const puzzle& p : puzzles) {
 		if (p.type == SPIKE) {
 			ofs << "SPIKE\t"
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.element << '\n';
 		}
 	}
@@ -334,8 +420,8 @@ bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
 	for (const puzzle& p : puzzles) {
 		if (p.type == PUSHABLE) {
 			ofs << "PUSHABLE "
-				<< convert_to_row(p.posx) << ' '
-				<< convert_to_col(p.posy) << ' '
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
 				<< p.hidden_from << ' ' << p.element << '\n';
 		}
 	}
@@ -607,7 +693,8 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	f32 dx{ player_pos_x - puzzle.posx };
 	f32 dy{ player_pos_y - puzzle.posy };
 
-	const f32 min_gap{ 3.0f }; //prevent puzzle going inside wall
+	//prevent puzzle going inside wall
+	const f32 min_gap{ 3.0f }; 
 	const f32 grab_range{ (player_half_size + puzzle_size / 2.0f) + PUZZLE_GRAB_RANGE };
 
 	//printf("%f, %f\n", (dx * dx + dy * dy),(grab_range * grab_range));

@@ -19,10 +19,11 @@ This file defines functions to:
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "renderer.hpp"
+#include "utils.hpp"
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
-
+bool door_triggered = false;
 /*!************************************************************************
 \brief Generate wall objects from a 2D tile map.
 
@@ -319,18 +320,46 @@ the transition to the boss room.
 **************************************************************************/
 void check_and_open_doors(Player* player)
 {
-    if (!player || !player->current_player)
-        return;
+    if (next == GS_RESTART || next == GS_BOSS_ROOM) return;
 
     int playerRow, playerCol;
-
-    // Convert player's world position to tile indices
     if (!world_to_tile(player->current_player->x, player->current_player->y, playerRow, playerCol))
-        return; // player outside map
+        return;
 
-    // Check if the player is exactly on a door tile
-    if (map[playerRow][playerCol] == OPENED_DOOR)
+    if ( map[playerRow][playerCol] == OPENED_DOOR)
     {
-        next = GS_BOSS_ROOM;
+        if (!door_triggered)
+        {
+            door_triggered = true;
+
+            int found_index = -1;
+            for (int i = 0; i < (int)level_paths.size(); ++i)
+            {
+                if (level_paths[i] == selected_level_path)
+                {
+                    found_index = i;
+                    break;
+                }
+            }
+
+            int next_index = found_index + 1;
+            while (next_index < (int)level_paths.size() && level_paths[next_index].empty())
+                next_index++;
+
+            if (found_index != -1 && next_index < (int)level_paths.size())
+            {
+              
+                selected_level_path = level_paths[next_index];
+                next = GS_RESTART;
+            }
+            else
+            {
+                next = GS_BOSS_ROOM;
+            }
+        }
+    }
+    else
+    {
+        door_triggered = false;
     }
 }

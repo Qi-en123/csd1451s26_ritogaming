@@ -170,12 +170,7 @@ void level1_update()
 		next = GS_LOSE;
 	}
 
-	// Win condition (level 2 only)
-	if (enemy_manager_instance.get_active_enemy_count() == 0)
-	{
-		is_win = true;
-		next = GS_WIN;
-	}
+	
 
 }
 

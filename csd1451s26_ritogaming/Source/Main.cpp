@@ -50,8 +50,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
 
         if (fpFree) fpFree();
-        if (next != GS_RESTART && fpUnload)
-            fpUnload();
+        if (fpUnload) fpUnload();
 
         previous = current;
         current = next;

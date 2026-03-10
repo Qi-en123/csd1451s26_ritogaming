@@ -8,7 +8,8 @@ bool is_paused = false;
 
 void end_screen_load()
 {
-    end_font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 40);
+    if (end_font == -1)
+        end_font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 40);
 }
 
 void end_screen_unload()
@@ -26,7 +27,7 @@ void end_screen_init() {}
 void end_screen_update()
 {
     if (AEInputCheckTriggered(AEVK_R))
-        next = GS_LEVEL1;
+        next = GS_RESTART;
     if (AEInputCheckTriggered(AEVK_M))
         next = MAINMENU;
 }
@@ -40,7 +41,7 @@ void pause_update()
     {
         if (AEInputCheckTriggered(AEVK_R))
         {
-            next = GS_LEVEL1;
+            next = GS_RESTART;
             is_paused = false;
         }
 

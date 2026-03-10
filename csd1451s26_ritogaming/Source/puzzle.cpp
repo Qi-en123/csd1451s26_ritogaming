@@ -30,17 +30,10 @@ std::vector<int> button_indexes{}, pushable_indexes{};
 //to store all puzzle blocks
 std::vector<puzzle> puzzle_blocks;
 
-//store vec of pairs containing:
-//button_id
-//vector of spike/s coordinates to de/activate
-struct buttonTrigger {
-	s32 id;
-	std::vector<std::pair<int, int>> coords;
-};
 std::vector<buttonTrigger> btns{};
 
 
-#pragma region FILE READING & WRITING
+#pragma region LEVEL EDITOR HELPER FUNCTIONS
 
 void load_puzzle_textures() {
 	char filename[128];
@@ -103,6 +96,7 @@ void initialize_puzzle_blocks(char const* filename) {
 			}
 		
 			if (type == "PUSHABLE") {
+
 				puzzle tmp{ PUSHABLE, posx, posy, e, chara };
 				puzzle_blocks.push_back(tmp);
 				pushable_indexes.push_back(i);
@@ -110,8 +104,15 @@ void initialize_puzzle_blocks(char const* filename) {
 				//std::cout << type << ' ' << row * tile_size << ' ' << col * tile_size << ' ' << elem << '\n';
 			}
 
-			else if (type == "PIT") {
+			else if (type == "PIT"){
+
 				puzzle tmp{ PIT,posx,posy,e,chara };
+				puzzle_blocks.push_back(tmp);
+			}
+
+			else if (type == "SPIKE") {
+				
+				puzzle tmp{ SPIKE,posx,posy,e,chara };
 				puzzle_blocks.push_back(tmp);
 			}
 		}
@@ -152,6 +153,210 @@ void initialize_puzzle_blocks(char const* filename) {
 	ifs.close();
 }
 
+//u gotta reserve the vec
+//cuz if i click n drag
+//its gon reallocate so many times n lag
+void place_puzzle(s32 row, s32 col, PuzzleType type, std::vector<puzzle>& puzzles) {
+	if (type == PUZZLE_TYPE_COUNT) return;
+
+	f32 startX = -1600.f / 2.f;
+	f32 startY = 900.f / 2.f;
+
+	f32 posx = startX + row * tile_size;
+	f32 posy = startY - col * tile_size;
+
+	switch (type) {
+	case PUSHABLE:
+		puzzles.emplace_back(PUSHABLE, posx, posy, NO_ELEMENT, 0);
+		break;
+
+	case SPIKE:
+		puzzles.emplace_back(SPIKE, posx, posy, NO_ELEMENT, 0);
+		break;
+
+	case BUTTON_UP:
+	case BUTTON_DOWN:
+		puzzles.emplace_back(BUTTON_UP, posx, posy, -1, 0);
+		break;
+
+	case PIT:
+	case PIT_FILLED:
+		puzzles.emplace_back(PIT, posx, posy, NO_ELEMENT, 0);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void remove_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
+	if (puzzles.empty()) return;
+
+	f32 startX = -1600.f / 2.f;
+	f32 startY = 900.f / 2.f;
+
+	f32 posx = startX + row * tile_size;
+	f32 posy = startY - col * tile_size;
+
+	for (s32 i{}; i < puzzles.size(); ++i) {
+
+		if (posx == puzzles[i].posx && posy == puzzles[i].posy) {
+
+			puzzles[i] = puzzles.back();
+			puzzles.pop_back();
+			return;
+		}
+
+	}
+}
+
+puzzle* get_editing_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
+
+	printf("%d, %d\n", row, col);
+
+	f32 startX = -1600.f / 2.f;
+	f32 startY = 900.f / 2.f;
+	
+	f32 posx = startX + row * tile_size;
+	f32 posy = startY - col * tile_size;
+
+	printf("Current: %f, %f\n", posx, posy);
+
+	for (puzzle& p : puzzles) {
+		printf("Check with: %f, %f\n", p.posx, p.posy);
+
+		if (posx == p.posx && posy == p.posy) {
+			return &p;
+		}
+	}
+
+	return nullptr;
+}
+
+void pair_spike_to_button(s32 row, s32 col, buttonTrigger& bt) {
+
+	bt.coords.push_back({ row,col });
+}
+
+void remove_spike_button_pair(s32 row, s32 col, buttonTrigger& bt) {
+
+	for (std::pair<int, int>& c : bt.coords) {
+		if (c.first == row && c.second == col) {
+			c = bt.coords.back();
+			bt.coords.pop_back();
+			return;
+		}
+	}
+}
+
+bool spike_is_paired(s32 row, s32 col, buttonTrigger const& bt) {
+
+	for (std::pair<int, int> const& c : bt.coords) {
+		if (c.first == row && c.second == col) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+static s32 convert_to_row(f32 x) {
+	f32 startX = -1600.f / 2.f;
+	return static_cast<s32>((x - startX) / tile_size);
+}
+
+static s32 convert_to_col(f32 y) {
+	f32 startY = 900.f / 2.f;
+	return static_cast<s32>((startY - y) / tile_size);
+}
+
+bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
+	std::vector<buttonTrigger> const& bt) {
+
+	//get number of levels
+	s32 level = 1;
+	std::string filename{};
+
+	while (true) {
+		filename = "Assets/Levels/l" + std::to_string(level) + "_puzzles.txt";
+		std::ifstream file{ filename };
+
+		if (!file) {
+			break;
+		}
+
+		++level;
+	}
+
+	//filename now represents next available level
+	//std::cout << filename << '\n';
+	std::ofstream ofs{ filename };
+	if (!ofs)
+	{
+		std::cerr << "Failed to open puzzle map file for writing: " << filename << "\n";
+		return false;
+	}
+
+	ofs << "Puzzles: " << puzzles.size() << "\n\n";
+
+	//Write buttons to text
+	//abit inefficient but am looping thrice to print in order
+	//so i can render in order
+	for (const puzzle& p : puzzles) {
+		if (p.type == BUTTON_UP || p.type == BUTTON_DOWN) {
+			//I need a world to grid helper fnc to conver pos.x to rows etc.
+			ofs << "BUTTON\t " 
+				<< convert_to_row(p.posx) << ' '
+				<< convert_to_col(p.posy) << ' '
+				<< p.hidden_from << ' ' << p.button_id << '\n';
+		}
+	}
+	//Write Pit 2nd last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PIT || p.type == PIT_FILLED) {
+			ofs << "PIT\t "
+				<< convert_to_row(p.posx) << ' '
+				<< convert_to_col(p.posy) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	for (const puzzle& p : puzzles) {
+		if (p.type == SPIKE) {
+			ofs << "SPIKE\t"
+				<< convert_to_row(p.posx) << ' '
+				<< convert_to_col(p.posy) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	//Save pushable last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PUSHABLE) {
+			ofs << "PUSHABLE "
+				<< convert_to_row(p.posx) << ' '
+				<< convert_to_col(p.posy) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+
+	//save triggers here
+	ofs << "\nTriggers: " << bt.size();
+	for (buttonTrigger const& b : bt) {
+		//print id
+		ofs << '\n' << b.id << ": ";
+
+		//print coords
+		for (std::pair<int, int> const& c : b.coords) {
+			ofs << '(' << c.first << ',' << c.second << ')';
+		}
+	}
+
+	ofs.close();
+	return true;
+}
+
 #pragma endregion
 
 
@@ -174,15 +379,15 @@ void render_puzzle_blocks() {
 			case WATER:
 				clr = { 0.0f,0.0f,3.0f,1.0f };
 				break;
-			case EARTH:
-				clr = { 0.0f,0.0f,0.0f,1.0f };
-				break;
+			//case EARTH:
+			//	clr = { 0.0f,0.0f,0.0f,1.0f };
+			//	break;
 			case FIRE:
 				clr = { 3.0f,0.0f,0.0f,1.0f };
 				break;
-			case AIR:
-				clr = { 3.0f,3.0f,3.0f,1.0f };
-				break;
+			//case AIR:
+			//	clr = { 3.0f,3.0f,3.0f,1.0f };
+			//	break;
 			default:
 				break;
 			}
@@ -204,14 +409,14 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 		if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
 			curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
 		{
-			if (curr.type == BUTTON_UP || curr.type == BUTTON_DOWN || curr.type == PIT_FILLED) {
+			//no collision against these types
+			if (curr.type == BUTTON_UP ||
+				curr.type == BUTTON_DOWN ||
+				curr.type == PIT_FILLED) {
+
 				continue;
 			}
 
-			if (curr.type == PIT) {
-				puzzle_index = i;
-				return true;
-			}
 			// Debug: print tile coordinates
 			//printf("Colliding with puzzle at (%.2f, %.2f)\n", e_block.position.x, e_block.position.y);
 			puzzle_index = i;
@@ -290,13 +495,12 @@ void puzzle_button_manager() {
 		if (triggered) {
 			//goes through all coords
 			for (std::pair<int,int> pos : btns[j].coords) {
-				//rn the buttons only deactivate stuff
-				map[pos.first][pos.second] = FLOOR;
-				//printf("%d, %d\n", pos.first, pos.second);
-			}
 
-			//"refresh" collision map
-			generate_walls_from_map(map, tile_size);
+				//printf("%d, %d\n", pos.first, pos.second);
+
+				puzzle* spike = get_editing_puzzle(pos.first, pos.second, puzzle_blocks);
+				spike->active = false;
+			}
 		}
 	}
 }
@@ -337,6 +541,7 @@ bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
 			break;
 
 		case PUSHABLE:
+		case SPIKE:
 			//check collision against other puzzles
 			if (ss_collision(curr.posx, curr.posy, hts, hts,
 				pos_x, pos_y, hts, hts)) {
@@ -442,5 +647,28 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 void unload_puzzle_textures() {
 	for (int i{}; i < PUZZLE_TYPE_COUNT; ++i) {
 		AEGfxTextureUnload(puzzle_block_textures[i]);
+	}
+}
+
+//water(0), fire(1)
+Element previous_element(Element elem) {
+	switch (elem) {
+	case WATER:
+		return NO_ELEMENT;
+	case FIRE:
+		return WATER;
+	case NO_ELEMENT:
+		return FIRE;
+	}
+}
+
+Element next_element(Element elem) {
+	switch (elem) {
+	case WATER:
+		return FIRE;
+	case FIRE:
+		return NO_ELEMENT;
+	case NO_ELEMENT:
+		return WATER;
 	}
 }

@@ -92,7 +92,7 @@ void opening_draw()
         return;
 
     
-    render_blending_sprite(logo, 1200.f, 700.f, alpha);
+    render_editor_ui(logo, 1200.f, 700.f, alpha);
 }
 
 void opening_free()

@@ -18,7 +18,7 @@
 // Dummy map
 s32 map[TILE_ROWS][TILE_COLS];
 s32 boss_map[TILE_ROWS][TILE_COLS];
-f32 tile_size{};
+//f32 tile_size{};
 AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 
 bool load_tile_textures(const char* folderPath)
@@ -55,7 +55,7 @@ void free_tile_textures()
 }
 
 
-bool load_map_from_file(const char* filename, s32 map[TILE_ROWS][TILE_COLS])
+bool load_map_from_file(const char* filename, s32** map)
 {
 	std::ifstream file(filename); // Open the map file for reading
 	if (!file.is_open()) { // Check if the file was successfully opened
@@ -100,7 +100,7 @@ bool load_map_from_file(const char* filename, s32 map[TILE_ROWS][TILE_COLS])
 	return true; // Return true to indicate successful loading
 }
 
-bool save_map_to_file(s32 map[TILE_ROWS][TILE_COLS])
+bool save_map_to_file(s32** map)
 {
     s32 level = 1;
     std::string filename{};

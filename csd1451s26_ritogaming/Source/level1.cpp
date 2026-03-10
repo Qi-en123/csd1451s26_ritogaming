@@ -78,7 +78,7 @@ void level1_init()
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 
-	tile_size = 64.f;
+	//tile_size = 64.f;
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
 	player_instance.stats.character_size = tile_size - 8.0f;
 
@@ -113,6 +113,7 @@ void level1_init()
 	lights.push_back(l2);
 	lights.push_back(l3);
 
+	AEInputShowCursor(true);
 }
 
 void level1_update()
@@ -130,9 +131,6 @@ void level1_update()
 	player_system_update(&player_instance);
 	entity_system_update(&player_instance, &enemy_manager_instance);
 
-	//check_button_collision(player_instance.char1.x, player_instance.char1.y,
-	//	player_instance.char2.x, player_instance.char2.y,
-	//	player_instance.config.character_size / 2.0f);
 	puzzle_button_manager();
 
 	////EHERHERHERHdEHHRHERHERHEHHREHREHRHEHHEHR
@@ -188,7 +186,7 @@ void level1_draw()
 
 void level1_free()
 {
-	player_system_free(&player_instance);
+	
 	//g_enemy_manager.clear_all();
 	free_mesh();
 	free_ui_textures(&ui_manager);
@@ -201,4 +199,5 @@ void level1_unload()
 	//free_mesh();
 	minimap_unload();
 	unload_puzzle_textures();
+	player_system_free(&player_instance);
 }

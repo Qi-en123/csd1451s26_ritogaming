@@ -132,7 +132,7 @@ void level2_load()
 void level2_init()
 {
     zoom = 1.0f;
-    tile_size = 64.f;
+    //tile_size = 64.f;
     player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
     player_instance.stats.character_size = tile_size - 4.0f;
 

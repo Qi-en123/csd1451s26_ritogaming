@@ -26,6 +26,7 @@ namespace{
     AEGfxTexture* button = nullptr;
     AEGfxTexture* cursor = nullptr;
     AEGfxTexture* banner = nullptr;
+    AEGfxTexture* panel = nullptr;
 
     static s8  font = -1;
     
@@ -103,6 +104,7 @@ void mainmenu_load()
     button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     banner = AEGfxTextureLoad("Assets/Admin/banner_classic_curtain.png");
+    panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
 
  
 	// Load font from Assets folder
@@ -332,7 +334,7 @@ void mainmenu_draw()
     {
         for (f32 y = -50.f; y < 500.f; y += 100.f)
         {
-            if (wall) render_blending_sprite(wall, 100.f, 100.f, 1.0f, x, y);
+            if (wall) render_editor_ui(wall, 100.f, 100.f, 1.0f, x, y);
         }
     }
 
@@ -341,12 +343,12 @@ void mainmenu_draw()
     {
         for (f32 y = -450.f; y < -50.f; y += 100.f)
         {
-            if (ground) render_blending_sprite(ground, 100.f, 100.f, 1.0f, x, y);
+            if (ground) render_editor_ui(ground, 100.f, 100.f, 1.0f, x, y);
         }
     }
 
     // Draw door in the middle left area
-    if (door) render_blending_sprite(door, 200.f, 200.f, 1.0f, -400.f, 0.f);
+    if (door) render_editor_ui(door, 200.f, 200.f, 1.0f, -400.f, 0.f);
 
 
     // --- Draw dust particles (after knight) ---
@@ -354,7 +356,7 @@ void mainmenu_draw()
     {
         if (!dust_particles[i].active) continue;
         if (ground) // reuse any small square texture as dust puff
-            render_blending_sprite(ground,
+            render_editor_ui(ground,
                 dust_particles[i].scale,
                 dust_particles[i].scale,
                 dust_particles[i].alpha,
@@ -376,14 +378,14 @@ void mainmenu_draw()
         f32 draw_w = lean_x * squash;
         f32 draw_h = knight_scale / squash;
 
-        render_blending_sprite(knight, draw_w, draw_h, 1.0f, knight_x, knight_y);
+        render_editor_ui(knight, draw_w, draw_h, 1.0f, knight_x, knight_y);
     }
     // --- Draw ghoul trail (before ghoul so it appears behind) ---
     for (int i = MAX_TRAIL - 1; i >= 0; --i)
     {
         if (!ghoul_trail[i].active) continue;
         if (ghoul)
-            render_blending_sprite(ghoul,
+            render_editor_ui(ghoul,
                 ghoul_trail[i].scale,
                 ghoul_trail[i].scale,
                 ghoul_trail[i].alpha,
@@ -397,7 +399,7 @@ void mainmenu_draw()
     if (ghoul)
     {
         f32 ghoul_alpha = ghoul_scale / 200.f; //  0.0 to 1.0 based on scale
-        render_blending_sprite(ghoul, ghoul_scale, ghoul_scale, ghoul_alpha, ghoul_x, ghoul_y);
+        render_editor_ui(ghoul, ghoul_scale, ghoul_scale, ghoul_alpha, ghoul_x, ghoul_y);
     }
 
 	// Draw buttons and labels
@@ -405,7 +407,7 @@ void mainmenu_draw()
     {
         // Draw button texture
         if (button)
-            render_blending_sprite(button, button_w, button_h, 1.0f, button_x, button_y[i],
+            render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y[i],
                 IsButtonHovered(button_x, button_y[i], button_w, button_h));
 
         if (font != -1)
@@ -428,7 +430,7 @@ void mainmenu_draw()
 	
 
     //  Draw banner on top of door
-    if (banner) render_blending_sprite(banner, 450.f, 100.f, 1.0f, -400.f, 200.f);
+    if (banner) render_editor_ui(banner, 450.f, 100.f, 1.0f, -400.f, 200.f);
 
     //  Draw title text on banner
     if (font != -1)
@@ -454,15 +456,15 @@ void mainmenu_draw()
         draw_square(0.f, 0.f, 1600.f, 900.f); // use your square_mesh
 
         // Popup box
-        render_blending_sprite(button, 800.f, 400.f, 1.0f, 0.f, 0.f);
+        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
 
 
         // Yes button
-        render_blending_sprite(button, 200.f, 80.f, 1.0f, -100.f, -50.f,
+        render_editor_ui(button, 200.f, 80.f, 1.0f, -100.f, -50.f,
             IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
 
         // No button
-        render_blending_sprite(button, 200.f, 80.f, 1.0f, 150.f, -50.f,
+        render_editor_ui(button, 200.f, 80.f, 1.0f, 150.f, -50.f,
             IsButtonHovered(150.f, -50.f, 200.f, 80.f));
 
         // Text
@@ -492,7 +494,7 @@ void mainmenu_draw()
         f32 world_x = (f32)mouse_x - 800.f; // center origin
         f32 world_y = -(f32)mouse_y + 450.f; // flip Y axis
 
-        render_blending_sprite(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
+        render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
     }
 
 }
@@ -549,6 +551,11 @@ void mainmenu_unload()
     {
         AEGfxTextureUnload(banner);
         banner = nullptr;
+    }
+    if (panel)
+    {
+        AEGfxTextureUnload(panel);
+        panel = nullptr;
     }
 
     if (font != -1)

@@ -136,13 +136,13 @@ void credit_draw()
     {
         for (f32 y = -800.f; y < 800.f; y += 100.f)
         {
-            if (wall) render_blending_sprite(wall, 100.f, 100.f, 0.3f, x, y);
+            if (wall) render_editor_ui(wall, 100.f, 100.f, 0.3f, x, y);
         }
     }
 
 
 	// draw return button at top left corner
-    render_blending_sprite(button, button_w, button_h, 1.0f, button_x, button_y,
+    render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y,
         IsButtonHovered(button_x, button_y, button_w, button_h));
 
     // Draw custom cursor at mouse position
@@ -152,7 +152,7 @@ void credit_draw()
         f32 world_x = (f32)mouse_x - 800.f; // center origin
         f32 world_y = -(f32)mouse_y + 450.f; // flip Y axis
 
-        render_blending_sprite(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
+        render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
     }
 
 

@@ -46,6 +46,8 @@ extern AEGfxVertexList* square_mesh;
 extern AEGfxVertexList* triangle_mesh;
 
 extern f32 zoom;
+constexpr f32 ZOOM_MAX = 1.65f;
+constexpr f32 ZOOM_MIN = 0.8f;
 
 //Shortcut, js pass in color struct
 void AEGfxSetColorToAdd(const color& c);
@@ -62,17 +64,17 @@ void free_mesh();
 //trans_y - translate y
 //color is set outside this function, before it is called
 void draw_circle(f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y);
+	f32 scale_x, f32 scale_y, bool zoom = true);
 
 //rect_mesh - Corner or Center mode.
 //trans_x - translate x
 //trans_y - translate y
 //color is set outside this function, before it is called
 void draw_rect_center(f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y);
+	f32 scale_x, f32 scale_y, bool zoom = true);
 
 void draw_rect_corner(f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y);
+	f32 scale_x, f32 scale_y, bool zoom = true);
 
 /**************************************************************************
 	\brief
@@ -86,7 +88,7 @@ void draw_rect_corner(f32 trans_x, f32 trans_y,
 	\param scale_x X-axis scale of the square.
 	\param scale_y Y-axis scale of the square.
 **************************************************************************/
-void draw_square(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
+void draw_square(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y, bool zoom = true);
 
 /**************************************************************************
 	\brief
@@ -100,7 +102,7 @@ void draw_square(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
 	\param scale_x X-axis scale of the triangle.
 	\param scale_y Y-axis scale of the triangle.
 **************************************************************************/
-void draw_triangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y);
+void draw_triangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y, bool zoom = true);
 
 /**************************************************************************
 	\brief
@@ -141,7 +143,11 @@ void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,
 void render_text_corner(char const* text, s8 font, f32 pos_x, f32 pos_y,
 	f32 scale, color color);
 
-void get_zoom(f32 dt);
+void get_zoom(f32 dt, f32 zoom_min = ZOOM_MIN, f32 zoom_max = ZOOM_MAX);
 
 
-void render_blending_sprite(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
+void render_editor_ui(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
+	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
+
+void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
+	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);

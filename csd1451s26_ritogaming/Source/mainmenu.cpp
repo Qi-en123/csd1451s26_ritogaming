@@ -86,7 +86,7 @@ void spawn_dust(f32 x, f32 y)
             dust_particles[i].scale = (f32)(rand() % 30 + 20);     //  bigger
             dust_particles[i].lifetime = 0.6f + (rand() % 10) * 0.05f; //   lasts longer
             dust_particles[i].vx = -((rand() % 80) + 20.f); 
-            dust_particles[i].vy = (f32)(rand() % 60 + 30);     // 30-90 ï¿½ floats higher
+            dust_particles[i].vy = (f32)(rand() % 60 + 30);     // 30-90 — floats higher
             dust_particles[i].active = true;
             break;
         }
@@ -208,7 +208,7 @@ void mainmenu_update()
 	if (IsButtonClicked(button_x, button_y[1], button_w, button_h)) // Levels
     {
         play_sfx(g_audio.sfx_button_click);
-        next = GS_LEVELS;
+        next = GS_LEVEL_EDITOR;
     }
       
     if (IsButtonClicked(button_x, button_y[2], button_w, button_h)) // Guide
@@ -273,8 +273,8 @@ void mainmenu_update()
     dust_timer += dt;
     if (!knight_returning && ghoul_scale >= 200.f && dust_timer > 0.1f)
     {
-        spawn_dust(knight_x - 40.f, -150.f); // left foot  ï¿½ was -10.f
-        spawn_dust(knight_x - 60.f, -150.f); // right foot ï¿½ was +10.f
+        spawn_dust(knight_x - 40.f, -150.f); // left foot  — was -10.f
+        spawn_dust(knight_x - 60.f, -150.f); // right foot — was +10.f
         dust_timer = 0.f;
     }
 
@@ -367,13 +367,13 @@ void mainmenu_draw()
 
     if (knight)
     {
-        // Vertical bob ï¿½ bounces up and down like footsteps
+        // Vertical bob — bounces up and down like footsteps
         f32 knight_y = -50.f + sinf(knight_bob_timer * 10.f) * 8.f;
 
-        // Lean forward slightly ï¿½ tilt using scale trick (squish X slightly)
+        // Lean forward slightly — tilt using scale trick (squish X slightly)
         f32 lean_x = knight_scale * 0.92f;
 
-        // Squash and stretch ï¿½ slightly squish on landing, stretch on lift
+        // Squash and stretch — slightly squish on landing, stretch on lift
         f32 squash = 1.f + sinf(knight_bob_timer * 10.f) * 0.05f;
         f32 draw_w = lean_x * squash;
         f32 draw_h = knight_scale / squash;
@@ -420,7 +420,7 @@ void mainmenu_draw()
 			f32 norm_x = (button_x / 800.f) - (text_width / 2.f); // Normalize button X to -1 to 1, then shift left by half text width
             f32 norm_y = (button_y[i] - 15.f) / 450.f;
 
-			// print starts from left to right, unlike render_editor_ui which is centered
+			// print starts from left to right, unlike render_blending_sprite which is centered
             AEGfxPrint(font, button_labels[i],
                 norm_x, norm_y,
                 1.f,

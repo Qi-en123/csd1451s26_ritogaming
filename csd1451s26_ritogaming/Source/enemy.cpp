@@ -253,4 +253,3 @@ void dragon::take_damage(int amount) {
     hits_received++;
     base_enemy::take_damage(amount);
 }
-

@@ -23,7 +23,6 @@ update game logic, render, free resources
 #include "end_screen.hpp"
 #include "mainmenu.hpp"
 
-#include "levels.hpp"
 
 #define NUM_TILE_TYPES 10
 #define TILE_ROWS 36
@@ -76,39 +75,13 @@ void level1_load()
 void level1_init()
 {
 	AEInputShowCursor(false);
-	f32 tile_size = 64.f;
-
-	door_triggered = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
-	ensure_level_paths_loaded(); //for both puzzles and map tile data
 
-	printf("level_paths size: %d, current_level_index: %s\n",
-		(int)level_paths.size(), selected_level_path.c_str());
-	printf("level_puzzles size: %d, current_level_index: %s\n",
-		(int)level_puzzle_paths.size(), selected_level_puzzle_path.c_str());
-
-	if (selected_level_path.empty() ||
-		selected_level_puzzle_path.empty()) {
-		initialize_dungeon_map(); // default hardcoded map
-		initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
-	}
-	else {
-		load_map_from_file(selected_level_path.c_str(), map);
-		initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
-	}
-
-	generate_walls_from_map(map, 64.0f);
-
-	for (int r = 0; r < TILE_ROWS; ++r)
-		for (int c = 0; c < TILE_COLS; ++c)
-			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
-				printf("door at row:%d col:%d\n", r, c);
-
-
+	//tile_size = 64.f;
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
-	spawn_player_from_map(&player_instance, tile_size);
 	player_instance.stats.character_size = tile_size - 8.0f;
+
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
@@ -117,7 +90,10 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
-	
+	initialize_dungeon_map();
+	generate_walls_from_map(map, 64.0f);
+
+	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
 
 
 	// // Clear any existing enemies and reinitialize with ghosts in top left room
@@ -132,7 +108,7 @@ void level1_init()
 	light l1{ {-300.0f,-300.0f}, {0.5f,0.5f,0.0f,1.0f}, 11, 2.0f };
 	light l2{ {-700.0f,-300.0f}, {white}, 11, 2.0f };
 	light l3{ {-700.0f, 300.0f}, {white}, 11, 2.0f };
-	lights.clear();
+	
 	lights.push_back(l1);
 	lights.push_back(l2);
 	lights.push_back(l3);
@@ -156,6 +132,11 @@ void level1_update()
 	entity_system_update(&player_instance, &enemy_manager_instance);
 
 	puzzle_button_manager();
+
+	////EHERHERHERHdEHHRHERHERHEHHREHREHRHEHHEHR
+	//check_puzzle_collision(&player_instance);
+	//check_and_open_doors();
+	//circle_to_rectangle(200, 100, 50, player_instance.x, player_instance.y, 25.f, 25.f);
 
 	//printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 

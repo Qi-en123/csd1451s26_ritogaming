@@ -62,7 +62,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\end_screen.cpp">
-    <ClCompile Include="..\Source\levels.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,7 +130,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\end_screen.hpp">
-    <ClInclude Include="..\Source\levels.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

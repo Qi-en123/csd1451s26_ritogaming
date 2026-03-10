@@ -13,9 +13,9 @@
 #include "AEEngine.h"
 #include "camera.hpp"
 
-constexpr int  player_heart_damage { 50 };
-constexpr f32  food_health_percent { 0.50f };
-constexpr f32  food_lifetime { 10.f };
+constexpr int  player_heart_damage{ 50 };
+constexpr f32  food_health_percent{ 0.50f };
+constexpr f32  food_lifetime{ 10.f };
 
 //------------------------------- Pathfinding --------------------------------
 // Move position (x, y) toward a target, wall-checking along each axis
@@ -26,7 +26,7 @@ void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size, f32 from_x, f32 f
 
 // Compute the next flee position (caller decides whether to apply it)
 void enemy_flee_to_wall(f32 x, f32 y, f32 speed, f32 player_x, f32 player_y, f32 dt,
-                        f32& next_x, f32& next_y);
+    f32& next_x, f32& next_y);
 
 //------------------------------- Enemy State --------------------------------
 enum enemy_state {
@@ -40,7 +40,7 @@ enum enemy_state {
 //------------------------------- Enemy Type --------------------------------
 class base_enemy {
 public:
-    static constexpr int  enemy_max_hp        { 100 };
+    static constexpr int  enemy_max_hp{ 100 };
     static constexpr int  enemy_damage_per_hit{ 50 };
 
 protected:
@@ -52,7 +52,7 @@ protected:
     f32 size;
 
     int current_health;
-	int max_health;
+    int max_health;
 
     f32 attack_cooldown;
     f32 attack_timer;
@@ -76,12 +76,17 @@ protected:
 
 public:
     base_enemy(f32 start_x, f32 start_y);
-    virtual ~base_enemy() = default;
+    virtual ~base_enemy() {
+        if (texture) { AEGfxTextureUnload(texture); texture = nullptr; }
+        // food_texture is owned by EnemyManager — do NOT unload here
+        food_texture = nullptr;
+    }
+    void set_food_texture(AEGfxTexture* tex) { food_texture = tex; }
 
     // Pure virtual
     virtual void load_textures() {
         if (texture_path && !texture)                texture = AEGfxTextureLoad(texture_path);
-        if (food_texture_path && !food_texture) food_texture = AEGfxTextureLoad(food_texture_path);
+
     }
 
     virtual void unload_textures() {
@@ -114,8 +119,8 @@ public:
     AEGfxTexture* get_texture()           const { return texture; }
     AEGfxTexture* get_food_texture()      const { return food_texture; }
 
-    void set_active(bool val)               { active = val; }
-    void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; } 
+    void set_active(bool val) { active = val; }
+    void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; }
 };
 
 // ============================================================================

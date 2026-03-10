@@ -72,7 +72,7 @@
 			current_cursor = cursor_active ? ui_manager->cursor_wizard_active : ui_manager->cursor_wizard;
 
 		if (current_cursor)
-			render_blending_sprite(current_cursor, 50.f, 50.f, 1.0f, world_x, world_y);
+			render_editor_ui(current_cursor, 50.f, 50.f, 1.0f, world_x, world_y);
 	}
 
 	void render_enemy_hp(UIManager* ui_manager, EnemyManager* enemy_manager)

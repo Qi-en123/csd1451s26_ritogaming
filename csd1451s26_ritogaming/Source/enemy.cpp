@@ -63,7 +63,7 @@ base_enemy::base_enemy(f32 start_x, f32 start_y)
     visible_to_player(false), collision_radius(15.0f),
     sight_range(300.0f),
     texture_path(nullptr), food_texture_path(nullptr),
-    texture (nullptr), food_texture (nullptr)
+    texture(nullptr), food_texture(nullptr)
 {
 }
 
@@ -75,7 +75,7 @@ void base_enemy::take_damage(int amount) {
     if (current_health <= 0) {
         current_health = 0;
         state = enemy_state::dead;
-        active = false; 
+        active = false;
     }
 }
 
@@ -86,8 +86,8 @@ bool base_enemy::is_in_camera_view(camera* cam) const {
     f32 hw = (AEGfxGetWindowWidth() / 2.0f) / zoom;
     f32 hh = (AEGfxGetWindowHeight() / 2.0f) / zoom;
 
-    return (x > cam->pos.x - hw - size &&  x < cam->pos.x + hw + size &&
-            y > cam->pos.y - hh - size && y < cam->pos.y + hh + size);
+    return (x > cam->pos.x - hw - size && x < cam->pos.x + hw + size &&
+        y > cam->pos.y - hh - size && y < cam->pos.y + hh + size);
 }
 
 bool base_enemy::collides_with_player(Player* player) const {
@@ -114,12 +114,12 @@ f32 base_enemy::distance_to_player(Player* player) const {
 ghost::ghost(f32 start_x, f32 start_y)
     : base_enemy(start_x, start_y)
 {
-    speed          = 80.0f;
+    speed = 80.0f;
     current_health = 2;
-    max_health     = 2;
-    size           = 50.0f;
-    sight_range    = 400.0f;
-    texture_path   = "Assets/Tiles/tile_0006.png";
+    max_health = 2;
+    size = 50.0f;
+    sight_range = 400.0f;
+    texture_path = "Assets/Tiles/tile_0006.png";
     food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/cream.png";
 }
 
@@ -130,10 +130,10 @@ void ghost::update(f32 dt, Player* player, camera* p_cam) {
 
     if (visible_to_player) {
         state = enemy_state::fleeing;
-		f32 next_x{}, next_y{};
+        f32 next_x{}, next_y{};
 
         enemy_flee_to_wall(x, y, speed, player->current_player->x, player->current_player->y,
-                           dt, next_x, next_y);
+            dt, next_x, next_y);
 
         // flee to wall resolution
         if (!check_player_collision(next_x, y, size / 2.0f)) {
@@ -162,12 +162,12 @@ void ghost::update(f32 dt, Player* player, camera* p_cam) {
 bat::bat(f32 start_x, f32 start_y)
     : base_enemy(start_x, start_y)
 {
-    speed          = 60.0f;
+    speed = 60.0f;
     current_health = 2;
-    max_health     = 2;
-    size           = 70.0f;
-    sight_range    = 350.0f;
-    texture_path   = "Assets/kenney_pixel-platformer/tile_0025.png";
+    max_health = 2;
+    size = 70.0f;
+    sight_range = 350.0f;
+    texture_path = "Assets/kenney_pixel-platformer/tile_0025.png";
     food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/burger.png";
 }
 
@@ -201,15 +201,15 @@ void bat::update(f32 dt, Player* player, camera* p_cam) {
 // ============================================================================
 
 dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom)
-              : base_enemy(start_x, start_y), room_left(r_left), room_right(r_right),
-                room_top(r_top), room_bottom(r_bottom),
-                hits_received(0), hits_until_attack(7), is_boss(true)
+    : base_enemy(start_x, start_y), room_left(r_left), room_right(r_right),
+    room_top(r_top), room_bottom(r_bottom),
+    hits_received(0), hits_until_attack(7), is_boss(true)
 {
-    speed          = 40.0f;
+    speed = 40.0f;
     current_health = 2;
-    max_health     = 2;
-    size           = 150.0f;
-    texture_path   = "Assets/Tiles/tile_0005.png";
+    max_health = 2;
+    size = 150.0f;
+    texture_path = "Assets/Tiles/tile_0005.png";
     food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/sushi.png";
 }
 

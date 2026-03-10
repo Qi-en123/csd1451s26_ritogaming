@@ -388,7 +388,7 @@ void mainmenu_draw()
 			f32 norm_x = (button_x / 800.f) - (text_width / 2.f); // Normalize button X to -1 to 1, then shift left by half text width
             f32 norm_y = (button_y[i] - 15.f) / 450.f;
 
-			// print starts from left to right, unlike render_blending_sprite which is centered
+			// print starts from left to right, unlike render_editor_ui which is centered
             AEGfxPrint(font, button_labels[i],
                 norm_x, norm_y,
                 1.f,

@@ -494,12 +494,18 @@ void level_editor_update()
         {
             if (!selected_level_path.empty())
             {
-                save_success = save_map_to_file_overwrite(editor_map, selected_level_path);
+                save_success = 
+					save_map_to_file_overwrite(editor_map, selected_level_path) &&
+					overwrite_puzzle_blocks(puzzles, button_triggers, selected_level_path);
             }
             else
             {
                 std::string new_path;
-                save_success = save_map_to_file(editor_map, new_path);
+                save_success = 
+					save_map_to_file(editor_map, new_path) &&
+					save_puzzle_blocks(puzzles, button_triggers, new_path);
+
+				//So don't keep saving new files
                 if (save_success)
                     selected_level_path = new_path; // switch to edit mode
             }

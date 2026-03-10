@@ -65,24 +65,36 @@ void level1_load()
 //}
 void level1_init()
 {
+	f32 tile_size = 64.f;
+
 	door_triggered = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
-	ensure_level_paths_loaded();
+	ensure_level_paths_loaded(); //for both puzzles and map tile data
 
 	printf("level_paths size: %d, current_level_index: %s\n",
 		(int)level_paths.size(), selected_level_path.c_str());
-	if (selected_level_path.empty())
+	printf("level_puzzles size: %d, current_level_index: %s\n",
+		(int)level_puzzle_paths.size(), selected_level_puzzle_path.c_str());
+
+	if (selected_level_path.empty() ||
+		selected_level_puzzle_path.empty()) {
 		initialize_dungeon_map(); // default hardcoded map
-	else
+		initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
+	}
+	else {
 		load_map_from_file(selected_level_path.c_str(), map);
+		initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
+	}
+
 	generate_walls_from_map(map, 64.0f);
+
 	for (int r = 0; r < TILE_ROWS; ++r)
 		for (int c = 0; c < TILE_COLS; ++c)
 			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
 				printf("door at row:%d col:%d\n", r, c);
-	//tile_size = 64.f;
-	initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
+
+
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
 	spawn_player_from_map(&player_instance, tile_size);
 	player_instance.stats.character_size = tile_size - 8.0f;
@@ -130,11 +142,6 @@ void level1_update()
 	entity_system_update(&player_instance, &enemy_manager_instance);
 
 	puzzle_button_manager();
-
-	////EHERHERHERHdEHHRHERHERHEHHREHREHRHEHHEHR
-	//check_puzzle_collision(&player_instance);
-	//check_and_open_doors();
-	//circle_to_rectangle(200, 100, 50, player_instance.x, player_instance.y, 25.f, 25.f);
 
 	//printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 

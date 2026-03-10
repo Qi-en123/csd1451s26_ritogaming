@@ -531,7 +531,7 @@ void draw_map_preview(s32 preview[][TILE_COLS], f32 center_x, f32 center_y, f32 
             f32 ty = start_y - r * dot_h - dot_h * 0.5f;
 
             if (TileTextures[tile])
-                render_blending_sprite(TileTextures[tile], dot_w, dot_h, 1.f, tx, ty);
+                render_editor_ui(TileTextures[tile], dot_w, dot_h, 1.f, tx, ty);
         }
     }
 }

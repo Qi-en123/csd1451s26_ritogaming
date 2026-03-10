@@ -62,6 +62,7 @@ namespace {
 
     // All levels to display (default + scanned saved files)
     std::vector<LevelEntry> levels;
+    std::vector<LevelEntry> puzzles;
 
     // Default built-in level shown at index 0
     const char* default_levels[] = { "Level 1" };
@@ -102,6 +103,7 @@ static int max_scroll()
 static void build_level_list()
 {
     levels.clear();
+    puzzles.clear();
 
     // Always add default levels at the top
     for (int i = 0; i < default_count; ++i)
@@ -110,6 +112,7 @@ static void build_level_list()
         e.name = default_levels[i];
         e.path = ""; // empty path = use initialize_dungeon_map()
         levels.push_back(e);
+        puzzles.push_back(e);
     }
 
     // Win32 directory scan for saved custom level files
@@ -155,6 +158,57 @@ static void build_level_list()
         e.name = "Level " + std::to_string(level_num++);
         levels.push_back(e);
     }
+
+
+
+
+
+
+    // Win32 directory scan for saved custom level files
+    // file search handle that stores the state of the search, initialized to the first found file matching the pattern
+    hFind = FindFirstFileA("Assets/Levels/l*_puzzles.txt", &find_data);
+
+    std::vector<LevelEntry> saved_puzzles;
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+            {
+                std::string filename = find_data.cFileName;
+                LevelEntry e;
+                e.name = filename.substr(0, filename.find_last_of('.'));
+                e.path = std::string("Assets/Levels/") + filename;
+                saved_puzzles.push_back(e);
+            }
+        } while (FindNextFileA(hFind, &find_data));
+
+        FindClose(hFind);
+    }
+
+    // Sort numerically (lvl1 < lvl2 < ... < lvl10 < lvl11)
+    std::sort(saved_puzzles.begin(), saved_puzzles.end(),
+        [](const LevelEntry& a, const LevelEntry& b)
+        {
+            auto get_num = [](const std::string& s)
+                {
+                    //size_t start = s.find("l") + 1;
+                    //size_t end = s.find("_puzzles.txt");
+                    //return std::stoi(s.substr(start, end - start));
+                    size_t end = s.find("_puzzles.txt");
+                    size_t start = s.rfind("l", end) + 1;    // <-- FIXED
+                    return std::stoi(s.substr(start, end - start));
+                };
+            return get_num(a.path) < get_num(b.path);
+        });
+
+    // Assign user-friendly display names starting at "Level 1"
+    level_num = 1;
+    for (auto& e : saved_puzzles)
+    {
+        e.name = "Puzzle " + std::to_string(level_num++);
+        puzzles.push_back(e);
+    }
 }
 
 // -------------------------------------------------------
@@ -191,6 +245,10 @@ void levels_init()
     level_paths.clear();
     for (auto& e : levels)
         level_paths.push_back(e.path);
+
+    level_puzzle_paths.clear();
+    for (auto& e : puzzles)
+        level_puzzle_paths.push_back(e.path);
 }
 
 // -------------------------------------------------------
@@ -212,6 +270,7 @@ void levels_update()
     if (IsButtonClicked(600.f, -380.f, 200.f, 70.f))
     {
         selected_level_path = ""; // blank map
+        selected_level_puzzle_path = "";
         next = GS_LEVEL_EDITOR;
     }
 
@@ -292,6 +351,7 @@ void levels_update()
             if (IsButtonClicked(edit_x, edit_y, CELL_W - 40.f, 50.f))
             {
                 selected_level_path = levels[idx].path;
+                selected_level_puzzle_path = puzzles[idx].path;
                 context_menu_idx = -1;
                 next = GS_LEVEL_EDITOR;
                 return;
@@ -302,10 +362,13 @@ void levels_update()
             if (IsButtonClicked(del_x, del_y, CELL_W - 40.f, 50.f))
             {
                 remove(levels[idx].path.c_str());
+                remove(puzzles[idx].path.c_str());
                 build_level_list();
                 level_paths.clear();
                 for (auto& e : levels)
                     level_paths.push_back(e.path);
+                for (auto& e : puzzles)
+                    level_puzzle_paths.push_back(e.path);
                 scroll_row = 0; scroll_row_f = 0.f; scroll_target = 0.f;
                 context_menu_idx = -1;
                 delete_msg_timer = 2.f;
@@ -330,6 +393,7 @@ void levels_update()
                 if (IsButtonClicked(cx, cy, CELL_W, CELL_H))
                 {
                     selected_level_path = levels[idx].path;
+                    selected_level_puzzle_path = puzzles[idx].path;
                     next = GS_LEVEL1;
                 }
             }
@@ -347,7 +411,7 @@ void levels_draw()
     {
         for (f32 x = -800.f; x <= 800.f; x += 100.f)
             for (f32 y = -450.f; y <= 450.f; y += 100.f)
-                render_blending_sprite(bg_wall, 100.f, 100.f, 0.3f, x, y);
+                render_editor_ui(bg_wall, 100.f, 100.f, 0.3f, x, y);
     }
 
     // --- Screen title ---
@@ -377,7 +441,7 @@ void levels_draw()
                     // Normal front face
                     bool hovered = IsButtonHovered(cx, cy, CELL_W, CELL_H);
                     if (button)
-                        render_blending_sprite(button, CELL_W, CELL_H, 1.0f, cx, cy, hovered);
+                        render_editor_ui(button, CELL_W, CELL_H, 1.0f, cx, cy, hovered);
 
                     if (font != -1)
                     {
@@ -411,7 +475,7 @@ void levels_draw()
                 {
                     // Flipped back face — show Edit and Delete
                     if (button)
-                        render_blending_sprite(button, CELL_W, CELL_H, 0.85f, cx, cy);
+                        render_editor_ui(button, CELL_W, CELL_H, 0.85f, cx, cy);
 
                     if (font != -1)
                     {
@@ -420,7 +484,7 @@ void levels_draw()
                         f32 edit_y = cy + CELL_H * 0.15f;
                         bool edit_h = IsButtonHovered(edit_x, edit_y, CELL_W - 40.f, 50.f);
                         if (button)
-                            render_blending_sprite(button, CELL_W - 40.f, 50.f,
+                            render_editor_ui(button, CELL_W - 40.f, 50.f,
                                 edit_h ? 1.f : 0.7f, edit_x, edit_y);
                         f32 etw = 0.f, eth = 0.f;
                         AEGfxGetPrintSize(font, "Edit", 0.9f, &etw, &eth);
@@ -434,7 +498,7 @@ void levels_draw()
                         f32 del_y = cy - CELL_H * 0.25f;
                         bool del_h = IsButtonHovered(del_x, del_y, CELL_W - 40.f, 50.f);
                         if (button)
-                            render_blending_sprite(button, CELL_W - 40.f, 50.f,
+                            render_editor_ui(button, CELL_W - 40.f, 50.f,
                                 del_h ? 1.f : 0.7f, del_x, del_y);
                         f32 dtw = 0.f, dth = 0.f;
                         AEGfxGetPrintSize(font, "Delete", 0.9f, &dtw, &dth);
@@ -448,7 +512,7 @@ void levels_draw()
             else
             {
                 if (button)
-                    render_blending_sprite(button, CELL_W, CELL_H, 0.2f, cx, cy);
+                    render_editor_ui(button, CELL_W, CELL_H, 0.2f, cx, cy);
             }
         }
     }
@@ -458,7 +522,7 @@ void levels_draw()
     if (tr > ROWS_VISIBLE)
     {
         if (scroll_bar)
-            render_blending_sprite(scroll_bar, TRACK_W, BAR_H, 0.4f,
+            render_editor_ui(scroll_bar, TRACK_W, BAR_H, 0.4f,
                 BAR_X, (BAR_TOP + BAR_BOT) * 0.5f);
 
         int ms = max_scroll();
@@ -467,7 +531,7 @@ void levels_draw()
         f32 thumb_cy = BAR_TOP - thumb_h * 0.5f - thumb_ratio * (BAR_H - thumb_h);
 
         if (scroll_bar)
-            render_blending_sprite(scroll_bar, THUMB_W, thumb_h, 1.0f, BAR_X, thumb_cy);
+            render_editor_ui(scroll_bar, THUMB_W, thumb_h, 1.0f, BAR_X, thumb_cy);
 
         if (font != -1)
         {
@@ -480,7 +544,7 @@ void levels_draw()
 
     // --- Back button (bottom left) ---
     if (button)
-        render_blending_sprite(button, 200.f, 70.f, 1.0f, -600.f, -380.f,
+        render_editor_ui(button, 200.f, 70.f, 1.0f, -600.f, -380.f,
             IsButtonHovered(-600.f, -380.f, 200.f, 70.f));
     if (font != -1)
     {
@@ -494,7 +558,7 @@ void levels_draw()
 
     // --- Level Editor button (bottom right) ---
     if (button)
-        render_blending_sprite(button, 200.f, 70.f, 1.0f, 600.f, -380.f,
+        render_editor_ui(button, 200.f, 70.f, 1.0f, 600.f, -380.f,
             IsButtonHovered(600.f, -380.f, 200.f, 70.f));
     if (font != -1)
     {
@@ -514,7 +578,7 @@ void levels_draw()
         f32 tw = 0.f, th = 0.f;
         AEGfxGetPrintSize(font, msg, 1.2f, &tw, &th);
         // Draw dark background box first
-        render_blending_sprite(button, 400.f, 80.f, 0.9f, 0.f, 0.f);
+        render_editor_ui(button, 400.f, 80.f, 0.9f, 0.f, 0.f);
         AEGfxPrint(font, msg, -tw * 0.5f, -0.05f, 1.2f, 1.f, 0.3f, 0.3f, alpha);
     }
 
@@ -560,7 +624,7 @@ void levels_draw()
             const f32 PREV_Y = wy - PREV_H * 0.5f - 10.f;
 
             if (button)
-                render_blending_sprite(button, PREV_W + 16.f, PREV_H + 16.f, 0.95f, PREV_X, PREV_Y);
+                render_editor_ui(button, PREV_W + 16.f, PREV_H + 16.f, 0.95f, PREV_X, PREV_Y);
 
             draw_map_preview(preview_map, PREV_X, PREV_Y, PREV_W, PREV_H);
 
@@ -586,7 +650,7 @@ void levels_draw()
     {
         f32 wx = (f32)mouse_x - 800.f;
         f32 wy = -(f32)mouse_y + 450.f;
-        render_blending_sprite(cursor, 50.f, 50.f, 1.0f, wx + 25.f, wy - 25.f);
+        render_editor_ui(cursor, 50.f, 50.f, 1.0f, wx + 25.f, wy - 25.f);
     }
 }
 
@@ -597,6 +661,7 @@ void levels_free()
 {
     free_mesh();
     levels.clear();
+    puzzles.clear();
 }
 
 // -------------------------------------------------------
@@ -659,4 +724,50 @@ void ensure_level_paths_loaded()
     level_paths.push_back("");
     for (auto& p : paths)
         level_paths.push_back(p);
+
+
+
+
+
+
+    if (!level_puzzle_paths.empty()) return; // already populated, skip rebuild
+
+    // Scan saved level files from disk
+    hFind = FindFirstFileA("Assets/Levels/l*_puzzles.txt", &find_data);
+
+    paths.clear(); // vectors to hold file paths for custom levels
+    if (hFind != INVALID_HANDLE_VALUE) // if there are any matching files found 
+    {
+        do
+        {
+            // Contains flags describing the item found (file, directory, hidden, etc.).
+            // We only want to add files, not directories, to the level paths list.
+            if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+                paths.push_back(std::string("Assets/Levels/") + find_data.cFileName); // construct the full path and add to the list
+        } while (FindNextFileA(hFind, &find_data)); // continue finding the next file until there are no more matches
+
+        FindClose(hFind); // close the search handle to free system resources
+    }
+
+    // Sort numerically to match build_level_list() ordering
+    std::sort(paths.begin(), paths.end(),
+        [](const std::string& a, const std::string& b)
+        {
+            auto get_num = [](const std::string& s) // Extracts the numeric part of the filename (e.g., "lvl3.txt" -> 3)
+                {
+                    //size_t start = s.find("l") + 1; // position right after "lvl"
+                    //size_t end = s.find("_puzzles.txt"); // position of ".txt"
+                    //return std::stoi(s.substr(start, end - start)); // convert the extracted substring to an integer
+                    size_t end = s.find("_puzzles.txt");
+                    size_t start = s.rfind("l", end) + 1; // search backwards to find the last "l" before "_puzzles"
+                    return std::stoi(s.substr(start, end - start));
+                };
+            return get_num(a) < get_num(b); // sort in ascending order based on the extracted numeric value
+        });
+
+    // Index 0 = default built-in level (empty path = initialize_dungeon_map)
+    level_puzzle_paths.clear();
+    level_puzzle_paths.push_back("");
+    for (auto& p : paths)
+        level_puzzle_paths.push_back(p);
 }

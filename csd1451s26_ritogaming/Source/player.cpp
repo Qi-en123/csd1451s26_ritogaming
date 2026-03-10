@@ -544,16 +544,19 @@ void spawn_player_from_map(Player* player_ptr, f32 tile_size)
                 float y = world_top - (r * tile_size);
 
                 // Assign positions
-                player_ptr->char1.x = x;
-                player_ptr->char1.y = y;
-
-                player_ptr->char2.x = x + tile_size; // offset second character
-                player_ptr->char2.y = y;
+                if(map[r][c] == WIZARD) {
+                    player_ptr->char1.x = x;
+                    player_ptr->char1.y = y;
+                }
+                else {
+                    player_ptr->char2.x = x;
+                    player_ptr->char2.y = y;
+				}
 
                 // Remove spawn tile
                 //map[r][c] = FLOOR;
 
-                return;
+             
             }
         }
     }

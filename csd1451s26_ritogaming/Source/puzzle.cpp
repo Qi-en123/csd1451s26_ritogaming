@@ -212,7 +212,7 @@ void remove_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
 
 puzzle* get_editing_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
 
-	printf("%d, %d\n", row, col);
+	//printf("%d, %d\n", row, col);
 
 	f32 startX = -1600.f / 2.f;
 	f32 startY = 900.f / 2.f;
@@ -220,10 +220,10 @@ puzzle* get_editing_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
 	f32 posx = startX + row * tile_size;
 	f32 posy = startY - col * tile_size;
 
-	printf("Current: %f, %f\n", posx, posy);
+	//printf("Current: %f, %f\n", posx, posy);
 
 	for (puzzle& p : puzzles) {
-		printf("Check with: %f, %f\n", p.posx, p.posy);
+		//printf("Check with: %f, %f\n", p.posx, p.posy);
 
 		if (posx == p.posx && posy == p.posy) {
 			return &p;
@@ -607,7 +607,8 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	f32 dx{ player_pos_x - puzzle.posx };
 	f32 dy{ player_pos_y - puzzle.posy };
 
-	const f32 min_gap{ 3.0f }; //prevent puzzle going inside wall
+	//prevent puzzle going inside wall
+	const f32 min_gap{ 3.0f }; 
 	const f32 grab_range{ (player_half_size + puzzle_size / 2.0f) + PUZZLE_GRAB_RANGE };
 
 	//printf("%f, %f\n", (dx * dx + dy * dy),(grab_range * grab_range));

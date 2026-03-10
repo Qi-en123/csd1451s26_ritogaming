@@ -301,7 +301,7 @@ static void edit_puzzle() {
 		if (IsButtonClicked(ep_button_x, edit_panel_y + edit_panel_h / 4.0f,
 			edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
 
-			printf("saved\n");
+			//printf("saved\n");
 			editing = false;
 			selected_puzzle = PUSHABLE;
 			can_paint = false;
@@ -311,7 +311,7 @@ static void edit_puzzle() {
 		if (IsButtonClicked(ep_button_x, edit_panel_y - edit_panel_h / 4.0f,
 			edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
 
-			printf("exit\n");
+			//printf("exit\n");
 			//Restore changes
 			*editing_puzzle = old_puzzle;
 			editing = false;
@@ -326,7 +326,7 @@ static void edit_puzzle() {
 				edit_panel_y + edit_panel_h * 0.18f,
 				edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
-				printf("left clicked\n");
+				//printf("left clicked\n");
 				editing_puzzle->element = previous_element(editing_puzzle->element);
 				can_paint = false;
 			}
@@ -336,7 +336,7 @@ static void edit_puzzle() {
 				edit_panel_y + edit_panel_h * 0.18f,
 				edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
-				printf("right clicked\n");
+				//printf("right clicked\n");
 				editing_puzzle->element = next_element(editing_puzzle->element);
 				can_paint = false;
 			}
@@ -350,7 +350,7 @@ static void edit_puzzle() {
 			//decrement hero that puzzle is hidden from
 			editing_puzzle->hidden_from = (editing_puzzle->hidden_from + 2) % 3;
 			can_paint = false;
-			printf("%d\n", editing_puzzle->hidden_from);
+			//printf("%d\n", editing_puzzle->hidden_from);
 		}
 
 		//If right button of 2nd line is clicked ("Can't see:" line)
@@ -725,7 +725,7 @@ void level_editor_update()
 
 							}
 
-							printf("now editing button id: %d\n", editing_puzzle->button_id);
+							//printf("now editing button id: %d\n", editing_puzzle->button_id);
 						}
 					}
 
@@ -749,7 +749,7 @@ void level_editor_update()
 							//pairing spikes placed to id of current editing button
 							pair_spike_to_button(row, col, button_triggers[editing_puzzle->button_id]);
 
-							printf("adding spike %d, %d to button id: %d\n", row, col, editing_puzzle->button_id);
+							//printf("adding spike %d, %d to button id: %d\n", row, col, editing_puzzle->button_id);
 						}
 					}
 
@@ -757,7 +757,7 @@ void level_editor_update()
 					if (puzzle_editor_map[row][col] == BUTTON_UP) {
 						//if clicked on button with no triggers
 						puzzle& curr = *get_editing_puzzle(row, col, puzzles);
-						printf("%d\n", curr.button_id);
+						//printf("%d\n", curr.button_id);
 						if (curr.button_id == -1) {
 							
 							curr.button_id = editing_puzzle->button_id;
@@ -779,8 +779,8 @@ void level_editor_update()
 						//remove this spike from trigger list of coords
 						remove_spike_button_pair(row, col, button_triggers[editing_puzzle->button_id]);
 
-						printf("removing spike %d, %d from button id: %d\n", row, col, editing_puzzle->button_id);
-						printf("current coords size: %zu\n", button_triggers[editing_puzzle->button_id].coords.size());
+						//printf("removing spike %d, %d from button id: %d\n", row, col, editing_puzzle->button_id);
+						//printf("current coords size: %zu\n", button_triggers[editing_puzzle->button_id].coords.size());
 					}
 				}
 			}

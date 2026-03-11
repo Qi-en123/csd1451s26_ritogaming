@@ -2,14 +2,10 @@
 \file:          ui_manager.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-<<<<<<< Updated upstream
-\brief:
-=======
 \
 \brief:         Declares UIManager structure and UI rendering functions
 \               for enemy health indicators and player heads-up display.
 \               Manages loading and unloading of UI texture assets.
->>>>>>> Stashed changes
 **************************************************************************/
 
 #pragma once

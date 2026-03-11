@@ -122,11 +122,6 @@ ghost::ghost(f32 start_x, f32 start_y)
     max_health     = 2;
     size           = 50.0f;
     sight_range    = 400.0f;
-<<<<<<< Updated upstream
-    texture_path   = "Assets/Enemy/tile_0006.png";
-    food_texture_path = "Assets/Enemy_food/cream.png";
-=======
->>>>>>> Stashed changes
 }
 void ghost::take_damage(int amount) {
     if (!active) return;
@@ -178,11 +173,6 @@ bat::bat(f32 start_x, f32 start_y)
     max_health     = 2;
     size           = 70.0f;
     sight_range    = 350.0f;
-<<<<<<< Updated upstream
-    texture_path   = "Assets/Enemy/tile_0025.png";
-    food_texture_path = "Assets/Enemy_food/burger.png";
-=======
->>>>>>> Stashed changes
 }
 
 void bat::update(f32 dt, Player* player, camera* p_cam) {
@@ -223,11 +213,6 @@ dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32
     current_health = 2;
     max_health     = 2;
     size           = 150.0f;
-<<<<<<< Updated upstream
-    texture_path   = "Assets/Enemy/tile_0005.png";
-    food_texture_path = "Assets/Enemy_food/sushi.png";
-=======
->>>>>>> Stashed changes
 }
 
 void dragon::update(f32 dt, Player* player, camera* p_cam) {

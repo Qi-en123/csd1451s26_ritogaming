@@ -80,31 +80,11 @@ protected:
 
 public:
     base_enemy(f32 start_x, f32 start_y);
-<<<<<<< Updated upstream
-    virtual ~base_enemy() { unload_textures(); }
-
-    // Pure virtual
-    virtual void load_textures() {
-        if (texture_path && !texture) texture = AEGfxTextureLoad(texture_path);
-        // food_texture is intentionally not loaded here — owned by EnemyManager
-    }
-
-    virtual void unload_textures() {
-        if (texture) { AEGfxTextureUnload(texture); texture = nullptr; }
-        // food_texture is NOT unloaded here — it is owned and managed by EnemyManager
-        food_texture = nullptr;
-    }
-    virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
-    virtual void take_damage(int amount);
-
-    // Type identification without an enum � override in derived classes
-=======
 
     virtual ~base_enemy() {}
 
     virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
     virtual void take_damage(int amount);
->>>>>>> Stashed changes
     virtual bool is_ghost() const { return false; }
     virtual int get_max_health() const { return max_health; }
 
@@ -130,12 +110,8 @@ public:
 
     void set_active(bool val) { active = val; }
     void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; }
-<<<<<<< Updated upstream
-    void set_food_texture(AEGfxTexture* tex) { food_texture = tex; } // point to manager-owned texture
-=======
     void set_enemy_texture(AEGfxTexture* tex) { texture = tex; }
     void set_food_texture(AEGfxTexture* tex) { food_texture = tex; }
->>>>>>> Stashed changes
 };
 
 // ============================================================================

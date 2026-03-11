@@ -2,36 +2,10 @@
 \file:          enemy_manager.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-<<<<<<< Updated upstream
-\co-author:     Jerod (5% - projectile function)
-
-\brief
-        EnemyManager handles enemy-related systems including spawning, updating,
-        rendering, food drops, respawning, and combat interactions. The manager
-        controls enemy population based on the current game zone and ensures
-        enemies respawn at their assigned spawn locations when defeated.
-
-        Zone layout (based on map.cpp):
-
-        tutorial_area
-            Player Room 2 (rows 18–26, cols 2–9)
-            + vertical corridor (rows 11–17, cols 4–7)
-            → 8 ghosts that respawn after RESPAWN_DELAY
-
-        combat_area
-            Player Room 1 (rows 3–10, cols 2–9)
-            + horizontal corridor (row 7, cols 9–24)
-            → 5 bats that respawn after RESPAWN_DELAY
-
-        boss_room
-            Boss room (level 2)
-            → 1 dragon boss, does not respawn
-=======
 \
 \brief:         EnemyManager class declaration for managing enemy spawning,
 \               respawn timers, food drops, and combat interactions across
 \               different game zones (tutorial, combat, boss).
->>>>>>> Stashed changes
 **************************************************************************/
 
 #pragma once
@@ -71,13 +45,8 @@ struct food_drop {
 };
 
 struct enemy_slot {
-<<<<<<< Updated upstream
-    base_enemy* enemy;  // Pointer to the ghost occupying this slot (nullptr if empty)
-    f32 respawn_timer;  // Timer before this slot can respawn
-=======
     base_enemy* enemy;  
     f32 respawn_timer;  
->>>>>>> Stashed changes
 };
 
 class EnemyManager {
@@ -92,30 +61,19 @@ private:
     AEVec2 ghost_spawn_positions[NUM_GHOST_SLOTS];
     AEVec2 bat_spawn_positions[NUM_BAT_SLOTS];
 
-<<<<<<< Updated upstream
-    // Cross spawn markers (visual indicators at spawn points)
-    AEVec2        cross_positions[NUM_CROSS_MARKERS];
-    AEGfxTexture* cross_tex{};   // tile_0064.png - cross marker at CROSS positions
-    AEGfxTexture* ghost_marker_tex{};  // tile_0066.png - ghost icon at GHOST spawn positions
-    AEGfxTexture* bat_marker_tex{};  // tile_0126.png - tree icon at BAT spawn positions
-=======
     AEVec2        cross_positions[NUM_CROSS_MARKERS];
     AEGfxTexture* cross_tex{};   
     AEGfxTexture* ghost_marker_tex{};  
     AEGfxTexture* bat_marker_tex{};  
->>>>>>> Stashed changes
     bool          spawn_positions_loaded{ false };
 
     // Respawn particle effects
     std::vector<Particle> respawn_particles;
-<<<<<<< Updated upstream
-=======
 
     // Enemy textures
     AEGfxTexture* ghost_tex{};
     AEGfxTexture* bat_tex{};
     AEGfxTexture* dragon_tex{};
->>>>>>> Stashed changes
 
     // Food textures
     AEGfxTexture* ghost_food_tex{};
@@ -140,13 +98,8 @@ public:
     void      set_zone(game_zone zone) { current_zone = zone; }
     game_zone get_zone()         const { return current_zone; }
 
-<<<<<<< Updated upstream
-    void initialize_tutorial_area(); // 8 ghosts � bottom room + vertical corridor
-    void initialize_combat_area();   // 5 bats   � upper room + horizontal corridor
-=======
     void initialize_tutorial_area(); 
     void initialize_combat_area();   
->>>>>>> Stashed changes
     void load_spawn_positions(const char* filename);
 
     void spawn_ghost_at_slot(int slot_index);
@@ -154,11 +107,7 @@ public:
     void spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
 
     void spawn_food(f32 x, f32 y, AEGfxTexture* texture);
-<<<<<<< Updated upstream
-    void spawn_respawn_particles(f32 x, f32 y); // burst of particles at spawn point
-=======
     void spawn_respawn_particles(f32 x, f32 y);
->>>>>>> Stashed changes
 
     void check_player_attacks(Player* player, f32 attack_range, f32 damage);
     bool check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage);

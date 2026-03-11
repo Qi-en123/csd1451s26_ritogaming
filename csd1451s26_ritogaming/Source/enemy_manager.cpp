@@ -83,10 +83,8 @@ void entity_system_update(Player* player_ptr, EnemyManager* enem)
 // ============================================================================
 // CONSTRUCTOR / DESTRUCTOR
 // ============================================================================
-EnemyManager::EnemyManager() :ghost_slots{}, bat_slots{} {
-    ghost_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
-    bat_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/burger.png");
-    dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
+EnemyManager::EnemyManager() :ghost_slots{}, bat_slots{},
+ghost_food_tex(nullptr), bat_food_tex(nullptr), dragon_food_tex(nullptr) {
 }
 
 EnemyManager::~EnemyManager() {
@@ -299,7 +297,12 @@ void EnemyManager::cleanup_dead_enemies() {
     {
         if (!enemy || enemy->get_state() != dead) continue;
 
-        spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        if (enemy->is_ghost())
+        {
+            printf("ghost dead, food_texture: %p\n", (void*)enemy->get_food_texture());
+            if (enemy->get_food_texture())
+                spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        }
 
         // Release ghost slot → respawns at a random pool position after delay
         if (enemy->is_ghost())
@@ -413,3 +416,16 @@ void EnemyManager::clear_all()
 //    }
 //    return false;
 //}
+
+
+void EnemyManager::load_textures() {
+    ghost_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
+    bat_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/burger.png");
+    dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
+}
+
+void EnemyManager::unload_textures() {
+    if (ghost_food_tex) { AEGfxTextureUnload(ghost_food_tex);  ghost_food_tex = nullptr; }
+    if (bat_food_tex) { AEGfxTextureUnload(bat_food_tex);    bat_food_tex = nullptr; }
+    if (dragon_food_tex) { AEGfxTextureUnload(dragon_food_tex); dragon_food_tex = nullptr; }
+}

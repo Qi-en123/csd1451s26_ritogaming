@@ -107,6 +107,7 @@ void level1_init()
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
 	spawn_player_from_map(&player_instance, tile_size);
 	player_instance.stats.character_size = tile_size - 8.0f;
+	enemy_manager_instance.load_textures();
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
@@ -215,4 +216,5 @@ void level1_unload()
 	minimap_unload();
 	unload_puzzle_textures();
 	player_system_free(&player_instance);
+	enemy_manager_instance.unload_textures();
 }

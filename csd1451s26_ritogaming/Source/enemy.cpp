@@ -2,6 +2,11 @@
 \file:          enemy.cpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
+\
+\brief:         Implements enemy movement behaviors and enemy type classes.
+\               Contains pathfinding helper functions, base_enemy class,
+\               and derived enemy types (ghost, bat, dragon) with unique
+\               AI behaviors.
 **************************************************************************/
 
 #include "pch.hpp"
@@ -77,11 +82,15 @@ void base_enemy::take_damage(int amount) {
     }
 }
 
+bool base_enemy::is_in_camera_view(camera* p_cam) const {
+    if (!p_cam) return false;
 
     extern f32 zoom;
     f32 hw = (AEGfxGetWindowWidth() / 2.0f) / zoom;
     f32 hh = (AEGfxGetWindowHeight() / 2.0f) / zoom;
 
+    return (x > p_cam->pos.x - hw - size &&  x < p_cam->pos.x + hw + size &&
+            y > p_cam->pos.y - hh - size && y < p_cam->pos.y + hh + size);
 }
 
 bool base_enemy::collides_with_player(Player* player) const {
@@ -103,6 +112,7 @@ f32 base_enemy::distance_to_player(Player* player) const {
 }
 
 // ============================================================================
+// GHOST IMPLEMENTATION
 // ============================================================================
 ghost::ghost(f32 start_x, f32 start_y)
 	: base_enemy(start_x, start_y), hits_from_player(0)
@@ -112,8 +122,11 @@ ghost::ghost(f32 start_x, f32 start_y)
     max_health     = 2;
     size           = 50.0f;
     sight_range    = 400.0f;
+<<<<<<< Updated upstream
     texture_path   = "Assets/Enemy/tile_0006.png";
     food_texture_path = "Assets/Enemy_food/cream.png";
+=======
+>>>>>>> Stashed changes
 }
 void ghost::take_damage(int amount) {
     if (!active) return;
@@ -165,8 +178,11 @@ bat::bat(f32 start_x, f32 start_y)
     max_health     = 2;
     size           = 70.0f;
     sight_range    = 350.0f;
+<<<<<<< Updated upstream
     texture_path   = "Assets/Enemy/tile_0025.png";
     food_texture_path = "Assets/Enemy_food/burger.png";
+=======
+>>>>>>> Stashed changes
 }
 
 void bat::update(f32 dt, Player* player, camera* p_cam) {
@@ -184,6 +200,7 @@ void bat::update(f32 dt, Player* player, camera* p_cam) {
             state = enemy_state::attacking;
             attack_timer += dt;
             if (attack_timer >= attack_cooldown) {
+                player_take_damage(player, 1);
                 attack_timer = 0.0f;
             }
         }
@@ -206,8 +223,11 @@ dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32
     current_health = 2;
     max_health     = 2;
     size           = 150.0f;
+<<<<<<< Updated upstream
     texture_path   = "Assets/Enemy/tile_0005.png";
     food_texture_path = "Assets/Enemy_food/sushi.png";
+=======
+>>>>>>> Stashed changes
 }
 
 void dragon::update(f32 dt, Player* player, camera* p_cam) {

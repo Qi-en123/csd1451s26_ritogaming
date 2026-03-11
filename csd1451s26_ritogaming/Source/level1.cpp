@@ -44,7 +44,7 @@ void level1_load()
 	end_screen_load();
 	if (!load_tile_textures("Assets/Tiles"))
 		next = GS_QUIT; // If tile textures fail to load, quit the game
-		
+	enemy_manager_instance.load_textures();
 	load_puzzle_textures();
 	load_ui_textures(&ui_manager);
 }
@@ -80,6 +80,7 @@ void level1_init()
 	f32 tile_size = 64.f;
 
 	door_triggered = false;
+	is_win = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 	ensure_level_paths_loaded(); //for both puzzles and map tile data
@@ -107,7 +108,6 @@ void level1_init()
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
 	spawn_player_from_map(&player_instance, tile_size);
 	player_instance.stats.character_size = tile_size - 8.0f;
-	enemy_manager_instance.load_textures();
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
@@ -136,16 +136,17 @@ void level1_init()
 	lights.push_back(l2);
 	lights.push_back(l3);
 
-	AEInputShowCursor(true);
+	AEInputShowCursor(false);
 }
 
 void level1_update()
-{
+{	
+	AEInputGetCursorPosition(&mouse_x, &mouse_y);
 	pause_update();
 	if (is_paused) return;
 
 	dt = (f32)AEFrameRateControllerGetFrameTime();
-	AEInputGetCursorPosition(&mouse_x, &mouse_y);
+
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
 
@@ -194,9 +195,9 @@ void level1_draw()
 	minimap_draw(&player_instance, map, TileTextures);
 	//Minimap_DrawWalls(map);
 
-	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
-	pause_draw();
 
+	pause_draw();
+	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 
 void level1_free()

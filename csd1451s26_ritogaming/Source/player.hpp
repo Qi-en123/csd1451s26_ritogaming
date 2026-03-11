@@ -4,11 +4,14 @@
 \par DP email:  c.cheong@digipen.edu
 \
 \co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
-\               Ahmad (10% - projectile for player 2 ; seprated out by claire into different functions)
+\               Ahmad (10% - projectile for player 2 ; separated out by Claire into different functions)
 \
-\brief:		    This header declares the player structure and public
-                functions for player initialization, input handling,
-                updating, rendering, and cleanup using AEEngine.
+\brief:		    Declares the player system structures and functions.
+\               Defines PlayerStats, Character, Projectile, and Particle
+\               structures. Provides interface for player initialization,
+\               input handling, updating, rendering, and resource cleanup.
+\               Supports two characters with different elements, health
+\               tracking, projectile shooting, and particle effects.
 **************************************************************************/
 #pragma once
 

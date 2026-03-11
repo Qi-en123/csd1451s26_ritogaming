@@ -8,12 +8,15 @@
 #include "collision.hpp"
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
+#include "enemy_manager.hpp"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
     _In_ LPWSTR lpCmdLine,
     _In_ int nCmdShow)
 {
+
+    int oldFlag = _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, nullptr);
     AESysSetWindowTitle("Ahmad's Dungeon");
@@ -56,8 +59,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         current = next;
     }
 
- 
+    // Before exiting, manually clean up global objects in correct order
+    enemy_manager_instance.~EnemyManager();  // Call destructor explicitly
 
+    // Now disable the automatic leak check at exit
+    _CrtSetDbgFlag(oldFlag & ~_CRTDBG_LEAK_CHECK_DF);
     AESysExit();
     return 0;
 }

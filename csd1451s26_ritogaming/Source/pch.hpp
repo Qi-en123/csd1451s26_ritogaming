@@ -2,6 +2,7 @@
 \file:          enemy_manager.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
+<<<<<<< Updated upstream
 \brief:         EnemyManager – zone-based spawning, food drops, combat helpers
 \
 \               Zone layout (based on map.cpp):
@@ -16,6 +17,13 @@
 \
 \                boss_room      – Boss room (level 2)
 \                   ? 1 dragon, no respawn
+=======
+\
+\brief:         Precompiled header that includes all core engine headers
+\               and game system headers (enemy, player, camera, map,
+\               collision, renderer, puzzle, ui_manager) for faster
+\               compilation across the project.
+>>>>>>> Stashed changes
 **************************************************************************/
 
 #pragma once

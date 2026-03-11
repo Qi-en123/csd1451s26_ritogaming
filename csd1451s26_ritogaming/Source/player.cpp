@@ -1,21 +1,17 @@
 /*!************************************************************************
 \file:          player.cpp
-\author:        Claire 
+\author:        Claire
 \par DP email:  c.cheong@digipen.edu
 \
 \co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
-\               Ahmad (10% - projectile for player 2 ; seprated out by claire into different functions)
+\               Ahmad (10% - projectile for character 2 ; separated out by Claire into different functions)
 \
-\brief:         Implements the player system using AEEngine.
-
-                Responsibilities of this system:
-                - Manages two switchable player characters
-                - Processes player input and movement
-                - Updates transformation matrices
-                - Renders characters and the active-player indicator
-                - Handles initialization and cleanup of player resources
+\brief:         Implements the player system including character switching,
+\               movement with collision detection, puzzle interaction,
+\               projectile shooting for character 2, and particle effects.
+\               Manages two playable characters with different elements
+\               (WATER and FIRE) and their health systems.
 **************************************************************************/
-
 #include "pch.hpp"
 #include "utils.hpp"
 #include <crtdbg.h>

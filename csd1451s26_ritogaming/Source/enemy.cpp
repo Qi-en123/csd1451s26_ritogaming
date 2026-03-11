@@ -2,7 +2,6 @@
 \file:          enemy.cpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-\brief:
 **************************************************************************/
 
 #include "pch.hpp"
@@ -62,7 +61,6 @@ base_enemy::base_enemy(f32 start_x, f32 start_y)
     state(enemy_state::idle), active(true),
     visible_to_player(false), collision_radius(15.0f),
     sight_range(300.0f),
-    texture_path(nullptr), food_texture_path(nullptr),
     texture (nullptr), food_texture (nullptr)
 {
 }
@@ -79,15 +77,11 @@ void base_enemy::take_damage(int amount) {
     }
 }
 
-bool base_enemy::is_in_camera_view(camera* cam) const {
-    if (!cam) return false;
 
     extern f32 zoom;
     f32 hw = (AEGfxGetWindowWidth() / 2.0f) / zoom;
     f32 hh = (AEGfxGetWindowHeight() / 2.0f) / zoom;
 
-    return (x > cam->pos.x - hw - size &&  x < cam->pos.x + hw + size &&
-            y > cam->pos.y - hh - size && y < cam->pos.y + hh + size);
 }
 
 bool base_enemy::collides_with_player(Player* player) const {
@@ -109,7 +103,6 @@ f32 base_enemy::distance_to_player(Player* player) const {
 }
 
 // ============================================================================
-// GHOST BOY IMPLEMENTATION
 // ============================================================================
 ghost::ghost(f32 start_x, f32 start_y)
 	: base_enemy(start_x, start_y), hits_from_player(0)
@@ -191,7 +184,6 @@ void bat::update(f32 dt, Player* player, camera* p_cam) {
             state = enemy_state::attacking;
             attack_timer += dt;
             if (attack_timer >= attack_cooldown) {
-                player_take_damage(player, 1); // 1 unit = half a heart
                 attack_timer = 0.0f;
             }
         }

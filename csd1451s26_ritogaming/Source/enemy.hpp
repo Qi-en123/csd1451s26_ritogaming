@@ -2,7 +2,12 @@
 \file:          enemy.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-\brief:         Enemy base class and derived enemy types
+\
+\brief:         Declares enemy classes and movement helper functions.
+\               Contains base_enemy abstract class with common enemy
+\               properties and behaviors. Defines ghost, bat, and dragon
+\               enemy types with their specific movement patterns and
+\               attack behaviors.
 **************************************************************************/
 
 #pragma once
@@ -67,15 +72,15 @@ protected:
     f32 sight_range;
 
     // Graphics
-    const char* texture_path;
     AEGfxTexture* texture;
 
     // Food Drop
-    const char* food_texture_path;
     AEGfxTexture* food_texture;
+    bool food_spawned{ false };
 
 public:
     base_enemy(f32 start_x, f32 start_y);
+<<<<<<< Updated upstream
     virtual ~base_enemy() { unload_textures(); }
 
     // Pure virtual
@@ -93,14 +98,24 @@ public:
     virtual void take_damage(int amount);
 
     // Type identification without an enum � override in derived classes
-    virtual bool is_ghost() const { return false; }
+=======
 
+    virtual ~base_enemy() {}
+
+    virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
+    virtual void take_damage(int amount);
+>>>>>>> Stashed changes
+    virtual bool is_ghost() const { return false; }
     virtual int get_max_health() const { return max_health; }
 
     // Collision & Detection
     bool is_in_camera_view(camera* cam)               const;
     bool collides_with_player(struct Player* player)  const;
     f32  distance_to_player(struct Player* player)    const;
+
+    // Food drop tracking
+    bool has_food_spawned()   const { return food_spawned; }
+    void set_food_spawned(bool val) { food_spawned = val; }
 
     // Getters
     f32         get_x()              const { return x; }
@@ -110,14 +125,17 @@ public:
     enemy_state get_state()          const { return state; }
     bool        is_active()          const { return active; }
 
-    const char* get_texture_path()      const { return texture_path; }
-    const char* get_food_texture_path() const { return food_texture_path; }
     AEGfxTexture* get_texture()           const { return texture; }
     AEGfxTexture* get_food_texture()      const { return food_texture; }
 
     void set_active(bool val) { active = val; }
     void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; }
+<<<<<<< Updated upstream
     void set_food_texture(AEGfxTexture* tex) { food_texture = tex; } // point to manager-owned texture
+=======
+    void set_enemy_texture(AEGfxTexture* tex) { texture = tex; }
+    void set_food_texture(AEGfxTexture* tex) { food_texture = tex; }
+>>>>>>> Stashed changes
 };
 
 // ============================================================================

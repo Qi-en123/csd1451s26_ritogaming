@@ -1,0 +1,17 @@
+Spawns: 3
+
+GHOST  21 3
+GHOST  21 5
+GHOST  21 7
+
+Cross: 3
+
+CROSS 20 3
+CROSS 20 5
+CROSS 20 7
+
+Bats: 3
+
+BAT  7 3
+BAT  7 6
+BAT  7 8

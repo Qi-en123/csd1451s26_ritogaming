@@ -65,11 +65,13 @@ struct Character
     f32 x{}, y{}; // Position
     f32 speed{};  // Movement speed
 
-    AEGfxTexture* texture{}; // Character texture
-    AEMtx33 transform{};     // Transform matrix
+    AEGfxTexture* texture{};      // Character texture
+	AEGfxTexture* dead_texture{}; // Texture to show when character is "dead" (0 health)
+    AEMtx33 transform{};          // Transform matrix
 
     s32 character_id{}; // 1 or 2 for identification
     Element element{};  // Character's element (WATER, FIRE, etc.)
+	bool is_dead{};     // Flag to indicate if character is dead
 };
 
 
@@ -82,7 +84,6 @@ struct Player
 	Character char1{};
 	Character char2{};
 
-	// Pointer to currently active character - EASY REFERENCE!
 	Character* current_player{};
 	s32 current_character{ 1 }; // 1 or 2
 
@@ -121,7 +122,8 @@ extern Player player_instance;
     \param player_ptr Pointer to the player structure to initialize.
     \param config Optional configuration override (uses defaults if nullptr).
 **************************************************************************/
-void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxTexture* char_2_texture);
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, 
+                        AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture);
 
 /**************************************************************************
     \brief

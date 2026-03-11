@@ -27,6 +27,8 @@ f32 totalWorldW2;
 f32 totalWorldH2;
 extern f32 dt;
 
+static AEGfxTexture* skeleton_texture = nullptr;
+
 void level2_load()
 {
 	for (int i = 0; i < NUM_TILE_TYPES; i++)
@@ -43,6 +45,7 @@ void level2_load()
 	}
 	load_puzzle_textures();
     load_ui_textures(&ui_manager);
+    skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
 }
 
 //void level2_initialize()
@@ -131,7 +134,7 @@ void level2_init()
 {
     zoom = 1.0f;
     tile_size = 64.f;
-    player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
+    player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
     player_instance.stats.character_size = tile_size - 4.0f;
 
     // FIX 1: Set player positions to bottom of boss room
@@ -238,4 +241,9 @@ void level2_unload()
 	free_mesh();
 	unload_puzzle_textures();
 	player_system_free(&player_instance);
+
+    if (skeleton_texture) {
+        AEGfxTextureUnload(skeleton_texture);
+        skeleton_texture = nullptr;
+    }
 }

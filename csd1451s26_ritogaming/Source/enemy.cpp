@@ -112,15 +112,20 @@ f32 base_enemy::distance_to_player(Player* player) const {
 // GHOST BOY IMPLEMENTATION
 // ============================================================================
 ghost::ghost(f32 start_x, f32 start_y)
-    : base_enemy(start_x, start_y)
+	: base_enemy(start_x, start_y), hits_from_player(0)
 {
     speed          = 80.0f;
     current_health = 2;
     max_health     = 2;
     size           = 50.0f;
     sight_range    = 400.0f;
-    texture_path   = "Assets/Tiles/tile_0006.png";
-    food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/cream.png";
+    texture_path   = "Assets/Enemy/tile_0006.png";
+    food_texture_path = "Assets/Enemy_food/cream.png";
+}
+void ghost::take_damage(int amount) {
+    if (!active) return;
+    hits_from_player++;
+    base_enemy::take_damage(amount);
 }
 
 void ghost::update(f32 dt, Player* player, camera* p_cam) {
@@ -167,8 +172,8 @@ bat::bat(f32 start_x, f32 start_y)
     max_health     = 2;
     size           = 70.0f;
     sight_range    = 350.0f;
-    texture_path   = "Assets/kenney_pixel-platformer/tile_0025.png";
-    food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/burger.png";
+    texture_path   = "Assets/Enemy/tile_0025.png";
+    food_texture_path = "Assets/Enemy_food/burger.png";
 }
 
 void bat::update(f32 dt, Player* player, camera* p_cam) {
@@ -209,8 +214,8 @@ dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32
     current_health = 2;
     max_health     = 2;
     size           = 150.0f;
-    texture_path   = "Assets/Tiles/tile_0005.png";
-    food_texture_path = "Assets/kenney_pixel-platformer_food_expansion/sushi.png";
+    texture_path   = "Assets/Enemy/tile_0005.png";
+    food_texture_path = "Assets/Enemy_food/sushi.png";
 }
 
 void dragon::update(f32 dt, Player* player, camera* p_cam) {

@@ -1,3 +1,10 @@
+/*!************************************************************************
+\file:          ui_manager.hpp
+\author:        Claire
+\par DP email:  c.cheong@digipen.edu
+\brief:
+**************************************************************************/
+
 #pragma once
 #include "AEEngine.h"
 

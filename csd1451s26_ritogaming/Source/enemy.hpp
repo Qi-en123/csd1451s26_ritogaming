@@ -1,4 +1,4 @@
-/*!************************************************************************
+ï»¿/*!************************************************************************
 \file:          enemy.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
@@ -13,9 +13,9 @@
 #include "AEEngine.h"
 #include "camera.hpp"
 
-constexpr int  player_heart_damage { 50 };
-constexpr f32  food_health_percent { 0.50f };
-constexpr f32  food_lifetime { 10.f };
+constexpr int  player_heart_damage{ 50 };
+constexpr f32  food_health_percent{ 0.50f };
+constexpr f32  food_lifetime{ 10.f };
 
 //------------------------------- Pathfinding --------------------------------
 // Move position (x, y) toward a target, wall-checking along each axis
@@ -26,7 +26,7 @@ void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size, f32 from_x, f32 f
 
 // Compute the next flee position (caller decides whether to apply it)
 void enemy_flee_to_wall(f32 x, f32 y, f32 speed, f32 player_x, f32 player_y, f32 dt,
-                        f32& next_x, f32& next_y);
+    f32& next_x, f32& next_y);
 
 //------------------------------- Enemy State --------------------------------
 enum enemy_state {
@@ -40,7 +40,7 @@ enum enemy_state {
 //------------------------------- Enemy Type --------------------------------
 class base_enemy {
 public:
-    static constexpr int  enemy_max_hp        { 100 };
+    static constexpr int  enemy_max_hp{ 100 };
     static constexpr int  enemy_damage_per_hit{ 50 };
 
 protected:
@@ -52,7 +52,7 @@ protected:
     f32 size;
 
     int current_health;
-	int max_health;
+    int max_health;
 
     f32 attack_cooldown;
     f32 attack_timer;
@@ -76,22 +76,23 @@ protected:
 
 public:
     base_enemy(f32 start_x, f32 start_y);
-    virtual ~base_enemy() = default;
+    virtual ~base_enemy() { unload_textures(); }
 
     // Pure virtual
     virtual void load_textures() {
-        if (texture_path && !texture)                texture = AEGfxTextureLoad(texture_path);
-        if (food_texture_path && !food_texture) food_texture = AEGfxTextureLoad(food_texture_path);
+        if (texture_path && !texture) texture = AEGfxTextureLoad(texture_path);
+        // food_texture is intentionally not loaded here â€” owned by EnemyManager
     }
 
     virtual void unload_textures() {
-        if (texture) { AEGfxTextureUnload(texture);                texture = nullptr; }
-        if (food_texture) { AEGfxTextureUnload(food_texture); food_texture = nullptr; }
+        if (texture) { AEGfxTextureUnload(texture); texture = nullptr; }
+        // food_texture is NOT unloaded here â€” it is owned and managed by EnemyManager
+        food_texture = nullptr;
     }
     virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
     virtual void take_damage(int amount);
 
-    // Type identification without an enum – override in derived classes
+    // Type identification without an enum ï¿½ override in derived classes
     virtual bool is_ghost() const { return false; }
 
     virtual int get_max_health() const { return max_health; }
@@ -114,25 +115,29 @@ public:
     AEGfxTexture* get_texture()           const { return texture; }
     AEGfxTexture* get_food_texture()      const { return food_texture; }
 
-    void set_active(bool val)               { active = val; }
-    void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; } 
+    void set_active(bool val) { active = val; }
+    void set_position(f32 new_x, f32 new_y) { x = new_x; y = new_y; }
+    void set_food_texture(AEGfxTexture* tex) { food_texture = tex; } // point to manager-owned texture
 };
 
 // ============================================================================
-// GHOST BOY  –  flees the moment it enters the player's camera view
+// GHOST BOY    flees the moment it enters the player's camera view
 // ============================================================================
 class ghost : public base_enemy
 {
+    int hits_from_player;
 public:
     ghost(f32 start_x, f32 start_y);
     ~ghost() override = default;
 
     void update(f32 dt, struct Player* player, camera* cam) override;
+    void take_damage(int amount) override;
     bool is_ghost() const override { return true; }
+    int get_hits_from_player() const { return hits_from_player; }
 };
 
 // ============================================================================
-// BAT  –  chases and attacks the player; optional to defeat
+// BAT    chases and attacks the player; optional to defeat
 // ============================================================================
 class bat : public base_enemy
 {
@@ -144,7 +149,7 @@ public:
 };
 
 // ============================================================================
-// DRAGON (Boss)  –  chases the player within fixed room boundaries
+// DRAGON (Boss)   chases the player within fixed room boundaries
 // ============================================================================
 class dragon : public base_enemy
 {

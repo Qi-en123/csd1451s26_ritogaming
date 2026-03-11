@@ -10,6 +10,51 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Source\boss.cpp" />
+    <ClCompile Include="..\Source\camera.cpp" />
+    <ClCompile Include="..\Source\collision.cpp" />
+    <ClCompile Include="..\Source\credit.cpp" />
+    <ClCompile Include="..\Source\enemy.cpp" />
+    <ClCompile Include="..\Source\enemy_manager.cpp" />
+    <ClCompile Include="..\Source\game_state_manager.cpp" />
+    <ClCompile Include="..\Source\level1.cpp" />
+    <ClCompile Include="..\Source\level2.cpp" />
+    <ClCompile Include="..\Source\level_editor.cpp" />
+    <ClCompile Include="..\Source\Main.cpp" />
+    <ClCompile Include="..\Source\mainmenu.cpp" />
+    <ClCompile Include="..\Source\map.cpp" />
+    <ClCompile Include="..\Source\Minimap.cpp" />
+    <ClCompile Include="..\Source\opening.cpp" />
+    <ClCompile Include="..\Source\player.cpp" />
+    <ClCompile Include="..\Source\puzzle.cpp" />
+    <ClCompile Include="..\Source\renderer.cpp" />
+    <ClCompile Include="..\Source\ui_manager.cpp" />
+    <ClCompile Include="..\Source\utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Source\camera.hpp" />
+    <ClInclude Include="..\Source\collision.hpp" />
+    <ClInclude Include="..\Source\collision_config.hpp" />
+    <ClInclude Include="..\Source\credit.hpp" />
+    <ClInclude Include="..\Source\enemy.hpp" />
+    <ClInclude Include="..\Source\enemy_manager.hpp" />
+    <ClInclude Include="..\Source\game_state_list.hpp" />
+    <ClInclude Include="..\Source\game_state_manager.hpp" />
+    <ClInclude Include="..\Source\level1.hpp" />
+    <ClInclude Include="..\Source\level2.hpp" />
+    <ClInclude Include="..\Source\level_editor.hpp" />
+    <ClInclude Include="..\Source\mainmenu.hpp" />
+    <ClInclude Include="..\Source\map.hpp" />
+    <ClInclude Include="..\Source\Minimap.hpp" />
+    <ClInclude Include="..\Source\opening.hpp" />
+    <ClInclude Include="..\Source\pch.hpp" />
+    <ClInclude Include="..\Source\player.hpp" />
+    <ClInclude Include="..\Source\puzzle.hpp" />
+    <ClInclude Include="..\Source\renderer.hpp" />
+    <ClInclude Include="..\Source\ui_manager.hpp" />
+    <ClInclude Include="..\Source\utils.hpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -95,49 +140,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\Alpha_Engine.dll" "$(OutDir)" /s /r 
 xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\Source\camera.cpp" />
-    <ClCompile Include="..\Source\collision.cpp" />
-    <ClCompile Include="..\Source\credit.cpp" />
-    <ClCompile Include="..\Source\enemy.cpp" />
-    <ClCompile Include="..\Source\enemy_manager.cpp" />
-    <ClCompile Include="..\Source\game_state_manager.cpp" />
-    <ClCompile Include="..\Source\level1.cpp" />
-    <ClCompile Include="..\Source\level2.cpp" />
-    <ClCompile Include="..\Source\level_editor.cpp" />
-    <ClCompile Include="..\Source\main.cpp" />
-    <ClCompile Include="..\Source\mainmenu.cpp" />
-    <ClCompile Include="..\Source\map.cpp" />
-    <ClCompile Include="..\Source\opening.cpp" />
-    <ClCompile Include="..\Source\minimap.cpp" />
-    <ClCompile Include="..\Source\player.cpp" />
-    <ClCompile Include="..\Source\puzzle.cpp" />
-    <ClCompile Include="..\Source\renderer.cpp" />
-    <ClCompile Include="..\Source\utils.cpp" />
-    <ClCompile Include="..\Source\ui_manager.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\Source\camera.hpp" />
-    <ClInclude Include="..\Source\collision.hpp" />
-    <ClInclude Include="..\Source\credit.hpp" />
-    <ClInclude Include="..\Source\enemy.hpp" />
-    <ClInclude Include="..\Source\enemy_manager.hpp" />
-    <ClInclude Include="..\Source\game_state_list.hpp" />
-    <ClInclude Include="..\Source\game_state_manager.hpp" />
-    <ClInclude Include="..\Source\level1.hpp" />
-    <ClInclude Include="..\Source\level2.hpp" />
-    <ClInclude Include="..\Source\level_editor.hpp" />
-    <ClInclude Include="..\Source\mainmenu.hpp" />
-    <ClInclude Include="..\Source\map.hpp" />
-    <ClInclude Include="..\Source\opening.hpp" />
-    <ClInclude Include="..\Source\pch.hpp" />
-    <ClInclude Include="..\Source\minimap.hpp" />
-    <ClInclude Include="..\Source\player.hpp" />
-    <ClInclude Include="..\Source\puzzle.hpp" />
-    <ClInclude Include="..\Source\renderer.hpp" />
-    <ClInclude Include="..\Source\ui_manager.hpp" />
-    <ClInclude Include="..\Source\utils.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

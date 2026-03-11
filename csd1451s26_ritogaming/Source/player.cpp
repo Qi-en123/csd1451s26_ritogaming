@@ -58,7 +58,8 @@ static void player_system_update_transforms(Player* player_ptr)
 }
 
 
-void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxTexture* char_2_texture)
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture,
+                        AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture)
 {
     if (!player_ptr)
         return;
@@ -83,6 +84,12 @@ void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxT
     player_ptr->current_player = &player_ptr->char1;
     player_ptr->current_character = 1;
 
+    // 
+    player_ptr->char1.dead_texture = dead_texture;
+    player_ptr->char2.dead_texture = dead_texture;
+    player_ptr->char1.is_dead = false;
+    player_ptr->char2.is_dead = false;
+
     // Precompute scale and rotation matrices
     AEMtx33Scale(&player_ptr->character_scale, player_ptr->stats.character_size, player_ptr->stats.character_size);
     AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->stats.triangle_size, player_ptr->stats.triangle_size);
@@ -102,12 +109,12 @@ static void player_handle_character_switch(Player* player_ptr)
     if (!player_ptr)
         return;
 
-    if (AEInputCheckTriggered(AEVK_1))
+    if (AEInputCheckTriggered(AEVK_1) && !player_ptr->char1.is_dead)
     {
         player_ptr->current_player = &player_ptr->char1;
         player_ptr->current_character = 1;
     }
-    if (AEInputCheckTriggered(AEVK_2))
+    if (AEInputCheckTriggered(AEVK_2) && !player_ptr->char2.is_dead)
     {
         player_ptr->current_player = &player_ptr->char2;
         player_ptr->current_character = 2;
@@ -117,8 +124,8 @@ static void player_handle_character_switch(Player* player_ptr)
 
 static void player_handle_movement(Player* player_ptr)
 {
-    if (!player_ptr || !player_ptr->current_player)
-        return;
+    if (!player_ptr || !player_ptr->current_player) return;
+    if (player_ptr->current_player->is_dead) return;
 
     f32* move_x = &player_ptr->current_player->x;
     f32* move_y = &player_ptr->current_player->y;
@@ -241,7 +248,9 @@ void player_handle_shooting(Player* player_ptr, f32 dt)
     }
 
     // Only character 2 can shoot
-    if (player_ptr->current_character == 2 && AEInputCheckTriggered(AEVK_LBUTTON)
+    if (player_ptr->current_character == 2 
+		&& !player_ptr->char2.is_dead
+        && AEInputCheckTriggered(AEVK_LBUTTON)
         && player_ptr->fireball_count > 0)
     {
 
@@ -352,7 +361,7 @@ void player_update_projectiles(Player* player_ptr, f32 dt)
         {
             p.active = false;
         }
-        //
+        
         if (p.active && enemy_manager_instance.check_projectile_hit(p.x, p.y, p.radius, DAMAGE)) {
             p.active = false; // Destroy fireball on hit
         }
@@ -416,12 +425,18 @@ void player_system_render(Player* player_ptr)
     player_render_fireball_count(player_ptr);
 
     // Draw Character 1
+    AEGfxTexture* tex1 = player_ptr->char1.is_dead? player_ptr->char1.dead_texture                                    
+                                                  : player_ptr->char1.texture;
     render_sprite(rect_mesh_center, player_ptr->char1.x, player_ptr->char1.y,
-        player_ptr->stats.character_size, player_ptr->stats.character_size, player_ptr->char1.texture);
+                  player_ptr->stats.character_size, 
+                  player_ptr->stats.character_size, tex1);
 
     // Draw Character 2
+    AEGfxTexture* tex2 = player_ptr->char2.is_dead? player_ptr->char2.dead_texture
+                                                  : player_ptr->char2.texture;
     render_sprite(rect_mesh_center, player_ptr->char2.x, player_ptr->char2.y,
-        player_ptr->stats.character_size, player_ptr->stats.character_size, player_ptr->char2.texture);
+                  player_ptr->stats.character_size,
+                  player_ptr->stats.character_size, tex2);
 
     // Render projectiles
     player_render_projectiles(player_ptr);
@@ -491,6 +506,12 @@ void player_take_damage(Player* player_ptr, int damage)
     // If selected character is dead, switch to the other one if they're alive
     if (*curr_hp <= 0)
     {
+        if (player_ptr->current_character == 1)     
+            player_ptr->char1.is_dead = true;        
+        else                                         
+            player_ptr->char2.is_dead = true;
+
+		// Auto-switch to the other character if not dead
         if (player_ptr->current_character == 1 && player_ptr->stats.char2_curr_health > 0)
         {
             player_ptr->current_character = 2;
@@ -501,7 +522,6 @@ void player_take_damage(Player* player_ptr, int damage)
             player_ptr->current_character = 1;
             player_ptr->current_player = &player_ptr->char1;
         }
-        // both are 0 ? player_is_dead() will return true, handle game over elsewhere
     }
 }
 

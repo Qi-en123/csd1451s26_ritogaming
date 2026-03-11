@@ -2,25 +2,35 @@
 \file:          enemy_manager.cpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-\co-authour  :  Jerod (5% - projectile function)
-\
-\brief:         EnemyManager – zone-based spawning, food drops, combat helpers
-\               Zone layout (based on map.cpp):
-\
-\               tutorial_area  – Player Room 2 (rows 18-26, cols 2-9)
-\                   + vertical corridor (rows 11-17, cols 4-7)
-\                   → 8 ghost boys, respawn after RESPAWN_DELAY
-\
-\               combat_area    – Player Room 1 (rows 3-10, cols 2-9)
-\                   + horizontal corridor (row 7, cols 9-24)
-\                   → 5 bats, respawn after RESPAWN_DELAY
-\
-\                boss_room      – Boss room (level 2)
-\                   → 1 dragon, no respawn
+\co-author:     Jerod (5% - projectile function)
+
+\brief
+        EnemyManager handles enemy-related systems including spawning, updating,
+        rendering, food drops, respawning, and combat interactions. The manager
+        controls enemy population based on the current game zone and ensures
+        enemies respawn at their assigned spawn locations when defeated.
+
+        Zone layout (based on map.cpp):
+
+        tutorial_area
+            Player Room 2 (rows 18–26, cols 2–9)
+            + vertical corridor (rows 11–17, cols 4–7)
+            → 8 ghosts that respawn after RESPAWN_DELAY
+
+        combat_area
+            Player Room 1 (rows 3–10, cols 2–9)
+            + horizontal corridor (row 7, cols 9–24)
+            → 5 bats that respawn after RESPAWN_DELAY
+
+        boss_room
+            Boss room (level 2)
+            → 1 dragon boss, does not respawn
 **************************************************************************/
 
 #include "pch.hpp"
-#include <cstdlib> // rand()
+#include <cstdlib>// rand()
+#include <cmath>
+#include <string>
 
 EnemyManager enemy_manager_instance;
 
@@ -39,35 +49,64 @@ static AEVec2 tile_spot(s32 row, s32 col)
 }
 
 // ============================================================================
-// SPAWN POOLS
-//   Ghosts – scattered across bottom area + corridors
-//   Bats   – scattered across upper room + horizontal corridor
+// LOAD SPAWN POSITIONS FROM FILE
 // ============================================================================
-static const AEVec2 ghost_spawn_pool[NUM_GHOST_SLOTS] =
+void EnemyManager::load_spawn_positions(const char* filename)
 {
-    tile_spot(22, 5),  
-    tile_spot(20, 4),  
-    tile_spot(24, 7),  
-    tile_spot(20, 8),  
-    tile_spot(24, 3),  
-    tile_spot(23, 6),  
-    tile_spot(16, 5),  
-    tile_spot(14, 6),
-};
+    FILE* fp = nullptr;
+    fopen_s(&fp, filename, "r");
+    if (!fp)
+    {
+        printf("[EnemyManager] Failed to open spawn file: %s\n", filename);
+        return;
+    }
 
-static const AEVec2 bat_spawn_pool[NUM_BAT_SLOTS] =
-{
-    tile_spot(8, 3),  
-    tile_spot(8, 8),   
-    tile_spot(5, 7),   
-    tile_spot(12, 5),  
-    tile_spot(15, 5),  
-};
+    int ghost_count = 0;
+    int bat_count = 0;
+    int cross_count = 0;
+    char token[32];
 
+    while (fscanf_s(fp, "%31s", token, (unsigned)sizeof(token)) == 1)
+    {
+        if (strcmp(token, "GHOST") == 0)
+        {
+            int row, col;
+            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && ghost_count < NUM_GHOST_SLOTS)
+            {
+                ghost_spawn_positions[ghost_count] = tile_spot(row, col);
+                ++ghost_count;
+            }
+        }
+        else if (strcmp(token, "BAT") == 0)
+        {
+            int row, col;
+            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && bat_count < NUM_BAT_SLOTS)
+            {
+                bat_spawn_positions[bat_count] = tile_spot(row, col);
+                ++bat_count;
+            }
+        }
+        else if (strcmp(token, "CROSS") == 0)
+        {
+            int row, col;
+            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && cross_count < NUM_CROSS_MARKERS)
+            {
+                cross_positions[cross_count] = tile_spot(row, col);
+                ++cross_count;
+            }
+        }
+        // Skip section headers: "Spawns:", "Cross:", "Bats:" and their counts
+    }
+
+    fclose(fp);
+    printf("[EnemyManager] Loaded %d ghost, %d bat, %d cross positions from %s\n",
+        ghost_count, bat_count, cross_count, filename);
+    spawn_positions_loaded = true;
+}
 
 /**************************************************************************/
 /*!
-  Updates the player system each frame.
+  Updates projectiles each frame (called from level update).
 */
 /**************************************************************************/
 void entity_system_update(Player* player_ptr, EnemyManager* enem)
@@ -84,17 +123,18 @@ void entity_system_update(Player* player_ptr, EnemyManager* enem)
 // ============================================================================
 // CONSTRUCTOR / DESTRUCTOR
 // ============================================================================
-EnemyManager::EnemyManager() :ghost_slots{}, bat_slots{} {
-    ghost_food_tex  = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
-    bat_food_tex    = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/burger.png");
-    dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
-}
+EnemyManager::EnemyManager() :ghost_slots{}, bat_slots{},
+ghost_spawn_positions{}, bat_spawn_positions{}, cross_positions{}
+{}
 
 EnemyManager::~EnemyManager() {
     clear_all();
-    if (ghost_food_tex)  AEGfxTextureUnload(ghost_food_tex);
-    if (bat_food_tex)    AEGfxTextureUnload(bat_food_tex);
-    if (dragon_food_tex) AEGfxTextureUnload(dragon_food_tex);
+    if (ghost_food_tex)   AEGfxTextureUnload(ghost_food_tex);
+    if (bat_food_tex)     AEGfxTextureUnload(bat_food_tex);
+    if (dragon_food_tex)  AEGfxTextureUnload(dragon_food_tex);
+    if (cross_tex)        AEGfxTextureUnload(cross_tex);
+    if (ghost_marker_tex) AEGfxTextureUnload(ghost_marker_tex);
+    if (bat_marker_tex)   AEGfxTextureUnload(bat_marker_tex);
 }
 
 // ============================================================================
@@ -102,15 +142,46 @@ EnemyManager::~EnemyManager() {
 // ============================================================================
 void EnemyManager::initialize_tutorial_area()
 {
+    // Load food textures (AEEngine is ready at this point)
+    if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Enemy_food/cream.png");
+    if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Enemy_food/burger.png");
+    if (!dragon_food_tex) dragon_food_tex = AEGfxTextureLoad("Assets/Enemy_food/sushi.png");
+
+    // Load spawn marker textures
+    if (!cross_tex)        cross_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0064.png");
+    if (!ghost_marker_tex) ghost_marker_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0066.png");
+    if (!bat_marker_tex)   bat_marker_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0126.png");
+
+    // Load all spawn positions (ghosts, bats, crosses) from file
+    load_spawn_positions("Assets/Enemy_spawn_location/Enemy_spawning_coordinates.txt");
+
+    // Spawn ghosts at their fixed positions
     for (int i = 0; i < NUM_GHOST_SLOTS; ++i)
     {
         ghost_slots[i] = { nullptr, 0.0f };
         spawn_ghost_at_slot(i);
     }
+
+    // Spawn bats at their fixed positions
+    for (int i = 0; i < NUM_BAT_SLOTS; ++i)
+    {
+        bat_slots[i] = { nullptr, 0.0f };
+        spawn_bat_at_slot(i);
+    }
 }
 
 void EnemyManager::initialize_combat_area()
 {
+    // Load food and marker textures if not already loaded
+    if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Enemy_food/cream.png");
+    if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Enemy_food/burger.png");
+    if (!dragon_food_tex) dragon_food_tex = AEGfxTextureLoad("Assets/Enemy_food/sushi.png");
+    if (!cross_tex)        cross_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0064.png");
+    if (!ghost_marker_tex) ghost_marker_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0066.png");
+    if (!bat_marker_tex)   bat_marker_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0126.png");
+
+    load_spawn_positions("Assets/Enemy_spawn_location/Enemy_spawning_coordinates.txt");
+
     for (int i = 0; i < NUM_BAT_SLOTS; ++i)
     {
         bat_slots[i] = { nullptr, 0.0f };
@@ -121,13 +192,14 @@ void EnemyManager::initialize_combat_area()
 // ============================================================================
 // UPDATE AND RENDER
 // ============================================================================
-void EnemyManager::update(f32 dt, Player * player, camera * p_cam){
+void EnemyManager::update(f32 dt, Player* player, camera* p_cam) {
 
     for (auto& enemy : enemies)
         if (enemy && enemy->is_active())
             enemy->update(dt, player, p_cam);
 
     update_food(dt, player);
+    update_respawn_particles(dt);
 
     if (current_zone == tutorial_area || current_zone == combat_area)
     {
@@ -152,11 +224,46 @@ void EnemyManager::update(f32 dt, Player * player, camera * p_cam){
 }
 
 void EnemyManager::render() {
+    render_spawn_markers();  // Always draw cross markers under enemies
+
     for (auto& enemy : enemies)
         if (enemy->is_active())
             render_enemy(enemy.get());
-        
+
     render_food();
+    render_respawn_particles();
+}
+
+void EnemyManager::render_spawn_markers()
+{
+    if (!spawn_positions_loaded) return;
+
+    // Draw ghost icon at each GHOST spawn position
+    if (ghost_marker_tex)
+    {
+        for (int i = 0; i < NUM_GHOST_SLOTS; ++i)
+            render_sprite(rect_mesh_center,
+                ghost_spawn_positions[i].x, ghost_spawn_positions[i].y,
+                64.0f, 64.0f, ghost_marker_tex);
+    }
+
+    // Draw cross marker at each CROSS position
+    if (cross_tex)
+    {
+        for (int i = 0; i < NUM_CROSS_MARKERS; ++i)
+            render_sprite(rect_mesh_center,
+                cross_positions[i].x, cross_positions[i].y,
+                64.0f, 64.0f, cross_tex);
+    }
+
+    // Draw tree icon at each BAT spawn position
+    if (bat_marker_tex)
+    {
+        for (int i = 0; i < NUM_BAT_SLOTS; ++i)
+            render_sprite(rect_mesh_center,
+                bat_spawn_positions[i].x, bat_spawn_positions[i].y,
+                64.0f, 64.0f, bat_marker_tex);
+    }
 }
 
 void EnemyManager::render_enemy(base_enemy* e) {
@@ -170,15 +277,14 @@ void EnemyManager::render_enemy(base_enemy* e) {
 // ============================================================================
 void EnemyManager::spawn_ghost_at_slot(int slot_index) {
 
-    if (ghost_slots[slot_index].enemy != nullptr) 
-        return; 
-    
-    // Create a new ghost
-    s32    pool_idx = rand() % NUM_GHOST_SLOTS;
-    AEVec2 pos      = ghost_spawn_pool[pool_idx];
+    if (ghost_slots[slot_index].enemy != nullptr)
+        return;
+
+    AEVec2 pos = ghost_spawn_positions[slot_index];
 
     auto g = std::make_unique<ghost>(pos.x, pos.y);
     g->load_textures();
+    g->set_food_texture(ghost_food_tex); // use manager-owned texture to avoid dangling ptr on death
     ghost_slots[slot_index].enemy = g.get();
     enemies.push_back(std::move(g));
 }
@@ -186,25 +292,87 @@ void EnemyManager::spawn_ghost_at_slot(int slot_index) {
 void EnemyManager::spawn_bat_at_slot(int slot_index) {
     if (bat_slots[slot_index].enemy != nullptr) return;
 
-    s32    pool_idx = rand() % NUM_BAT_SLOTS;
-    AEVec2 pos = bat_spawn_pool[pool_idx];
+    AEVec2 pos = bat_spawn_positions[slot_index];
 
     auto b = std::make_unique<bat>(pos.x, pos.y);
     b->load_textures();
+    b->set_food_texture(bat_food_tex); // use manager-owned texture to avoid dangling ptr on death
     bat_slots[slot_index].enemy = b.get();
     enemies.push_back(std::move(b));
 }
 
 void EnemyManager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom) {
-    // Check if a dragon already exists
     for (auto& enemy : enemies)
         if (enemy && enemy->get_state() != dead && dynamic_cast<dragon*>(enemy.get()) != nullptr)
             return;
 
     auto d = std::make_unique<dragon>(x, y, r_left, r_right, r_top, r_bottom);
     d->load_textures();
+    d->set_food_texture(dragon_food_tex); // use manager-owned texture to avoid dangling ptr on death
     enemies.push_back(std::move(d));
 }
+// ============================================================================
+// RESPAWN PARTICLE EFFECTS
+//   Burst of particles at the spawn point just before an enemy reappears.
+//   Reuses the same Particle struct from player.hpp — no new types needed.
+// ============================================================================
+void EnemyManager::spawn_respawn_particles(f32 x, f32 y)
+{
+    constexpr int BURST = 20;  // number of particles per respawn
+
+    for (int i = 0; i < BURST; ++i)
+    {
+        Particle p;
+        p.x = x;
+        p.y = y;
+
+        // Random outward burst using AERandFloat() (same helper player uses)
+        f32 angle = AERandFloat() * 2.0f * 3.14159f;
+        f32 speed = 30.0f + AERandFloat() * 80.0f;
+        p.vx = AECos(angle) * speed;
+        p.vy = AESin(angle) * speed + 40.0f; // slight upward bias
+
+        p.maxLife = 0.4f + AERandFloat() * 0.4f; // 0.4 – 0.8 s
+        p.life = p.maxLife;
+        p.size = 4.0f + AERandFloat() * 6.0f;
+        p.active = true;
+
+        respawn_particles.push_back(p);
+    }
+}
+
+void EnemyManager::update_respawn_particles(f32 dt)
+{
+    for (size_t i = 0; i < respawn_particles.size(); ++i)
+    {
+        Particle& p = respawn_particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy -= 120.0f * dt; // gravity pulls particles down
+        p.life -= dt;
+
+        if (p.life <= 0.0f)
+        {
+            respawn_particles.erase(respawn_particles.begin() + i);
+            --i;
+        }
+    }
+}
+
+void EnemyManager::render_respawn_particles()
+{
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+
+    for (const auto& p : respawn_particles)
+    {
+        f32 alpha = p.life / p.maxLife;  // fade out over lifetime
+
+        // Purple / blue-white swirl to signal a respawn
+        AEGfxSetColorToMultiply(0.6f + 0.4f * alpha, 0.3f, 1.0f, alpha);
+        draw_circle(p.x, p.y, p.size * alpha, p.size * alpha);
+    }
+}
+
 // ============================================================================
 // FOOD SYSTEM
 // ============================================================================
@@ -212,7 +380,7 @@ void EnemyManager::spawn_food(f32 x, f32 y, AEGfxTexture* texture) {
     food_drop food{};
     food.x = x;
     food.y = y;
-    food.size = 20.0f;
+    food.size = 50.0f;
     food.lifetime = FOOD_LIFTIME;
     food.active = true;
     food.texture = texture;
@@ -222,6 +390,9 @@ void EnemyManager::spawn_food(f32 x, f32 y, AEGfxTexture* texture) {
 void EnemyManager::update_food(f32 dt, Player* player) {
     for (auto& food : food_drops) {
         if (!food.active) continue;
+
+        printf("Food active at (%.2f, %.2f), lifetime: %.2f\n",
+            food.x, food.y, food.lifetime);
 
         // Decrease lifetime
         food.lifetime -= dt;
@@ -238,10 +409,10 @@ void EnemyManager::update_food(f32 dt, Player* player) {
         if (dist < (food.size + player->stats.character_size / 2.0f)) {
             if (player->current_character == 1)
             {
-                player->stats.char1_curr_health = (int) AEMin((f32) player->stats.char1_curr_health + 1, (f32) player->stats.char1_max_health);
+                player->stats.char1_curr_health = (int)AEMin((f32)player->stats.char1_curr_health + 1, (f32)player->stats.char1_max_health);
             }
             else
-                player->stats.char2_curr_health = (int) AEMin((f32) player->stats.char2_curr_health + 1, (f32) player->stats.char2_max_health);
+                player->stats.char2_curr_health = (int)AEMin((f32)player->stats.char2_curr_health + 1, (f32)player->stats.char2_max_health);
 
             food.active = false;
         }
@@ -256,9 +427,16 @@ void EnemyManager::update_food(f32 dt, Player* player) {
 }
 
 void EnemyManager::render_food() {
-    for (const auto& food : food_drops) 
-        if (food.active && food.texture) 
-            render_sprite(rect_mesh_center, food.x, food.y, food.size, food.size, food.texture);
+
+    for (const auto& food : food_drops) {
+        if (!food.active || !food.texture) {
+            printf("Food inactive or no texture\n");
+            continue;
+        }
+
+        // Draw food
+        render_sprite(rect_mesh_center, food.x, food.y, food.size, food.size, food.texture);
+    }
 }
 
 // ============================================================================
@@ -295,19 +473,21 @@ bool EnemyManager::check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage)
 // CLEANUP AND MAINTENANCE
 // ============================================================================
 void EnemyManager::cleanup_dead_enemies() {
-    for (auto& enemy : enemies)
-    {
+    for (auto& enemy : enemies) {
         if (!enemy || enemy->get_state() != dead) continue;
 
-        spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        if (enemy->is_ghost()) {
+            ghost* g = static_cast<ghost*>(enemy.get());
+            if (g->get_hits_from_player() > 0)
+                spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        }
+        else
+            spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
 
         // Release ghost slot → respawns at a random pool position after delay
-        if (enemy->is_ghost())
-        {
-            for (int i = 0; i < NUM_GHOST_SLOTS; ++i)
-            {
-                if (ghost_slots[i].enemy == enemy.get())
-                {
+        if (enemy->is_ghost()) {
+            for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
+                if (ghost_slots[i].enemy == enemy.get()) {
                     ghost_slots[i].enemy = nullptr;
                     ghost_slots[i].respawn_timer = RESPAWN_DELAY;
                     break;
@@ -316,12 +496,9 @@ void EnemyManager::cleanup_dead_enemies() {
         }
 
         // Release bat slot → respawns at a random pool position after delay
-        if (dynamic_cast<bat*>(enemy.get()))
-        {
-            for (int i = 0; i < NUM_BAT_SLOTS; ++i)
-            {
-                if (bat_slots[i].enemy == enemy.get())
-                {
+        if (dynamic_cast<bat*>(enemy.get())) {
+            for (int i = 0; i < NUM_BAT_SLOTS; ++i) {
+                if (bat_slots[i].enemy == enemy.get()) {
                     bat_slots[i].enemy = nullptr;
                     bat_slots[i].respawn_timer = RESPAWN_DELAY;
                     break;
@@ -335,12 +512,13 @@ void EnemyManager::cleanup_dead_enemies() {
         enemies.end());
 }
 
+
 void EnemyManager::maintain_ghost_population() {
-    // Only respawn ONE ghost at a time whose timer has expired
     for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
         if (ghost_slots[i].enemy == nullptr && ghost_slots[i].respawn_timer <= 0.f) {
+            spawn_respawn_particles(ghost_spawn_positions[i].x, ghost_spawn_positions[i].y);
             spawn_ghost_at_slot(i);
-            return; // Only spawn one ghost per check, creating staggered respawns
+            return;
         }
     }
 }
@@ -348,8 +526,9 @@ void EnemyManager::maintain_ghost_population() {
 void EnemyManager::maintain_bat_population() {
     for (int i = 0; i < NUM_BAT_SLOTS; ++i) {
         if (bat_slots[i].enemy == nullptr && bat_slots[i].respawn_timer <= 0.f) {
+            spawn_respawn_particles(bat_spawn_positions[i].x, bat_spawn_positions[i].y);
             spawn_bat_at_slot(i);
-            return; // Only spawn one bat per check, creating staggered respawns
+            return;
         }
     }
 }
@@ -382,6 +561,7 @@ void EnemyManager::clear_all()
 {
     enemies.clear();
     food_drops.clear();
+    respawn_particles.clear();
 
     for (int i = 0; i < NUM_GHOST_SLOTS; ++i)
         ghost_slots[i] = { nullptr, 0.0f };
@@ -392,6 +572,7 @@ void EnemyManager::clear_all()
     spawn_check_timer = 0.0f;
     enemies_defeated = 0;
     boss_room_entered = false;
+    spawn_positions_loaded = false;
 }
 
 //// ============================================================================

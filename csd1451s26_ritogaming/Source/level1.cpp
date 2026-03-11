@@ -29,6 +29,7 @@ update game logic, render, free resources
 	f32 totalWorldW;
 	f32 totalWorldH;
 	f32 dt;
+	static AEGfxTexture* skeleton_texture = nullptr;
 
 void level1_load()
 {
@@ -37,6 +38,7 @@ void level1_load()
 		
 	load_puzzle_textures();
 	load_ui_textures(&ui_manager);
+	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
 }
 
 //void level1_initialize()
@@ -70,7 +72,7 @@ void level1_init()
 	zoom = 1.1f;
 
 	tile_size = 64.f;
-	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
+	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
 	player_instance.stats.character_size = tile_size - 8.0f;
 
 	// Camera follows the active character via the pointer
@@ -168,4 +170,9 @@ void level1_unload()
 	//free_mesh();
 	minimap_unload();
 	unload_puzzle_textures();
+
+	if (skeleton_texture) {                                
+		AEGfxTextureUnload(skeleton_texture);              
+		skeleton_texture = nullptr;                         
+	}
 }

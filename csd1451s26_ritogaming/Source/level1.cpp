@@ -19,6 +19,10 @@ update game logic, render, free resources
 #include "utils.hpp"
 #include "ui_manager.hpp"
 #include "minimap.hpp"
+#include "audio_manager.hpp"
+#include "end_screen.hpp"
+#include "mainmenu.hpp"
+
 #include "levels.hpp"
 
 #define NUM_TILE_TYPES 10
@@ -29,11 +33,18 @@ update game logic, render, free resources
 	f32 totalWorldW;
 	f32 totalWorldH;
 	f32 dt;
+	
+	namespace {
+		s32 mouse_x, mouse_y;       
+		bool cursor_active = false; 
+	}
+
 void level1_load()
 {
+	end_screen_load();
 	if (!load_tile_textures("Assets/Tiles"))
 		next = GS_QUIT; // If tile textures fail to load, quit the game
-		
+	enemy_manager_instance.load_textures();
 	load_puzzle_textures();
 	load_ui_textures(&ui_manager);
 }
@@ -65,9 +76,11 @@ void level1_load()
 //}
 void level1_init()
 {
+	AEInputShowCursor(false);
 	f32 tile_size = 64.f;
 
 	door_triggered = false;
+	is_win = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 	ensure_level_paths_loaded(); //for both puzzles and map tile data
@@ -77,15 +90,12 @@ void level1_init()
 	printf("level_puzzles size: %d, current_level_index: %s\n",
 		(int)level_puzzle_paths.size(), selected_level_puzzle_path.c_str());
 
-	if (selected_level_path.empty() ||
-		selected_level_puzzle_path.empty()) {
-		initialize_dungeon_map(); // default hardcoded map
-		initialize_puzzle_blocks("Assets/Levels/l1_puzzles.txt");
+	if (selected_level_path.empty() || selected_level_puzzle_path.empty()) {
+		selected_level_path = "Assets/Levels/default.txt";
+		selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
 	}
-	else {
-		load_map_from_file(selected_level_path.c_str(), map);
-		initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
-	}
+	load_map_from_file(selected_level_path.c_str(), map);
+	initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
 
 	generate_walls_from_map(map, 64.0f);
 
@@ -126,12 +136,18 @@ void level1_init()
 	lights.push_back(l2);
 	lights.push_back(l3);
 
-	AEInputShowCursor(true);
+	AEInputShowCursor(false);
 }
 
 void level1_update()
-{
+{	
+	AEInputGetCursorPosition(&mouse_x, &mouse_y);
+	pause_update();
+	if (is_paused) return;
+
 	dt = (f32)AEFrameRateControllerGetFrameTime();
+
+	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
 
 	// Camera follows current_player - automatically updates when you switch characters!
@@ -147,9 +163,17 @@ void level1_update()
 
 	check_and_open_doors(&player_instance);
 
-
-
 	enemy_manager_instance.update(dt, &player_instance, &cam);
+
+	// Lose condition
+	if (player_is_dead(&player_instance))
+	{
+		is_win = false;
+		next = GS_LOSE;
+	}
+
+	
+
 }
 
 void level1_draw()
@@ -167,8 +191,13 @@ void level1_draw()
 
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_player_hud(&ui_manager, &player_instance);
+	render_character_ui(&ui_manager, &player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
 	//Minimap_DrawWalls(map);
+
+
+	pause_draw();
+	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 
 void level1_free()
@@ -182,9 +211,11 @@ void level1_free()
 
 void level1_unload()
 {
+	end_screen_unload();
 	free_tile_textures();
 	//free_mesh();
 	minimap_unload();
 	unload_puzzle_textures();
 	player_system_free(&player_instance);
+	enemy_manager_instance.unload_textures();
 }

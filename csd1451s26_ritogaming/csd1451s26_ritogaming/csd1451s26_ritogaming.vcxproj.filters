@@ -58,6 +58,12 @@
     <ClCompile Include="..\Source\ui_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\audio_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\end_screen.cpp">
+		<Filter>Source Files</Filter>
+	</ClCompile>
     <ClCompile Include="..\Source\levels.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -123,6 +129,12 @@
     <ClInclude Include="..\Source\pch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\audio_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\end_screen.hpp">
+		<Filter>Header Files</Filter>
+	</ClInclude>
     <ClInclude Include="..\Source\levels.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

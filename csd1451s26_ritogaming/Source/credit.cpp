@@ -122,7 +122,7 @@ void credit_update()
     if (scrollY > 1.f + totalHeight)  // 1.f is top of normalized coordinates
         scrollY = -1.3f;              // reset below screen
 
-    if (IsButtonClicked(button_x, button_y, button_w, button_h)) // Guide
+    if (IsButtonClicked(button_x, button_y, button_w, button_h)) // exit
     {
         next = MAINMENU;
     }

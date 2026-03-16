@@ -80,6 +80,9 @@ public:
     EnemyManager ();
     ~EnemyManager();
 
+    void load_textures();
+    void unload_textures();
+
     void update(f32 dt, Player* player, camera* cam);
     void render();
 
@@ -121,3 +124,5 @@ private:
 extern EnemyManager enemy_manager_instance;
 
 void entity_system_update(Player* player_ptr, EnemyManager* enem);
+
+

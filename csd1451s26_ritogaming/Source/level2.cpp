@@ -18,10 +18,14 @@
 #include "minimap.hpp"
 #include "enemy_manager.hpp"
 #include "ui_manager.hpp"
+#include "game_state_list.hpp"
+#include "end_screen.hpp"
 
 #define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
 #define TILE_COLS 64
+
+static bool enemy_spawned = false;
 
 f32 totalWorldW2;
 f32 totalWorldH2;
@@ -43,6 +47,7 @@ void level2_load()
 	}
 	load_puzzle_textures();
     load_ui_textures(&ui_manager);
+    end_screen_load();
 }
 
 //void level2_initialize()
@@ -129,6 +134,7 @@ void level2_load()
 
 void level2_init()
 {
+    enemy_spawned = false;
     zoom = 1.0f;
     //tile_size = 64.f;
     player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
@@ -188,6 +194,11 @@ void level2_init()
 
 void level2_update()
 {
+
+    printf("active enemies: %d, spawned: %d\n",
+        enemy_manager_instance.get_active_enemy_count(), enemy_spawned);
+    pause_update();
+    if (is_paused) return;
     dt = (f32)AEFrameRateControllerGetFrameTime();
 
     get_zoom(dt);
@@ -208,6 +219,22 @@ void level2_update()
 
     // Update enemy manager (for the dragon)
     enemy_manager_instance.update(dt, &player_instance, &cam);
+    if (enemy_manager_instance.get_active_enemy_count() > 0)
+        enemy_spawned = true;
+
+    // Lose condition
+    if (player_is_dead(&player_instance))
+    {
+        is_win = false;
+        next = GS_LOSE;
+    }
+
+    // Win condition (level 2 only)
+    if (enemy_spawned && enemy_manager_instance.get_active_enemy_count() == 0)
+    {
+        is_win = true;
+        next = GS_WIN;
+    }
 }
 
 void level2_draw()
@@ -221,6 +248,7 @@ void level2_draw()
     enemy_manager_instance.render();
     render_enemy_hp(&ui_manager, &enemy_manager_instance);
     render_player_hud(&ui_manager, &player_instance);
+    pause_draw();
 }
 
 void level2_free()
@@ -232,10 +260,17 @@ void level2_free()
 
 void level2_unload()
 {
-	for (int i = 0; i < NUM_TILE_TYPES; ++i)
-		if (TileTextures[i])
-			AEGfxTextureUnload(TileTextures[i]);
+    for (int i = 0; i < NUM_TILE_TYPES; ++i)
+    {
+        if (TileTextures[i])
+        {
+            AEGfxTextureUnload(TileTextures[i]);
+            TileTextures[i] = nullptr;
+        }
+    }
 	free_mesh();
 	unload_puzzle_textures();
 	player_system_free(&player_instance);
+    end_screen_unload(); 
+    minimap_unload();    
 }

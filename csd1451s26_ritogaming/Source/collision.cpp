@@ -53,7 +53,7 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
             // MATCHING map.cpp: Use the exact same X calculation
             f32 x = startX + col * tile_size;
 
-            if (map[row][col] == WALL || map[row][col] == SPECIAL_DOOR)
+            if (map[row][col] == WALL )
             {
                 Wall w;
                 w.x = x;

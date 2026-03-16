@@ -45,25 +45,24 @@ static AEVec2 tile_spot(s32 row, s32 col)
 // ============================================================================
 static const AEVec2 ghost_spawn_pool[NUM_GHOST_SLOTS] =
 {
-    tile_spot(22, 5),  
-    tile_spot(20, 4),  
-    tile_spot(24, 7),  
-    tile_spot(20, 8),  
-    tile_spot(24, 3),  
-    tile_spot(23, 6),  
-    tile_spot(16, 5),  
-    tile_spot(14, 6),
+    tile_spot(23, 25),
+    tile_spot(23, 29),
+    tile_spot(24, 27),
+    tile_spot(25, 25),
+    tile_spot(25, 29),
+    tile_spot(26, 27),
+    tile_spot(27, 25),
+    tile_spot(27, 29),
 };
 
 static const AEVec2 bat_spawn_pool[NUM_BAT_SLOTS] =
 {
-    tile_spot(8, 3),  
-    tile_spot(8, 8),   
-    tile_spot(5, 7),   
-    tile_spot(12, 5),  
-    tile_spot(15, 5),  
+    tile_spot(14, 27),
+    tile_spot(14, 28),
+    tile_spot(13, 27),
+    tile_spot(14, 26),
+    tile_spot(15, 26),
 };
-
 
 /**************************************************************************/
 /*!
@@ -84,10 +83,8 @@ void entity_system_update(Player* player_ptr, EnemyManager* enem)
 // ============================================================================
 // CONSTRUCTOR / DESTRUCTOR
 // ============================================================================
-EnemyManager::EnemyManager() :ghost_slots{}, bat_slots{} {
-    ghost_food_tex  = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
-    bat_food_tex    = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/burger.png");
-    dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
+EnemyManager::EnemyManager() :ghost_slots{}, bat_slots{},
+ghost_food_tex(nullptr), bat_food_tex(nullptr), dragon_food_tex(nullptr) {
 }
 
 EnemyManager::~EnemyManager() {
@@ -121,7 +118,7 @@ void EnemyManager::initialize_combat_area()
 // ============================================================================
 // UPDATE AND RENDER
 // ============================================================================
-void EnemyManager::update(f32 dt, Player * player, camera * p_cam){
+void EnemyManager::update(f32 dt, Player* player, camera* p_cam) {
 
     for (auto& enemy : enemies)
         if (enemy && enemy->is_active())
@@ -155,7 +152,7 @@ void EnemyManager::render() {
     for (auto& enemy : enemies)
         if (enemy->is_active())
             render_enemy(enemy.get());
-        
+
     render_food();
 }
 
@@ -170,12 +167,12 @@ void EnemyManager::render_enemy(base_enemy* e) {
 // ============================================================================
 void EnemyManager::spawn_ghost_at_slot(int slot_index) {
 
-    if (ghost_slots[slot_index].enemy != nullptr) 
-        return; 
-    
+    if (ghost_slots[slot_index].enemy != nullptr)
+        return;
+
     // Create a new ghost
     s32    pool_idx = rand() % NUM_GHOST_SLOTS;
-    AEVec2 pos      = ghost_spawn_pool[pool_idx];
+    AEVec2 pos = ghost_spawn_pool[pool_idx];
 
     auto g = std::make_unique<ghost>(pos.x, pos.y);
     g->load_textures();
@@ -239,10 +236,10 @@ void EnemyManager::update_food(f32 dt, Player* player) {
         if (dist < (food.size + player->stats.character_size / 2.0f)) {
             if (player->current_character == 1)
             {
-                player->stats.char1_curr_health = (int) AEMin((f32) player->stats.char1_curr_health + 1, (f32) player->stats.char1_max_health);
+                player->stats.char1_curr_health = (int)AEMin((f32)player->stats.char1_curr_health + 1, (f32)player->stats.char1_max_health);
             }
             else
-                player->stats.char2_curr_health = (int) AEMin((f32) player->stats.char2_curr_health + 1, (f32) player->stats.char2_max_health);
+                player->stats.char2_curr_health = (int)AEMin((f32)player->stats.char2_curr_health + 1, (f32)player->stats.char2_max_health);
 
             food.active = false;
         }
@@ -257,8 +254,8 @@ void EnemyManager::update_food(f32 dt, Player* player) {
 }
 
 void EnemyManager::render_food() {
-    for (const auto& food : food_drops) 
-        if (food.active && food.texture) 
+    for (const auto& food : food_drops)
+        if (food.active && food.texture)
             render_sprite(rect_mesh_center, food.x, food.y, food.size, food.size, food.texture);
 }
 
@@ -300,7 +297,12 @@ void EnemyManager::cleanup_dead_enemies() {
     {
         if (!enemy || enemy->get_state() != dead) continue;
 
-        spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        if (enemy->is_ghost())
+        {
+            printf("ghost dead, food_texture: %p\n", (void*)enemy->get_food_texture());
+            if (enemy->get_food_texture())
+                spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        }
 
         // Release ghost slot → respawns at a random pool position after delay
         if (enemy->is_ghost())
@@ -414,3 +416,16 @@ void EnemyManager::clear_all()
 //    }
 //    return false;
 //}
+
+
+void EnemyManager::load_textures() {
+    ghost_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/cream.png");
+    bat_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/burger.png");
+    dragon_food_tex = AEGfxTextureLoad("Assets/kenney_pixel-platformer_food_expansion/sushi.png");
+}
+
+void EnemyManager::unload_textures() {
+    if (ghost_food_tex) { AEGfxTextureUnload(ghost_food_tex);  ghost_food_tex = nullptr; }
+    if (bat_food_tex) { AEGfxTextureUnload(bat_food_tex);    bat_food_tex = nullptr; }
+    if (dragon_food_tex) { AEGfxTextureUnload(dragon_food_tex); dragon_food_tex = nullptr; }
+}

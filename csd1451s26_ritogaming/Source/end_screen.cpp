@@ -89,7 +89,10 @@ void end_screen_unload()
     }
 }
 
-void end_screen_free() {}
+void end_screen_free() {
+	free_mesh();
+}
+
 void end_screen_init() {
     init_mesh();
     last_hovered = -1;
@@ -161,7 +164,7 @@ void end_screen_draw()
     {
         f32 world_x = (f32)mouse_x - 800.f;
         f32 world_y = -(f32)mouse_y + 450.f;
-        render_editor_ui(tex_cursor, 50.f, 50.f, 1.f, world_x, world_y);
+        render_editor_ui(tex_cursor, CURSOR_SIZE, CURSOR_SIZE, 1.f, world_x, world_y);
     }
 }
 

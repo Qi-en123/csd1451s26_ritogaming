@@ -276,7 +276,7 @@ static void draw_puzzle_edit_interface() {
 			edit_panel_y + edit_panel_h * 0.18f);
 	}
 	//Actual text showing param to edit
-	render_text_center(msg1, font, norm_x, line1_norm_y, text_scale, white);
+	render_text_center(msg1, font, norm_x, line1_norm_y, text_scale, black);
 
 
 	//Second line (2nd param)
@@ -292,7 +292,7 @@ static void draw_puzzle_edit_interface() {
 		edit_panel_x + edit_panel_w * 0.35f,
 		edit_panel_y - edit_panel_h * 0.16f);
 
-	render_text_center(msg2, font, norm_x, line2_norm_y, text_scale, white);
+	render_text_center(msg2, font, norm_x, line2_norm_y, text_scale, black);
 }
 
 static void edit_puzzle() {

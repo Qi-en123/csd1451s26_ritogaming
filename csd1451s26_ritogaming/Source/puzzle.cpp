@@ -512,7 +512,7 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 	return false; // no collision
 }
 
-void check_button_pressed() {
+static void check_button_pressed() {
 	f32& p1_x = player_instance.char1.x;
 	f32& p1_y = player_instance.char1.y;
 	f32& p2_x = player_instance.char2.x;
@@ -592,7 +592,7 @@ void puzzle_button_manager() {
 }
 
 //make this private for nao
-bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
+static bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
 	f32 hts = tile_size / 2.0f;
 
 	for (int i{}; i < puzzle_blocks.size(); ++i) {

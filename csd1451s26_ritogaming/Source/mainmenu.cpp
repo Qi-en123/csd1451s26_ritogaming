@@ -14,8 +14,6 @@
 #include "utils.hpp"
 #include "audio_manager.hpp"
 
-
-
 namespace{
 	// Textures and Fonts
     AEGfxTexture* ground = nullptr;
@@ -27,18 +25,26 @@ namespace{
     AEGfxTexture* cursor = nullptr;
     AEGfxTexture* banner = nullptr;
     AEGfxTexture* panel = nullptr;
+    AEGfxTexture* bg = nullptr;
 
     static s8  font = -1;
     
-	// Animation variables
-	f32 knight_scale = 200.f; //  normal size for knight
-	f32 knight_x = -700.f; // starting x position for knight
-    f32 ghoul_scale = 10.f;  //  start small
-    f32 ghoul_x = -400.f;    //  starting x position
-    bool knight_returning = false; // track if knight is running back
-	f32 ghoul_y = -40.f;//  base y position for ghoul
-	f32 ghoul_bounce_timer = 0.f; // timer for sine wave bounce
+    constexpr f32 knight_start_x = -700.0f;
+    constexpr f32 ghoul_start_x = -310.0f;
+    constexpr f32 ghoul_start_y = -40.0f;
+    constexpr f32 ghoul_grow_rate = 100.0f;
+    constexpr f32 character_full_scale = 150.0f;
+    constexpr f32 character_min_scale = 10.0f;
+    constexpr f32 character_speed = 200.0f;
 
+	// Animation variables
+	f32 knight_scale; //  normal size for knight
+    f32 knight_x; // starting x position for knight
+    f32 ghoul_scale;  //  start small
+    f32 ghoul_x;    //  starting x position
+    bool knight_returning; // track if knight is running back
+    f32 ghoul_y;//  base y position for ghoul
+	f32 ghoul_bounce_timer; // timer for sine wave bounce
 
     // Button positions
     const f32 button_w = 280.f;
@@ -74,7 +80,7 @@ namespace{
 
 }
 
-void spawn_dust(f32 x, f32 y)
+static void spawn_dust(f32 x, f32 y)
 {
     for (int i = 0; i < MAX_DUST; ++i)
     {
@@ -101,10 +107,12 @@ void mainmenu_load()
     door = AEGfxTextureLoad("Assets/Tiles/tile_0007.png");
     ghoul = AEGfxTextureLoad("Assets/Tiles/tile_0006.png");
     knight = AEGfxTextureLoad("Assets/Tiles/tile_0004.png");
-    button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
+    //button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
+    button = AEGfxTextureLoad("Assets/Admin/main_menu_button.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     banner = AEGfxTextureLoad("Assets/Admin/banner_classic_curtain.png");
     panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
+    bg = AEGfxTextureLoad("Assets/Admin/main_menu_bg.png");
 
  
 	// Load font from Assets folder
@@ -123,29 +131,22 @@ void mainmenu_init()
 {
     init_mesh();  
 
-    cam.pos.x = 0.f;  // Reset camera horizontal position to center (no offset on X axis)
+	ghoul_scale = character_min_scale; // Start ghoul small
+	ghoul_x = ghoul_start_x; // Reset ghoul to original position and small size
+    ghoul_y = ghoul_start_y;//  base y position for ghoul
+    ghoul_bounce_timer = 0.0f;
 
-    cam.pos.y = 0.f;  // Reset camera vertical position to center (no offset on Y axis)
-
-    zoom = 1.0f;      // Set camera zoom to normal scale (1.0 = no zoom in/out)
-
-	ghoul_scale = 10.f; // Start ghoul small
-
-	ghoul_x = -400.f; // Reset ghoul to original position and small size
-
-    ghoul_y = -40.f;//  base y position for ghoul
-
-	knight_scale = 200.f; // Set knight to normal size
-
-	knight_x = -700.f; // Reset knight to original position
+	knight_scale = character_full_scale; // Set knight to normal size
+	knight_x = knight_start_x; // Reset knight to original position
+    knight_returning = false;
 
     AEInputShowCursor(false); // Hide system cursor, we'll draw our own
     // Clear particles and trail on init
     for (int i = 0; i < MAX_DUST; ++i)   dust_particles[i].active = false;
     for (int i = 0; i < MAX_TRAIL; ++i)  ghoul_trail[i].active = false;
-    trail_spawn_timer = 0.f;
+    trail_spawn_timer = 0.0f;
 
-    play_bgm(g_audio.bgm_mainmenu);
+    //play_bgm(g_audio.bgm_mainmenu);
 }
 
 
@@ -233,37 +234,37 @@ void mainmenu_update()
 	if (knight_returning) // if knight is currently running back to original position
     {
         //  Knight runs back from right side to original position
-        knight_x += 200.f * dt; // run back fast
+        knight_x += character_speed * dt; // run back fast
 
-		if (knight_x >= -700.f) //  Knight reached original position, reset everything
+		if (knight_x >= knight_start_x) //  Knight reached original position, reset everything
         {
             //  Knight back at original position, reset everything
-			knight_x = -700.f; // reset to original position
+			knight_x = knight_start_x; // reset to original position
 			knight_returning = false; // stop returning
-            ghoul_scale = 10.f;  // ghoul spawns small again
-			ghoul_x = -400.f; // reset ghoul position
+            ghoul_scale = character_min_scale;  // ghoul spawns small again
+			ghoul_x = ghoul_start_x; // reset ghoul position
         }
         return;
     }
 
     // ghoul grows to full size first
-	if (ghoul_scale < 200.f) // grow until full size (200)
+	if (ghoul_scale < character_full_scale) // grow until full size (200)
     {
-		ghoul_scale += 100.f * dt; // grow at 100 units/sec
+		ghoul_scale += ghoul_grow_rate * dt; // grow at 100 units/sec
 		return; // wait until ghoul fully grown before moving
     }
 
     // ghoul runs away, knight chases
-	ghoul_x += 200.f * dt; // ghoul runs right at 120 units/sec
-	knight_x += 200.f * dt; // knight chases at same speed
+	ghoul_x += character_speed * dt; // ghoul runs right at 120 units/sec
+	knight_x += character_speed * dt; // knight chases at same speed
 	ghoul_bounce_timer += dt; // increase bounce timer for sine wave
     ghoul_y = -50.f + sinf(ghoul_bounce_timer * 5.f) * 20.f; // bounce up and down like sin wave
 
     //  knight exits screen,  knight starts returning
-    if (knight_x > 1000.f)
+    if (knight_x > AEGfxGetWinMaxX() + 100.0f)
     {
         knight_returning = true;
-        knight_x = -1000.f;     //  knight re-enters from left side
+        knight_x = AEGfxGetWinMinX() - 100.0f;     //  knight re-enters from left side
     }
 
   
@@ -271,10 +272,10 @@ void mainmenu_update()
     // --- Spawn dust under knight feet while running ---
     static f32 dust_timer = 0.f;
     dust_timer += dt;
-    if (!knight_returning && ghoul_scale >= 200.f && dust_timer > 0.1f)
+    if (!knight_returning && ghoul_scale >= character_full_scale && dust_timer > 0.1f)
     {
-        spawn_dust(knight_x - 40.f, -150.f); // left foot  � was -10.f
-        spawn_dust(knight_x - 60.f, -150.f); // right foot � was +10.f
+        spawn_dust(knight_x - 40.f, -150.f); // left foot was -10.f
+        spawn_dust(knight_x - 60.f, -150.f); // right foot was +10.f
         dust_timer = 0.f;
     }
 
@@ -294,7 +295,7 @@ void mainmenu_update()
 
     // --- Spawn ghoul trail every 0.08s while ghoul is full size ---
     trail_spawn_timer += dt;
-    if (ghoul_scale >= 200.f && trail_spawn_timer > 0.08f)
+    if (ghoul_scale >= character_full_scale && trail_spawn_timer > 0.08f)
     {
         // Shift old trail entries back
         for (int i = MAX_TRAIL - 1; i > 0; --i)
@@ -318,7 +319,7 @@ void mainmenu_update()
         if (ghoul_trail[i].alpha <= 0.f)
             ghoul_trail[i].active = false;
     }
-    if (!knight_returning && ghoul_scale >= 200.f)
+    if (!knight_returning && ghoul_scale >= character_full_scale)
         knight_bob_timer += dt;
     else
         knight_bob_timer = 0.f;
@@ -326,30 +327,7 @@ void mainmenu_update()
 
 void mainmenu_draw()
 {
-  
-
-	// Draw background, knight, and ghoul with blending for transparency
-     // Draw wall tiles across top portion of screen
-    for (f32 x = -800.f; x <= 800.f; x += 100.f)
-    {
-        for (f32 y = -50.f; y < 500.f; y += 100.f)
-        {
-            if (wall) render_editor_ui(wall, 100.f, 100.f, 1.0f, x, y);
-        }
-    }
-
-    // Draw ground tiles across bottom portion
-    for (f32 x = -800.f; x <= 800.f; x += 100.f)
-    {
-        for (f32 y = -450.f; y < -50.f; y += 100.f)
-        {
-            if (ground) render_editor_ui(ground, 100.f, 100.f, 1.0f, x, y);
-        }
-    }
-
-    // Draw door in the middle left area
-    if (door) render_editor_ui(door, 200.f, 200.f, 1.0f, -400.f, 0.f);
-
+    render_editor_ui(bg, AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), 1, 0, 0);
 
     // --- Draw dust particles (after knight) ---
     for (int i = 0; i < MAX_DUST; ++i)
@@ -424,7 +402,7 @@ void mainmenu_draw()
             AEGfxPrint(font, button_labels[i],
                 norm_x, norm_y,
                 1.f,
-                1.f, 1.f, 1.f, 1.f);
+                0.f, 0.f, 0.f, 1.f);
         }
     }
 	
@@ -563,5 +541,7 @@ void mainmenu_unload()
         AEGfxDestroyFont(font);
         font = -1;
     }
+
+    if (bg) AEGfxTextureUnload(bg);
 
 }

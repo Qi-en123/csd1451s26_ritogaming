@@ -11,6 +11,7 @@
 #include "collision.hpp"
 #include "map.hpp"
 #include "utils.hpp"
+#include "audio_manager.hpp"
 
 #include <vector>
 #include <iostream>
@@ -33,6 +34,9 @@ std::vector<puzzle> puzzle_blocks;
 
 std::vector<buttonTrigger> btns{};
 
+static bool is_drag_playing = false;
+static bool drag_was_active = false;
+extern AudioManager g_audio;
 
 #pragma region LEVEL EDITOR HELPER FUNCTIONS
 
@@ -642,6 +646,17 @@ bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
 	return false;
 }
 
+void puzzle_audio_update() {
+	if (!drag_was_active && is_drag_playing) {
+		// Neither move nor drag fired this frame — stop the sound
+		AEAudioStopGroup(g_audio.sfx_group);
+		is_drag_playing = false;
+	}
+	// Reset for next frame
+	drag_was_active = false;
+}
+
+
 void move_puzzle(s32 index, Direction direction, Element player_elem) {
 	puzzle& curr = puzzle_blocks[index];
 
@@ -676,6 +691,12 @@ void move_puzzle(s32 index, Direction direction, Element player_elem) {
 		!puzzle_to_inactive_collision(curr.posx + dx, curr.posy + dy)) {
 		curr.posx += dx;
 		curr.posy += dy;
+
+		if (!is_drag_playing) {
+			play_sfx(g_audio.sfx_drag_pull, 0.03f, 1.0f, -1);
+			is_drag_playing = true;
+		}
+		drag_was_active = true;
 	}
 }
 
@@ -694,7 +715,7 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	f32 dy{ player_pos_y - puzzle.posy };
 
 	//prevent puzzle going inside wall
-	const f32 min_gap{ 3.0f }; 
+	const f32 min_gap{ 3.0f };
 	const f32 grab_range{ (player_half_size + puzzle_size / 2.0f) + PUZZLE_GRAB_RANGE };
 
 	//printf("%f, %f\n", (dx * dx + dy * dy),(grab_range * grab_range));
@@ -705,7 +726,7 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 		dragging = true;
 		const f32 min_dist = player_half_size + (puzzle_size / 2.0f) + min_gap;
 		f32 newX{ puzzle.posx }, newY{ puzzle.posy };
-		
+
 		//checks if player is top/bottom or left/right using x/y overlap distance
 		if ((player_half_size + puzzle_size / 2.0f) - fabsf(dx) <
 			(player_half_size + puzzle_size / 2.0f) - fabsf(dy)) {
@@ -723,11 +744,12 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 			!puzzle_collide_puzzles(index, newX, newY)) {
 			puzzle.posx = newX;
 			puzzle.posy = newY;
+			if (!is_drag_playing) {
+				play_sfx(g_audio.sfx_drag_pull, 0.03f, 1.0f, -1);
+				is_drag_playing = true;
+			}
+			drag_was_active = true;
 		}
-
-	}
-	else {
-		dragging = false;
 	}
 }
 

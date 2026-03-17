@@ -99,8 +99,9 @@ void draw_sprite_on_map_centered(AEGfxTexture* pTex, f32 drawX, f32 drawY, f32 s
 void minimap_draw_overlay(f32 centerX, f32 centerY) {
     // Each part is half the total map size
     float partSize = mapSize / 1.5f;
+    float cullPadding = (64.0f * 0.2f) / 2.0f;
     // The center of each corner is shifted by 1/4 of the total map size
-    float offset = mapSize / 4.0f;
+    float offset = mapSize / 4.0f + (cullPadding / 2.0f);
 
     // Top Left
     draw_sprite_on_map_centered(pMapParts[0], centerX - offset, centerY + offset, partSize);
@@ -120,23 +121,6 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     f32 screenHalfH = AEGfxGetWindowHeight() / 2.0f;
     f32 mapCenterX = screenHalfW - (mapSize / 2.0f) - 20.0f;
     f32 mapCenterY = screenHalfH - (mapSize / 2.0f) - 20.0f;
-
-    // 1b. Draw the Brown Border
-    // We make this slightly larger than the mapSize
-    //f32 borderThickness = 10.0f;
-    //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-
-    //// Define a Brown Color (R: 0.4, G: 0.2, B: 0.1)
-    //AEGfxSetColorToMultiply(0.4f, 0.2f, 0.1f, 1.0f);
-
-    //AEMtx33 sBorder, tBorder, finalBorder;
-    //// Scale is the mapSize + the thickness on both sides
-    //AEMtx33Scale(&sBorder, mapSize + borderThickness, mapSize + borderThickness);
-    //AEMtx33Trans(&tBorder, mapCenterX, mapCenterY);
-    //AEMtx33Concat(&finalBorder, &tBorder, &sBorder);
-
-    //AEGfxSetTransform(finalBorder.m);
-    //AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
 
     // 2. Draw a solid black background for the minimap first
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -158,6 +142,33 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     float worldStartX = -1600.f / 2.f;
     float worldStartY = 900.f / 2.f;
     float radius = mapSize / 2.0f;
+    float cullPadding = miniTileSize / 2.0f;
+
+    float mapMinX = FLT_MAX, mapMaxX = -FLT_MAX;
+    float mapMinY = -FLT_MAX, mapMaxY = FLT_MAX;
+
+    for (int r = 0; r < TILE_ROWS; ++r) {
+        for (int c = 0; c < TILE_COLS; ++c) {
+            if (dungeonMap[r][c] > 0) { // > 0 - any tiles if set to == 1 check if it is a wall
+                float tx = worldStartX + (c * 64.0f);
+                float ty = worldStartY - (r * 64.0f);
+                if (tx < mapMinX) mapMinX = tx;
+                if (tx > mapMaxX) mapMaxX = tx;
+                if (ty > mapMinY) mapMinY = ty;
+                if (ty < mapMaxY) mapMaxY = ty;
+            }
+        }
+    }
+
+    float viewRadius = radius / zoomLevel;
+
+    float clampedX = pPlayer->current_player->x;
+    float clampedY = pPlayer->current_player->y;
+
+    if (clampedX < mapMinX + viewRadius) clampedX = mapMinX + viewRadius;
+    if (clampedX > mapMaxX - viewRadius) clampedX = mapMaxX - viewRadius;
+    if (clampedY > mapMinY - viewRadius) clampedY = mapMinY - viewRadius;
+    if (clampedY < mapMaxY + viewRadius) clampedY = mapMaxY + viewRadius;
 
     // 4. Draw Map Tiles with Math Culling
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -170,26 +181,8 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
                 float tileWorldY = worldStartY - (r * 64.0f);
 
                 // Calculate position relative to the player
-                float relativeX = (tileWorldX - pPlayer->current_player->x) * zoomLevel;
-                float relativeY = (tileWorldY - pPlayer->current_player->y) * zoomLevel;
-
-                // --- MATH CULLING ---
-                // Only draw if the tile is inside the mapSize box
-                // We use (mapSize/2) because mapCenterX is the center of the square
-               /* if (relativeX > -mapSize / 2.0f && relativeX < mapSize / 2.0f &&
-                    relativeY > -mapSize / 2.0f && relativeY < mapSize / 2.0f) {
-
-                    float drawX = relativeX + mapCenterX;
-                    float drawY = relativeY + mapCenterY;
-
-                    AEMtx33 s, t, final;
-                    AEGfxTextureSet(tiles[tileID], 0, 0);
-                    AEMtx33Scale(&s, miniTileSize, miniTileSize);
-                    AEMtx33Trans(&t, drawX, drawY);
-                    AEMtx33Concat(&final, &t, &s);
-                    AEGfxSetTransform(final.m);
-                    AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-                }*/
+                float relativeX = (tileWorldX - clampedX) * zoomLevel;
+                float relativeY = (tileWorldY - clampedY) * zoomLevel;
                 // --- CIRCULAR MATH CULLING ---
                 // Calculate distance squared from the center of the minimap (0,0 in relative space)
                 float distanceSquared = (relativeX * relativeX) + (relativeY * relativeY);
@@ -197,7 +190,7 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
 
                 // Only draw if the tile is inside the circular radius
                 // (Using distanceSquared < radiusSquared is faster than using sqrt)
-                if (distanceSquared < (radius * radius)) {
+                if (distanceSquared < ((radius + cullPadding) * (radius + cullPadding))) {
                     float drawX = relativeX + mapCenterX;
                     float drawY = relativeY + mapCenterY;
 
@@ -213,173 +206,13 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
         }
     }
     // 5. Draw Player (Fixed at the center of the minimap)
-    draw_sprite_on_map_centered(pPlayer->current_player->texture, mapCenterX, mapCenterY, 10.0f);
+    float playerDotX = mapCenterX + (pPlayer->current_player->x - clampedX) * zoomLevel;
+    float playerDotY = mapCenterY + (pPlayer->current_player->y - clampedY) * zoomLevel;
+    draw_sprite_on_map_centered(pPlayer->current_player->texture, playerDotX, playerDotY, 10.0f);
 
     // 5b. Draw the 4-part HUD Overlay
     float overlaySize = mapSize; // Or adjust to fit your specific textures
     minimap_draw_overlay(mapCenterX, mapCenterY);
-
-    //// 6. Draw Border "Frame" ON TOP of everything to hide bleeding
-    //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    //AEGfxSetColorToMultiply(0.4f, 0.2f, 0.1f, 1.0f); // Brown
-    //f32 thickness = 10.0f; // Thickness of your border bar
-
-    //AEMtx33 s, t, final;
-
-    // --- TOP BAR ---
-    //AEMtx33Scale(&s, mapSize + (thickness * 2), thickness);
-    //AEMtx33Trans(&t, mapCenterX, mapCenterY + (mapSize / 2.0f) + (thickness / 2.0f));
-    //AEMtx33Concat(&final, &t, &s);
-    //AEGfxSetTransform(final.m);
-    //AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-
-    //// --- BOTTOM BAR ---
-    //AEMtx33Trans(&t, mapCenterX, mapCenterY - (mapSize / 2.0f) - (thickness / 2.0f));
-    //AEMtx33Concat(&final, &t, &s);
-    //AEGfxSetTransform(final.m);
-    //AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-
-    //// --- LEFT BAR ---
-    //AEMtx33Scale(&s, thickness, mapSize + (thickness * 2));
-    //AEMtx33Trans(&t, mapCenterX - (mapSize / 2.0f) - (thickness / 2.0f), mapCenterY);
-    //AEMtx33Concat(&final, &t, &s);
-    //AEGfxSetTransform(final.m);
-    //AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-
-    //// --- RIGHT BAR ---
-    //AEMtx33Trans(&t, mapCenterX + (mapSize / 2.0f) + (thickness / 2.0f), mapCenterY);
-    //AEMtx33Concat(&final, &t, &s);
-    //AEGfxSetTransform(final.m);
-    //AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-
-    //if (!pPlayer) return;
-
-    //// 1. Setup screen positions
-
-    //f32 screenHalfW = AEGfxGetWindowWidth() / 2.0f;
-    //f32 screenHalfH = AEGfxGetWindowHeight() / 2.0f;
-    //f32 mapCenterX = screenHalfW - (mapSize / 2.0f) - 20.0f;
-    //f32 mapCenterY = screenHalfH - (mapSize / 2.0f) - 20.0f;
-    //f32 scaleFactor = mapSize / worldW;
-
-
-
-    //// 2. Reset State
-
-    //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    //AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-
-
-    //// 3a. Draw Border
-
-    //f32 borderThickness = 10.0f; // Total thickness in pixels
-    //AEMtx33 sB, tB, finalB;
-    //AEMtx33 s, t, final;
-
-    //// Scale is mapSize + thickness
-
-    ///*
-
-    //AEGfxSetColorToMultiply(0.0f, 0.0f, 0.0f, 1.0f);
-
-    //AEMtx33Scale(&sB, mapSize + borderThickness, mapSize + borderThickness);
-
-    //AEMtx33Trans(&tB, mapCenterX, mapCenterY);
-
-    //AEMtx33Concat(&finalB, &tB, &sB);
-
-    //AEGfxSetTransform(finalB.m);
-
-    //AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-
-
-
-    //// 3b. Draw Background Box
-
-    //AEGfxSetColorToMultiply(0.0f, 0.0f, 0.0f, 1.0f); // Almost black
-
-    //AEMtx33 s, t, final;
-
-    //AEMtx33Scale(&s, mapSize, mapSize);
-
-    //AEMtx33Trans(&t, mapCenterX, mapCenterY);
-
-    //AEMtx33Concat(&final, &t, &s);
-
-    //AEGfxSetTransform(final.m);
-
-    //AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);*/
-
-
-
-    //// 4. DRAW MAP TILES
-
-    //AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-    //float miniTileSize = (64.0f * scaleFactor);
-
-
-
-    //// Use the same start logic as your friend's map.cpp
-    //float startX = -1600.f / 2.f;
-    //float startY = 900.f / 2.f;
-
-
-
-    //for (int r = 0; r < TILE_ROWS; ++r) {
-    //    for (int c = 0; c < TILE_COLS; ++c) {
-    //        int tileID = dungeonMap[r][c];
-    //        // ONLY draw if the tile exists (is not 0/EMPTY)
-    //        if (tileID > 0 && tileID < NUM_TILE_TYPES && tiles[tileID] != nullptr) {
-    //            // Convert world coordinates using map.cpp logic
-
-    //            float worldX = startX + c * 64.0f;
-    //            float worldY = startY - r * 64.0f;
-
-    //            // Scale those coordinates for the minimap position
-
-    //            float drawX = (worldX * scaleFactor) + mapCenterX;
-    //            float drawY = (worldY * scaleFactor) + mapCenterY;
-
-
-
-    //            AEGfxTextureSet(tiles[tileID], 0, 0);
-
-    //            AEMtx33Scale(&s, miniTileSize, miniTileSize);
-
-    //            AEMtx33Trans(&t, drawX, drawY);
-
-    //            AEMtx33Concat(&final, &t, &s);
-
-    //            AEGfxSetTransform(final.m);
-
-    //            AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
-
-    //        }
-
-    //    }
-
-    //}
-
-
-
-    //// Draw Character 1 - USING CHARACTER STRUCT NOW
-
-    //f32 c1X = (pPlayer->char1.x * scaleFactor) + mapCenterX;
-
-    //f32 c1Y = (pPlayer->char1.y * scaleFactor) + mapCenterY;
-
-    //DrawSpriteOnMap(c1X, c1Y, 12.0f, pPlayer->char1.texture);
-
-
-
-    //// Draw Character 2 - USING CHARACTER STRUCT NOW
-
-    //f32 c2X = (pPlayer->char2.x * scaleFactor) + mapCenterX;
-
-    //f32 c2Y = (pPlayer->char2.y * scaleFactor) + mapCenterY;
-
-    //DrawSpriteOnMap(c2X, c2Y, 12.0f, pPlayer->char2.texture);
-
 }
 
 void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* pTex) {

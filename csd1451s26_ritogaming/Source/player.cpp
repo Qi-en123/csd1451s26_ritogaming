@@ -290,7 +290,7 @@ void player_handle_shooting(Player* player_ptr, f32 dt)
 
         player_ptr->projectiles.push_back(new_fire);
         player_ptr->fireball_count--;
-        play_sfx(g_audio.sfx_fireball);
+        play_sfx(g_audio.sfx_fireball, 0.1f);
     }
 }
 void player_update_particles(Player* player_ptr, f32 dt) {

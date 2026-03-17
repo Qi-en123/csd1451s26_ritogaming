@@ -49,7 +49,7 @@ struct PlayerStats
     f32 char2_start_y = -950.0f;
 
     // Movement settings
-    f32 move_speed = 13.f; // Player movement speed
+    f32 move_speed = 4.f; // Player movement speed (4.f) makes it look more in sync with audio.
 
     // This is for hp
     int char1_max_health{ 6 };

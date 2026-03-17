@@ -25,11 +25,39 @@
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
+static bool is_footstep_playing = false;
+static bool footstep_was_active = false;
+
 #define DAMAGE 1 // change this for fireball damage
 
 // Global player instance definition
 Player player_instance;
 
+//This is for audio ------------------------------------
+void footstep_audio_update() {
+    if (!footstep_was_active && is_footstep_playing) {
+        AEAudioStopGroup(g_audio.sfx_group);
+        is_footstep_playing = false;
+    }
+    footstep_was_active = false;
+}
+
+void play_footstep(float pitch = 1.0f) {
+    static float last_pitch = 1.0f;
+
+    // Restart if pitch changed (e.g. started or stopped dragging)
+    if (is_footstep_playing && pitch != last_pitch) {
+        AEAudioStopGroup(g_audio.sfx_group);
+        is_footstep_playing = false;
+    }
+
+    if (!is_footstep_playing) {
+        play_sfx(g_audio.sfx_footsteps, 0.03f, pitch, -1);
+        is_footstep_playing = true;
+        last_pitch = pitch;
+    }
+    footstep_was_active = true;
+}
 
 static void player_system_update_transforms(Player* player_ptr)
 {
@@ -125,6 +153,8 @@ static void player_handle_movement(Player* player_ptr)
     if (!player_ptr || !player_ptr->current_player)
         return;
 
+    bool is_pushing = false;
+
     f32* move_x = &player_ptr->current_player->x;
     f32* move_y = &player_ptr->current_player->y;
     Element curr_elem = player_ptr->current_player->element;
@@ -182,6 +212,7 @@ static void player_handle_movement(Player* player_ptr)
         if (player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
         {
             move_puzzle(puzzle_index, (direction > 0.0f) ? RIGHT : LEFT, curr_elem);
+            is_pushing = true;
         }
     }
 
@@ -204,6 +235,7 @@ static void player_handle_movement(Player* player_ptr)
         if (player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
         {
             move_puzzle(puzzle_index, (direction > 0.0f) ? DOWN : UP, curr_elem);
+            is_pushing = true;
         }
     }
 
@@ -211,11 +243,18 @@ static void player_handle_movement(Player* player_ptr)
     if (AEInputCheckCurr(AEVK_SPACE))
     {
         drag_puzzle(*move_x, *move_y, halfSize, is_dragging, puzzle_index, curr_elem);
+
     }
     else
     {
         is_dragging = false;
     }
+    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_A) ||
+        AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_D))
+    {
+        play_footstep((is_dragging || is_pushing) ? 0.5f : 1.0f);
+    }
+    footstep_audio_update();
 }
 
 

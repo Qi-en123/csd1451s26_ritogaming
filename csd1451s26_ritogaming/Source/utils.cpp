@@ -4,7 +4,7 @@
 
 std::vector<std::string> level_paths;
 std::vector<std::string> level_puzzle_paths;
-//int current_level_index = 0;
+int current_level_index = 0;
 std::string selected_level_path = "";
 std::string selected_level_puzzle_path = "";
 

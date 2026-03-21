@@ -217,12 +217,13 @@ void level1_unload()
 	minimap_unload();
 	unload_puzzle_textures();
 
+	player_system_free(&player_instance);
+
 	if (skeleton_texture)
 	{
 		AEGfxTextureUnload(skeleton_texture);
 		skeleton_texture = nullptr;
 	}
 
-	player_system_free(&player_instance);
-	enemy_manager_instance.unload_textures();
+	
 }

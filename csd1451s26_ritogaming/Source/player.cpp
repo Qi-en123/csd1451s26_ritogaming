@@ -119,6 +119,11 @@ void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
     player_ptr->char1.is_dead = false;
     player_ptr->char2.is_dead = false;
 
+    player_ptr->stats.char1_curr_health = player_ptr->stats.char1_max_health;
+    player_ptr->stats.char2_curr_health = player_ptr->stats.char2_max_health;
+    player_ptr->fireball_count = 5;
+    player_ptr->shoot_cooldown = 0.0f;
+
     // Precompute scale and rotation matrices
     AEMtx33Scale(&player_ptr->character_scale, player_ptr->stats.character_size, player_ptr->stats.character_size);
     AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->stats.triangle_size, player_ptr->stats.triangle_size);

@@ -231,6 +231,7 @@ void level2_update()
     if (player_is_dead(&player_instance))
     {
         is_win = false;
+        restart_level_state = GS_BOSS_ROOM;
         next = GS_LOSE;
     }
 
@@ -238,6 +239,7 @@ void level2_update()
     if (enemy_spawned && enemy_manager_instance.get_active_enemy_count() == 0)
     {
         is_win = true;
+        restart_level_state = GS_BOSS_ROOM;
         next = GS_WIN;
     }
 }

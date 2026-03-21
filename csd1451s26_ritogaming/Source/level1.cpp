@@ -172,6 +172,7 @@ void level1_update()
 	if (player_is_dead(&player_instance))
 	{
 		is_win = false;
+		restart_level_state = GS_LEVEL1;
 		next = GS_LOSE;
 	}
 }

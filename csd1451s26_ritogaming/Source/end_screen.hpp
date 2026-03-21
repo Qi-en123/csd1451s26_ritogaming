@@ -2,6 +2,7 @@
 
 extern bool is_win;
 extern bool is_paused;
+extern int restart_level_state;
 
 void end_screen_load();
 void end_screen_unload();

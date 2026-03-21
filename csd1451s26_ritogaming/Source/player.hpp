@@ -52,7 +52,7 @@ struct PlayerStats
     f32 char2_start_y = -950.0f;
 
     // Movement settings
-    f32 move_speed = 13.f; // Player movement speed
+    f32 move_speed = 4.f; // Player movement speed (4.f) makes it look more in sync with audio.
 
     // This is for hp
     int char1_max_health{ 6 };
@@ -213,3 +213,5 @@ void player_take_damage(Player* player_ptr, int damage);
     Returns true if both characters have no health remaining.
 **************************************************************************/
 bool player_is_dead(Player* player_ptr);
+
+void spawn_player_from_map(Player* player_ptr, f32 tile_size);

@@ -12,10 +12,11 @@
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "utils.hpp"
+#include "audio_manager.hpp"
 
 
 
-namespace {
+namespace{
 	// Textures and Fonts
     AEGfxTexture* ground = nullptr;
     AEGfxTexture* wall = nullptr;
@@ -25,6 +26,7 @@ namespace {
     AEGfxTexture* button = nullptr;
     AEGfxTexture* cursor = nullptr;
     AEGfxTexture* banner = nullptr;
+    AEGfxTexture* panel = nullptr;
 
     static s8  font = -1;
     
@@ -70,8 +72,8 @@ namespace {
     
     bool show_exit_confirm = false;
 
-
 }
+
 void spawn_dust(f32 x, f32 y)
 {
     for (int i = 0; i < MAX_DUST; ++i)
@@ -84,7 +86,7 @@ void spawn_dust(f32 x, f32 y)
             dust_particles[i].scale = (f32)(rand() % 30 + 20);     //  bigger
             dust_particles[i].lifetime = 0.6f + (rand() % 10) * 0.05f; //   lasts longer
             dust_particles[i].vx = -((rand() % 80) + 20.f); 
-            dust_particles[i].vy = (f32)(rand() % 60 + 30);     // 30-90 — floats higher
+            dust_particles[i].vy = (f32)(rand() % 60 + 30);     // 30-90 ï¿½ floats higher
             dust_particles[i].active = true;
             break;
         }
@@ -102,6 +104,7 @@ void mainmenu_load()
     button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     banner = AEGfxTextureLoad("Assets/Admin/banner_classic_curtain.png");
+    panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
 
  
 	// Load font from Assets folder
@@ -141,6 +144,8 @@ void mainmenu_init()
     for (int i = 0; i < MAX_DUST; ++i)   dust_particles[i].active = false;
     for (int i = 0; i < MAX_TRAIL; ++i)  ghoul_trail[i].active = false;
     trail_spawn_timer = 0.f;
+
+    play_bgm(g_audio.bgm_mainmenu);
 }
 
 
@@ -149,10 +154,32 @@ void mainmenu_init()
 // =========================================================
 void mainmenu_update()
 {
+    audio_update();
     dt = (f32)AEFrameRateControllerGetFrameTime();
 
     // Get mouse position 
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
+
+    // Track hover state to play sound only once when first hovered
+    static int last_hovered = -1;
+    int current_hovered = -1;
+
+    for (int i = 0; i < 5; ++i)
+    {
+        if (IsButtonHovered(button_x, button_y[i], button_w, button_h))
+        {
+            current_hovered = i;
+            break;
+        }
+    }
+
+    // Only play sound when hovering a NEW button
+    if (current_hovered != last_hovered && current_hovered != -1)
+    {
+        play_sfx(g_audio.sfx_button_hover, 1.f);
+    }
+
+    last_hovered = current_hovered;
 
     if (show_exit_confirm)
     {
@@ -174,22 +201,29 @@ void mainmenu_update()
 
     // Check button clicks
     if (IsButtonClicked(button_x, button_y[0], button_w, button_h)) // Play
+    {
+        play_sfx(g_audio.sfx_button_click, 1.f);
         next = GS_LEVEL1;
+    }
 	if (IsButtonClicked(button_x, button_y[1], button_w, button_h)) // Levels
     {
-        next = GS_LEVEL_EDITOR;
+        play_sfx(g_audio.sfx_button_click, 1.f);
+        next = GS_LEVELS;
     }
       
     if (IsButtonClicked(button_x, button_y[2], button_w, button_h)) // Guide
     {
+        play_sfx(g_audio.sfx_button_click, 1.f);
        //next = GS_GUIDE;
     }
     if (IsButtonClicked(button_x, button_y[3], button_w, button_h)) // Credits
     {
+        play_sfx(g_audio.sfx_button_click, 1.f);
         next = CREDIT;
     }
     if (IsButtonClicked(button_x, button_y[4], button_w, button_h))
     {
+        play_sfx(g_audio.sfx_button_click, 1.f);
         show_exit_confirm = true;   // show confirmation instead of quitting
     }
 
@@ -239,8 +273,8 @@ void mainmenu_update()
     dust_timer += dt;
     if (!knight_returning && ghoul_scale >= 200.f && dust_timer > 0.1f)
     {
-        spawn_dust(knight_x - 40.f, -150.f); // left foot  — was -10.f
-        spawn_dust(knight_x - 60.f, -150.f); // right foot — was +10.f
+        spawn_dust(knight_x - 40.f, -150.f); // left foot  ï¿½ was -10.f
+        spawn_dust(knight_x - 60.f, -150.f); // right foot ï¿½ was +10.f
         dust_timer = 0.f;
     }
 
@@ -300,7 +334,7 @@ void mainmenu_draw()
     {
         for (f32 y = -50.f; y < 500.f; y += 100.f)
         {
-            if (wall) render_blending_sprite(wall, 100.f, 100.f, 1.0f, x, y);
+            if (wall) render_editor_ui(wall, 100.f, 100.f, 1.0f, x, y);
         }
     }
 
@@ -309,12 +343,12 @@ void mainmenu_draw()
     {
         for (f32 y = -450.f; y < -50.f; y += 100.f)
         {
-            if (ground) render_blending_sprite(ground, 100.f, 100.f, 1.0f, x, y);
+            if (ground) render_editor_ui(ground, 100.f, 100.f, 1.0f, x, y);
         }
     }
 
     // Draw door in the middle left area
-    if (door) render_blending_sprite(door, 200.f, 200.f, 1.0f, -400.f, 0.f);
+    if (door) render_editor_ui(door, 200.f, 200.f, 1.0f, -400.f, 0.f);
 
 
     // --- Draw dust particles (after knight) ---
@@ -322,7 +356,7 @@ void mainmenu_draw()
     {
         if (!dust_particles[i].active) continue;
         if (ground) // reuse any small square texture as dust puff
-            render_blending_sprite(ground,
+            render_editor_ui(ground,
                 dust_particles[i].scale,
                 dust_particles[i].scale,
                 dust_particles[i].alpha,
@@ -333,25 +367,25 @@ void mainmenu_draw()
 
     if (knight)
     {
-        // Vertical bob — bounces up and down like footsteps
+        // Vertical bob ï¿½ bounces up and down like footsteps
         f32 knight_y = -50.f + sinf(knight_bob_timer * 10.f) * 8.f;
 
-        // Lean forward slightly — tilt using scale trick (squish X slightly)
+        // Lean forward slightly ï¿½ tilt using scale trick (squish X slightly)
         f32 lean_x = knight_scale * 0.92f;
 
-        // Squash and stretch — slightly squish on landing, stretch on lift
+        // Squash and stretch ï¿½ slightly squish on landing, stretch on lift
         f32 squash = 1.f + sinf(knight_bob_timer * 10.f) * 0.05f;
         f32 draw_w = lean_x * squash;
         f32 draw_h = knight_scale / squash;
 
-        render_blending_sprite(knight, draw_w, draw_h, 1.0f, knight_x, knight_y);
+        render_editor_ui(knight, draw_w, draw_h, 1.0f, knight_x, knight_y);
     }
     // --- Draw ghoul trail (before ghoul so it appears behind) ---
     for (int i = MAX_TRAIL - 1; i >= 0; --i)
     {
         if (!ghoul_trail[i].active) continue;
         if (ghoul)
-            render_blending_sprite(ghoul,
+            render_editor_ui(ghoul,
                 ghoul_trail[i].scale,
                 ghoul_trail[i].scale,
                 ghoul_trail[i].alpha,
@@ -365,7 +399,7 @@ void mainmenu_draw()
     if (ghoul)
     {
         f32 ghoul_alpha = ghoul_scale / 200.f; //  0.0 to 1.0 based on scale
-        render_blending_sprite(ghoul, ghoul_scale, ghoul_scale, ghoul_alpha, ghoul_x, ghoul_y);
+        render_editor_ui(ghoul, ghoul_scale, ghoul_scale, ghoul_alpha, ghoul_x, ghoul_y);
     }
 
 	// Draw buttons and labels
@@ -373,7 +407,7 @@ void mainmenu_draw()
     {
         // Draw button texture
         if (button)
-            render_blending_sprite(button, button_w, button_h, 1.0f, button_x, button_y[i],
+            render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y[i],
                 IsButtonHovered(button_x, button_y[i], button_w, button_h));
 
         if (font != -1)
@@ -386,7 +420,7 @@ void mainmenu_draw()
 			f32 norm_x = (button_x / 800.f) - (text_width / 2.f); // Normalize button X to -1 to 1, then shift left by half text width
             f32 norm_y = (button_y[i] - 15.f) / 450.f;
 
-			// print starts from left to right, unlike render_blending_sprite which is centered
+			// print starts from left to right, unlike render_editor_ui which is centered
             AEGfxPrint(font, button_labels[i],
                 norm_x, norm_y,
                 1.f,
@@ -396,7 +430,7 @@ void mainmenu_draw()
 	
 
     //  Draw banner on top of door
-    if (banner) render_blending_sprite(banner, 450.f, 100.f, 1.0f, -400.f, 200.f);
+    if (banner) render_editor_ui(banner, 450.f, 100.f, 1.0f, -400.f, 200.f);
 
     //  Draw title text on banner
     if (font != -1)
@@ -422,15 +456,15 @@ void mainmenu_draw()
         draw_square(0.f, 0.f, 1600.f, 900.f); // use your square_mesh
 
         // Popup box
-        render_blending_sprite(button, 800.f, 400.f, 1.0f, 0.f, 0.f);
+        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
 
 
         // Yes button
-        render_blending_sprite(button, 200.f, 80.f, 1.0f, -100.f, -50.f,
+        render_editor_ui(button, 200.f, 80.f, 1.0f, -100.f, -50.f,
             IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
 
         // No button
-        render_blending_sprite(button, 200.f, 80.f, 1.0f, 150.f, -50.f,
+        render_editor_ui(button, 200.f, 80.f, 1.0f, 150.f, -50.f,
             IsButtonHovered(150.f, -50.f, 200.f, 80.f));
 
         // Text
@@ -460,7 +494,7 @@ void mainmenu_draw()
         f32 world_x = (f32)mouse_x - 800.f; // center origin
         f32 world_y = -(f32)mouse_y + 450.f; // flip Y axis
 
-        render_blending_sprite(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
+        render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
     }
 
 }
@@ -468,10 +502,12 @@ void mainmenu_draw()
 void mainmenu_free()
 {
 	free_mesh(); // Free any dynamically allocated memory for meshes
+    stop_bgm();
 }
 
 void mainmenu_unload()
 {
+    
 	// Unload textures to free memory
     if (ground)
     {
@@ -515,6 +551,11 @@ void mainmenu_unload()
     {
         AEGfxTextureUnload(banner);
         banner = nullptr;
+    }
+    if (panel)
+    {
+        AEGfxTextureUnload(panel);
+        panel = nullptr;
     }
 
     if (font != -1)

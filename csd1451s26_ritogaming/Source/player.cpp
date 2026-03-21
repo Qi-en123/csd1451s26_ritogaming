@@ -16,17 +16,51 @@
 #include "utils.hpp"
 #include <crtdbg.h>
 #include <string>
+#include "audio_manager.hpp"
 
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
+
+static bool is_footstep_playing = false;
+static bool footstep_was_active = false;
 
 #define DAMAGE 1 // change this for fireball damage
 
 // Global player instance definition
 Player player_instance;
 
+// This is for audio ------------------------------------
+void footstep_audio_update()
+{
+    if (!footstep_was_active && is_footstep_playing)
+    {
+        AEAudioStopGroup(g_audio.sfx_group);
+        is_footstep_playing = false;
+    }
+    footstep_was_active = false;
+}
 
-static void player_system_update_transforms(Player* player_ptr)
+void play_footstep(float pitch = 1.0f)
+{
+    static float last_pitch = 1.0f;
+
+    // Restart if pitch changed (e.g. started or stopped dragging)
+    if (is_footstep_playing && pitch != last_pitch)
+    {
+        AEAudioStopGroup(g_audio.sfx_group);
+        is_footstep_playing = false;
+    }
+
+    if (!is_footstep_playing)
+    {
+        play_sfx(g_audio.sfx_footsteps, 0.03f, pitch, -1);
+        is_footstep_playing = true;
+        last_pitch = pitch;
+    }
+    footstep_was_active = true;
+}
+
+static void player_system_update_transforms(Player *player_ptr)
 {
     if (!player_ptr)
         return;
@@ -46,16 +80,15 @@ static void player_system_update_transforms(Player* player_ptr)
     // --- Active player indicator (triangle) ---
     AEMtx33 triangle_translate;
     AEMtx33Trans(&triangle_translate,
-        player_ptr->current_player->x,
-        player_ptr->current_player->y + player_ptr->stats.triangle_offset);
+                 player_ptr->current_player->x,
+                 player_ptr->current_player->y + player_ptr->stats.triangle_offset);
 
     AEMtx33Concat(&player_ptr->triangle_transform, &player_ptr->rotate, &player_ptr->triangle_scale);
     AEMtx33Concat(&player_ptr->triangle_transform, &triangle_translate, &player_ptr->triangle_transform);
 }
 
-
-void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture,
-                        AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture)
+void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
+                        AEGfxTexture *char_2_texture, AEGfxTexture *dead_texture)
 {
     if (!player_ptr)
         return;
@@ -80,7 +113,7 @@ void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture,
     player_ptr->current_player = &player_ptr->char1;
     player_ptr->current_character = 1;
 
-    // 
+    //
     player_ptr->char1.dead_texture = dead_texture;
     player_ptr->char2.dead_texture = dead_texture;
     player_ptr->char1.is_dead = false;
@@ -99,8 +132,7 @@ void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture,
     player_system_update_transforms(player_ptr);
 }
 
-
-static void player_handle_character_switch(Player* player_ptr)
+static void player_handle_character_switch(Player *player_ptr)
 {
     if (!player_ptr)
         return;
@@ -117,14 +149,17 @@ static void player_handle_character_switch(Player* player_ptr)
     }
 }
 
-
-static void player_handle_movement(Player* player_ptr)
+static void player_handle_movement(Player *player_ptr)
 {
-    if (!player_ptr || !player_ptr->current_player) return;
-    if (player_ptr->current_player->is_dead) return;
+    if (!player_ptr || !player_ptr->current_player)
+        return;
+    if (player_ptr->current_player->is_dead)
+        return;
 
-    f32* move_x = &player_ptr->current_player->x;
-    f32* move_y = &player_ptr->current_player->y;
+    bool is_pushing = false;
+
+    f32 *move_x = &player_ptr->current_player->x;
+    f32 *move_y = &player_ptr->current_player->y;
     Element curr_elem = player_ptr->current_player->element;
 
     float nextX = *move_x;
@@ -180,6 +215,7 @@ static void player_handle_movement(Player* player_ptr)
         if (player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
         {
             move_puzzle(puzzle_index, (direction > 0.0f) ? RIGHT : LEFT, curr_elem);
+            is_pushing = true;
         }
     }
 
@@ -202,6 +238,7 @@ static void player_handle_movement(Player* player_ptr)
         if (player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
         {
             move_puzzle(puzzle_index, (direction > 0.0f) ? DOWN : UP, curr_elem);
+            is_pushing = true;
         }
     }
 
@@ -214,10 +251,15 @@ static void player_handle_movement(Player* player_ptr)
     {
         is_dragging = false;
     }
+    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_A) ||
+        AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_D))
+    {
+        play_footstep((is_dragging || is_pushing) ? 0.5f : 1.0f);
+    }
+    footstep_audio_update();
 }
 
-
-void player_system_handle_input(Player* player_ptr)
+void player_system_handle_input(Player *player_ptr)
 {
     if (!player_ptr)
         return;
@@ -231,7 +273,7 @@ void player_system_handle_input(Player* player_ptr)
   Handles shooting logic (CHARACTER 2 ONLY).
 */
 /**************************************************************************/
-void player_handle_shooting(Player* player_ptr, f32 dt)
+void player_handle_shooting(Player *player_ptr, f32 dt)
 {
     if (!player_ptr)
         return;
@@ -244,10 +286,7 @@ void player_handle_shooting(Player* player_ptr, f32 dt)
     }
 
     // Only character 2 can shoot
-    if (player_ptr->current_character == 2 
-		&& !player_ptr->char2.is_dead
-        && AEInputCheckTriggered(AEVK_LBUTTON)
-        && player_ptr->fireball_count > 0)
+    if (player_ptr->current_character == 2 && !player_ptr->char2.is_dead && AEInputCheckTriggered(AEVK_LBUTTON) && player_ptr->fireball_count > 0)
     {
 
         // --- Get mouse position in world space ---
@@ -266,7 +305,8 @@ void player_handle_shooting(Player* player_ptr, f32 dt)
 
         // Normalize the direction vector
         f32 length = sqrtf(dx * dx + dy * dy);
-        if (length < 0.0001f) return; // safety check: don't shoot if cursor is on player
+        if (length < 0.0001f)
+            return; // safety check: don't shoot if cursor is on player
 
         f32 dirX = dx / length;
         f32 dirY = dy / length;
@@ -290,27 +330,33 @@ void player_handle_shooting(Player* player_ptr, f32 dt)
 
         player_ptr->projectiles.push_back(new_fire);
         player_ptr->fireball_count--;
+        play_sfx(g_audio.sfx_fireball, 0.1f);
     }
 }
-void player_update_particles(Player* player_ptr, f32 dt) {
-    for (size_t i = 0; i < player_ptr->particles.size(); ++i) {
-        Particle& p = player_ptr->particles[i];
+void player_update_particles(Player *player_ptr, f32 dt)
+{
+    for (size_t i = 0; i < player_ptr->particles.size(); ++i)
+    {
+        Particle &p = player_ptr->particles[i];
 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
         p.life -= dt;
 
-        if (p.life <= 0) {
+        if (p.life <= 0)
+        {
             player_ptr->particles.erase(player_ptr->particles.begin() + i);
             i--;
         }
     }
 }
 
-void player_render_particles(Player* player_ptr) {
+void player_render_particles(Player *player_ptr)
+{
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-    for (const auto& p : player_ptr->particles) {
+    for (const auto &p : player_ptr->particles)
+    {
         // Fade the alpha based on remaining life
         float alpha = p.life / p.maxLife;
         AEGfxSetColorToMultiply(1.0f, 0.3f, 0.0f, alpha); // Red-Orange fire
@@ -319,20 +365,20 @@ void player_render_particles(Player* player_ptr) {
         draw_circle(p.x, p.y, p.size * alpha, p.size * alpha);
     }
 }
-    
+
 /**************************************************************************/
 /*!
   Updates projectile positions and handles collisions.
 */
 /**************************************************************************/
-void player_update_projectiles(Player* player_ptr, f32 dt)
+void player_update_projectiles(Player *player_ptr, f32 dt)
 {
     if (!player_ptr)
         return;
 
     for (size_t i = 0; i < player_ptr->projectiles.size(); ++i)
     {
-        Projectile& p = player_ptr->projectiles[i];
+        Projectile &p = player_ptr->projectiles[i];
 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
@@ -357,8 +403,9 @@ void player_update_projectiles(Player* player_ptr, f32 dt)
         {
             p.active = false;
         }
-        
-        if (p.active && enemy_manager_instance.check_projectile_hit(p.x, p.y, p.radius, DAMAGE)) {
+
+        if (p.active && enemy_manager_instance.check_projectile_hit(p.x, p.y, p.radius, DAMAGE))
+        {
             p.active = false; // Destroy fireball on hit
         }
 
@@ -376,7 +423,7 @@ void player_update_projectiles(Player* player_ptr, f32 dt)
   Renders all active projectiles.
 */
 /**************************************************************************/
-void player_render_projectiles(Player* player_ptr)
+void player_render_projectiles(Player *player_ptr)
 {
     if (!player_ptr)
         return;
@@ -385,7 +432,7 @@ void player_render_projectiles(Player* player_ptr)
     AEGfxSetColorToMultiply(1.0f, 0.5f, 0.0f, 1.0f); // Bright Orange
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 
-    for (const auto& p : player_ptr->projectiles)
+    for (const auto &p : player_ptr->projectiles)
     {
         if (p.active)
         {
@@ -398,14 +445,14 @@ void player_render_projectiles(Player* player_ptr)
   Renders all active projectile counts.
 */
 /**************************************************************************/
-void player_render_fireball_count(Player* player_ptr)
+void player_render_fireball_count(Player *player_ptr)
 {
     if (!player_ptr)
         return;
 
     std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
 
-    render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
+    // render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
 }
 
 /**************************************************************************/
@@ -413,7 +460,7 @@ void player_render_fireball_count(Player* player_ptr)
   Renders the player characters and active character indicator.
 */
 /**************************************************************************/
-void player_system_render(Player* player_ptr)
+void player_system_render(Player *player_ptr)
 {
     if (!player_ptr)
         return;
@@ -421,15 +468,15 @@ void player_system_render(Player* player_ptr)
     player_render_fireball_count(player_ptr);
 
     // Draw Character 1
-    AEGfxTexture* tex1 = player_ptr->char1.is_dead? player_ptr->char1.dead_texture                                    
-                                                  : player_ptr->char1.texture;
+    AEGfxTexture *tex1 = player_ptr->char1.is_dead ? player_ptr->char1.dead_texture
+                                                   : player_ptr->char1.texture;
     render_sprite(rect_mesh_center, player_ptr->char1.x, player_ptr->char1.y,
-                  player_ptr->stats.character_size, 
+                  player_ptr->stats.character_size,
                   player_ptr->stats.character_size, tex1);
 
     // Draw Character 2
-    AEGfxTexture* tex2 = player_ptr->char2.is_dead? player_ptr->char2.dead_texture
-                                                  : player_ptr->char2.texture;
+    AEGfxTexture *tex2 = player_ptr->char2.is_dead ? player_ptr->char2.dead_texture
+                                                   : player_ptr->char2.texture;
     render_sprite(rect_mesh_center, player_ptr->char2.x, player_ptr->char2.y,
                   player_ptr->stats.character_size,
                   player_ptr->stats.character_size, tex2);
@@ -447,8 +494,8 @@ void player_system_render(Player* player_ptr)
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 
     draw_triangle(tri_x, tri_y,
-        player_ptr->stats.triangle_size,
-        player_ptr->stats.triangle_size);
+                  player_ptr->stats.triangle_size,
+                  player_ptr->stats.triangle_size);
 }
 
 /**************************************************************************/
@@ -456,11 +503,11 @@ void player_system_render(Player* player_ptr)
   Updates the player system each frame.
 */
 /**************************************************************************/
-void player_system_update(Player* player_ptr)
+void player_system_update(Player *player_ptr)
 {
     if (!player_ptr)
         return;
-    
+
     player_system_handle_input(player_ptr);
     player_handle_shooting(player_ptr, dt);
     player_update_projectiles(player_ptr, dt);
@@ -473,41 +520,48 @@ void player_system_update(Player* player_ptr)
   Frees resources used by the player system.
 */
 /**************************************************************************/
-void player_system_free(Player* player_ptr)
+void player_system_free(Player *player_ptr)
 {
     if (!player_ptr)
         return;
 
-   
     player_ptr->char1.texture = nullptr;
     player_ptr->char2.texture = nullptr;
 
     player_ptr->projectiles.clear(); // Clean up projectiles
-    player_ptr->particles.clear(); 
+    player_ptr->particles.clear();
     // Clear active player reference
     player_ptr->current_player = nullptr;
 }
 
-void player_take_damage(Player* player_ptr, int damage)
+void player_take_damage(Player *player_ptr, int damage)
 {
-    if (!player_ptr) return;
+    if (!player_ptr)
+        return;
 
-    int* curr_hp = (player_ptr->current_character == 1)
-        ? &player_ptr->stats.char1_curr_health
-        : &player_ptr->stats.char2_curr_health;
+    // Play different hurt sound depending on active character
+    if (player_ptr->current_character == 1)
+        play_sfx(g_audio.sfx_knight_hurt); // Knight hurt sound
+    else
+        play_sfx(g_audio.sfx_mage_hurt); // Mage hurt sound
+
+    int *curr_hp = (player_ptr->current_character == 1)
+                       ? &player_ptr->stats.char1_curr_health
+                       : &player_ptr->stats.char2_curr_health;
 
     *curr_hp -= damage;
-    if (*curr_hp < 0) *curr_hp = 0;
+    if (*curr_hp < 0)
+        *curr_hp = 0;
 
     // If selected character is dead, switch to the other one if they're alive
     if (*curr_hp <= 0)
     {
-        if (player_ptr->current_character == 1)     
-            player_ptr->char1.is_dead = true;        
-        else                                         
+        if (player_ptr->current_character == 1)
+            player_ptr->char1.is_dead = true;
+        else
             player_ptr->char2.is_dead = true;
 
-		// Auto-switch to the other character if not dead
+        // Auto-switch to the other character if not dead
         if (player_ptr->current_character == 1 && player_ptr->stats.char2_curr_health > 0)
         {
             player_ptr->current_character = 2;
@@ -521,9 +575,47 @@ void player_take_damage(Player* player_ptr, int damage)
     }
 }
 
-bool player_is_dead(Player* player_ptr)
+bool player_is_dead(Player *player_ptr)
 {
-    if (!player_ptr) return false;
+    if (!player_ptr)
+        return false;
     return (player_ptr->stats.char1_curr_health <= 0 &&
-        player_ptr->stats.char2_curr_health <= 0);
+            player_ptr->stats.char2_curr_health <= 0);
+}
+
+void spawn_player_from_map(Player *player_ptr, f32 tile_size)
+{
+    // World bounds
+    float world_left = -800.0f;
+    float world_top = 450.0f;
+
+    for (int r = 0; r < TILE_ROWS; r++)
+    {
+        for (int c = 0; c < TILE_COLS; c++)
+        {
+            if (map[r][c] == KNIGHT || map[r][c] == WIZARD)
+            {
+                // Compute world coordinates based on top-left origin
+                float x = world_left + c * tile_size;
+
+                // Y needs to decrease from top to bottom
+                float y = world_top - (r * tile_size);
+
+                // Assign positions
+                if (map[r][c] == WIZARD)
+                {
+                    player_ptr->char1.x = x;
+                    player_ptr->char1.y = y;
+                }
+                else
+                {
+                    player_ptr->char2.x = x;
+                    player_ptr->char2.y = y;
+                }
+
+                // Remove spawn tile
+                // map[r][c] = FLOOR;
+            }
+        }
+    }
 }

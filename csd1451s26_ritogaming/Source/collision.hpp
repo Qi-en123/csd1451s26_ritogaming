@@ -25,7 +25,7 @@ struct Wall
 
 // Global walls vector
 extern std::vector<Wall> g_walls;
-
+extern bool door_triggered;
 // Generate walls from actual dungeon map
 void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size);
 

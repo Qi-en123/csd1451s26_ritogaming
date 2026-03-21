@@ -14,6 +14,8 @@
 #include "opening.hpp"
 #include "mainmenu.hpp"
 #include "level_editor.hpp"
+#include "end_screen.hpp"
+#include "levels.hpp"
 
 // ----------------------------------------------------------------------------
 // Current, previous, and next game state identifiers
@@ -96,9 +98,25 @@ void gsm_update()
 		fpFree = level_editor_free;
 		fpUnload = level_editor_unload;
 		break;
+	case GS_LEVELS:
+		fpLoad = levels_load;
+		fpInitialize = levels_init;
+		fpUpdate = levels_update;
+		fpDraw = levels_draw;
+		fpFree = levels_free;
+		fpUnload = levels_unload;
+		break;
 	case GS_RESTART:
 		break;
-
+	case GS_WIN:
+	case GS_LOSE:
+		fpLoad = end_screen_load;
+		fpInitialize = end_screen_init;
+		fpUpdate = end_screen_update;
+		fpDraw = end_screen_draw;
+		fpFree = end_screen_free;
+		fpUnload = end_screen_unload;
+		break;
 	case GS_QUIT:
 		break;
 

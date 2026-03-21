@@ -11,12 +11,14 @@
 #include "collision.hpp"
 #include "map.hpp"
 #include "utils.hpp"
+#include "audio_manager.hpp"
 
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <Windows.h>
 
 //textures for all puzzle types (elements are tints)
 AEGfxTexture* puzzle_block_textures[PUZZLE_TYPE_COUNT]{};
@@ -30,17 +32,13 @@ std::vector<int> button_indexes{}, pushable_indexes{};
 //to store all puzzle blocks
 std::vector<puzzle> puzzle_blocks;
 
-//store vec of pairs containing:
-//button_id
-//vector of spike/s coordinates to de/activate
-struct buttonTrigger {
-	s32 id;
-	std::vector<std::pair<int, int>> coords;
-};
 std::vector<buttonTrigger> btns{};
 
+static bool is_drag_playing = false;
+static bool drag_was_active = false;
+extern AudioManager g_audio;
 
-#pragma region FILE READING & WRITING
+#pragma region LEVEL EDITOR HELPER FUNCTIONS
 
 void load_puzzle_textures() {
 	char filename[128];
@@ -54,6 +52,7 @@ void load_puzzle_textures() {
 }
 
 void initialize_puzzle_blocks(char const* filename) {
+	printf("%f\n", tile_size);
 	puzzle_size = tile_size - 8.0f;
 
 	std::ifstream ifs{ filename };
@@ -71,15 +70,19 @@ void initialize_puzzle_blocks(char const* filename) {
 	f32 startX = -1600.f / 2.f;
 	f32 startY = 900.f / 2.f;
 
+	puzzle_blocks.clear();
+	button_indexes.clear();
+	pushable_indexes.clear();
+
 	//Reads and stores values to init puzzle blocks
 	for (int i{}; i < num_puzzle_blocks; ++i) {
 		std::string type;
 		s32 row, col, chara;
 		ifs >> type >> row >> col >> chara;
 
-		f32 posx = startX + row * tile_size;
-		f32 posy = startY - col * tile_size;
-
+		f32 posx = startX + col * tile_size;
+		f32 posy = startY - row * tile_size;
+		printf("type:%s row:%d col:%d -> posx:%f posy:%f\n", type.c_str(), row, col, posx, posy);
 		//buttons have no elems (by design)
 		if (type == "BUTTON") {
 			s32 id;
@@ -89,7 +92,7 @@ void initialize_puzzle_blocks(char const* filename) {
 			puzzle_blocks.push_back(tmp);
 			button_indexes.push_back(i);
 
-			//std::cout << type << ' ' << row << ' ' << col << ' ' << id << '\n';
+			std::cout << type << ' ' << row << ' ' << col << ' ' << id << '\n';
 		}
 
 		//every other puzzle type may have elems
@@ -103,15 +106,23 @@ void initialize_puzzle_blocks(char const* filename) {
 			}
 		
 			if (type == "PUSHABLE") {
+
 				puzzle tmp{ PUSHABLE, posx, posy, e, chara };
 				puzzle_blocks.push_back(tmp);
 				pushable_indexes.push_back(i);
 
-				//std::cout << type << ' ' << row * tile_size << ' ' << col * tile_size << ' ' << elem << '\n';
+				std::cout << type << ' ' << row << ' ' << col << ' ' << elem << '\n';
 			}
 
-			else if (type == "PIT") {
+			else if (type == "PIT"){
+
 				puzzle tmp{ PIT,posx,posy,e,chara };
+				puzzle_blocks.push_back(tmp);
+			}
+
+			else if (type == "SPIKE") {
+				
+				puzzle tmp{ SPIKE,posx,posy,e,chara };
 				puzzle_blocks.push_back(tmp);
 			}
 		}
@@ -152,6 +163,290 @@ void initialize_puzzle_blocks(char const* filename) {
 	ifs.close();
 }
 
+//u gotta reserve the vec
+//cuz if i click n drag
+//its gon reallocate so many times n lag
+void place_puzzle(s32 row, s32 col, PuzzleType type, std::vector<puzzle>& puzzles) {
+	if (type == PUZZLE_TYPE_COUNT) return;
+
+	f32 startX = -1600.f / 2.f;
+	f32 startY = 900.f / 2.f;
+
+	f32 posx = startX + col * tile_size;
+	f32 posy = startY - row * tile_size;
+
+	switch (type) {
+	case PUSHABLE:
+		puzzles.emplace_back(PUSHABLE, posx, posy, NO_ELEMENT, 0);
+		break;
+
+	case SPIKE:
+		puzzles.emplace_back(SPIKE, posx, posy, NO_ELEMENT, 0);
+		break;
+
+	case BUTTON_UP:
+	case BUTTON_DOWN:
+		puzzles.emplace_back(BUTTON_UP, posx, posy, -1, 0);
+		break;
+
+	case PIT:
+	case PIT_FILLED:
+		puzzles.emplace_back(PIT, posx, posy, NO_ELEMENT, 0);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void remove_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
+	if (puzzles.empty()) return;
+
+	f32 startX = -1600.f / 2.f;
+	f32 startY = 900.f / 2.f;
+
+	f32 posx = startX + col * tile_size;
+	f32 posy = startY - row * tile_size;
+
+	for (s32 i{}; i < puzzles.size(); ++i) {
+
+		if (posx == puzzles[i].posx && posy == puzzles[i].posy) {
+
+			puzzles[i] = puzzles.back();
+			puzzles.pop_back();
+			return;
+		}
+
+	}
+}
+
+puzzle* get_editing_puzzle(s32 row, s32 col, std::vector<puzzle>& puzzles) {
+
+	//printf("%d, %d\n", row, col);
+
+	f32 startX = -1600.f / 2.f;
+	f32 startY = 900.f / 2.f;
+	
+	f32 posx = startX + col * tile_size;
+	f32 posy = startY - row * tile_size;
+
+	//printf("Current: %f, %f\n", posx, posy);
+
+	for (puzzle& p : puzzles) {
+		//printf("Check with: %f, %f\n", p.posx, p.posy);
+
+		if (posx == p.posx && posy == p.posy) {
+			return &p;
+		}
+	}
+
+	return nullptr;
+}
+
+void pair_spike_to_button(s32 row, s32 col, buttonTrigger& bt) {
+
+	bt.coords.push_back({ row,col });
+}
+
+void remove_spike_button_pair(s32 row, s32 col, buttonTrigger& bt) {
+
+	for (std::pair<int, int>& c : bt.coords) {
+		if (c.first == row && c.second == col) {
+			c = bt.coords.back();
+			bt.coords.pop_back();
+			return;
+		}
+	}
+}
+
+bool spike_is_paired(s32 row, s32 col, buttonTrigger const& bt) {
+
+	for (std::pair<int, int> const& c : bt.coords) {
+		if (c.first == row && c.second == col) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+static s32 convert_to_col(f32 x) {
+	f32 startX = -800.0f;
+	return static_cast<s32>((x - startX) / tile_size);
+}
+
+static s32 convert_to_row(f32 y) {
+	f32 startY = 450.0f;
+	return static_cast<s32>((startY - y) / tile_size);
+}
+
+bool overwrite_puzzle_blocks(std::vector<puzzle> const& puzzles,
+	std::vector<buttonTrigger> const& bt,
+	const std::string& filename) {
+
+	std::ofstream file{ filename };
+
+	if (!file.is_open())
+	{
+		std::cerr << "Failed to open map file for overwrite: " << filename << "\n";
+		return false;
+	}
+
+	file << "Puzzles: " << puzzles.size() << "\n\n";
+
+	//Write buttons to text
+	//abit inefficient but am looping thrice to print in order
+	//so i can render in order
+	for (const puzzle& p : puzzles) {
+		if (p.type == BUTTON_UP || p.type == BUTTON_DOWN) {
+			//I need a world to grid helper fnc to conver pos.x to rows etc.
+			file << "BUTTON\t "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.button_id << '\n';
+		}
+	}
+	//Write Pit 2nd last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PIT || p.type == PIT_FILLED) {
+			file << "PIT\t "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	for (const puzzle& p : puzzles) {
+		if (p.type == SPIKE) {
+			file << "SPIKE\t"
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	//Save pushable last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PUSHABLE) {
+			file << "PUSHABLE "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+
+	//save triggers here
+	file << "\nTriggers: " << bt.size();
+	for (buttonTrigger const& b : bt) {
+		//print id
+		file << '\n' << b.id << ": ";
+
+		//print coords
+		for (std::pair<int, int> const& c : b.coords) {
+			file << '(' << c.first << ',' << c.second << ')';
+		}
+	}
+
+	file.close();
+	return true;
+}
+
+bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
+	std::vector<buttonTrigger> const& bt,
+	std::string& out_filename) {
+	printf("tile_size at save: %f\n", tile_size);
+	// Find highest existing lvl number and go one above it
+	s32 highest = 0;
+	WIN32_FIND_DATAA find_data;
+	HANDLE hFind = FindFirstFileA("Assets/Levels/l*_puzzles.txt", &find_data);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do {
+			std::string fname = find_data.cFileName; // file name
+			size_t start = fname.find("l") + 1; // position of the number 
+			size_t end = fname.find("_puzzles.txt"); //position of the end of number
+			if (start != std::string::npos && end != std::string::npos) // ensure both number and .txt exist
+			{
+				int n = std::stoi(fname.substr(start, end - start)); // extract the number from the filename
+				if (n > highest) highest = n; // update highest if this file's number is greater
+			}
+		} while (FindNextFileA(hFind, &find_data));
+		FindClose(hFind);
+	}
+
+	std::string filename = "Assets/Levels/l" + std::to_string(highest + 1) + "_puzzles.txt";
+	out_filename = filename; // return the filename used
+
+	//filename now represents next available level
+	//std::cout << filename << '\n';
+	std::ofstream ofs{ filename };
+	if (!ofs)
+	{
+		std::cerr << "Failed to open puzzle map file for writing: " << filename << "\n";
+		return false;
+	}
+
+	ofs << "Puzzles: " << puzzles.size() << "\n\n";
+
+	//Write buttons to text
+	//abit inefficient but am looping thrice to print in order
+	//so i can render in order
+	for (const puzzle& p : puzzles) {
+		if (p.type == BUTTON_UP || p.type == BUTTON_DOWN) {
+			//I need a world to grid helper fnc to conver pos.x to rows etc.
+			ofs << "BUTTON\t " 
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.button_id << '\n';
+		}
+	}
+	//Write Pit 2nd last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PIT || p.type == PIT_FILLED) {
+			ofs << "PIT\t "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	for (const puzzle& p : puzzles) {
+		if (p.type == SPIKE) {
+			ofs << "SPIKE\t"
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+	//Save pushable last
+	for (const puzzle& p : puzzles) {
+		if (p.type == PUSHABLE) {
+			ofs << "PUSHABLE "
+				<< convert_to_row(p.posy) << ' '
+				<< convert_to_col(p.posx) << ' '
+				<< p.hidden_from << ' ' << p.element << '\n';
+		}
+	}
+
+
+	//save triggers here
+	ofs << "\nTriggers: " << bt.size();
+	for (buttonTrigger const& b : bt) {
+		//print id
+		ofs << '\n' << b.id << ": ";
+
+		//print coords
+		for (std::pair<int, int> const& c : b.coords) {
+			ofs << '(' << c.first << ',' << c.second << ')';
+		}
+	}
+
+	ofs.close();
+	return true;
+}
+
 #pragma endregion
 
 
@@ -174,15 +469,15 @@ void render_puzzle_blocks() {
 			case WATER:
 				clr = { 0.0f,0.0f,3.0f,1.0f };
 				break;
-			case EARTH:
-				clr = { 0.0f,0.0f,0.0f,1.0f };
-				break;
+			//case EARTH:
+			//	clr = { 0.0f,0.0f,0.0f,1.0f };
+			//	break;
 			case FIRE:
 				clr = { 3.0f,0.0f,0.0f,1.0f };
 				break;
-			case AIR:
-				clr = { 3.0f,3.0f,3.0f,1.0f };
-				break;
+			//case AIR:
+			//	clr = { 3.0f,3.0f,3.0f,1.0f };
+			//	break;
 			default:
 				break;
 			}
@@ -204,14 +499,14 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 		if (ss_collision(newX, newY, playerHalfSize, playerHalfSize,
 			curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
 		{
-			if (curr.type == BUTTON_UP || curr.type == BUTTON_DOWN || curr.type == PIT_FILLED) {
+			//no collision against these types
+			if (curr.type == BUTTON_UP ||
+				curr.type == BUTTON_DOWN ||
+				curr.type == PIT_FILLED) {
+
 				continue;
 			}
 
-			if (curr.type == PIT) {
-				puzzle_index = i;
-				return true;
-			}
 			// Debug: print tile coordinates
 			//printf("Colliding with puzzle at (%.2f, %.2f)\n", e_block.position.x, e_block.position.y);
 			puzzle_index = i;
@@ -290,13 +585,12 @@ void puzzle_button_manager() {
 		if (triggered) {
 			//goes through all coords
 			for (std::pair<int,int> pos : btns[j].coords) {
-				//rn the buttons only deactivate stuff
-				map[pos.first][pos.second] = FLOOR;
-				//printf("%d, %d\n", pos.first, pos.second);
-			}
 
-			//"refresh" collision map
-			generate_walls_from_map(map, tile_size);
+				//printf("%d, %d\n", pos.first, pos.second);
+
+				puzzle* spike = get_editing_puzzle(pos.first, pos.second, puzzle_blocks);
+				spike->active = false;
+			}
 		}
 	}
 }
@@ -337,6 +631,7 @@ bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
 			break;
 
 		case PUSHABLE:
+		case SPIKE:
 			//check collision against other puzzles
 			if (ss_collision(curr.posx, curr.posy, hts, hts,
 				pos_x, pos_y, hts, hts)) {
@@ -350,6 +645,17 @@ bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
 	}
 	return false;
 }
+
+void puzzle_audio_update() {
+	if (!drag_was_active && is_drag_playing) {
+		// Neither move nor drag fired this frame — stop the sound
+		AEAudioStopGroup(g_audio.sfx_group);
+		is_drag_playing = false;
+	}
+	// Reset for next frame
+	drag_was_active = false;
+}
+
 
 void move_puzzle(s32 index, Direction direction, Element player_elem) {
 	puzzle& curr = puzzle_blocks[index];
@@ -385,6 +691,12 @@ void move_puzzle(s32 index, Direction direction, Element player_elem) {
 		!puzzle_to_inactive_collision(curr.posx + dx, curr.posy + dy)) {
 		curr.posx += dx;
 		curr.posy += dy;
+
+		if (!is_drag_playing) {
+			play_sfx(g_audio.sfx_drag_pull, 0.03f, 1.0f, -1);
+			is_drag_playing = true;
+		}
+		drag_was_active = true;
 	}
 }
 
@@ -402,7 +714,8 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 	f32 dx{ player_pos_x - puzzle.posx };
 	f32 dy{ player_pos_y - puzzle.posy };
 
-	const f32 min_gap{ 3.0f }; //prevent puzzle going inside wall
+	//prevent puzzle going inside wall
+	const f32 min_gap{ 3.0f };
 	const f32 grab_range{ (player_half_size + puzzle_size / 2.0f) + PUZZLE_GRAB_RANGE };
 
 	//printf("%f, %f\n", (dx * dx + dy * dy),(grab_range * grab_range));
@@ -413,7 +726,7 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 		dragging = true;
 		const f32 min_dist = player_half_size + (puzzle_size / 2.0f) + min_gap;
 		f32 newX{ puzzle.posx }, newY{ puzzle.posy };
-		
+
 		//checks if player is top/bottom or left/right using x/y overlap distance
 		if ((player_half_size + puzzle_size / 2.0f) - fabsf(dx) <
 			(player_half_size + puzzle_size / 2.0f) - fabsf(dy)) {
@@ -431,16 +744,40 @@ void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 			!puzzle_collide_puzzles(index, newX, newY)) {
 			puzzle.posx = newX;
 			puzzle.posy = newY;
+			if (!is_drag_playing) {
+				play_sfx(g_audio.sfx_drag_pull, 0.03f, 1.0f, -1);
+				is_drag_playing = true;
+			}
+			drag_was_active = true;
 		}
-
-	}
-	else {
-		dragging = false;
 	}
 }
 
 void unload_puzzle_textures() {
 	for (int i{}; i < PUZZLE_TYPE_COUNT; ++i) {
 		AEGfxTextureUnload(puzzle_block_textures[i]);
+	}
+}
+
+//water(0), fire(1)
+Element previous_element(Element elem) {
+	switch (elem) {
+	case WATER:
+		return NO_ELEMENT;
+	case FIRE:
+		return WATER;
+	case NO_ELEMENT:
+		return FIRE;
+	}
+}
+
+Element next_element(Element elem) {
+	switch (elem) {
+	case WATER:
+		return FIRE;
+	case FIRE:
+		return NO_ELEMENT;
+	case NO_ELEMENT:
+		return WATER;
 	}
 }

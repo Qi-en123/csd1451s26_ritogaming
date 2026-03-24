@@ -25,7 +25,8 @@
 extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
-#define DAMAGE 1 // change this for fireball damage
+
+#define DAMAGE 2 // change this for fireball damage
 #define MELEE_DAMAGE 1  // knight swing damage
 #define M_PI 3.14159265358979323846
 

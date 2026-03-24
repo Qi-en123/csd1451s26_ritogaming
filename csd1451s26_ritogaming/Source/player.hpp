@@ -86,26 +86,26 @@ struct Character
 // Player system structure
 struct Player
 {
-	PlayerStats stats{};
+    PlayerStats stats{};
     SwingArc swing;
 
-	// Individual characters
-	Character char1{};
-	Character char2{};
+    // Individual characters
+    Character char1{};
+    Character char2{};
 
-	// Pointer to currently active character - EASY REFERENCE!
-	Character* current_player{};
-	s32 current_character{ 1 }; // 1 or 2
+    // Pointer to currently active character - EASY REFERENCE!
+    Character* current_player{};
+    s32 current_character{ 1 }; // 1 or 2
 
-	// Shared resources
-	AEGfxVertexList* square_mesh{};
-	AEGfxVertexList* triangle_mesh{};
+    // Shared resources
+    AEGfxVertexList* square_mesh{};
+    AEGfxVertexList* triangle_mesh{};
 
-	// Shared transformation matrices
-	AEMtx33 character_scale{};
-	AEMtx33 triangle_scale{};
-	AEMtx33 triangle_transform{};
-	AEMtx33 rotate{};
+    // Shared transformation matrices
+    AEMtx33 character_scale{};
+    AEMtx33 triangle_scale{};
+    AEMtx33 triangle_transform{};
+    AEMtx33 rotate{};
 
     // Projectile system
     std::vector<Projectile> projectiles;
@@ -114,8 +114,8 @@ struct Player
     int fireball_count{ 5 };
     f32 shoot_cooldown{ 0.0f };
 
-	// Last movement direction for shooting
-	f32 last_dir_x{}, last_dir_y{};
+    // Last movement direction for shooting
+    f32 last_dir_x{}, last_dir_y{};
 };
 
 // Global player instance

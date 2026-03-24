@@ -3,7 +3,7 @@
 \author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
 \brief:						This file implements Level 2 (Boss Room) functions to load the assets from a file,
-							initialize the level, update game logic, render, free resources
+                            initialize the level, update game logic, render, free resources
 **************************************************************************/
 #include "AEEngine.h"
 #include <cstdio>
@@ -31,26 +31,29 @@ f32 totalWorldW2;
 f32 totalWorldH2;
 extern f32 dt;
 
+static AEGfxTexture *skeleton_texture = nullptr;
+
 void level2_load()
 {
-	for (int i = 0; i < NUM_TILE_TYPES; i++)
-		TileTextures[i] = nullptr;
+    for (int i = 0; i < NUM_TILE_TYPES; i++)
+        TileTextures[i] = nullptr;
 
-	// Load textures properly
-	char filename[128];
-	for (int i = 0; i < NUM_TILE_TYPES; ++i)
-	{
-		sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
-		TileTextures[i] = AEGfxTextureLoad(filename);
-		if (!TileTextures[i])
-			printf("Failed to load: %s\n", filename);
-	}
-	load_puzzle_textures();
+    // Load textures properly
+    char filename[128];
+    for (int i = 0; i < NUM_TILE_TYPES; ++i)
+    {
+        sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
+        TileTextures[i] = AEGfxTextureLoad(filename);
+        if (!TileTextures[i])
+            printf("Failed to load: %s\n", filename);
+    }
+    load_puzzle_textures();
     load_ui_textures(&ui_manager);
+    skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
     end_screen_load();
 }
 
-//void level2_initialize()
+// void level2_initialize()
 //{
 //	zoom = 1.0f;
 //	// Determine tile size to fit both width and height
@@ -79,9 +82,9 @@ void level2_load()
 //	intialize_puzzle_blocks();
 //
 //	//ShiftMapRight(2);
-//}
+// }
 
-//void level2_initialize()
+// void level2_initialize()
 //{
 //	zoom = 1.0f;
 //	// Determine tile size to fit both width and height
@@ -99,7 +102,7 @@ void level2_load()
 //	player_instance.char1.x = bottomX - 25.0f;     // Center left
 //	player_instance.char1.y = bottomY;
 //
-//	player_instance.char2.x = bottomX + 25.0f;     // Center right  
+//	player_instance.char2.x = bottomX + 25.0f;     // Center right
 //	player_instance.char2.y = bottomY;
 //
 //	// Ensure current player is set correctly
@@ -130,31 +133,32 @@ void level2_load()
 //	//intialize_puzzle_blocks();
 //
 //	//ShiftMapRight(2);
-//}
+// }
 
 void level2_init()
 {
     enemy_spawned = false;
     zoom = 1.0f;
-    //tile_size = 64.f;
-    player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
+    // tile_size = 64.f;
+    player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
+
     player_instance.stats.character_size = tile_size - 4.0f;
 
     // FIX 1: Set player positions to bottom of boss room
     // Based on initialize_boss_map(): rows 2-11, columns 6-15
     // Map origin: X = -800, Y = 450
     const f32 TILE_SIZE = 64.0f;
-    const f32 MAP_START_X = -1600.0f / 2.0f;  // -800
-    const f32 MAP_START_Y = 900.0f / 2.0f;    // 450
+    const f32 MAP_START_X = -1600.0f / 2.0f; // -800
+    const f32 MAP_START_Y = 900.0f / 2.0f;   // 450
 
     // Player at bottom of boss room
-    f32 bottomX = MAP_START_X + (10.5f * TILE_SIZE);  // Column 10.5 (center)
-    f32 bottomY = MAP_START_Y - (10.0f * TILE_SIZE);   // Row 10 (near bottom, avoiding wall)
+    f32 bottomX = MAP_START_X + (10.5f * TILE_SIZE); // Column 10.5 (center)
+    f32 bottomY = MAP_START_Y - (10.0f * TILE_SIZE); // Row 10 (near bottom, avoiding wall)
 
-    player_instance.char1.x = bottomX - 25.0f;     // Center left
+    player_instance.char1.x = bottomX - 25.0f; // Center left
     player_instance.char1.y = bottomY;
 
-    player_instance.char2.x = bottomX + 25.0f;     // Center right  
+    player_instance.char2.x = bottomX + 25.0f; // Center right
     player_instance.char2.y = bottomY;
 
     // Ensure current player is set correctly
@@ -189,30 +193,31 @@ void level2_init()
     f32 room_bottom = MAP_START_Y - (10 * TILE_SIZE) - (TILE_SIZE / 2.0f);
 
     enemy_manager_instance.spawn_dragon(dragon_x, dragon_y,
-        room_left, room_right, room_top, room_bottom);
+                                        room_left, room_right, room_top, room_bottom);
 }
 
 void level2_update()
 {
 
     printf("active enemies: %d, spawned: %d\n",
-        enemy_manager_instance.get_active_enemy_count(), enemy_spawned);
+           enemy_manager_instance.get_active_enemy_count(), enemy_spawned);
     pause_update();
-    if (is_paused) return;
+    if (is_paused)
+        return;
     dt = (f32)AEFrameRateControllerGetFrameTime();
 
     get_zoom(dt);
 
     // Bounds for boss room
     simulate_camera(&cam, &player_instance.current_player->x, &player_instance.current_player->y,
-        -6000.0f, 6000.0f, -5000.0f, 5000.0f);
+                    -6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
     player_system_update(&player_instance);
     entity_system_update(&player_instance, &enemy_manager_instance);
 
-    //check_button_collision(player_instance.char1.x, player_instance.char1.y,
-    //    player_instance.char2.x, player_instance.char2.y,
-    //    player_instance.config.character_size / 2.0f);
+    // check_button_collision(player_instance.char1.x, player_instance.char1.y,
+    //     player_instance.char2.x, player_instance.char2.y,
+    //     player_instance.config.character_size / 2.0f);
     puzzle_button_manager();
 
     check_and_open_doors(&player_instance);
@@ -226,6 +231,7 @@ void level2_update()
     if (player_is_dead(&player_instance))
     {
         is_win = false;
+        restart_level_state = GS_BOSS_ROOM;
         next = GS_LOSE;
     }
 
@@ -233,6 +239,7 @@ void level2_update()
     if (enemy_spawned && enemy_manager_instance.get_active_enemy_count() == 0)
     {
         is_win = true;
+        restart_level_state = GS_BOSS_ROOM;
         next = GS_WIN;
     }
 }
@@ -243,8 +250,8 @@ void level2_draw()
 
     player_system_render(&player_instance);
     minimap_draw(&player_instance, map, TileTextures);
-    //Minimap_DrawWalls(map);
-    // Render enemies (dragon)
+    // Minimap_DrawWalls(map);
+    //  Render enemies (dragon)
     enemy_manager_instance.render();
     render_enemy_hp(&ui_manager, &enemy_manager_instance);
     render_player_hud(&ui_manager, &player_instance);
@@ -268,9 +275,16 @@ void level2_unload()
             TileTextures[i] = nullptr;
         }
     }
-	free_mesh();
-	unload_puzzle_textures();
-	player_system_free(&player_instance);
-    end_screen_unload(); 
-    minimap_unload();    
+    free_mesh();
+    unload_puzzle_textures();
+    player_system_free(&player_instance);
+
+    if (skeleton_texture)
+    {
+        AEGfxTextureUnload(skeleton_texture);
+        skeleton_texture = nullptr;
+    }
+
+    end_screen_unload();
+    minimap_unload();
 }

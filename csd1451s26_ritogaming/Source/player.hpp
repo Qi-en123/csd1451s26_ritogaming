@@ -4,11 +4,14 @@
 \par DP email:  c.cheong@digipen.edu
 \
 \co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
-\               Ahmad (10% - projectile for player 2 ; seprated out by claire into different functions)
+\               Ahmad (10% - projectile for player 2 ; separated out by Claire into different functions)
 \
-\brief:		    This header declares the player structure and public
-                functions for player initialization, input handling,
-                updating, rendering, and cleanup using AEEngine.
+\brief:		    Declares the player system structures and functions.
+\               Defines PlayerStats, Character, Projectile, and Particle
+\               structures. Provides interface for player initialization,
+\               input handling, updating, rendering, and resource cleanup.
+\               Supports two characters with different elements, health
+\               tracking, projectile shooting, and particle effects.
 **************************************************************************/
 #pragma once
 
@@ -60,6 +63,7 @@ struct PlayerStats
     // Movement settings
     f32 char1_move_speed = 6.5f;  // knight - slower
     f32 char2_move_speed = 13.f;  // mage   - faster
+    //f32 move_speed = 4.f; // Player movement speed (4.f) makes it look more in sync with audio.
 
     // This is for hp
     int char1_max_health{ 12 };
@@ -75,11 +79,13 @@ struct Character
     f32 x{}, y{}; // Position
     f32 speed{};  // Movement speed
 
-    AEGfxTexture* texture{}; // Character texture
-    AEMtx33 transform{};     // Transform matrix
+    AEGfxTexture* texture{};      // Character texture
+	AEGfxTexture* dead_texture{}; // Texture to show when character is "dead" (0 health)
+    AEMtx33 transform{};          // Transform matrix
 
     s32 character_id{}; // 1 or 2 for identification
     Element element{};  // Character's element (WATER, FIRE, etc.)
+	bool is_dead{};     // Flag to indicate if character is dead
 };
 
 
@@ -132,7 +138,8 @@ extern Player player_instance;
     \param player_ptr Pointer to the player structure to initialize.
     \param config Optional configuration override (uses defaults if nullptr).
 **************************************************************************/
-void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxTexture* char_2_texture);
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, 
+                        AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture);
 
 /**************************************************************************
     \brief

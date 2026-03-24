@@ -23,6 +23,7 @@
 //static s8 end_font = -1;
 bool is_win = false;
 bool is_paused = false;
+int restart_level_state = GS_LEVEL1;
 
 namespace
 {
@@ -117,7 +118,8 @@ void end_screen_update()
     if (IsButtonClicked(BTN_X, BTN_Y0, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_R))
     {
         play_sfx(g_audio.sfx_button_click, 1.f);
-        next = GS_LEVEL1;
+        //next = GS_LEVEL1;
+        next = restart_level_state;
     }
 
     // Main Menu

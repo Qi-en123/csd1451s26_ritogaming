@@ -233,6 +233,7 @@ void level2_update()
         is_win = false;
         restart_level_state = GS_BOSS_ROOM;
         next = GS_LOSE;
+        //end_screen_draw();
     }
 
     // Win condition (level 2 only)

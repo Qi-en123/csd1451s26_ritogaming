@@ -15,7 +15,7 @@
 #include "camera.hpp"
 #include "map.hpp"
 
-constexpr s32 player_light = 3;
+constexpr s32 player_light = 7;
 constexpr f32 player_light_fade = 1.0f;
 constexpr f32 max_brightness = 0.8f;
 

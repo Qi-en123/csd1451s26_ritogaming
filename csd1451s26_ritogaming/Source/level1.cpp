@@ -100,7 +100,7 @@ void level1_init()
 	load_map_from_file(selected_level_path.c_str(), map);
 	initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
 
-	generate_walls_from_map(map, 64.0f);
+	//generate_walls_from_map(map, 64.0f);
 
 	for (int r = 0; r < TILE_ROWS; ++r)
 		for (int c = 0; c < TILE_COLS; ++c)

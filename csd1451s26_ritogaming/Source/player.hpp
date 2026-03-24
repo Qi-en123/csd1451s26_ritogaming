@@ -27,10 +27,10 @@ struct Projectile
 struct SwingArc {
     bool active = false;
     bool has_hit = false;
-    f32 progress = 0.0f;
+    f32 progress =   0.0f;
     f32 dir = 1.0f;
     f32 radius = 45.0f;
-    f32 duration = 0.05;
+    f32 duration = 0.10f;
 };
 
 

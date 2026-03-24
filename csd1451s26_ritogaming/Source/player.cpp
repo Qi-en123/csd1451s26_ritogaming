@@ -514,7 +514,7 @@ void player_render_swing(Player* player_ptr)
         float py = cy + sinf(angle) * sw.radius;
 
         // dot size shrinks toward the tip for a trail effect
-        float dot_size = 6.0f * (1.0f - t * 0.5f);
+        float dot_size = 10.0f * (1.0f - t * 0.5f);
 
         draw_circle(px, py, dot_size, dot_size, true);
     }

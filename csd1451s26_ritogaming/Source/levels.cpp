@@ -221,10 +221,10 @@ static void build_level_list()
 void levels_load()
 {
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-    button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
+    button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed_old.png");
     bg_wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
     scroll_bar = AEGfxTextureLoad("Assets/Admin/scrollbar_future_grey.png");
-    font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 32);
+    font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
     load_tile_textures("Assets/Tiles");
 }
 
@@ -455,7 +455,7 @@ void levels_draw()
                         AEGfxPrint(font, label,
                             (cx / 800.f) - tw * 0.5f,
                             (cy - 10.f) / 450.f,
-                            1.f, 1.f, 1.f, 1.f, 1.f);
+                            1.f, 0.f, 0.f, 0.f, 1.f);
 
                         if (idx > 0) // index 0 is always the default level
                         {
@@ -495,7 +495,7 @@ void levels_draw()
                         AEGfxPrint(font, "Edit",
                             (edit_x / 800.f) - etw * 0.5f,
                             (edit_y - 10.f) / 450.f,
-                            0.9f, 1.f, 1.f, 1.f, 1.f);
+                            0.9f, 0.f, 0.f, 0.f, 1.f);
 
                         // Delete button (bottom half of cell)
                         f32 del_x = cx;
@@ -557,7 +557,7 @@ void levels_draw()
         AEGfxPrint(font, "Back",
             (-600.f / 800.f) - tw * 0.5f,
             (-380.f - 10.f) / 450.f,
-            1.f, 1.f, 1.f, 1.f, 1.f);
+            1.f, 0.f, 0.f, 0.f, 1.f);
     }
 
     // --- Level Editor button (bottom right) ---
@@ -567,8 +567,8 @@ void levels_draw()
     if (font != -1)
     {
         f32 tw = 0.f, th = 0.f;
-        AEGfxGetPrintSize(font, "Level Editor", 0.8f, &tw, &th);
-        AEGfxPrint(font, "Level Editor",
+        AEGfxGetPrintSize(font, "Editor", 0.8f, &tw, &th);
+        AEGfxPrint(font, "Editor",
             (600.f / 800.f) - tw * 0.5f,
             (-380.f - 10.f) / 450.f,
             0.8f, 0.9f, 0.7f, 0.3f, 1.f);

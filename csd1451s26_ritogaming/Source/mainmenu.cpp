@@ -21,7 +21,10 @@ namespace{
     AEGfxTexture* door = nullptr;
     AEGfxTexture* ghoul = nullptr;
     AEGfxTexture* knight = nullptr;
-    AEGfxTexture* button = nullptr;
+    //AEGfxTexture* button = nullptr;
+    AEGfxTexture* buttons[6] = { nullptr };
+
+
     AEGfxTexture* cursor = nullptr;
     AEGfxTexture* banner = nullptr;
     AEGfxTexture* panel = nullptr;
@@ -107,16 +110,20 @@ void mainmenu_load()
     door = AEGfxTextureLoad("Assets/Tiles/tile_0007.png");
     ghoul = AEGfxTextureLoad("Assets/Tiles/tile_0006.png");
     knight = AEGfxTextureLoad("Assets/Tiles/tile_0004.png");
-    //button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
-    button = AEGfxTextureLoad("Assets/Admin/main_menu_button.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-    banner = AEGfxTextureLoad("Assets/Admin/banner_classic_curtain.png");
+    banner = AEGfxTextureLoad("Assets/Admin/title_banner.png");
     panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
     bg = AEGfxTextureLoad("Assets/Admin/main_menu_bg.png");
 
+    buttons[0] = AEGfxTextureLoad("Assets/Admin/main_menu_button.png");
+    buttons[1] = AEGfxTextureLoad("Assets/Admin/main_menu_button2.png");
+    buttons[2] = AEGfxTextureLoad("Assets/Admin/main_menu_button3.png");
+    buttons[3] = AEGfxTextureLoad("Assets/Admin/main_menu_button4.png");
+    buttons[4] = AEGfxTextureLoad("Assets/Admin/main_menu_button5.png");
+    buttons[5] = AEGfxTextureLoad("Assets/Admin/main_menu_button6.png");
  
 	// Load font from Assets folder
-    font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 48);
+    font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
     printf("Font value: %d\n", font);
     if (font == -1)
     {
@@ -384,8 +391,9 @@ void mainmenu_draw()
     for (int i = 0; i < 5; ++i)
     {
         // Draw button texture
-        if (button)
-            render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y[i],
+        
+        if (buttons[i+1])
+            render_editor_ui(buttons[i+1], button_w, button_h, 1.0f, button_x, button_y[i],
                 IsButtonHovered(button_x, button_y[i], button_w, button_h));
 
         if (font != -1)
@@ -408,15 +416,15 @@ void mainmenu_draw()
 	
 
     //  Draw banner on top of door
-    if (banner) render_editor_ui(banner, 450.f, 100.f, 1.0f, -400.f, 200.f);
+    if (banner) render_editor_ui(banner, 840.f, 260.f, 1.0f, ghoul_start_x, 200.f);
 
     //  Draw title text on banner
     if (font != -1)
     {
         f32 text_width = 0.f, text_height = 0.f;
 		AEGfxGetPrintSize(font, "Ahmad's Dungeon", 1.f, &text_width, &text_height); // measure text size for centering
-        f32 norm_x = (-400.f / 800.f) - (text_width / 2.f); // center on banner
-		f32 norm_y = (200.f-10.f) / 450.f; // position on banner
+        f32 norm_x = (ghoul_start_x / 800.f) - (text_width / 2.f); // center on banner
+		f32 norm_y = (200.f + 300.0f / 8.0f) / 450.f; // position on banner
         AEGfxPrint(font, "Ahmad's Dungeon",
             norm_x, norm_y,
             1.f,
@@ -438,11 +446,11 @@ void mainmenu_draw()
 
 
         // Yes button
-        render_editor_ui(button, 200.f, 80.f, 1.0f, -100.f, -50.f,
+        render_editor_ui(buttons[2], 200.f, 80.f, 1.0f, -100.f, -50.f,
             IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
 
         // No button
-        render_editor_ui(button, 200.f, 80.f, 1.0f, 150.f, -50.f,
+        render_editor_ui(buttons[3], 200.f, 80.f, 1.0f, 150.f, -50.f,
             IsButtonHovered(150.f, -50.f, 200.f, 80.f));
 
         // Text
@@ -512,12 +520,10 @@ void mainmenu_unload()
         AEGfxTextureUnload(ghoul);
         ghoul = nullptr;
     }
-
-    if (button)
-    {
-        AEGfxTextureUnload(button);
-        button = nullptr;
-    }
+for(AEGfxTexture* button : buttons){
+    AEGfxTextureUnload(button);
+    button = nullptr;
+}
 
     if (cursor)
     {

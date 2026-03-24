@@ -14,7 +14,7 @@
 		ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
 		ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Admin/wizard_wand_nonactive1.png");
 		ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Admin/wizard_wand_active1.png");
-		ui_manager->font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 48);
+		ui_manager->font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
 	}
 
 	void free_ui_textures(UIManager* ui_manager)

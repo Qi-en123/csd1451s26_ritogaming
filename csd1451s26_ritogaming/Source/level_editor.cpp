@@ -35,7 +35,7 @@ namespace {
 	const PuzzleType puzzle_palette_ids[EDITABLE_PUZZLE_COUNT] =
 	{ PUZZLE_TYPE_COUNT, PUSHABLE, BUTTON_UP, PIT, SPIKE };
 	const char* puzzle_labels[EDITABLE_PUZZLE_COUNT] =
-	{ "Erase", "Pushable", "Button", "Pit", "Spike" };
+	{ "Erase", "Grave", "Button", "Pit", "Spike" };
 	PuzzleType selected_puzzle = PUSHABLE; //default
 
 	// --- Palette UI (right side panel) ---
@@ -224,7 +224,7 @@ static void draw_puzzle_edit_interface() {
 		break;
 		//Button edit is different, when button is selected it will lock
 	case BUTTON_UP:
-		line1 = "Placing spikes to pair...";
+		line1 = "Place spikes to pair...";
 
 		switch (editing_puzzle->hidden_from) {
 		case 1:
@@ -248,7 +248,7 @@ static void draw_puzzle_edit_interface() {
 	f32 text_w, text_h;
 	char const* msg1 = line1.c_str();
 	char const* msg2 = line2.c_str();
-	f32 text_scale = 1.2f;
+	f32 text_scale = 1.15f;
 	AEGfxGetPrintSize(font, msg1, text_scale, &text_w, &text_h);
 
 	f32 half_w = AEGfxGetWindowWidth() / 2.0f;
@@ -375,7 +375,7 @@ void level_editor_load()
 	// Load tile textures once and reuse for palette icons and grid rendering
 	load_tile_textures("Assets/Tiles");
 	cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-	font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 22);
+	font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 22);
 	erase_tile = AEGfxTextureLoad("Assets/Tiles/tile_0010.png");
 	edit_panel = AEGfxTextureLoad("Assets/Admin/edit_interface_panel.png");
 	edit_panel_save = AEGfxTextureLoad("Assets/Admin/edit_interface_save.png");
@@ -1085,7 +1085,7 @@ void level_editor_draw()
 		f32 norm_y = (PALETTE_TOP_Y + 45.f) / 450.f;
 		AEGfxPrint(font, tiles_header, norm_x, norm_y, 1.f, 0.7f, 0.6f, 0.3f, 1.f);
 
-		render_text_center("__________________", font, norm_x + tw * 0.5f,
+		render_text_center("________________", font, norm_x + tw * 0.5f,
 			norm_y - th * 0.5f, 1.0f, { 0.7f,0.6f,0.3f });
 	}
 

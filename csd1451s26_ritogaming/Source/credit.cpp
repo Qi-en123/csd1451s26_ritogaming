@@ -74,7 +74,7 @@ namespace {
 void credit_load()
 {
     // Load textures from Assets folder
-    credit_font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 32);
+    credit_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     printf("Font value: %d\n", credit_font);
     if (credit_font == -1)

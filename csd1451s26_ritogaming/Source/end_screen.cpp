@@ -76,11 +76,11 @@ static void draw_button_label(const char* label, f32 btn_x, f32 btn_y,
     if (end_font == -1) return;
 
     f32 tw = 0.f, th = 0.f;
-    AEGfxGetPrintSize(end_font, label, TEXT_SCALE * 0.9f, &tw, &th);
+    AEGfxGetPrintSize(end_font, label, scale, &tw, &th);
     // render_editor_ui is centred on world coords; AEGfxPrint uses -1..1 normalised
     f32 norm_x = (btn_x / 800.f) - (tw / 2.f);
     f32 norm_y = (btn_y - 15.f) / 450.f;
-    AEGfxPrint(end_font, label, norm_x, norm_y, TEXT_SCALE * 0.9f, 0.f, 0.f, 0.f, 1.f);
+    AEGfxPrint(end_font, label, norm_x, norm_y, scale, 0.f, 0.f, 0.f, 1.f);
 }
 
 // -------------------------------------------------------------------------
@@ -190,11 +190,11 @@ void end_screen_draw()
     {
         render_editor_ui(tex_button, BTN_W, BTN_H, 1.f, BTN_X, BTN_Y0,
             IsButtonHovered(BTN_X, BTN_Y0, BTN_W, BTN_H));
-        draw_button_label("Restart [R]", BTN_X, BTN_Y0);
+        draw_button_label("Restart [R]", BTN_X, BTN_Y0, 0.9f);
 
         render_editor_ui(tex_button, BTN_W, BTN_H, 1.f, BTN_X, BTN_Y1,
             IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H));
-        draw_button_label("Main Menu [M]", BTN_X, BTN_Y1);
+        draw_button_label("Main Menu [M]", BTN_X, BTN_Y1, 0.9f);
     }
 
     // Custom cursor
@@ -279,9 +279,35 @@ void pause_draw()
     //  4. "PAUSED" title � centred, yellow 
     if (end_font != -1)
     {
-        AEGfxPrint(end_font, "PAUSED", -0.2f, 0.2f, TEXT_SCALE * 2.0f, 1.0f, 1.0f, 0.0f, 1.0f);
-        AEGfxPrint(end_font, "ESC - Resume", -0.3f, 0.0f, TEXT_SCALE, 1.0f, 1.0f, 1.0f, 1.0f);
-        AEGfxPrint(end_font, "R   - Restart", -0.3f, -0.2f, TEXT_SCALE, 1.0f, 1.0f, 1.0f, 1.0f);
-        AEGfxPrint(end_font, "M   - Main Menu", -0.3f, -0.4f, TEXT_SCALE, 1.0f, 1.0f, 1.0f, 1.0f);
+        draw_button_label("Paused", P_BTN_X, P_BTN_Y, 2.f, 0.f, 0.f, 0.f);
+    }
+
+    //  5. Buttons (drawn on top of panel) 
+    if (buttons)
+    {
+        render_editor_ui(buttons, P_BTN_W, P_BTN_H, 1.f,
+            P_BTN_X, P_BTN_Y0,
+            IsButtonHovered(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H));
+        draw_button_label("Resume", P_BTN_X, P_BTN_Y0, 1.f, 0.f, 0.f, 0.f);
+
+        render_editor_ui(buttons, P_BTN_W, P_BTN_H, 1.f,
+            P_BTN_X, P_BTN_Y1,
+            IsButtonHovered(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H));
+        draw_button_label("Restart", P_BTN_X, P_BTN_Y1, 1.f, 0.f, 0.f, 0.f);
+
+        render_editor_ui(buttons, P_BTN_W, P_BTN_H, 1.f,
+            P_BTN_X, P_BTN_Y2,
+            IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H));
+        draw_button_label("Main Menu", P_BTN_X, P_BTN_Y2, 1.f, 0.f, 0.f, 0.f);
+    }
+
+    //  6. Custom cursor
+    if (tex_cursor)
+    {
+        s32 mx = 0, my = 0;
+        AEInputGetCursorPosition(&mx, &my);
+        f32 wx = (f32)mx - 800.f;
+        f32 wy = -(f32)my + 450.f;
+        render_editor_ui(tex_cursor, CURSOR_SIZE, CURSOR_SIZE, 1.f, wx, wy);
     }
 }

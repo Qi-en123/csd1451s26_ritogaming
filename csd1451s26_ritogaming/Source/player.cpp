@@ -26,9 +26,12 @@ extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
 #define DAMAGE 1 // change this for fireball damage
+#define MELEE_DAMAGE 1  // knight swing damage
+#define M_PI 3.14159265358979323846
 
 // Global player instance definition
 Player player_instance;
+
 
 
 static void player_system_update_transforms(Player* player_ptr)
@@ -67,7 +70,7 @@ void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxT
     // --- Character 1 setup ---
     player_ptr->char1.x = player_ptr->stats.char1_start_x;
     player_ptr->char1.y = player_ptr->stats.char1_start_y;
-    player_ptr->char1.speed = player_ptr->stats.move_speed;
+    player_ptr->char1.speed = player_ptr->stats.char1_move_speed;
     player_ptr->char1.character_id = 1;
     player_ptr->char1.element = WATER;
     player_ptr->char1.texture = char_1_texture;
@@ -75,7 +78,7 @@ void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, AEGfxT
     // --- Character 2 setup ---
     player_ptr->char2.x = player_ptr->stats.char2_start_x;
     player_ptr->char2.y = player_ptr->stats.char2_start_y;
-    player_ptr->char2.speed = player_ptr->stats.move_speed;
+    player_ptr->char2.speed = player_ptr->stats.char2_move_speed;
     player_ptr->char2.character_id = 2;
     player_ptr->char2.element = FIRE;
     player_ptr->char2.texture = char_2_texture;
@@ -137,28 +140,30 @@ static void player_handle_movement(Player* player_ptr)
     static bool is_dragging = false;
     static s32 puzzle_index;
 
+    f32 move_speed = player_ptr->current_player->speed;
+
     // Movement input
     if (AEInputCheckCurr(AEVK_W))
     {
-        nextY += is_dragging ? 1.0f : player_ptr->stats.move_speed;
+        nextY += is_dragging ? 1.0f : move_speed;
         player_ptr->last_dir_x = 0.0f;
         player_ptr->last_dir_y = 1.0f;
     }
     if (AEInputCheckCurr(AEVK_S))
     {
-        nextY -= is_dragging ? 1.0f : player_ptr->stats.move_speed;
+        nextY -= is_dragging ? 1.0f : move_speed;
         player_ptr->last_dir_x = 0.0f;
         player_ptr->last_dir_y = -1.0f;
     }
     if (AEInputCheckCurr(AEVK_A))
     {
-        nextX -= is_dragging ? 1.0f : player_ptr->stats.move_speed;
+        nextX -= is_dragging ? 1.0f : move_speed;
         player_ptr->last_dir_x = -1.0f;
         player_ptr->last_dir_y = 0.0f;
     }
     if (AEInputCheckCurr(AEVK_D))
     {
-        nextX += is_dragging ? 1.0f : player_ptr->stats.move_speed;
+        nextX += is_dragging ? 1.0f : move_speed;
         player_ptr->last_dir_x = 1.0f;
         player_ptr->last_dir_y = 0.0f;
     }
@@ -409,6 +414,112 @@ void player_render_fireball_count(Player* player_ptr)
     //render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
 }
 
+void player_handle_melee(Player* player_ptr)
+{
+    if (!player_ptr) return;
+
+    // Only character 1 (knight) swings
+    if (player_ptr->current_character != 1) return;
+    if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+
+    // Get mouse world position (same math you already have)
+    s32 mouseScreenX, mouseScreenY;
+    AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
+
+    f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
+    f32 halfHeight = (f32)AEGfxGetWindowHeight() / 2.0f;
+
+    f32 mouseWorldX = (f32)mouseScreenX - halfWidth + cam.pos.x;
+    f32 mouseWorldY = halfHeight - (f32)mouseScreenY + cam.pos.y;
+
+    // Determine left or right of player
+    float dx = mouseWorldX - player_ptr->char1.x;
+
+    player_ptr->swing.active = true;
+    player_ptr->swing.progress = 0.0f;
+    player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f;  // +1 right, -1 left
+}
+
+void player_update_swing(Player* player_ptr, f32 dt)
+{
+    if (!player_ptr) return;
+
+    SwingArc& sw = player_ptr->swing;
+    if (!sw.active) return;
+
+    sw.progress += dt / sw.duration;
+
+    // only check for hits once per swing, not every frame
+    if (!sw.has_hit)
+    {
+        float cx = player_ptr->char1.x;
+        float cy = player_ptr->char1.y;
+
+        float startAngle = M_PI * 0.5f;
+        float endAngle = -M_PI * 0.5f;
+        float currEnd = startAngle + (endAngle - startAngle) * sw.progress;
+
+        int segments = 20;
+        for (int i = 0; i <= segments; i++)
+        {
+            float t = (float)i / segments;
+            float angle = startAngle + (currEnd - startAngle) * t;
+
+            float px = cx + cosf(angle) * sw.radius * sw.dir;
+            float py = cy + sinf(angle) * sw.radius;
+
+            if (enemy_manager_instance.check_projectile_hit(px, py, 6.0f, MELEE_DAMAGE))
+            {
+                sw.has_hit = true; // stop checking once an enemy is hit
+                break;
+            }
+        }
+    }
+
+    if (sw.progress >= 1.0f)
+    {
+        sw.progress = 0.0f;
+        sw.active = false;
+        sw.has_hit = false; // reset for next swing
+    }
+}
+
+void player_render_swing(Player* player_ptr)
+{
+    if (!player_ptr) return;
+
+    SwingArc& sw = player_ptr->swing;
+    if (!sw.active) return;
+
+    float cx = player_ptr->char1.x;
+    float cy = player_ptr->char1.y;
+
+    float startAngle = M_PI * 0.5f;    // top
+    float endAngle = -M_PI * 0.5f;   // bottom
+    float currEnd = startAngle + (endAngle - startAngle) * sw.progress;
+
+    int   segments = 20;
+    float fade = 1.0f - sw.progress * 0.5f;
+
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetColorToMultiply(0.8f, 0.9f, 1.0f, fade);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i <= segments; i++)
+    {
+        float t = (float)i / segments;
+        float angle = startAngle + (currEnd - startAngle) * t;
+
+        float px = cx + cosf(angle) * sw.radius * sw.dir;
+        float py = cy + sinf(angle) * sw.radius;
+
+        // dot size shrinks toward the tip for a trail effect
+        float dot_size = 6.0f * (1.0f - t * 0.5f);
+
+        draw_circle(px, py, dot_size, dot_size, true);
+    }
+}
+
 /**************************************************************************/
 /*!
   Renders the player characters and active character indicator.
@@ -419,6 +530,7 @@ void player_system_render(Player* player_ptr)
     if (!player_ptr)
         return;
     player_render_particles(player_ptr);
+    player_render_swing(player_ptr);
     player_render_fireball_count(player_ptr);
 
     // Draw Character 1
@@ -461,6 +573,8 @@ void player_system_update(Player* player_ptr)
     player_update_projectiles(player_ptr, dt);
     player_system_update_transforms(player_ptr);
     player_update_particles(player_ptr, dt);
+    player_handle_melee(player_ptr);
+    player_update_swing(player_ptr, dt);
 }
 
 /**************************************************************************/

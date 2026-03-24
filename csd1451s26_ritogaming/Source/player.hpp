@@ -24,6 +24,15 @@ struct Projectile
     bool active;
 };
 
+struct SwingArc {
+    bool active = false;
+    bool has_hit = false;
+    f32 progress = 0.0f;
+    f32 dir = 1.0f;
+    f32 radius = 45.0f;
+    f32 duration = 0.05;
+};
+
 
 struct Particle {
     f32 x, y;
@@ -49,11 +58,12 @@ struct PlayerStats
     f32 char2_start_y = -950.0f;
 
     // Movement settings
-    f32 move_speed = 13.f; // Player movement speed
+    f32 char1_move_speed = 6.5f;  // knight - slower
+    f32 char2_move_speed = 13.f;  // mage   - faster
 
     // This is for hp
-    int char1_max_health{ 6 };
-    int char1_curr_health{6};
+    int char1_max_health{ 12 };
+    int char1_curr_health{12};
 
     int char2_max_health{ 6 };
     int char2_curr_health{6};
@@ -77,6 +87,7 @@ struct Character
 struct Player
 {
 	PlayerStats stats{};
+    SwingArc swing;
 
 	// Individual characters
 	Character char1{};
@@ -210,3 +221,7 @@ void player_take_damage(Player* player_ptr, int damage);
 bool player_is_dead(Player* player_ptr);
 
 void spawn_player_from_map(Player* player_ptr, f32 tile_size);
+
+void player_handle_melee(Player* player_ptr);
+void player_update_swing(Player* player_ptr, f32 dt);
+void player_render_swing(Player* player_ptr);

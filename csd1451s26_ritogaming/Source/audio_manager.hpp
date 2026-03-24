@@ -35,4 +35,4 @@ void stop_bgm();
 void pause_bgm();
 void resume_bgm();
 
-void play_sfx(AEAudio audio);
+void play_sfx(AEAudio audio, float volume = 0.01f, float pitch = 1.0f, int loop = 0);

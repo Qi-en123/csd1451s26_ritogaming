@@ -111,6 +111,8 @@ bool player_collide_puzzles(f32 newX, f32 newY, f32 playerHalfSize, s32& puzzle_
 
 void puzzle_button_manager(); //open to rename suggestions (txt me)
 
+void puzzle_audio_update();
+
 void move_puzzle(s32 index, Direction direction, Element player_elem);
 
 void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,

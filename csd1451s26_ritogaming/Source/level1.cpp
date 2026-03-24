@@ -158,6 +158,7 @@ void level1_update()
 	entity_system_update(&player_instance, &enemy_manager_instance);
 
 	puzzle_button_manager();
+	puzzle_audio_update();
 
 	//printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 

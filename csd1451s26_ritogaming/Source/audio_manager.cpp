@@ -74,7 +74,7 @@ void audio_free()
 void play_bgm(AEAudio audio)
 {
     AEAudioStopGroup(g_audio.bgm_group); // stop any current BGM first
-    AEAudioPlay(audio, g_audio.bgm_group, 1.0f, 1.0f, -1); // -1 = loop forever
+    AEAudioPlay(audio, g_audio.bgm_group, 0.07f, 1.0f, -1); // -1 = loop forever
 }
 
 void stop_bgm()
@@ -92,7 +92,7 @@ void resume_bgm()
     AEAudioResumeGroup(g_audio.bgm_group);
 }
 
-void play_sfx(AEAudio audio)
+void play_sfx(AEAudio audio, float volume, float pitch, int loop)
 {
-    AEAudioPlay(audio, g_audio.sfx_group, 1.0f, 1.0f, 0); // 0 = play once
+    AEAudioPlay(audio, g_audio.sfx_group, volume, pitch, loop);
 }

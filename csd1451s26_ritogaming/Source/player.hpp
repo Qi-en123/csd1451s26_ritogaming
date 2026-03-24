@@ -24,6 +24,15 @@ struct Projectile
     bool active;
 };
 
+struct SwingArc {
+    bool active = false;
+    bool has_hit = false;
+    f32 progress =   0.0f;
+    f32 dir = 1.0f;
+    f32 radius = 45.0f;
+    f32 duration = 0.10f;
+};
+
 
 struct Particle {
     f32 x, y;
@@ -49,11 +58,12 @@ struct PlayerStats
     f32 char2_start_y = -950.0f;
 
     // Movement settings
-    f32 move_speed = 13.f; // Player movement speed
+    f32 char1_move_speed = 6.5f;  // knight - slower
+    f32 char2_move_speed = 13.f;  // mage   - faster
 
     // This is for hp
-    int char1_max_health{ 6 };
-    int char1_curr_health{6};
+    int char1_max_health{ 12 };
+    int char1_curr_health{12};
 
     int char2_max_health{ 6 };
     int char2_curr_health{6};
@@ -76,25 +86,26 @@ struct Character
 // Player system structure
 struct Player
 {
-	PlayerStats stats{};
+    PlayerStats stats{};
+    SwingArc swing;
 
-	// Individual characters
-	Character char1{};
-	Character char2{};
+    // Individual characters
+    Character char1{};
+    Character char2{};
 
-	// Pointer to currently active character - EASY REFERENCE!
-	Character* current_player{};
-	s32 current_character{ 1 }; // 1 or 2
+    // Pointer to currently active character - EASY REFERENCE!
+    Character* current_player{};
+    s32 current_character{ 1 }; // 1 or 2
 
-	// Shared resources
-	AEGfxVertexList* square_mesh{};
-	AEGfxVertexList* triangle_mesh{};
+    // Shared resources
+    AEGfxVertexList* square_mesh{};
+    AEGfxVertexList* triangle_mesh{};
 
-	// Shared transformation matrices
-	AEMtx33 character_scale{};
-	AEMtx33 triangle_scale{};
-	AEMtx33 triangle_transform{};
-	AEMtx33 rotate{};
+    // Shared transformation matrices
+    AEMtx33 character_scale{};
+    AEMtx33 triangle_scale{};
+    AEMtx33 triangle_transform{};
+    AEMtx33 rotate{};
 
     // Projectile system
     std::vector<Projectile> projectiles;
@@ -103,8 +114,8 @@ struct Player
     int fireball_count{ 5 };
     f32 shoot_cooldown{ 0.0f };
 
-	// Last movement direction for shooting
-	f32 last_dir_x{}, last_dir_y{};
+    // Last movement direction for shooting
+    f32 last_dir_x{}, last_dir_y{};
 };
 
 // Global player instance
@@ -210,3 +221,7 @@ void player_take_damage(Player* player_ptr, int damage);
 bool player_is_dead(Player* player_ptr);
 
 void spawn_player_from_map(Player* player_ptr, f32 tile_size);
+
+void player_handle_melee(Player* player_ptr);
+void player_update_swing(Player* player_ptr, f32 dt);
+void player_render_swing(Player* player_ptr);

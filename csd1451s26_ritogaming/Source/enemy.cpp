@@ -162,9 +162,9 @@ void ghost::update(f32 dt, Player* player, camera* p_cam) {
 bat::bat(f32 start_x, f32 start_y)
     : base_enemy(start_x, start_y)
 {
-    speed = 60.0f;
-    current_health = 2;
-    max_health = 2;
+    speed = 80.0f;
+    current_health = 4;
+    max_health = 4;
     size = 70.0f;
     sight_range = 350.0f;
     texture_path = "Assets/kenney_pixel-platformer/tile_0025.png";
@@ -186,7 +186,7 @@ void bat::update(f32 dt, Player* player, camera* p_cam) {
             state = enemy_state::attacking;
             attack_timer += dt;
             if (attack_timer >= attack_cooldown) {
-                player_take_damage(player, 1); // 1 unit = half a heart
+                player_take_damage(player, 3); // 1 unit = half a heart
                 attack_timer = 0.0f;
             }
         }

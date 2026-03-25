@@ -190,11 +190,11 @@ void end_screen_draw()
     {
         render_editor_ui(tex_button, BTN_W, BTN_H, 1.f, BTN_X, BTN_Y0,
             IsButtonHovered(BTN_X, BTN_Y0, BTN_W, BTN_H));
-        draw_button_label("Restart [R]", BTN_X, BTN_Y0, 0.9f);
+        draw_button_label("Restart", BTN_X, BTN_Y0, 0.9f);
 
         render_editor_ui(tex_button, BTN_W, BTN_H, 1.f, BTN_X, BTN_Y1,
             IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H));
-        draw_button_label("Main Menu [M]", BTN_X, BTN_Y1, 0.9f);
+        draw_button_label("Main Menu", BTN_X, BTN_Y1, 0.9f);
     }
 
     // Custom cursor

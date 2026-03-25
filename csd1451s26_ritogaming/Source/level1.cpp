@@ -160,7 +160,7 @@ void level1_draw()
 	// debug_draw_all_walls();
 	// Render player system
 
-	render_puzzle_blocks(); 
+	
 
 	enemy_manager_instance.render();
 
@@ -168,6 +168,7 @@ void level1_draw()
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_character_ui(&ui_manager, &player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
+	render_puzzle_blocks();
 	player_system_render(&player_instance);
 
 

@@ -488,6 +488,8 @@ void player_handle_melee(Player* player_ptr)
     player_ptr->swing.active = true;
     player_ptr->swing.progress = 0.0f;
     player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f;  // +1 right, -1 left
+
+    play_sfx(g_audio.sfx_sword_atk, 0.1f);
 }
 
 void player_update_swing(Player* player_ptr, f32 dt)

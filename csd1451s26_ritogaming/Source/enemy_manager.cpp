@@ -114,8 +114,6 @@ void EnemyManager::load_textures() {
 }
 
 EnemyManager::~EnemyManager() {
-    std::cout << "calling destructor for EnemyManager\n";
-
     clear_all();
 
     // Force vectors to deallocate

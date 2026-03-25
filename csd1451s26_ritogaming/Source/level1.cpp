@@ -51,31 +51,6 @@ void level1_load()
 	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
 }
 
-// void level1_initialize()
-//{
-//	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-//	zoom = 1.1f;
-//	// Determine tile size to fit both width and height
-//
-//	tile_size = 64.f;
-//	player_system_init(&player_instance);
-//	player_instance.stats.character_size = tile_size - 8.0f;
-//	// Camera follows the active character via the pointer
-//	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
-//	init_mesh();
-//
-//	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
-//	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
-//	Minimap_Init(totalWorldW, totalWorldH, 200.0f); // 200px wide map
-//
-//	initialize_dungeon_map();
-//	generate_walls_from_map(map, 64.0f);
-//
-//	intialize_puzzle_blocks();
-//
-//	// Clear any existing enemies
-//	g_enemy_manager.clear_all();
-// }
 void level1_init()
 {
 	AEInputShowCursor(false);
@@ -120,10 +95,6 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
-	// // Clear any existing enemies and reinitialize with ghosts in top left room
-	// g_enemy_manager.clear_all();
-	// g_enemy_manager.set_level(true);
-	// g_enemy_manager.initialize_ghost_slots();
 
 	enemy_manager_instance.clear_all();
 	enemy_manager_instance.initialize_tutorial_area();
@@ -162,8 +133,6 @@ void level1_update()
 	puzzle_button_manager();
 	puzzle_audio_update();
 
-	// printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
-
 	check_and_open_doors(&player_instance);
 
 	enemy_manager_instance.update(dt, &player_instance, &cam);
@@ -186,15 +155,15 @@ void level1_draw()
 	// Render player system
 
 	render_puzzle_blocks();
-	player_system_render(&player_instance);
 
 	enemy_manager_instance.render();
-
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_player_hud(&ui_manager, &player_instance);
 	render_character_ui(&ui_manager, &player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
 	// Minimap_DrawWalls(map);
+
+	player_system_render(&player_instance);
 
 	pause_draw();
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);

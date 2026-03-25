@@ -153,7 +153,7 @@ void mainmenu_init()
     for (int i = 0; i < MAX_TRAIL; ++i)  ghoul_trail[i].active = false;
     trail_spawn_timer = 0.0f;
 
-    //play_bgm(g_audio.bgm_mainmenu);
+    play_bgm(g_audio.bgm_mainmenu);
 }
 
 

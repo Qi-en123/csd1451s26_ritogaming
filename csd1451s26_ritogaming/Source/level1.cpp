@@ -95,7 +95,6 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
-
 	enemy_manager_instance.clear_all();
 	enemy_manager_instance.initialize_tutorial_area();
 
@@ -154,14 +153,14 @@ void level1_draw()
 	// debug_draw_all_walls();
 	// Render player system
 
-	render_puzzle_blocks();
-
 	enemy_manager_instance.render();
-	render_enemy_hp(&ui_manager, &enemy_manager_instance);
+
 	render_player_hud(&ui_manager, &player_instance);
+	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_character_ui(&ui_manager, &player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
-	// Minimap_DrawWalls(map);
+	render_puzzle_blocks();
+	player_system_render(&player_instance);
 
 	player_system_render(&player_instance);
 
@@ -194,6 +193,4 @@ void level1_unload()
 		AEGfxTextureUnload(skeleton_texture);
 		skeleton_texture = nullptr;
 	}
-
-	
 }

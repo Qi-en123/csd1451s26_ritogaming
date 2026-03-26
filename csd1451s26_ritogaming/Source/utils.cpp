@@ -7,6 +7,7 @@ std::vector<std::string> level_puzzle_paths;
 int current_level_index = 0;
 std::string selected_level_path = "";
 std::string selected_level_puzzle_path = "";
+f32 dt;
 
 int IsButtonClicked(f32 rectX, f32 rectY, f32 rectW, f32 rectH)
 {

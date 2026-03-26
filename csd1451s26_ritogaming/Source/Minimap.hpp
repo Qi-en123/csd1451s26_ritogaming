@@ -1,12 +1,13 @@
 #pragma once
 
-#ifndef MINIMAP_H
-#define MINIMAP_H
-
 #include "renderer.hpp" // Keep this to access your 'color' struct and meshes
 #include "map.hpp"
+#include "AEEngine.h"
 
 #define ZOOM_LEVEL 2.0f
+
+extern f32 totalWorldW;
+extern f32 totalWorldH;
 
 /**
  * @brief Sets the internal world bounds and the desired size of the UI.
@@ -31,5 +32,3 @@ void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* p
 void minimap_draw_walls(int dungeonMap[TILE_ROWS][TILE_COLS]);
 
 void minimap_unload();
-
-#endif

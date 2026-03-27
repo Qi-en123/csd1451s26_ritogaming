@@ -27,10 +27,6 @@
 
 static bool enemy_spawned = false;
 
-f32 totalWorldW2;
-f32 totalWorldH2;
-extern f32 dt;
-
 static AEGfxTexture *skeleton_texture = nullptr;
 
 void level2_load()
@@ -170,13 +166,13 @@ void level2_init()
 
     init_mesh();
 
-    totalWorldW2 = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
-    totalWorldH2 = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
-    minimap_init(totalWorldW2, totalWorldH2, 200.0f);
+    totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
+    totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
+    minimap_init(totalWorldW, totalWorldH, 200.0f);
 
     initialize_boss_map();
     generate_walls_from_map(boss_map, 64.0f);
-
+    
     // Clear any existing enemies
     enemy_manager_instance.clear_all();
 

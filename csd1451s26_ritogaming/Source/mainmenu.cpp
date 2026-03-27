@@ -222,7 +222,7 @@ void mainmenu_update()
     if (IsButtonClicked(button_x, button_y[2], button_w, button_h)) // Guide
     {
         play_sfx(g_audio.sfx_button_click, 1.f);
-       //next = GS_GUIDE;
+        next = GS_GUIDE;
     }
     if (IsButtonClicked(button_x, button_y[3], button_w, button_h)) // Credits
     {

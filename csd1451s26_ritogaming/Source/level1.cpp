@@ -25,13 +25,9 @@ update game logic, render, free resources
 
 #include "levels.hpp"
 
-#define NUM_TILE_TYPES 10
-#define TILE_ROWS 36
-#define TILE_COLS 64
+// f32 totalWorldW;
+// f32 totalWorldH;
 
-f32 totalWorldW;
-f32 totalWorldH;
-f32 dt;
 static AEGfxTexture *skeleton_texture = nullptr;
 
 namespace
@@ -54,7 +50,6 @@ void level1_load()
 void level1_init()
 {
 	AEInputShowCursor(false);
-	f32 tile_size = 64.f;
 
 	door_triggered = false;
 	is_win = false;
@@ -82,7 +77,6 @@ void level1_init()
 			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
 				printf("door at row:%d col:%d\n", r, c);
 
-	tile_size = 64.f;
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
 	spawn_player_from_map(&player_instance, tile_size);
 
@@ -158,11 +152,10 @@ void level1_draw()
 	render_player_hud(&ui_manager, &player_instance);
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_character_ui(&ui_manager, &player_instance);
-	minimap_draw(&player_instance, map, TileTextures);
+
 	render_puzzle_blocks();
 	player_system_render(&player_instance);
-
-	player_system_render(&player_instance);
+	minimap_draw(&player_instance, map, TileTextures);
 
 	pause_draw();
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
@@ -170,7 +163,6 @@ void level1_draw()
 
 void level1_free()
 {
-
 	player_system_free(&player_instance);
 	enemy_manager_instance.clear_all();
 

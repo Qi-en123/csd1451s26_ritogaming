@@ -238,6 +238,7 @@ void EnemyManager::render() {
 
 void EnemyManager::render_spawn_markers()
 {
+    if (current_zone == boss_room) return;
     if (!spawn_positions_loaded) return;
 
 
@@ -259,10 +260,17 @@ void EnemyManager::render_spawn_markers()
 
 }
 
-void EnemyManager::render_enemy(base_enemy* e) {
-    AEGfxTexture* tex = e->get_texture();
-
-    if (tex)  render_sprite(rect_mesh_center, e->get_x(), e->get_y(), e->get_size(), e->get_size(), tex);
+void EnemyManager::render_enemy(base_enemy* other_enemy)
+{
+    dragon* d = dynamic_cast<dragon*>(other_enemy);
+    if (d) {
+        d->render_animated(other_enemy->get_size());
+        return;
+    }
+    // fallback for ghost/bat
+    if (other_enemy->get_texture())
+        render_sprite(rect_mesh_center, other_enemy->get_x(), other_enemy->get_y(),
+            other_enemy->get_size(), other_enemy->get_size(), other_enemy->get_texture());
 }
 
 void EnemyManager::spawn_ghost_at_slot(int slot_index) {
@@ -295,6 +303,7 @@ void EnemyManager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top
         if (enemy && enemy->get_state() != dead && dynamic_cast<dragon*>(enemy.get()) != nullptr) return;
 
     auto d = std::make_unique<dragon>(x, y, r_left, r_right, r_top, r_bottom);
+    d->load_anim_textures();          // must be called so tex_idle/walk/etc. are populated
     d->set_enemy_texture(dragon_tex);
     d->set_food_texture(dragon_food_tex);
     enemies.push_back(std::move(d));

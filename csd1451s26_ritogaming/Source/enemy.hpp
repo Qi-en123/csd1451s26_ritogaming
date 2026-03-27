@@ -152,21 +152,87 @@ public:
 // ============================================================================
 // DRAGON (Boss)   chases the player within fixed room boundaries
 // ============================================================================
-class dragon : public base_enemy
-{
-private:
-    f32 room_left, room_right, room_top, room_bottom;
-    s32 hits_received;
-    s32 hits_until_attack;
-    bool is_boss;
+struct Animator {
+    AEGfxTexture* sheet = nullptr;
+    int   frame_count = 1;
+    int   current_frame = 0;
+    float frame_w = 1.f;   // pixel width of one frame
+    float frame_h = 1.f;   // pixel height of one frame
+    float sheet_w = 1.f;   // total sheet pixel width
+    float sheet_h = 1.f;   // total sheet pixel height
+    float fps = 8.f;   // playback speed
+    float timer = 0.f;
+    bool  looping = true;
+    bool  finished = false; // true after last frame of a non-looping anim
 
-public:
-    dragon(f32 start_x, f32 start_y,
-           f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
-    ~dragon() override = default;
+    void set(AEGfxTexture* tex,
+        int frames, float fw, float fh, float sw, float sh,
+        float playback_fps, bool loop)
+    {
+        sheet = tex;
+        frame_count = frames;
+        frame_w = fw;  frame_h = fh;
+        sheet_w = sw;  sheet_h = sh;
+        fps = playback_fps;
+        looping = loop;
+        current_frame = 0;
+        timer = 0.f;
+        finished = false;
+    }
 
-    void update(f32 dt, struct Player *player, camera *cam) override;
-    void take_damage(int amount) override;
+    // Call every frame. Returns true when a non-looping anim just finished.
+    bool update(float dt)
+    {
+        if (finished) return false;
+        timer += dt;
+        if (timer >= 1.f / fps) {
+            timer = 0.f;
+            current_frame++;
+            if (current_frame >= frame_count) {
+                if (looping) current_frame = 0;
+                else { current_frame = frame_count - 1; finished = true; return true; }
+            }
+        }
+        return false;
+    }
 
-    bool has_dropped_sister() const { return is_boss && state == dead; }
+    // UV coordinates of the current frame (0..1 range)
+    float u0() const { return (current_frame * frame_w) / sheet_w; }
+    float u1() const { return u0() + frame_w / sheet_w; }
+    float v0() const { return 0.f; }
+    float v1() const { return frame_h / sheet_h; }
+};
+
+class dragon : public base_enemy{
+    private:
+        f32 room_left, room_right, room_top, room_bottom;
+        s32 hits_received;
+        s32 hits_until_attack;
+        bool is_boss;
+
+        AEGfxTexture* tex_idle = nullptr;
+        AEGfxTexture* tex_walk = nullptr;
+        AEGfxTexture* tex_attack = nullptr;
+        AEGfxTexture* tex_hurt = nullptr;
+        AEGfxTexture* tex_death = nullptr;
+
+        Animator anim;
+
+        enum class DragonAnim { IDLE, WALK, ATTACK, HURT, DEATH };
+        DragonAnim current_anim = DragonAnim::IDLE;
+
+        void switch_anim(DragonAnim next_anim);
+
+    public:
+        dragon(f32 start_x, f32 start_y,
+               f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
+        ~dragon() override = default;
+
+        void update(f32 dt, struct Player *player, camera *cam) override;
+        void take_damage(int amount) override;
+
+        bool has_dropped_sister() const { return is_boss && state == dead; }
+
+        void load_anim_textures(); 
+        void render_animated(f32 draw_size);
 };

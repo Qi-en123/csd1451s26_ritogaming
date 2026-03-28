@@ -1,7 +1,7 @@
-    #pragma once
+#pragma once
 
-    #ifndef MINIMAP_H
-    #define MINIMAP_H
+#ifndef MINIMAP_H
+#define MINIMAP_H
 
     #include "renderer.hpp"
     #include "map.hpp"
@@ -35,3 +35,5 @@
     void minimap_draw_walls(int dungeonMap[TILE_ROWS][TILE_COLS]);
 
     void minimap_unload();
+
+#endif

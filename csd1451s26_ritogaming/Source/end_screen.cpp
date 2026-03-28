@@ -116,14 +116,10 @@ void end_screen_update()
     // Restart
     if (IsButtonClicked(BTN_X, BTN_Y0, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_R))
     {
-<<<<<<< Updated upstream
-        play_sfx(g_audio.sfx_button_click, 1.f);
-        next = GS_LEVEL1;
-=======
+
         play_sfx(g_audio.sfx_button_click);
         //next = GS_LEVEL1;
         next = restart_level_state;
->>>>>>> Stashed changes
     }
 
     // Main Menu
@@ -174,17 +170,13 @@ void end_screen_draw()
     }
 }
 
-<<<<<<< Updated upstream
-=======
 // -------------------------------------------------------------------------
 // Pause update  (call every frame from active game state's update)
 // -------------------------------------------------------------------------
->>>>>>> Stashed changes
 void pause_update()
 {
     if (AEInputCheckTriggered(AEVK_ESCAPE))
         is_paused = !is_paused;
-<<<<<<< Updated upstream
 
     if (is_paused)
     {
@@ -201,7 +193,6 @@ void pause_update()
         }
     }
 }
-=======
         pause_last_hovered = -1;   // reset hover state on open / close
         play_sfx(g_audio.sfx_button_click);
     }
@@ -248,7 +239,6 @@ void pause_update()
 // -------------------------------------------------------------------------
 // Pause draw  (call every frame AFTER active game state's draw)
 // -------------------------------------------------------------------------
->>>>>>> Stashed changes
 void pause_draw()
 {
     if (!is_paused) return;

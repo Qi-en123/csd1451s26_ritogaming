@@ -156,6 +156,14 @@ void credit_draw()
 
     was_hovered = hovered;
 
+    render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y, hovered);
+
+    if (hovered && !was_hovered)
+        play_sfx(g_audio.sfx_button_hover);
+    if (IsButtonClicked(button_x, button_y, button_w, button_h))
+        play_sfx(g_audio.sfx_button_click);
+
+    was_hovered = hovered;
     // Draw custom cursor at mouse position
     if (cursor)
     {

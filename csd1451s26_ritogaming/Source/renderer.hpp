@@ -152,5 +152,6 @@ void render_editor_ui(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
 void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
 	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
 
+// Animation for boss
 struct Animator;
 void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim);

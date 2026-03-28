@@ -100,7 +100,6 @@ void EnemyManager::load_textures() {
     // Load food textures (AEEngine is ready at this point)
     if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Enemy_food/cream.png");
     if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Enemy_food/burger.png");
-    if (!dragon_food_tex) dragon_food_tex = AEGfxTextureLoad("Assets/Enemy_food/sushi.png");
 
     // Load spawn marker textures
     if (!cross_tex)        cross_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0064.png");
@@ -110,7 +109,6 @@ void EnemyManager::load_textures() {
     // Load enemy textures for all existing enemies
     if (!ghost_tex) ghost_tex = AEGfxTextureLoad("Assets/Enemy/tile_0006.png");
     if (!bat_tex) bat_tex = AEGfxTextureLoad("Assets/Enemy/tile_0025.png");
-    if (!dragon_tex) dragon_tex = AEGfxTextureLoad("Assets/Enemy/tile_0005.png");
 }
 
 EnemyManager::~EnemyManager() {
@@ -196,9 +194,12 @@ void EnemyManager::initialize_combat_area()
 
 void EnemyManager::update(f32 dt, Player* player, camera* p_cam) {
 
-    for (auto& enemy : enemies)
-        if (enemy && enemy->is_active())
+    for (auto& enemy : enemies) {
+        if (!enemy) continue;
+        
+        if (enemy->is_active() || enemy->get_state() == dead)
             enemy->update(dt, player, p_cam);
+    }
 
     update_food(dt, player);
     update_respawn_particles(dt);
@@ -228,9 +229,11 @@ void EnemyManager::update(f32 dt, Player* player, camera* p_cam) {
 void EnemyManager::render() {
     render_spawn_markers();
 
-    for (auto& enemy : enemies)
-        if (enemy->is_active())
+    for (auto& enemy : enemies) {
+     
+        if (enemy->is_active() || enemy->get_state() == dead)
             render_enemy(enemy.get());
+    }
 
     render_food();
     render_respawn_particles();
@@ -267,7 +270,7 @@ void EnemyManager::render_enemy(base_enemy* other_enemy)
         d->render_animated(other_enemy->get_size());
         return;
     }
-    // fallback for ghost/bat
+
     if (other_enemy->get_texture())
         render_sprite(rect_mesh_center, other_enemy->get_x(), other_enemy->get_y(),
             other_enemy->get_size(), other_enemy->get_size(), other_enemy->get_texture());
@@ -379,9 +382,6 @@ void EnemyManager::update_food(f32 dt, Player* player) {
     for (auto& food : food_drops) {
         if (!food.active) continue;
 
-        printf("Food active at (%.2f, %.2f), lifetime: %.2f\n",
-            food.x, food.y, food.lifetime);
-
         food.lifetime -= dt;
         if (food.lifetime <= 0.0f) {
             food.active = false;
@@ -449,15 +449,21 @@ bool EnemyManager::check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage)
 
 void EnemyManager::cleanup_dead_enemies() {
     for (auto& enemy : enemies) {
-        if (!enemy || enemy->get_state() != dead) continue;
+        if (!enemy || enemy->is_active()) continue;
 
-        if (enemy->is_ghost()) {
-            ghost* g = static_cast<ghost*>(enemy.get());
-            if (g->get_hits_from_player() > 0)
+        if (enemy->get_state() != dead)   continue;
+
+        if (!enemy->has_food_spawned()) {
+            enemy->set_food_spawned(true);
+
+            if (enemy->is_ghost()) {
+                ghost* g = static_cast<ghost*>(enemy.get());
+                if (g->get_hits_from_player() > 0)
+                    spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+            }
+            else
                 spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
         }
-        else
-            spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
 
         if (enemy->is_ghost()) {
             for (int i = 0; i < NUM_GHOST_SLOTS; ++i) {
@@ -481,7 +487,7 @@ void EnemyManager::cleanup_dead_enemies() {
     }
     enemies.erase(
         std::remove_if(enemies.begin(), enemies.end(),
-            [](const auto& e) { return e->get_state() == dead; }),
+            [](const auto& e) { return !e->is_active() && e->get_state() == dead; }),
         enemies.end());
 }
 

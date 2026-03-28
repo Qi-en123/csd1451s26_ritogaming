@@ -181,7 +181,9 @@ void ghost::update(f32 dt, Player* player, camera* p_cam)
         }
         else
         {
+            // Hit a wall while fleeing - ghost dies, active=false so cleanup works
             state = enemy_state::dead;
+            active = false;
         }
 
         if (!check_player_collision(x, next_y, size / 2.0f))
@@ -191,6 +193,7 @@ void ghost::update(f32 dt, Player* player, camera* p_cam)
         else
         {
             state = enemy_state::dead;
+            active = false;
         }
     }
     else
@@ -250,11 +253,11 @@ void bat::update(f32 dt, Player* player, camera* p_cam)
 dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom)
     : base_enemy(start_x, start_y), room_left(r_left), room_right(r_right),
     room_top(r_top), room_bottom(r_bottom),
-    hits_received(0), hits_until_attack(7), is_boss(true)
+    hits_received(0), is_boss(true)
 {
     speed = 40.0f;
-    current_health = 2;
-    max_health = 2;
+    current_health = 10;
+    max_health = 10;
     size = 300.0f;
 }
 
@@ -299,16 +302,19 @@ void dragon::update(f32 dt, Player* player, camera* p_cam)
         x = AEClamp(x, room_left, room_right);
         y = AEClamp(y, room_bottom, room_top);
 
-        if (hits_received >= hits_until_attack && collides_with_player(player))
+        if (collides_with_player(player))
         {
             state = enemy_state::attacking;
             hitting = true;
             attack_timer += dt;
-            if (attack_timer >= attack_cooldown) {
+            if (attack_timer >= 1.f) {
                 player_take_damage(player, 1);
-                hits_received = 0;
                 attack_timer = 0.f;
             }
+        }
+        else
+        {
+            attack_timer = 0.f; // reset timer when not touching player
         }
     }
     else
@@ -345,7 +351,7 @@ void dragon::switch_anim(DragonAnim next)
     case DragonAnim::HURT:
         anim.set(tex_hurt, 5, 130, 130, 650, 130, 10.f, false); break;
     case DragonAnim::DEATH:
-        anim.set(tex_death, 12, 160, 55, 2000, 55, 6.f, false); break;
+        anim.set(tex_death, 36, 20, 60, 2000, 55, 12.f, false); break;
     }
 }
 
@@ -381,12 +387,8 @@ void dragon::take_damage(int amount)
     {
         current_health = 0;
         state = enemy_state::dead;
-        // Keep active=true so update() can play the death anim.
-        // active is set false once the animation finishes (in update).
         switch_anim(DragonAnim::DEATH);
     }
     else
-    {
-        switch_anim(DragonAnim::HURT);
-    }
+       switch_anim(DragonAnim::HURT);
 }

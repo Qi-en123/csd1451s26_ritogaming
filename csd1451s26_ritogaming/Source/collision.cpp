@@ -24,7 +24,6 @@ This file defines functions to:
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
 bool door_triggered = false;
-
 /*!************************************************************************
 \brief Generate wall objects from a 2D tile map.
 

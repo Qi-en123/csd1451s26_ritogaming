@@ -198,7 +198,6 @@ void level1_draw()
 
 
 	pause_draw();
-	if (!is_paused)
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 

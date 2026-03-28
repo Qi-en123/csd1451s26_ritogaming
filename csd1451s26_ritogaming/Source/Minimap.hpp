@@ -1,13 +1,9 @@
 #pragma once
 
-<<<<<<< Updated upstream
 #ifndef MINIMAP_H
 #define MINIMAP_H
 
 #include "renderer.hpp" // Keep this to access your 'color' struct and meshes
-=======
-#include "renderer.hpp"
->>>>>>> Stashed changes
 #include "map.hpp"
 
 #define ZOOM_LEVEL 2.0f

@@ -1,16 +1,22 @@
 /*!************************************************************************
 \file:          Minimap.cpp
-\author:        Various
+\author:        Ahmad Qusyairi
 \brief:         Minimap rendering system for the dungeon
 **************************************************************************/
+
 #include "Minimap.hpp"
 #include "AEEngine.h"
 #include "map.hpp"
 
+<<<<<<< Updated upstream
 extern AEGfxVertexList* rect_mesh_center;
 static f32 worldW, worldH, mapSize;
+=======
+f32 totalWorldW;
+f32 totalWorldH;
+f32 mapSize;
+>>>>>>> Stashed changes
 
-// We need these colors from your renderer
 extern const color white;
 extern const color black;
 
@@ -21,7 +27,7 @@ void minimap_init(f32 w, f32 h, f32 size) {
     worldH = h;
     mapSize = size;
 
-    // Load the 4 parts
+    // Load the 4 parts of minimap sprite
     char filename[128];
     for (int i = 0; i < 4; ++i) {
         sprintf_s(filename, "Assets/Map/maptiles_%d.png", i+1);
@@ -122,17 +128,16 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     f32 mapCenterX = screenHalfW - (mapSize / 2.0f) - 20.0f;
     f32 mapCenterY = screenHalfH - (mapSize / 2.0f) - 20.0f;
 
-    // 2. Draw a solid black background for the minimap first
+    // 2. Draw a solid black background for the minimap
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetColorToMultiply(0.0f, 0.0f, 0.0f, 1.0f); // Solid Black
 
     AEMtx33 sB, tB, finalB;
-    // Use mapSize for both X and Y to keep it a perfect circle
+
     AEMtx33Scale(&sB, mapSize / 2.0f, mapSize / 2.0f);
     AEMtx33Trans(&tB, mapCenterX, mapCenterY);
     AEMtx33Concat(&finalB, &tB, &sB);
 
-    // Use the circle_mesh from your renderer!
     AEGfxSetTransform(finalB.m);
     AEGfxMeshDraw(circle_mesh, AE_GFX_MDM_TRIANGLES);
 
@@ -211,14 +216,14 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     draw_sprite_on_map_centered(pPlayer->current_player->texture, playerDotX, playerDotY, 10.0f);
 
     // 5b. Draw the 4-part HUD Overlay
-    float overlaySize = mapSize; // Or adjust to fit your specific textures
+    float overlaySize = mapSize;
     minimap_draw_overlay(mapCenterX, mapCenterY);
 }
 
 void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* pTex) {
     if (pTex == nullptr) return;
 
-    // 1. Calculate screen positions (Same math as before)
+    // 1. Calculate screen positions
     f32 screenHalfW = AEGfxGetWindowWidth() / 2.0f;
     f32 screenHalfH = AEGfxGetWindowHeight() / 2.0f;
     f32 mapCenterX = screenHalfW - (mapSize / 2.0f) - 20.0f;
@@ -241,7 +246,7 @@ void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* p
 
     // 3. Transform (We scale the sprite based on the minimap ratio)
     AEMtx33 s, t, final;
-    // We make the sprite a bit larger than a dot so it's visible (e.g., 20px)
+    // We make the sprite a bit larger than a dot so it's visible
     AEMtx33Scale(&s, spriteScale, spriteScale);
     AEMtx33Trans(&t, finalX, finalY);
     AEMtx33Concat(&final, &t, &s);

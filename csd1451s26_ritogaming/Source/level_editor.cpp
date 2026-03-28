@@ -40,11 +40,17 @@ namespace {
 
 	// --- Puzzle Palette ---
 	const int EDITABLE_PUZZLE_COUNT = 5;
-	const PuzzleType puzzle_palette_ids[EDITABLE_PUZZLE_COUNT] =
-	{ PUZZLE_TYPE_COUNT, PUSHABLE, BUTTON_UP, PIT, SPIKE };
+	const Puzzle::PuzzleType puzzle_palette_ids[EDITABLE_PUZZLE_COUNT] =
+	{	Puzzle::PUZZLE_TYPE_COUNT,
+		Puzzle::PUSHABLE,
+		Puzzle::BUTTON_UP,
+		Puzzle::PIT,
+		Puzzle::SPIKE };
+
 	const char* puzzle_labels[EDITABLE_PUZZLE_COUNT] =
 	{ "Erase", "Grave", "Button", "Pit", "Spike" };
-	PuzzleType selected_puzzle = PUSHABLE; //default
+
+	Puzzle::PuzzleType selected_puzzle = Puzzle::PUSHABLE; //default
 
 	// --- Palette UI (right side panel) ---
 	const f32 PANEL_X = 650;  // center X of palette panel
@@ -98,15 +104,15 @@ namespace {
 
 	/// --- Map data ---
 	s32** editor_map = nullptr; // for creating new map
-	PuzzleType** puzzle_editor_map = nullptr;
-	std::vector<puzzle> puzzles;
-	std::vector<buttonTrigger> button_triggers{};
+	Puzzle::PuzzleType** puzzle_editor_map = nullptr;
+	std::vector<Puzzle::puzzle> puzzles;
+	std::vector<Puzzle::buttonTrigger> button_triggers{};
 
 	/// --- Editing States ---
 	EditorState editorState = EDIT_TILES;
 	bool editing{ false };
-	puzzle* editing_puzzle{ nullptr };
-	puzzle old_puzzle{ PUZZLE_TYPE_COUNT, 0,0,NO_ELEMENT,0 };
+	Puzzle::puzzle* editing_puzzle{ nullptr };
+	Puzzle::puzzle old_puzzle{};
 
 
 	/// --- Edit interface UI ---
@@ -134,8 +140,9 @@ static void mouse_to_world(f32& wx, f32& wy)
 
 // ------------------------------------------------
 // Returns true if the world coordinates are within the grid bounds and sets row/col accordingly
+// The positions are offset according to editor space, hence function is specific for level editor
 // ------------------------------------------------
-static bool world_to_tile(f32 wx, f32 wy, int& row, int& col)
+static bool editor_screen_to_tile(f32 wx, f32 wy, int& row, int& col)
 {
 	f32 world_x = (wx / zoom) + cam.pos.x;
 	f32 world_y = (wy / zoom) + cam.pos.y;
@@ -202,14 +209,14 @@ static void draw_puzzle_edit_interface() {
 	std::string line2{};
 
 	switch (editing_puzzle->type) {
-	case PUSHABLE:
-	case PIT:
+	case Puzzle::PUSHABLE:
+	case Puzzle::PIT:
 
 		switch (editing_puzzle->element) {
-		case WATER:
+		case Puzzle::WATER:
 			line1 = "Element: Water";
 			break;
-		case FIRE:
+		case Puzzle::FIRE:
 			line1 = "Element: Fire";
 			break;
 		default:
@@ -231,7 +238,7 @@ static void draw_puzzle_edit_interface() {
 
 		break;
 		//Button edit is different, when button is selected it will lock
-	case BUTTON_UP:
+	case Puzzle::BUTTON_UP:
 		line1 = "Place spikes to pair...";
 
 		switch (editing_puzzle->hidden_from) {
@@ -270,7 +277,7 @@ static void draw_puzzle_edit_interface() {
 	f32 line1_norm_y = norm_y + text_h * 1.5f;
 
 	//Button edit is different not edited using buttons (i v tired)
-	if (editing_puzzle->type != BUTTON_UP) {
+	if (editing_puzzle->type != Puzzle::BUTTON_UP) {
 		//LEFT button
 		render_editor_ui(edit_panel_button_left, //tex
 			button_size, button_size, 1.0f, //width, height, alpha
@@ -312,7 +319,7 @@ static void edit_puzzle() {
 
 			//printf("saved\n");
 			editing = false;
-			selected_puzzle = PUSHABLE;
+			selected_puzzle = Puzzle::PUSHABLE;
 			can_paint = false;
 		}
 
@@ -324,12 +331,12 @@ static void edit_puzzle() {
 			//Restore changes
 			*editing_puzzle = old_puzzle;
 			editing = false;
-			selected_puzzle = PUSHABLE;
+			selected_puzzle = Puzzle::PUSHABLE;
 			can_paint = false;
 		}
 
 
-		if (editing_puzzle->type != BUTTON_UP) {
+		if (editing_puzzle->type != Puzzle::BUTTON_UP) {
 			//If left button of 1st line is clicked ("Element:" line)
 			if (IsButtonClicked(edit_panel_x - edit_panel_w * 0.35f,
 				edit_panel_y + edit_panel_h * 0.18f,
@@ -394,8 +401,7 @@ void level_editor_load()
 	edit_panel_button_left = AEGfxTextureLoad("Assets/Admin/ep_button_left.png");
 	edit_panel_button_right = AEGfxTextureLoad("Assets/Admin/ep_button_right.png");
 
-
-	load_puzzle_textures();
+	Puzzle::load_puzzle_textures();
 }
 
 void level_editor_init()
@@ -417,14 +423,15 @@ void level_editor_init()
 
 
 	//Default init puzzle editor map (FOR PUZZLES)
-	puzzle_editor_map = new PuzzleType * [TILE_ROWS];
+	puzzle_editor_map = new Puzzle::PuzzleType * [TILE_ROWS];
 	for (int r = 0; r < TILE_ROWS; ++r)
 	{
-		puzzle_editor_map[r] = new PuzzleType[TILE_COLS]{ PUZZLE_TYPE_COUNT };  // {} zero-initializes
+		puzzle_editor_map[r] =
+			new Puzzle::PuzzleType[TILE_COLS]{ Puzzle::PUZZLE_TYPE_COUNT };  // {} zero-initializes
 	}
 	for (int r = 0; r < TILE_ROWS; ++r)
 		for (int c = 0; c < TILE_COLS; ++c)
-			puzzle_editor_map[r][c] = PUZZLE_TYPE_COUNT;
+			puzzle_editor_map[r][c] = Puzzle::PUZZLE_TYPE_COUNT;
 
 	puzzles.reserve(100);
 
@@ -591,7 +598,7 @@ void level_editor_update()
 		f32 wx, wy;
 		mouse_to_world(wx, wy);
 		int row, col;
-		bool on_grid = world_to_tile(wx, wy, row, col);
+		bool on_grid = editor_screen_to_tile(wx, wy, row, col);
 		// Prevent painting when mouse is over the right panel
 		f32 grid_right_world = grid_start_x + (TILE_COLS * tile_draw_size);
 		f32 grid_right_screen = grid_right_world + 800.f;
@@ -715,7 +722,7 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 					f32 py = PALETTE_TOP_Y - i * PAL_GAP;
 					if (IsButtonClicked(PANEL_X, py, PAL_W, PAL_H))
 					{
-						if (puzzle_palette_ids[i] != SPIKE) {
+						if (puzzle_palette_ids[i] != Puzzle::SPIKE) {
 							selected_puzzle = puzzle_palette_ids[i];
 							return; // stop here, don't also paint on grid
 						}
@@ -731,22 +738,22 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 			{
 				for (int r = 0; r < TILE_ROWS; ++r)
 					for (int c = 0; c < TILE_COLS; ++c)
-						puzzle_editor_map[r][c] = PUZZLE_TYPE_COUNT;
+						puzzle_editor_map[r][c] = Puzzle::PUZZLE_TYPE_COUNT;
 
 				puzzles.clear();
 			}
 		}
 
-		else if (editing_puzzle->type == BUTTON_UP) {
+		else if (editing_puzzle->type == Puzzle::BUTTON_UP) {
 			//offset from erase
-			selected_puzzle = puzzle_palette_ids[SPIKE+1];
+			selected_puzzle = puzzle_palette_ids[Puzzle::SPIKE+1];
 		}
 
 		// --- Paint / Erase on grid ---
 		f32 wx, wy;
 		mouse_to_world(wx, wy);
 		int row, col;
-		bool on_grid = world_to_tile(wx, wy, row, col);
+		bool on_grid = editor_screen_to_tile(wx, wy, row, col);
 		// Prevent painting when mouse is over the right panel
 		f32 grid_right_world = grid_start_x + (TILE_COLS * tile_draw_size);
 		f32 grid_right_screen = grid_right_world + 800.f;
@@ -768,12 +775,12 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 					if (editor_map[row][col] == 2) {
 
 						//if erasing 
-						if (selected_puzzle == PUZZLE_TYPE_COUNT) {
+						if (selected_puzzle == Puzzle::PUZZLE_TYPE_COUNT) {
 							puzzle_editor_map[row][col] = selected_puzzle;
 							remove_puzzle(row, col, puzzles);
 						}
 						//if adding puzzles
-						else if (puzzle_editor_map[row][col] == PUZZLE_TYPE_COUNT) {
+						else if (puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT) {
 							puzzle_editor_map[row][col] = selected_puzzle;
 							//printf("%d %d\n", row, col);
 							place_puzzle(row, col, selected_puzzle, puzzles);
@@ -786,7 +793,7 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 				{
 					int current = puzzle_editor_map[row][col];
 
-					if (puzzle_editor_map[row][col] != PUZZLE_TYPE_COUNT) {
+					if (puzzle_editor_map[row][col] != Puzzle::PUZZLE_TYPE_COUNT) {
 
 						//open interface
 						editing = true;
@@ -794,14 +801,14 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 						old_puzzle = *get_editing_puzzle(row, col, puzzles);
 						can_paint = false;
 
-						if (puzzle_editor_map[row][col] == BUTTON_UP) {
+						if (puzzle_editor_map[row][col] == Puzzle::BUTTON_UP) {
 
 							if (editing_puzzle->button_id == -1) {
 								//button id is the number of ID triggers yet
 								editing_puzzle->button_id = button_triggers.size();
 
 								//add btnTrigger struct (containing new id and empty coords pairs)
-								button_triggers.push_back(buttonTrigger{ editing_puzzle->button_id,{} });
+								button_triggers.push_back(Puzzle::buttonTrigger{ editing_puzzle->button_id,{} });
 							}
 							else {
 
@@ -814,19 +821,19 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 				}
 			}
 
-			else if (editing_puzzle->type == BUTTON_UP) {
+			else if (editing_puzzle->type == Puzzle::BUTTON_UP) {
 				if (AEInputCheckCurr(AEVK_LBUTTON)) {
 
 					//PLACE SPIKE DOWN
 					if (can_paint) {
 						//if theres a floor beneath and is empty
 						if (editor_map[row][col] == 2 &&
-							puzzle_editor_map[row][col] == PUZZLE_TYPE_COUNT) {
+							puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT) {
 
 							puzzle_editor_map[row][col] = selected_puzzle;
 
 							//add to puzzles vec
-							place_puzzle(row, col, SPIKE, puzzles);
+							place_puzzle(row, col, Puzzle::SPIKE, puzzles);
 
 							//pairing spikes placed to id of current editing button
 							pair_spike_to_button(row, col, button_triggers[editing_puzzle->button_id]);
@@ -836,9 +843,9 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 					}
 
 					//PAIR WITH OTHER BUTTON
-					if (puzzle_editor_map[row][col] == BUTTON_UP) {
+					if (puzzle_editor_map[row][col] == Puzzle::BUTTON_UP) {
 						//if clicked on button with no triggers
-						puzzle& curr = *get_editing_puzzle(row, col, puzzles);
+						Puzzle::puzzle& curr = *get_editing_puzzle(row, col, puzzles);
 						//printf("%d\n", curr.button_id);
 						if (curr.button_id == -1) {
 							
@@ -850,10 +857,10 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 				else if (can_paint && AEInputCheckCurr(AEVK_RBUTTON)) {
 
 					//if is spike and the spike is paired with the id
-					if (puzzle_editor_map[row][col] == SPIKE &&
+					if (puzzle_editor_map[row][col] == Puzzle::SPIKE &&
 						spike_is_paired(row, col, button_triggers[editing_puzzle->button_id])) {
 
-						puzzle_editor_map[row][col] = PUZZLE_TYPE_COUNT;
+						puzzle_editor_map[row][col] = Puzzle::PUZZLE_TYPE_COUNT;
 
 						//remove spike from puzzles vec
 						remove_puzzle(row, col, puzzles);
@@ -915,20 +922,20 @@ void level_editor_draw()
 			else if (tile != 0 && TileTextures[tile])
 				render_editor_tiles(TileTextures[tile], tile_draw_size, tile_draw_size, 1.0f, wx, wy);
 
-			PuzzleType ptype = puzzle_editor_map[r][c];
-			if (ptype != PUZZLE_TYPE_COUNT && puzzle_block_textures[ptype]) {
+			Puzzle::PuzzleType ptype = puzzle_editor_map[r][c];
+			if (ptype != Puzzle::PUZZLE_TYPE_COUNT && Puzzle::puzzle_block_textures[ptype]) {
 
 				//When editing a button:
 				//Highlight other buttons and spikes that are paired together
-				puzzle* curr = get_editing_puzzle(r, c, puzzles);
+				Puzzle::puzzle* curr = get_editing_puzzle(r, c, puzzles);
 
 				bool highlight = editing &&
-					editing_puzzle->type == BUTTON_UP &&
-					(ptype == SPIKE || ptype == BUTTON_UP) &&
+					editing_puzzle->type == Puzzle::BUTTON_UP &&
+					(ptype == Puzzle::SPIKE || ptype == Puzzle::BUTTON_UP) &&
 					(spike_is_paired(r, c, button_triggers[editing_puzzle->button_id]) ||
 					(curr && curr->button_id == editing_puzzle->button_id));
 
-				render_editor_tiles(puzzle_block_textures[ptype],
+				render_editor_tiles(Puzzle::puzzle_block_textures[ptype],
 					tile_draw_size, tile_draw_size, 1.0f, wx, wy, highlight);
 			}
 
@@ -964,7 +971,7 @@ void level_editor_draw()
 		f32 wx_m, wy_m;
 		mouse_to_world(wx_m, wy_m);
 		int row, col;
-		if (world_to_tile(wx_m, wy_m, row, col))
+		if (editor_screen_to_tile(wx_m, wy_m, row, col))
 		{
 			f32 cx = grid_start_x + col * tile_draw_size + tile_draw_size * 0.5f;
 			f32 cy = grid_start_y - row * tile_draw_size - tile_draw_size * 0.5f;
@@ -1001,16 +1008,16 @@ void level_editor_draw()
 			}
 			else if (editorState == EDIT_PUZZLES) {
 
-				if (selected_puzzle == PUZZLE_TYPE_COUNT) {
+				if (selected_puzzle == Puzzle::PUZZLE_TYPE_COUNT) {
 
 					if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
 						render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
 
 				}
-				else if (puzzle_block_textures[selected_puzzle] &&
+				else if (Puzzle::puzzle_block_textures[selected_puzzle] &&
 					cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f) {
 
-					render_editor_tiles(puzzle_block_textures[selected_puzzle],
+					render_editor_tiles(Puzzle::puzzle_block_textures[selected_puzzle],
 						tile_draw_size, tile_draw_size, 0.5f, cx, cy);
 				}
 			}
@@ -1137,16 +1144,16 @@ void level_editor_draw()
 			// Tile icon � dimmed if locked
 			f32 icon_alpha = 1.0f;
 
-			if (puzzle_palette_ids[i] == PUZZLE_TYPE_COUNT)
+			if (puzzle_palette_ids[i] == Puzzle::PUZZLE_TYPE_COUNT)
 			{
 				render_editor_ui(erase_tile,
 					PAL_H - 8.f, PAL_H - 8.f, icon_alpha,
 					PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
 			}
 			else {
-				PuzzleType icon_id = puzzle_palette_ids[i];
-				if (puzzle_block_textures[icon_id])
-					render_editor_ui(puzzle_block_textures[icon_id],
+				Puzzle::PuzzleType icon_id = puzzle_palette_ids[i];
+				if (Puzzle::puzzle_block_textures[icon_id])
+					render_editor_ui(Puzzle::puzzle_block_textures[icon_id],
 						PAL_H - 8.f, PAL_H - 8.f, icon_alpha,
 						PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
 			}
@@ -1284,7 +1291,7 @@ void level_editor_free()
 void level_editor_unload()
 {
 	free_tile_textures(); // Unload tile textures to free memory
-	unload_puzzle_textures();
+	Puzzle::unload_puzzle_textures();
 	if (cursor) { AEGfxTextureUnload(cursor); cursor = nullptr; }
 	if (ghost_spawn) { AEGfxTextureUnload(ghost_spawn); ghost_spawn = nullptr; }
 	if (tomb) { AEGfxTextureUnload(tomb); tomb = nullptr; }

@@ -42,7 +42,7 @@ void level1_load()
 	if (!load_tile_textures("Assets/Tiles"))
 		next = GS_QUIT; // If tile textures fail to load, quit the game
 	enemy_manager_instance.load_textures();
-	load_puzzle_textures();
+	Puzzle::load_puzzle_textures();
 	load_ui_textures(&ui_manager);
 	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
 }
@@ -65,7 +65,7 @@ void level1_init()
 		selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
 	}
 	load_map_from_file(selected_level_path.c_str(), map);
-	initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
+	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
 
 	generate_walls_from_map(map, 64.0f);
 
@@ -142,8 +142,8 @@ void level1_update()
 	player_system_update(&player_instance);
 	entity_system_update(&player_instance, &enemy_manager_instance);
 
-	puzzle_button_manager();
-	puzzle_audio_update();
+	Puzzle::puzzle_button_manager();
+	Puzzle::puzzle_audio_update();
 
 	// printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 
@@ -176,7 +176,7 @@ void level1_draw()
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_character_ui(&ui_manager, &player_instance);
 	
-	render_puzzle_blocks();
+	Puzzle::render_puzzle_blocks();
 	player_system_render(&player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
 
@@ -200,7 +200,7 @@ void level1_unload()
 	free_tile_textures();
 	// free_mesh();
 	minimap_unload();
-	unload_puzzle_textures();
+	Puzzle::unload_puzzle_textures();
 
 	player_system_free(&player_instance);
 

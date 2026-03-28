@@ -285,30 +285,6 @@ bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh)
     return distanceSq <= (cr * cr);
 }
 
-// Converts a world-space position (x, y) into tile map indices (row, col)
-// Returns true if the position lies within the map bounds, false otherwise
-bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol)
-{
-    // Map's top-left origin in world coordinates (must match draw_map())
-    f32 startX = -1600.f / 2.f; // left edge
-    f32 startY = 900.f / 2.f;   // top edge
-
-    // Convert world X to column index
-    outCol = (int)((worldX - startX) / tile_size);
-
-    // Convert world Y to row index (Y increases downward in tiles)
-    outRow = (int)((startY - worldY) / tile_size);
-
-    // Check bounds
-    if (outRow < 0 || outRow >= TILE_ROWS ||
-        outCol < 0 || outCol >= TILE_COLS)
-    {
-        return false; // outside map
-    }
-
-    return true; // valid tile indices
-}
-
 /*!************************************************************************
 \brief Opens the door tile if the player is standing exactly on it
 

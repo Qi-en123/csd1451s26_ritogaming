@@ -26,15 +26,18 @@ AEGfxVertexList* square_mesh = nullptr;
 AEGfxVertexList* triangle_mesh = nullptr;
 AEGfxVertexList* light_source_mesh = nullptr;
 
-const color red = { 1.0f, 0.0f,0.0f,0.0f };
-const color green = { 0.0f, 1.0f, 0.0f, 0.0f };
-const color blue = { 0.0f, 0.0f, 1.0f, 0.0f };
-const color dark_red = { 0.5f, 0.0f, 0.0f, 0.0f };
-const color black = { 0.0f, 0.0f, 0.0f, 0.0f };
-const color white = { 1.0f, 1.0f, 1.0f, 0.0f };
+const color red =		{ 1.0f, 0.0f, 0.0f, 0.0f };
+const color green =		{ 0.0f, 1.0f, 0.0f, 0.0f };
+const color blue =		{ 0.0f, 0.0f, 1.0f, 0.0f };
+const color dark_red =	{ 0.5f, 0.0f, 0.0f, 0.0f };
+const color black =		{ 0.0f, 0.0f, 0.0f, 0.0f };
+const color white =		{ 1.0f, 1.0f, 1.0f, 0.0f };
+const color yellow =	{ 1.0f, 1.0f, 0.0f, 0.0f };
 
 camera cam{};
 f32 zoom{};
+
+const char* curr_tooltip = "";
 
 std::vector<light> lights;
 
@@ -391,7 +394,11 @@ void get_zoom(f32 dt, f32 zoom_min, f32 zoom_max) {
 }
 
 // for blending
-void render_editor_ui(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x , f32 trans_y, bool highlighted)
+void render_editor_ui(AEGfxTexture* texture,
+	f32 width, f32 height,
+	f32 alpha,
+	f32 trans_x , f32 trans_y,
+	bool highlighted)
 {
 	if (!texture || !rect_mesh_center) return;
 
@@ -423,7 +430,11 @@ void render_editor_ui(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f
 	AEGfxTextureSet(nullptr, 0, 0);
 }
 
-void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha, f32 trans_x, f32 trans_y, bool highlighted)
+void render_editor_tiles(AEGfxTexture* texture,
+	f32 width, f32 height,
+	f32 alpha,
+	f32 trans_x, f32 trans_y,
+	bool highlighted)
 {
 	if (!texture || !rect_mesh_center) return;
 
@@ -484,4 +495,18 @@ void draw_black_overlay(f32 alpha)
 	AEGfxSetTransparency(1.f);
 	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
 	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+}
+
+void render_tooltip(s8 font) {
+	f32 width, height;
+	f32 padding = 0.03f;
+
+	AEGfxGetPrintSize(font, curr_tooltip, 1.0f, &width, &height);
+
+	AEGfxPrint(font, curr_tooltip, 1.0f - width - padding, -1.0f + padding,
+		1.0f, green.r, green.g, green.b, 1.0f);
+
+	//resets tooltip
+	curr_tooltip = "";
+	AEGfxTextureSet(nullptr, 0, 0);
 }

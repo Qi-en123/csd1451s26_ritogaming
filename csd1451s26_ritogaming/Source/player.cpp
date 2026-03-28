@@ -100,7 +100,7 @@ void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
     player_ptr->char1.y = player_ptr->stats.char1_start_y;
     player_ptr->char1.speed = player_ptr->stats.char1_move_speed;
     player_ptr->char1.character_id = 1;
-    player_ptr->char1.element = WATER;
+    player_ptr->char1.element = Puzzle::WATER;
     player_ptr->char1.texture = char_1_texture;
 
     // --- Character 2 setup ---
@@ -108,7 +108,7 @@ void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
     player_ptr->char2.y = player_ptr->stats.char2_start_y;
     player_ptr->char2.speed = player_ptr->stats.char2_move_speed;
     player_ptr->char2.character_id = 2;
-    player_ptr->char2.element = FIRE;
+    player_ptr->char2.element = Puzzle::FIRE;
     player_ptr->char2.texture = char_2_texture;
 
     // Default to controlling Character 1
@@ -167,7 +167,7 @@ static void player_handle_movement(Player *player_ptr)
 
     f32 *move_x = &player_ptr->current_player->x;
     f32 *move_y = &player_ptr->current_player->y;
-    Element curr_elem = player_ptr->current_player->element;
+    Puzzle::Element curr_elem = player_ptr->current_player->element;
 
     float nextX = *move_x;
     float nextY = *move_y;
@@ -204,10 +204,10 @@ static void player_handle_movement(Player *player_ptr)
         player_ptr->last_dir_x = 1.0f;
         player_ptr->last_dir_y = 0.0f;
     }
-    // ------------------------------------- Jerods part -------------------------------------
+
     // Horizontal Movement with collision
     if (!check_player_collision(nextX, *move_y, halfSize) &&
-        !player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
+        !Puzzle::player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
     {
         *move_x = nextX;
     }
@@ -216,21 +216,21 @@ static void player_handle_movement(Player *player_ptr)
         // Slide along wall
         float direction = (nextX > *move_x) ? 1.0f : -1.0f;
         if (!check_player_collision(*move_x + direction, *move_y, halfSize) &&
-            !player_collide_puzzles(*move_x + direction, *move_y, halfSize, puzzle_index))
+            !Puzzle::player_collide_puzzles(*move_x + direction, *move_y, halfSize, puzzle_index))
         {
             *move_x += direction;
         }
         // Handle puzzle pushing
-        if (player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
+        if (Puzzle::player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
         {
-            move_puzzle(puzzle_index, (direction > 0.0f) ? RIGHT : LEFT, curr_elem);
+            move_puzzle(puzzle_index, (direction > 0.0f) ? Puzzle::RIGHT : Puzzle::LEFT, curr_elem);
             is_pushing = true;
         }
     }
 
     // Vertical movement with collision
     if (!check_player_collision(*move_x, nextY, halfSize) &&
-        !player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
+        !Puzzle::player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
     {
         *move_y = nextY;
     }
@@ -239,14 +239,14 @@ static void player_handle_movement(Player *player_ptr)
         // Slide along wall
         float direction = (nextY > *move_y) ? 1.0f : -1.0f;
         if (!check_player_collision(*move_x, *move_y + direction, halfSize) &&
-            !player_collide_puzzles(*move_x, *move_y + direction, halfSize, puzzle_index))
+            !Puzzle::player_collide_puzzles(*move_x, *move_y + direction, halfSize, puzzle_index))
         {
             *move_y += direction;
         }
         // Handle puzzle pushing
-        if (player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
+        if (Puzzle::player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
         {
-            move_puzzle(puzzle_index, (direction > 0.0f) ? DOWN : UP, curr_elem);
+            move_puzzle(puzzle_index, (direction > 0.0f) ? Puzzle::DOWN : Puzzle::UP, curr_elem);
             is_pushing = true;
         }
     }

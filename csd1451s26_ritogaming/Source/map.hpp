@@ -8,9 +8,26 @@
 #pragma once
 #include "AEEngine.h"
 #include <string>
-#define NUM_TILE_TYPES 9
-#define TILE_ROWS 36
-#define TILE_COLS 64
+
+constexpr s32 NUM_TILE_TYPES = 9;
+constexpr s32 TILE_ROWS = 36;
+constexpr s32 TILE_COLS = 64;
+
+constexpr f32 world_left = -800.0f;
+constexpr f32 world_top = 450.0f;
+
+enum TILE_ID
+{
+    EMPTY,
+    WALL,
+    FLOOR,
+    KNIGHT,
+    WIZARD,
+    TOMB,
+    TREE,
+    OPENED_DOOR,
+    DOOR,
+};
 
 extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 extern AEGfxVertexList* TileMesh;
@@ -30,18 +47,10 @@ bool load_map_to_editor(const char* filename, s32** editor_map);
 bool save_map_to_file_overwrite(s32** map, const std::string& filename);
 void draw_map_preview(s32 preview[][TILE_COLS], f32 center_x, f32 center_y, f32 preview_w, f32 preview_h);
 void preview_default_level(s32 out_map[][TILE_COLS]);
+s32 convert_to_col(f32 x);
+s32 convert_to_row(f32 y);
+f32 row_to_world(s32 row);
+f32 col_to_world(s32 col);
 
-enum TILE_ID
-{
-    EMPTY,
-    WALL,
-    FLOOR,
-    KNIGHT,
-    WIZARD,
-    TOMB,
-    TREE,
-    OPENED_DOOR,
-    DOOR,
-};
-
-
+// Convert world position to tile indices
+bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol);

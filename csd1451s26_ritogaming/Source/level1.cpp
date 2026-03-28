@@ -25,19 +25,16 @@ update game logic, render, free resources
 
 #include "levels.hpp"
 
-#define NUM_TILE_TYPES 10
-#define TILE_ROWS 36
-#define TILE_COLS 64
+//f32 totalWorldW;
+//f32 totalWorldH;
 
+static AEGfxTexture *skeleton_texture = nullptr;
 
-	f32 totalWorldW;
-	f32 totalWorldH;
-	f32 dt;
-	
-	namespace {
-		s32 mouse_x, mouse_y;       
-		bool cursor_active = false; 
-	}
+namespace
+{
+	s32 mouse_x, mouse_y;
+	bool cursor_active = false;
+}
 
 void level1_load()
 {
@@ -47,50 +44,26 @@ void level1_load()
 	enemy_manager_instance.load_textures();
 	load_puzzle_textures();
 	load_ui_textures(&ui_manager);
+	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
 }
 
-//void level1_initialize()
-//{
-//	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-//	zoom = 1.1f;
-//	// Determine tile size to fit both width and height
-//	
-//	tile_size = 64.f;
-//	player_system_init(&player_instance);
-//	player_instance.stats.character_size = tile_size - 8.0f;
-//	// Camera follows the active character via the pointer
-//	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
-//	init_mesh();
-//
-//	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
-//	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
-//	Minimap_Init(totalWorldW, totalWorldH, 200.0f); // 200px wide map
-//
-//	initialize_dungeon_map();
-//	generate_walls_from_map(map, 64.0f);
-//
-//	intialize_puzzle_blocks();
-//
-//	// Clear any existing enemies
-//	g_enemy_manager.clear_all();
-//}
 void level1_init()
 {
 	AEInputShowCursor(false);
-	f32 tile_size = 64.f;
 
 	door_triggered = false;
 	is_win = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
-	ensure_level_paths_loaded(); //for both puzzles and map tile data
+	ensure_level_paths_loaded(); // for both puzzles and map tile data
 
 	printf("level_paths size: %d, current_level_index: %s\n",
-		(int)level_paths.size(), selected_level_path.c_str());
+		   (int)level_paths.size(), selected_level_path.c_str());
 	printf("level_puzzles size: %d, current_level_index: %s\n",
-		(int)level_puzzle_paths.size(), selected_level_puzzle_path.c_str());
+		   (int)level_puzzle_paths.size(), selected_level_puzzle_path.c_str());
 
-	if (selected_level_path.empty() || selected_level_puzzle_path.empty()) {
+	if (selected_level_path.empty() || selected_level_puzzle_path.empty())
+	{
 		selected_level_path = "Assets/Levels/default.txt";
 		selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
 	}
@@ -104,9 +77,9 @@ void level1_init()
 			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
 				printf("door at row:%d col:%d\n", r, c);
 
-
-	player_system_init(&player_instance, TileTextures[4], TileTextures[3]);
+	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
 	spawn_player_from_map(&player_instance, tile_size);
+
 	player_instance.stats.character_size = tile_size - 8.0f;
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
@@ -116,9 +89,6 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
-	
-
-
 	// // Clear any existing enemies and reinitialize with ghosts in top left room
 	// g_enemy_manager.clear_all();
 	// g_enemy_manager.set_level(true);
@@ -127,10 +97,10 @@ void level1_init()
 	enemy_manager_instance.clear_all();
 	enemy_manager_instance.initialize_tutorial_area();
 
-	//lights
-	light l1{ {-300.0f,-300.0f}, {0.5f,0.5f,0.0f,1.0f}, 11, 2.0f };
-	light l2{ {-700.0f,-300.0f}, {white}, 11, 2.0f };
-	light l3{ {-700.0f, 300.0f}, {white}, 11, 2.0f };
+	// lights
+	light l1{{-300.0f, -300.0f}, {0.5f, 0.5f, 0.0f, 1.0f}, 11, 2.0f};
+	light l2{{-700.0f, -300.0f}, {white}, 11, 2.0f};
+	light l3{{-700.0f, 300.0f}, {white}, 11, 2.0f};
 	lights.clear();
 	lights.push_back(l1);
 	lights.push_back(l2);
@@ -140,10 +110,11 @@ void level1_init()
 }
 
 void level1_update()
-{	
+{
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
 	pause_update();
-	if (is_paused) return;
+	if (is_paused)
+		return;
 
 	dt = (f32)AEFrameRateControllerGetFrameTime();
 
@@ -152,7 +123,7 @@ void level1_update()
 
 	// Camera follows current_player - automatically updates when you switch characters!
 	simulate_camera(&cam, &player_instance.current_player->x, &player_instance.current_player->y,
-		-6000.0f, 6000.0f, -5000.0f, 5000.0f);
+					-6000.0f, 6000.0f, -5000.0f, 5000.0f);
 
 	player_system_update(&player_instance);
 	entity_system_update(&player_instance, &enemy_manager_instance);
@@ -160,7 +131,7 @@ void level1_update()
 	puzzle_button_manager();
 	puzzle_audio_update();
 
-	//printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
+	// printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 
 	check_and_open_doors(&player_instance);
 
@@ -170,54 +141,61 @@ void level1_update()
 	if (player_is_dead(&player_instance))
 	{
 		is_win = false;
+		restart_level_state = GS_LEVEL1;
 		next = GS_LOSE;
 	}
-
-	
-
 }
 
 void level1_draw()
 {
 	AEGfxReset();
-	draw_map(tile_size);	
+	draw_map(tile_size);
 	// Debug: draw all walls as semi-transparent red
-	//debug_draw_all_walls();
+	// debug_draw_all_walls();
 	// Render player system
 
-	render_puzzle_blocks();
-	player_system_render(&player_instance);
+	
 
 	enemy_manager_instance.render();
 
-	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_player_hud(&ui_manager, &player_instance);
+	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 	render_character_ui(&ui_manager, &player_instance);
+	
+	render_puzzle_blocks();
+	player_system_render(&player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
-	//Minimap_DrawWalls(map);
-
 
 	pause_draw();
 	if (!is_paused)
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
+
 }
 
 void level1_free()
 {
-	
-	//g_enemy_manager.clear_all();
+	player_system_free(&player_instance);
+	enemy_manager_instance.clear_all();
+
 	free_mesh();
 	free_ui_textures(&ui_manager);
-	enemy_manager_instance.clear_all();
 }
 
 void level1_unload()
 {
 	end_screen_unload();
 	free_tile_textures();
-	//free_mesh();
+	// free_mesh();
 	minimap_unload();
 	unload_puzzle_textures();
+
 	player_system_free(&player_instance);
-	enemy_manager_instance.unload_textures();
+
+	if (skeleton_texture)
+	{
+		AEGfxTextureUnload(skeleton_texture);
+		skeleton_texture = nullptr;
+	}
+
+	
 }

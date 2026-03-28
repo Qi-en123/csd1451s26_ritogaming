@@ -25,6 +25,9 @@ namespace {
     // --- Textures and font ---
     AEGfxTexture* cursor = nullptr;
     AEGfxTexture* button = nullptr;
+    AEGfxTexture* back_button = nullptr;
+    AEGfxTexture* editor_button = nullptr;
+    AEGfxTexture* button_edit = nullptr;
     AEGfxTexture* bg_wall = nullptr;
     AEGfxTexture* scroll_bar = nullptr;
     static s8 font = -1;
@@ -39,7 +42,7 @@ namespace {
     const f32  CELL_H = 150.f;
     const f32  CELL_GAP_X = 40.f;
     const f32  CELL_GAP_Y = 30.f;
-    const f32  GRID_START_X = -360.f;
+    const f32  GRID_START_X = -(COLS * CELL_W - (COLS + 1) * CELL_GAP_X)/2;
     const f32  GRID_START_Y = 230.f;
 
     // --- Scrollbar constants ---
@@ -222,10 +225,13 @@ static void build_level_list()
 void levels_load()
 {
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-    button = AEGfxTextureLoad("Assets/Admin/buttonLong_brown_pressed.png");
+    button = AEGfxTextureLoad("Assets/Admin/levels_button.png");
+    back_button = AEGfxTextureLoad("Assets/Admin/levels_back_button.png");
+    editor_button = AEGfxTextureLoad("Assets/Admin/levels_editor_button.png");
+    button_edit = AEGfxTextureLoad("Assets/Admin/levels_button_edit.png");
     bg_wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
     scroll_bar = AEGfxTextureLoad("Assets/Admin/scrollbar_future_grey.png");
-    font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 32);
+    font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
     load_tile_textures("Assets/Tiles");
 }
 
@@ -479,7 +485,7 @@ void levels_draw()
                         AEGfxPrint(font, label,
                             (cx / 800.f) - tw * 0.5f,
                             (cy - 10.f) / 450.f,
-                            1.f, 1.f, 1.f, 1.f, 1.f);
+                            1.f, 0.f, 0.f, 0.f, 1.f);
 
                         if (idx > 0) // index 0 is always the default level
                         {
@@ -495,7 +501,7 @@ void levels_draw()
                             AEGfxPrint(font, "[RMB]",
                                 (cx / 800.f) - tw3 * 0.5f,
                                 (cy - 58.f) / 450.f,
-                                0.5f, 0.6f, 0.6f, 0.6f, 1.f);
+                                0.5f, 0.4f, 0.4f, 0.4f, 1.f);
                         }
                     }
                 }
@@ -503,30 +509,30 @@ void levels_draw()
                 {
                     // Flipped back face � show Edit and Delete
                     if (button)
-                        render_editor_ui(button, CELL_W, CELL_H, 0.85f, cx, cy);
+                        render_editor_ui(button, CELL_W, CELL_H, 0.75f, cx, cy);
 
                     if (font != -1)
                     {
                         // Edit button (top half of cell)
                         f32 edit_x = cx;
                         f32 edit_y = cy + CELL_H * 0.15f;
-                        bool edit_h = IsButtonHovered(edit_x, edit_y, CELL_W - 40.f, 50.f);
-                        if (button)
-                            render_editor_ui(button, CELL_W - 40.f, 50.f,
+                        bool edit_h = IsButtonHovered(edit_x, edit_y, CELL_W * 0.8f, CELL_H * 0.3f);
+                        if (button_edit)
+                            render_editor_ui(button_edit, CELL_W * 0.8f, CELL_H * 0.3f,
                                 edit_h ? 1.f : 0.7f, edit_x, edit_y);
                         f32 etw = 0.f, eth = 0.f;
                         AEGfxGetPrintSize(font, "Edit", 0.9f, &etw, &eth);
                         AEGfxPrint(font, "Edit",
                             (edit_x / 800.f) - etw * 0.5f,
                             (edit_y - 10.f) / 450.f,
-                            0.9f, 1.f, 1.f, 1.f, 1.f);
+                            0.9f, 0.f, 0.f, 0.f, 1.f);
 
                         // Delete button (bottom half of cell)
                         f32 del_x = cx;
-                        f32 del_y = cy - CELL_H * 0.25f;
-                        bool del_h = IsButtonHovered(del_x, del_y, CELL_W - 40.f, 50.f);
-                        if (button)
-                            render_editor_ui(button, CELL_W - 40.f, 50.f,
+                        f32 del_y = cy - CELL_H * 0.20f;
+                        bool del_h = IsButtonHovered(del_x, del_y, CELL_W * 0.8f, CELL_H * 0.3f);
+                        if (button_edit)
+                            render_editor_ui(button_edit, CELL_W * 0.8f, CELL_H * 0.3f,
                                 del_h ? 1.f : 0.7f, del_x, del_y);
                         f32 dtw = 0.f, dth = 0.f;
                         AEGfxGetPrintSize(font, "Delete", 0.9f, &dtw, &dth);
@@ -571,28 +577,28 @@ void levels_draw()
     }
 
     // --- Back button (bottom left) ---
-    if (button)
-        render_editor_ui(button, 200.f, 70.f, 1.0f, -600.f, -380.f,
+    if (back_button)
+        render_editor_ui(back_button, 200.f, 70.f, 1.0f, -600.f, -380.f,
             IsButtonHovered(-600.f, -380.f, 200.f, 70.f));
     if (font != -1)
     {
         f32 tw = 0.f, th = 0.f;
-        AEGfxGetPrintSize(font, "Back", 1.f, &tw, &th);
+        AEGfxGetPrintSize(font, "Back", 0.8f, &tw, &th);
         AEGfxPrint(font, "Back",
             (-600.f / 800.f) - tw * 0.5f,
             (-380.f - 10.f) / 450.f,
-            1.f, 1.f, 1.f, 1.f, 1.f);
+            0.8f, 0.f, 0.f, 0.f, 1.f);
     }
 
     // --- Level Editor button (bottom right) ---
-    if (button)
-        render_editor_ui(button, 200.f, 70.f, 1.0f, 600.f, -380.f,
+    if (editor_button)
+        render_editor_ui(editor_button, 200.f, 70.f, 1.0f, 600.f, -380.f,
             IsButtonHovered(600.f, -380.f, 200.f, 70.f));
     if (font != -1)
     {
         f32 tw = 0.f, th = 0.f;
-        AEGfxGetPrintSize(font, "Level Editor", 0.8f, &tw, &th);
-        AEGfxPrint(font, "Level Editor",
+        AEGfxGetPrintSize(font, "Editor", 0.8f, &tw, &th);
+        AEGfxPrint(font, "Editor",
             (600.f / 800.f) - tw * 0.5f,
             (-380.f - 10.f) / 450.f,
             0.8f, 0.9f, 0.7f, 0.3f, 1.f);
@@ -639,8 +645,8 @@ void levels_draw()
             }
 
             // Draw preview background box
-            const f32 PREV_W = 320.f;
-            const f32 PREV_H = 180.f;
+            const f32 PREV_W = 256.f;
+            const f32 PREV_H = 144.f;
             f32 wx = (f32)mouse_x - 800.f;
             f32 wy = -(f32)mouse_y + 450.f;
             const f32 PREV_X = wx - PREV_W * 0.5f - 10.f;
@@ -694,6 +700,9 @@ void levels_unload()
 {
     if (cursor) { AEGfxTextureUnload(cursor);     cursor = nullptr; }
     if (button) { AEGfxTextureUnload(button);     button = nullptr; }
+    if (back_button) { AEGfxTextureUnload(back_button);     back_button = nullptr; }
+    if (editor_button) { AEGfxTextureUnload(editor_button);     editor_button = nullptr; }
+    if (button_edit) { AEGfxTextureUnload(button_edit);     button_edit = nullptr; }
     if (bg_wall) { AEGfxTextureUnload(bg_wall);    bg_wall = nullptr; }
     if (scroll_bar) { AEGfxTextureUnload(scroll_bar); scroll_bar = nullptr; }
     if (font != -1) { AEGfxDestroyFont(font);         font = -1; }

@@ -8,14 +8,10 @@
 #include "AEEngine.h"
 #include "map.hpp"
 
-<<<<<<< Updated upstream
-extern AEGfxVertexList* rect_mesh_center;
-static f32 worldW, worldH, mapSize;
-=======
 f32 totalWorldW;
 f32 totalWorldH;
 f32 mapSize;
->>>>>>> Stashed changes
+
 
 extern const color white;
 extern const color black;
@@ -23,8 +19,8 @@ extern const color black;
 static AEGfxTexture* pMapParts[4] = { nullptr, nullptr, nullptr, nullptr };
 
 void minimap_init(f32 w, f32 h, f32 size) {
-    worldW = w;
-    worldH = h;
+    totalWorldW = w;
+    totalWorldH = h;
     mapSize = size;
 
     // Load the 4 parts of minimap sprite
@@ -46,7 +42,7 @@ void draw_object_on_map(f32 worldX, f32 worldY, f32 size, color c) {
     f32 mapCenterX = screenHalfW - (mapSize / 2.0f) - 20.0f;
     f32 mapCenterY = screenHalfH - (mapSize / 2.0f) - 20.0f;
 
-    f32 scaleFactor = mapSize / worldW;
+    f32 scaleFactor = mapSize / totalWorldW;
 
     f32 finalX = (worldX * scaleFactor) + mapCenterX;
     f32 finalY = (worldY * scaleFactor) + mapCenterY;
@@ -228,7 +224,7 @@ void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* p
     f32 screenHalfH = AEGfxGetWindowHeight() / 2.0f;
     f32 mapCenterX = screenHalfW - (mapSize / 2.0f) - 20.0f;
     f32 mapCenterY = screenHalfH - (mapSize / 2.0f) - 20.0f;
-    f32 scaleFactor = mapSize / worldW;
+    f32 scaleFactor = mapSize / totalWorldW;
 
     // Use the same origin as the tiles
     f32 startX = -1600.f / 2.f;

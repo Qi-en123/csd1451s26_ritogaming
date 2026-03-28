@@ -62,10 +62,7 @@ void level1_init()
 	zoom = 1.1f;
 	ensure_level_paths_loaded(); // for both puzzles and map tile data
 
-	printf("level_paths size: %d, current_level_index: %s\n",
-		   (int)level_paths.size(), selected_level_path.c_str());
-	printf("level_puzzles size: %d, current_level_index: %s\n",
-		   (int)level_puzzle_paths.size(), selected_level_puzzle_path.c_str());
+
 
 	if (selected_level_path.empty() || selected_level_puzzle_path.empty())
 	{
@@ -100,7 +97,24 @@ void level1_init()
 	// g_enemy_manager.set_level(true);
 	// g_enemy_manager.initialize_ghost_slots();
 
-	enemy_manager_instance.clear_all();
+	// for enemies
+	std::string spawn_path;
+	if (selected_level_path == "Assets/Levels/default.txt")
+	{
+		// Ensure this path matches your folder exactly (check capitalization!)
+		spawn_path = "Assets/Enemy_spawn_location/Enemy_spawning_coordinates.txt";
+	}
+	else
+	{
+		// Use the PUZZLE path as the base to match "l1_puzzles_enemy_spawns.txt"
+		size_t last_dot = selected_level_path.find_last_of('.');
+		spawn_path = selected_level_path.substr(0, last_dot) + "_enemy_spawns.txt";
+	}
+
+	// Add this temporary printf to your console so you can see if the path is correct
+	printf("Loading Spawn File: %s\n", spawn_path.c_str());
+
+	enemy_manager_instance.load_spawn_positions(spawn_path.c_str());
 	enemy_manager_instance.initialize_tutorial_area();
 
 	// lights

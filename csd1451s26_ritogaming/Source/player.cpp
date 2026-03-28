@@ -26,30 +26,13 @@ extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
 
-#define DAMAGE 2        // change this for fireball damage
+#define DAMAGE 2 // change this for fireball damage
 #define MELEE_DAMAGE 1  // knight swing damage
 #define M_PI 3.14159265358979323846
 
 // Global player instance definition
 Player player_instance;
 
-<<<<<<< Updated upstream
-=======
-// ====================================
-// 
-// AUDIO RELATED
-// 
-// ====================================
-void footstep_audio_update()
-{
-    if (!footstep_was_active && is_footstep_playing)
-    {
-        AEAudioStopGroup(g_audio.sfx_group);
-        is_footstep_playing = false;
-    }
-    footstep_was_active = false;
-}
->>>>>>> Stashed changes
 
 
 static void player_system_update_transforms(Player* player_ptr)

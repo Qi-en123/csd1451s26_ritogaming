@@ -110,20 +110,26 @@ void end_screen_update()
     else if (IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H)) current_hovered = 1;
 
     if (current_hovered != last_hovered && current_hovered != -1)
-        play_sfx(g_audio.sfx_button_hover, 1.f);
+        play_sfx(g_audio.sfx_button_hover);
     last_hovered = current_hovered;
 
     // Restart
     if (IsButtonClicked(BTN_X, BTN_Y0, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_R))
     {
+<<<<<<< Updated upstream
         play_sfx(g_audio.sfx_button_click, 1.f);
         next = GS_LEVEL1;
+=======
+        play_sfx(g_audio.sfx_button_click);
+        //next = GS_LEVEL1;
+        next = restart_level_state;
+>>>>>>> Stashed changes
     }
 
     // Main Menu
     if (IsButtonClicked(BTN_X, BTN_Y1, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_M))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         next = MAINMENU;
     }
 }
@@ -168,10 +174,17 @@ void end_screen_draw()
     }
 }
 
+<<<<<<< Updated upstream
+=======
+// -------------------------------------------------------------------------
+// Pause update  (call every frame from active game state's update)
+// -------------------------------------------------------------------------
+>>>>>>> Stashed changes
 void pause_update()
 {
     if (AEInputCheckTriggered(AEVK_ESCAPE))
         is_paused = !is_paused;
+<<<<<<< Updated upstream
 
     if (is_paused)
     {
@@ -188,6 +201,54 @@ void pause_update()
         }
     }
 }
+=======
+        pause_last_hovered = -1;   // reset hover state on open / close
+        play_sfx(g_audio.sfx_button_click);
+    }
+
+    if (!is_paused) return;
+
+    // Hover SFX � fires once per newly-entered button
+    int cur = -1;
+    if (IsButtonHovered(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H)) cur = 0;
+    else if (IsButtonHovered(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H)) cur = 1;
+    else if (IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H)) cur = 2;
+
+    if (cur != pause_last_hovered && cur != -1)
+        play_sfx(g_audio.sfx_button_hover);
+    pause_last_hovered = cur;
+
+    // Resume  (button OR ESC a second time)
+    if (IsButtonClicked(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H))
+    {
+        play_sfx(g_audio.sfx_button_click);
+        is_paused = false;
+        pause_last_hovered = -1;
+    }
+
+    // Restart
+    if (IsButtonClicked(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H) ||
+        AEInputCheckTriggered(AEVK_R))
+    {
+        play_sfx(g_audio.sfx_button_click);
+        next = GS_RESTART;
+        is_paused = false;
+    }
+
+    // Main Menu
+    if (IsButtonClicked(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H) ||
+        AEInputCheckTriggered(AEVK_M))
+    {
+        play_sfx(g_audio.sfx_button_click);
+        next = MAINMENU;
+        is_paused = false;
+    }
+}
+
+// -------------------------------------------------------------------------
+// Pause draw  (call every frame AFTER active game state's draw)
+// -------------------------------------------------------------------------
+>>>>>>> Stashed changes
 void pause_draw()
 {
     if (!is_paused) return;

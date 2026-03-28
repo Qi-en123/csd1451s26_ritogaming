@@ -176,7 +176,7 @@ void mainmenu_update()
     // Only play sound when hovering a NEW button
     if (current_hovered != last_hovered && current_hovered != -1)
     {
-        play_sfx(g_audio.sfx_button_hover, 1.f);
+        play_sfx(g_audio.sfx_button_hover);
     }
 
     last_hovered = current_hovered;
@@ -202,28 +202,33 @@ void mainmenu_update()
     // Check button clicks
     if (IsButtonClicked(button_x, button_y[0], button_w, button_h)) // Play
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         next = GS_LEVEL1;
     }
 	if (IsButtonClicked(button_x, button_y[1], button_w, button_h)) // Levels
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         next = GS_LEVELS;
     }
       
     if (IsButtonClicked(button_x, button_y[2], button_w, button_h)) // Guide
     {
+<<<<<<< Updated upstream
         play_sfx(g_audio.sfx_button_click, 1.f);
        //next = GS_GUIDE;
+=======
+        play_sfx(g_audio.sfx_button_click);
+        next = GS_GUIDE;
+>>>>>>> Stashed changes
     }
     if (IsButtonClicked(button_x, button_y[3], button_w, button_h)) // Credits
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         next = CREDIT;
     }
     if (IsButtonClicked(button_x, button_y[4], button_w, button_h))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         show_exit_confirm = true;   // show confirmation instead of quitting
     }
 

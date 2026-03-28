@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <windows.h>
 #include "map.hpp"  
+#include "audio_manager.hpp"
 
 namespace {
 
@@ -263,16 +264,38 @@ void levels_update()
     dt = (f32)AEFrameRateControllerGetFrameTime();
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
+    static int last_hovered = -1;
+    int current_hovered = -1;
+
+    if (IsButtonHovered(-600.f, -380.f, 200.f, 70.f)) current_hovered = 0;
+    else if (IsButtonHovered(600.f, -380.f, 200.f, 70.f)) current_hovered = 1;
+    else {
+        for (int row = 0; row < ROWS_VISIBLE; ++row)
+            for (int col = 0; col < COLS; ++col) {
+                int idx = (scroll_row + row) * COLS + col;
+                if (idx >= (int)levels.size()) continue; // skip empty cells
+                f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
+                f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
+                if (IsButtonHovered(cx, cy, CELL_W, CELL_H)) { current_hovered = 2 + idx; break; }
+            }
+    }
+
+    if (current_hovered != last_hovered && current_hovered != -1)
+        play_sfx(g_audio.sfx_button_hover);
+    last_hovered = current_hovered;
     // --- ESC / Back button — return to main menu ---
     if (AEInputCheckTriggered(AEVK_ESCAPE))
         next = MAINMENU;
 
-    if (IsButtonClicked(-600.f, -380.f, 200.f, 70.f))
+    if (IsButtonClicked(-600.f, -380.f, 200.f, 70.f)) {
+        play_sfx(g_audio.sfx_button_click);
         next = MAINMENU;
+    }
 
     // --- Level Editor button — open blank editor for new level ---
     if (IsButtonClicked(600.f, -380.f, 200.f, 70.f))
     {
+        play_sfx(g_audio.sfx_button_click);
         selected_level_path = ""; // blank map
         selected_level_puzzle_path = "";
         next = GS_LEVEL_EDITOR;
@@ -396,6 +419,7 @@ void levels_update()
 
                 if (IsButtonClicked(cx, cy, CELL_W, CELL_H))
                 {
+                    play_sfx(g_audio.sfx_button_click);
                     selected_level_path = levels[idx].path;
                     selected_level_puzzle_path = puzzles[idx].path;
                     next = GS_LEVEL1;

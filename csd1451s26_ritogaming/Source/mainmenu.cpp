@@ -108,7 +108,7 @@ void mainmenu_load()
     ground = AEGfxTextureLoad("Assets/Tiles/tile_0002.png");
     wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
     door = AEGfxTextureLoad("Assets/Tiles/tile_0007.png");
-    ghoul = AEGfxTextureLoad("Assets/Tiles/tile_0006.png");
+    ghoul = AEGfxTextureLoad("Assets/Enemy/tile_0006.png");
     knight = AEGfxTextureLoad("Assets/Tiles/tile_0004.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     banner = AEGfxTextureLoad("Assets/Admin/title_banner.png");
@@ -435,11 +435,7 @@ void mainmenu_draw()
     {
 
 
-        // Dark overlay using blending rectangle
-        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-        AEGfxSetRenderMode(AE_GFX_RM_COLOR); // just color, no texture
-        AEGfxSetColorToMultiply(0.f, 0.f, 0.f, 0.5f); // 50% black tint
-        draw_square(0.f, 0.f, 1600.f, 900.f); // use your square_mesh
+        draw_black_overlay(0.6f);
 
         // Popup box
         render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);

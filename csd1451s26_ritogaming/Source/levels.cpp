@@ -136,6 +136,10 @@ static void build_level_list()
             if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
             {
                 std::string filename = find_data.cFileName;
+
+                if (filename.find("_puzzles") != std::string::npos) continue;
+                if (filename.find("_enemy_spawns") != std::string::npos) continue;
+
                 LevelEntry e;
                 e.name = filename.substr(0, filename.find_last_of('.'));
                 e.path = std::string("Assets/Levels/") + filename;
@@ -396,10 +400,14 @@ void levels_update()
             {
                 remove(levels[idx].path.c_str());
                 remove(puzzles[idx].path.c_str());
+                // remove enemy file also
+                std::string spawn_path = levels[idx].path.substr(0, levels[idx].path.find_last_of('.')) + "_enemy_spawns.txt";
+                remove(spawn_path.c_str());
                 build_level_list();
                 level_paths.clear();
                 for (auto& e : levels)
                     level_paths.push_back(e.path);
+                level_puzzle_paths.clear();  
                 for (auto& e : puzzles)
                     level_puzzle_paths.push_back(e.path);
                 scroll_row = 0; scroll_row_f = 0.f; scroll_target = 0.f;
@@ -721,34 +729,39 @@ void ensure_level_paths_loaded()
     if (!level_paths.empty()) return; // already populated, skip rebuild
 
     // Scan saved level files from disk
-	WIN32_FIND_DATAA find_data; // windows struct to hold file info
-    HANDLE hFind = FindFirstFileA("Assets/Levels/lvl*.txt", &find_data); 
+    WIN32_FIND_DATAA find_data; // windows struct to hold file info
+    HANDLE hFind = FindFirstFileA("Assets/Levels/lvl*.txt", &find_data);
 
-	std::vector<std::string> paths; // vectors to hold file paths for custom levels
-	if (hFind != INVALID_HANDLE_VALUE) // if there are any matching files found 
+    std::vector<std::string> paths; // vectors to hold file paths for custom levels
+    if (hFind != INVALID_HANDLE_VALUE) // if there are any matching files found 
     {
         do
         {
             // Contains flags describing the item found (file, directory, hidden, etc.).
-			// We only want to add files, not directories, to the level paths list.
-			if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
-				paths.push_back(std::string("Assets/Levels/") + find_data.cFileName); // construct the full path and add to the list
-		} while (FindNextFileA(hFind, &find_data)); // continue finding the next file until there are no more matches
+            // We only want to add files, not directories, to the level paths list.
+            if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+            {
+                std::string filename = find_data.cFileName;
+                if (filename.find("_puzzles") != std::string::npos) continue;
+                if (filename.find("_enemy_spawns") != std::string::npos) continue;
+                paths.push_back(std::string("Assets/Levels/") + filename);
+            }
+        } while (FindNextFileA(hFind, &find_data)); // continue finding the next file until there are no more matches
 
-		FindClose(hFind); // close the search handle to free system resources
+        FindClose(hFind); // close the search handle to free system resources
     }
 
     // Sort numerically to match build_level_list() ordering
     std::sort(paths.begin(), paths.end(),
         [](const std::string& a, const std::string& b)
         {
-			auto get_num = [](const std::string& s) // Extracts the numeric part of the filename (e.g., "lvl3.txt" -> 3)
+            auto get_num = [](const std::string& s) // Extracts the numeric part of the filename (e.g., "lvl3.txt" -> 3)
                 {
-					size_t start = s.find("lvl") + 3; // position right after "lvl"
-					size_t end = s.find(".txt"); // position of ".txt"
-					return std::stoi(s.substr(start, end - start)); // convert the extracted substring to an integer
+                    size_t start = s.find("lvl") + 3; // position right after "lvl"
+                    size_t end = s.find(".txt"); // position of ".txt"
+                    return std::stoi(s.substr(start, end - start)); // convert the extracted substring to an integer
                 };
-			return get_num(a) < get_num(b); // sort in ascending order based on the extracted numeric value
+            return get_num(a) < get_num(b); // sort in ascending order based on the extracted numeric value
         });
 
     // Index 0 = default built-in level (empty path = initialize_dungeon_map)
@@ -756,11 +769,6 @@ void ensure_level_paths_loaded()
     level_paths.push_back("Assets/Levels/default.txt");
     for (auto& p : paths)
         level_paths.push_back(p);
-
-
-
-
-
 
     if (!level_puzzle_paths.empty()) return; // already populated, skip rebuild
 
@@ -785,11 +793,8 @@ void ensure_level_paths_loaded()
     std::sort(paths.begin(), paths.end(),
         [](const std::string& a, const std::string& b)
         {
-            auto get_num = [](const std::string& s) // Extracts the numeric part of the filename (e.g., "lvl3.txt" -> 3)
+            auto get_num = [](const std::string& s)
                 {
-                    //size_t start = s.find("l") + 1; // position right after "lvl"
-                    //size_t end = s.find("_puzzles.txt"); // position of ".txt"
-                    //return std::stoi(s.substr(start, end - start)); // convert the extracted substring to an integer
                     size_t end = s.find("_puzzles.txt");
                     size_t start = s.rfind("l", end) + 1; // search backwards to find the last "l" before "_puzzles"
                     return std::stoi(s.substr(start, end - start));

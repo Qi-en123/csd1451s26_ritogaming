@@ -265,7 +265,7 @@ void draw_map(f32 tile_size)
             
             f32 x = startX + col * tile_size;
 
-            if (tileType == KNIGHT || tileType == WIZARD) {
+            if (tileType == KNIGHT || tileType == WIZARD || tileType == TOMB || tileType == TREE) {
                 render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[2]);
                 map[row][col] = FLOOR; // for minimap to render floor
                 continue;

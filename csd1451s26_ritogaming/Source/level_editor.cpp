@@ -16,19 +16,27 @@
 #include "puzzle.hpp"
 #include "level_editor.hpp"
 #include <string>
+#include "enemy_manager.hpp"
 
 namespace {
 	/// Assets
 	AEGfxTexture* erase_tile = nullptr;
 	AEGfxTexture* cursor = nullptr;
+	AEGfxTexture* ghost_spawn = nullptr;
+	AEGfxTexture* tomb = nullptr;
+	AEGfxTexture* bat_spawn = nullptr;
 	s32 mouse_x, mouse_y;
 	static s8 font = -1;
 
 	// --- Tile Palette ---
-	const int PALETTE_COUNT = 6;
-	const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 7};
-	const char* palette_labels[PALETTE_COUNT] = { "Erase", "Wall", "Floor", "Wizard", "Knight", "Door" };
+	const int PALETTE_COUNT = 8;
+	const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 7, 5, 6 };
+	const char* palette_labels[PALETTE_COUNT] = { "Erase", "Wall", "Floor", "Wizard", "Knight", "Door", "Ghost", "Bat" };
 	int selected_tile = 1; // default to wall
+
+	// --- Enemy Spawn message ---
+	float spawn_error_timer = 0.0f;
+	const float SPAWN_ERROR_DUR = 2.0f; // Message stays for 2 seconds
 
 	// --- Puzzle Palette ---
 	const int EDITABLE_PUZZLE_COUNT = 5;
@@ -375,6 +383,9 @@ void level_editor_load()
 	// Load tile textures once and reuse for palette icons and grid rendering
 	load_tile_textures("Assets/Tiles");
 	cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
+	tomb = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0064.png");
+	ghost_spawn = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0066.png");
+	bat_spawn = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0126.png");
 	font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 22);
 	erase_tile = AEGfxTextureLoad("Assets/Tiles/tile_0010.png");
 	edit_panel = AEGfxTextureLoad("Assets/Admin/edit_interface_panel.png");
@@ -382,6 +393,7 @@ void level_editor_load()
 	edit_panel_exit = AEGfxTextureLoad("Assets/Admin/edit_interface_exit.png");
 	edit_panel_button_left = AEGfxTextureLoad("Assets/Admin/ep_button_left.png");
 	edit_panel_button_right = AEGfxTextureLoad("Assets/Admin/ep_button_right.png");
+
 
 	load_puzzle_textures();
 }
@@ -487,40 +499,52 @@ void level_editor_update()
     if (AEInputCheckTriggered(AEVK_ESCAPE))
         next = GS_LEVELS; // adjust to your menu state
 
-    // --- Save with S key ---
-    if (AEInputCheckTriggered(AEVK_S))
-    {
-        if (wizard_placed && knight_placed && door_placed)
-        {
-            if (!selected_level_path.empty())
-            {
-                save_success = 
-					save_map_to_file_overwrite(editor_map, selected_level_path) &&
-					overwrite_puzzle_blocks(puzzles, button_triggers, selected_level_path);
-            }
-            else
-            {
-                std::string new_path;
-                save_success = 
-					save_map_to_file(editor_map, new_path) &&
-					save_puzzle_blocks(puzzles, button_triggers, new_path);
-
-				//So don't keep saving new files
-                if (save_success)
-                    selected_level_path = new_path; // switch to edit mode
-            }
-        }
-        else
-        {
-            save_success = false;
-        }
-        save_msg_timer = SAVE_MSG_DUR;
-    }
-
-
 	// --- Tick save message ---
 	if (save_msg_timer > 0.f)
 		save_msg_timer -= dt;
+	if (spawn_error_timer > 0.0f)
+		spawn_error_timer -= dt;
+
+    // --- Save with S key ---
+	if (AEInputCheckTriggered(AEVK_S))
+	{
+		if (wizard_placed && knight_placed && door_placed)
+		{
+			if (!selected_level_path.empty())
+			{
+				save_success =
+					save_map_to_file_overwrite(editor_map, selected_level_path) &&
+					overwrite_puzzle_blocks(puzzles, button_triggers, selected_level_path);
+				std::string spawn_path = selected_level_path.substr(0, selected_level_path.find_last_of('.')) + "_enemy_spawns.txt";
+				enemy_manager_instance.save_spawn_positions_from_map(editor_map, spawn_path);
+			}
+			else
+			{
+				std::string new_path;
+				save_success = save_map_to_file(editor_map, new_path);
+
+				if (save_success)
+				{
+					// Capture spawn path from map path BEFORE puzzle blocks modifies new_path
+					std::string spawn_path = new_path.substr(0, new_path.find_last_of('.')) + "_enemy_spawns.txt";
+					enemy_manager_instance.save_spawn_positions_from_map(editor_map, spawn_path);
+
+					save_success = save_puzzle_blocks(puzzles, button_triggers, new_path);
+
+					if (save_success)
+						selected_level_path = new_path;
+				}
+			}
+		}
+		else
+		{
+			save_success = false;
+		}
+		save_msg_timer = SAVE_MSG_DUR;
+	}
+
+
+
 
 	//Switch editing state
 	if (!editing) {
@@ -584,23 +608,50 @@ void level_editor_update()
 				int current = editor_map[row][col];
 				int placing = selected_tile;
 
-				bool blocked =
-					(placing == 3 && wizard_placed && current != 3) ||
-					(placing == 4 && knight_placed && current != 4) ||
-					(placing == 7 && door_placed && current != 7);
+				// Ghost/bat spawn only allowed on floor
+				if ((placing == 5 || placing == 6) && current != 2)
+					goto skip_paint;
 
-				if (!blocked)
+				if ((placing == 5 ) && row >= (TILE_ROWS - 1))
 				{
-					if (current == 3) wizard_placed = false;
-					if (current == 4) knight_placed = false;
-					if (current == 7) door_placed = false;
-
-					editor_map[row][col] = placing;
-
-					if (placing == 3) wizard_placed = true;
-					if (placing == 4) knight_placed = true;
-					if (placing == 7) door_placed = true;
+					spawn_error_timer = SPAWN_ERROR_DUR;
+					goto skip_paint;
 				}
+
+				{
+					bool blocked =
+						(placing == 3 && wizard_placed && current != 3) ||
+						(placing == 4 && knight_placed && current != 4) ||
+						(placing == 7 && door_placed && current != 7);
+
+					if (!blocked)
+					{
+						if (current == 3) wizard_placed = false;
+						if (current == 4) knight_placed = false;
+						if (current == 7) door_placed = false;
+
+						// Painting over a spawn marker — clear it first
+if (current == 5 || current == 6)
+    editor_map[row][col] = 2; // restore floor before overwriting
+
+// If placing a tomb on a tile that is the ghost_spawn row of an existing tomb above,
+// clear that tomb (turn it back to floor), so the new tomb takes over
+if (placing == 5 && row > 0 && editor_map[row - 1][col] == 5)
+    editor_map[row - 1][col] = 2; // remove the tomb above
+
+// If placing a tomb and its ghost_spawn row below already has a tomb,
+// clear that tomb below
+if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
+    editor_map[row + 1][col] = 2; // remove the tomb below
+
+						editor_map[row][col] = placing;
+
+						if (placing == 3) wizard_placed = true;
+						if (placing == 4) knight_placed = true;
+						if (placing == 7) door_placed = true;
+					}
+				}
+			skip_paint:;
 			}
 
 			// RIGHT CLICK ERASE
@@ -612,7 +663,11 @@ void level_editor_update()
 				if (current == 4) knight_placed = false;
 				if (current == 7) door_placed = false;
 
-				editor_map[row][col] = 0;
+				// Erasing spawn marker restores floor, not empty
+				if (current == 5 || current == 6)
+					editor_map[row][col] = 2;
+				else
+					editor_map[row][col] = 0;
 			}
 		}
 
@@ -813,7 +868,7 @@ void level_editor_update()
 			}
 
 		}
-	}//printf("%u\n", puzzles.size());
+	}
 }
 
 void level_editor_draw()
@@ -852,7 +907,12 @@ void level_editor_draw()
 			if (wy > grid_top || wy < grid_bot) continue;
 
 			int tile = editor_map[r][c];
-			if (tile != 0 && TileTextures[tile])
+			if (tile == 5 || tile == 6)
+			{
+				if (TileTextures[2])
+					render_editor_tiles(TileTextures[2], tile_draw_size, tile_draw_size, 1.0f, wx, wy);
+			}
+			else if (tile != 0 && TileTextures[tile])
 				render_editor_tiles(TileTextures[tile], tile_draw_size, tile_draw_size, 1.0f, wx, wy);
 
 			PuzzleType ptype = puzzle_editor_map[r][c];
@@ -873,7 +933,31 @@ void level_editor_draw()
 			}
 
 		}
+
 	}
+	for (int r = 0; r < TILE_ROWS; ++r)
+	for (int r = 0; r < TILE_ROWS; ++r)
+	{
+		for (int c = 0; c < TILE_COLS; ++c)
+		{
+			f32 wx = grid_start_x + c * tile_draw_size + (tile_draw_size * 0.5f);
+			f32 wy = grid_start_y - r * tile_draw_size - (tile_draw_size * 0.5f);
+
+			if (wx < grid_start_x || wx > grid_start_x + TILE_COLS * tile_draw_size) continue;
+			if (wy > grid_start_y || wy < grid_start_y - TILE_ROWS * tile_draw_size) continue;
+
+			int tile = editor_map[r][c];
+			if (tile == 5 && tomb)
+			{
+				render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
+				if (ghost_spawn)
+					render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy - tile_draw_size);
+			}
+			else if (tile == 6 && bat_spawn)
+				render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
+		}
+	}
+
 
 	// Hover highlight
 	{
@@ -893,9 +977,22 @@ void level_editor_draw()
 			if (editorState == EDIT_TILES) {
 				if (selected_tile == 0)
 				{
-					// Erase � show red tint using floor tile
 					if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
 						render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
+				}
+				else if (selected_tile == 5)
+				{
+					if (tomb && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
+					{
+						render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 0.5f, cx, cy);
+						if (ghost_spawn)
+							render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 0.5f, cx, cy - tile_draw_size);
+					}
+				}
+				else if (selected_tile == 6)
+				{
+					if (bat_spawn && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
+						render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 0.5f, cx, cy);
 				}
 				else if (TileTextures[selected_tile] && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
 				{
@@ -928,7 +1025,7 @@ void level_editor_draw()
 	}
 
 	// =====================================================
-	// Outer border � only draw OUTSIDE the grid area
+	// Outer border  only draw OUTSIDE the grid area
 	// =====================================================
 	{
 
@@ -972,7 +1069,7 @@ void level_editor_draw()
 			if (hovered && !is_selected && TileTextures[2])
 				render_editor_ui(TileTextures[2], PAL_W, PAL_H, 0.2f, PANEL_X, py);
 
-			// Tile icon � dimmed if locked
+			// Tile icon dimmed if locked
 			f32 icon_alpha = is_locked ? 0.3f : 1.0f;
 			if (palette_ids[i] == 0)
 			{
@@ -983,10 +1080,15 @@ void level_editor_draw()
 			else
 			{
 				int icon_id = palette_ids[i];
-				if (TileTextures[icon_id])
-					render_editor_ui(TileTextures[icon_id],
+				AEGfxTexture* icon_tex = nullptr;
+				if (icon_id == 5)       icon_tex = tomb;
+				else if (icon_id == 6)  icon_tex = bat_spawn;
+				else                    icon_tex = TileTextures[icon_id];
+				if (icon_tex)
+					render_editor_ui(icon_tex,
 						PAL_H - 8.f, PAL_H - 8.f, icon_alpha,
 						PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
+
 			}
 
 			if (font != -1)
@@ -1095,20 +1197,12 @@ void level_editor_draw()
 	// =====================================================
 	if (font != -1)
 	{
-		const char* instructions[] = {
-			"LMB: Paint",
-			"RMB: Erase",
-			"F: Fill all",
-			"C: Clear all",
-			"S: Save",
-			"ESC: Exit"
-		};
-		for (int i = 0; i < 6; ++i)
+		if (font != -1)
 		{
-			f32 iy = -195.f - i * 40.f;
-			f32 norm_x = (PANEL_X - PAL_W * 0.5f + 5.f) / 800.f;
-			f32 norm_y = iy / 450.f;
-			AEGfxPrint(font, instructions[i], norm_x, norm_y, 1.f, 0.55f, 0.55f, 0.55f, 1.f);
+			const char* hint = "LMB : Paint  ---  RMB : Erase  ---  F : Fill  ---  C : Clear  ---  S : Save  ---  ESC : Exit  ---  SCROLL : Zoom --- Arrows : Pan";
+			f32 norm_x = (grid_start_x) / 800.f;
+			f32 norm_y = -420.f / 450.f;
+			AEGfxPrint(font, hint, norm_x, norm_y, 1.f, 0.55f, 0.55f, 0.55f, 1.f);
 		}
 	}
 
@@ -1121,24 +1215,42 @@ void level_editor_draw()
 		f32 world_y = -(f32)mouse_y + 450.f;
 		render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x + 25.f, world_y - 25.f);
 	}
-	// Save feedback � centered on screen, fades after 2 seconds
-	if (save_msg_timer > 0.f && font != -1)
+	// --- Notification System (Save & Spawn Errors) ---
+	if (font != -1)
 	{
-		const char* msg = save_success ? "Map Saved!" :
-			(!wizard_placed ? "Place Wizard first!" :
-				(!knight_placed ? "Place Knight first!" :
-					(!door_placed ? "Place Door first!" : "Save FAILED!")));
-		f32 r = save_success ? 0.3f : 1.0f;
-		f32 g = save_success ? 1.0f : 0.3f;
-		f32 b = 0.3f;
-		f32 alpha = save_msg_timer / SAVE_MSG_DUR; // fades out over time
+		const char* active_msg = nullptr;
+		f32 active_alpha = 0.0f;
+		bool is_error = true;
 
-		f32 tw = 0.f, th = 0.f;
-		AEGfxGetPrintSize(font, msg, 1.5f, &tw, &th);
-		f32 norm_x = -tw * 0.5f;   // centered horizontally
-		f32 norm_y = 0.8f;          // near top of screen
+		// Priority 1: Save Feedback
+		if (save_msg_timer > 0.f) {
+			active_msg = save_success ? "Map Saved!" :
+				(!wizard_placed ? "Place Wizard first!" :
+					(!knight_placed ? "Place Knight first!" :
+						(!door_placed ? "Place Door first!" : "Save FAILED!")));
 
-		AEGfxPrint(font, msg, norm_x, norm_y, 1.5f, r, g, b, alpha);
+			active_alpha = save_msg_timer / SAVE_MSG_DUR;
+			is_error = !save_success;
+		}
+		// Priority 2: Spawn Error (only shows if no save message is ticking)
+		else if (spawn_error_timer > 0.f) {
+			active_msg = "Cannot place ghost spawns on the last row!";
+			active_alpha = spawn_error_timer / SPAWN_ERROR_DUR;
+			is_error = true;
+		}
+
+		// Draw the active message if there is one
+		if (active_msg) {
+			f32 r = is_error ? 1.0f : 0.3f;
+			f32 g = is_error ? 0.3f : 1.0f;
+			f32 b = 0.3f;
+
+			f32 tw = 0.f, th = 0.f;
+			AEGfxGetPrintSize(font, active_msg, 1.5f, &tw, &th);
+
+			// Exact same placement as your original Save Feedback
+			AEGfxPrint(font, active_msg, -tw * 0.5f, 0.8f, 1.5f, r, g, b, active_alpha);
+		}
 	}
 }
 
@@ -1166,6 +1278,7 @@ void level_editor_free()
 
 		puzzle_editor_map = nullptr;
 	}
+
 }
 
 void level_editor_unload()
@@ -1173,6 +1286,9 @@ void level_editor_unload()
 	free_tile_textures(); // Unload tile textures to free memory
 	unload_puzzle_textures();
 	if (cursor) { AEGfxTextureUnload(cursor); cursor = nullptr; }
+	if (ghost_spawn) { AEGfxTextureUnload(ghost_spawn); ghost_spawn = nullptr; }
+	if (tomb) { AEGfxTextureUnload(tomb); tomb = nullptr; }
+	if (bat_spawn) { AEGfxTextureUnload(bat_spawn);   bat_spawn = nullptr; }
 	if (font != -1) { AEGfxDestroyFont(font); font = -1; }
 	if (erase_tile) { AEGfxTextureUnload(erase_tile); erase_tile = nullptr; }
 	if (edit_panel) { AEGfxTextureUnload(edit_panel); edit_panel = nullptr; }

@@ -33,13 +33,15 @@ void preview_default_level(s32 out_map[][TILE_COLS]);
 
 enum TILE_ID
 {
-    EMPTY = 0,
+    EMPTY,
     WALL,
     FLOOR,
-    KNIGHT = 3,
-    WIZARD = 4,
-    OPENED_DOOR = 7,
-    DOOR = 8,
+    KNIGHT,
+    WIZARD,
+    TOMB,
+    TREE,
+    OPENED_DOOR,
+    DOOR,
 };
 
 

@@ -462,3 +462,26 @@ void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha
 	AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
 	AEGfxTextureSet(nullptr, 0, 0);
 }
+
+// for tint in mainmenu
+void draw_black_overlay(f32 alpha)
+{
+	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	AEGfxSetColorToMultiply(0.f, 0.f, 0.f, 1.f);
+	AEGfxSetColorToAdd(-1.f, -1.f, -1.f, 0.f);
+	AEGfxSetTransparency(alpha);
+
+	AEMtx33 transform, scale, translate;
+	AEMtx33Identity(&transform);
+	AEMtx33Scale(&scale, 1600.f, 900.f);
+	AEMtx33Trans(&translate, 0.f, 0.f);
+	AEMtx33Concat(&transform, &transform, &translate);
+	AEMtx33Concat(&transform, &transform, &scale);
+	AEGfxSetTransform(transform.m);
+	AEGfxMeshDraw(square_mesh, AE_GFX_MDM_TRIANGLES);
+
+	AEGfxSetTransparency(1.f);
+	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+}

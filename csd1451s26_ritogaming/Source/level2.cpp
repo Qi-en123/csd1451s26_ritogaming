@@ -92,6 +92,7 @@ void level2_init()
     generate_walls_from_map(boss_map, 64.0f);
 
     // Clear any existing enemies then lock zone so ghost/bat respawn never fires here
+    boss_proj_manager.clear();
     enemy_manager_instance.clear_all();
     enemy_manager_instance.set_zone(boss_room);
 
@@ -107,15 +108,11 @@ void level2_init()
     f32 room_top = MAP_START_Y - (3 * TILE_SIZE) + (TILE_SIZE / 2.0f);
     f32 room_bottom = MAP_START_Y - (10 * TILE_SIZE) - (TILE_SIZE / 2.0f);
 
-    enemy_manager_instance.spawn_dragon(dragon_x, dragon_y,
-        room_left, room_right, room_top, room_bottom);
+    enemy_manager_instance.spawn_dragon(dragon_x, dragon_y, room_left, room_right, room_top, room_bottom);
 }
 
 void level2_update()
 {
-
-    printf("active enemies: %d, spawned: %d\n",
-        enemy_manager_instance.get_active_enemy_count(), enemy_spawned);
     pause_update();
     if (is_paused)
         return;
@@ -139,6 +136,9 @@ void level2_update()
 
     // Update enemy manager (for the dragon)
     enemy_manager_instance.update(dt, &player_instance, &cam);
+    boss_proj_manager.update(dt, &cam);
+    boss_proj_manager.check_player_collision(&player_instance);
+
     if (enemy_manager_instance.get_active_enemy_count() > 0)
         enemy_spawned = true;
 
@@ -166,10 +166,12 @@ void level2_draw()
     player_system_render(&player_instance);
     minimap_draw(&player_instance, map, TileTextures);
     // Minimap_DrawWalls(map);
-    //  Render enemies (dragon)
+
     enemy_manager_instance.render();
+    render_boss_projectiles(boss_proj_manager);
     render_enemy_hp(&ui_manager, &enemy_manager_instance);
     render_player_hud(&ui_manager, &player_instance);
+
     pause_draw();
 }
 
@@ -177,6 +179,7 @@ void level2_free()
 {
     // Cleanup enemies
     free_ui_textures(&ui_manager);
+    boss_proj_manager.clear();
     enemy_manager_instance.clear_all();
 }
 

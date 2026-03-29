@@ -155,3 +155,6 @@ void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha
 // Animation for boss
 struct Animator;
 void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim);
+
+class BossProjectileManager;
+void render_boss_projectiles(const BossProjectileManager& manager);

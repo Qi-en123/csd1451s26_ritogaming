@@ -67,7 +67,89 @@
         footstep_was_active = true;
     }
 
-    static void player_system_update_transforms(Player *player_ptr)
+static void player_system_update_transforms(Player *player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    // --- Character 1 transform ---
+    AEMtx33 translate1;
+    AEMtx33Trans(&translate1, player_ptr->char1.x, player_ptr->char1.y);
+    AEMtx33Concat(&player_ptr->char1.transform, &player_ptr->rotate, &player_ptr->character_scale);
+    AEMtx33Concat(&player_ptr->char1.transform, &translate1, &player_ptr->char1.transform);
+
+    // --- Character 2 transform ---
+    AEMtx33 translate2;
+    AEMtx33Trans(&translate2, player_ptr->char2.x, player_ptr->char2.y);
+    AEMtx33Concat(&player_ptr->char2.transform, &player_ptr->rotate, &player_ptr->character_scale);
+    AEMtx33Concat(&player_ptr->char2.transform, &translate2, &player_ptr->char2.transform);
+
+    // --- Active player indicator (triangle) ---
+    AEMtx33 triangle_translate;
+    AEMtx33Trans(&triangle_translate,
+                 player_ptr->current_player->x,
+                 player_ptr->current_player->y + player_ptr->stats.triangle_offset);
+
+    AEMtx33Concat(&player_ptr->triangle_transform, &player_ptr->rotate, &player_ptr->triangle_scale);
+    AEMtx33Concat(&player_ptr->triangle_transform, &triangle_translate, &player_ptr->triangle_transform);
+}
+
+void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
+                        AEGfxTexture *char_2_texture, AEGfxTexture *dead_texture)
+{
+    if (!player_ptr)
+        return;
+
+    // --- Character 1 setup ---
+    player_ptr->char1.x = player_ptr->stats.char1_start_x;
+    player_ptr->char1.y = player_ptr->stats.char1_start_y;
+    player_ptr->char1.speed = player_ptr->stats.char1_move_speed;
+    player_ptr->char1.character_id = 1;
+    player_ptr->char1.element = Puzzle::WATER;
+    player_ptr->char1.texture = char_1_texture;
+
+    // --- Character 2 setup ---
+    player_ptr->char2.x = player_ptr->stats.char2_start_x;
+    player_ptr->char2.y = player_ptr->stats.char2_start_y;
+    player_ptr->char2.speed = player_ptr->stats.char2_move_speed;
+    player_ptr->char2.character_id = 2;
+    player_ptr->char2.element = Puzzle::FIRE;
+    player_ptr->char2.texture = char_2_texture;
+
+    // Default to controlling Character 1
+    player_ptr->current_player = &player_ptr->char1;
+    player_ptr->current_character = 1;
+
+    //
+    player_ptr->char1.dead_texture = dead_texture;
+    player_ptr->char2.dead_texture = dead_texture;
+    player_ptr->char1.is_dead = false;
+    player_ptr->char2.is_dead = false;
+
+    player_ptr->stats.char1_curr_health = player_ptr->stats.char1_max_health;
+    player_ptr->stats.char2_curr_health = player_ptr->stats.char2_max_health;
+    player_ptr->fireball_count = 5;
+    player_ptr->shoot_cooldown = 0.0f;
+
+    // Precompute scale and rotation matrices
+    AEMtx33Scale(&player_ptr->character_scale, player_ptr->stats.character_size, player_ptr->stats.character_size);
+    AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->stats.triangle_size, player_ptr->stats.triangle_size);
+    AEMtx33Rot(&player_ptr->rotate, 0);
+
+    // Initialize last direction for shooting
+    player_ptr->last_dir_x = 1.0f;
+    player_ptr->last_dir_y = 0.0f;
+
+    // Initialize all transforms
+    player_system_update_transforms(player_ptr);
+}
+
+static void player_handle_character_switch(Player *player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    if (AEInputCheckTriggered(AEVK_1) && !player_ptr->char1.is_dead)
     {
         if (!player_ptr)
             return;
@@ -130,12 +212,16 @@
         player_ptr->stats.char2_curr_health = player_ptr->stats.char2_max_health;
         player_ptr->fireball_count = 5;
         player_ptr->shoot_cooldown = 0.0f;
-
+///////////////////////////////////////////
         // Precompute scale and rotation matrices
         AEMtx33Scale(&player_ptr->character_scale, player_ptr->stats.character_size, player_ptr->stats.character_size);
         AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->stats.triangle_size, player_ptr->stats.triangle_size);
         AEMtx33Rot(&player_ptr->rotate, 0);
-
+        //////////////////////////// old^^^?
+    f32 *move_x = &player_ptr->current_player->x;
+    f32 *move_y = &player_ptr->current_player->y;
+    Puzzle::Element curr_elem = player_ptr->current_player->element;
+/////////////////////////////////////////////////
         // Initialize last direction for shooting
         player_ptr->last_dir_x = 1.0f;
         player_ptr->last_dir_y = 0.0f;
@@ -150,6 +236,18 @@
             return;
 
         if (AEInputCheckTriggered(AEVK_1) && !player_ptr->char1.is_dead)
+    // Horizontal Movement with collision
+    if (!check_player_collision(nextX, *move_y, halfSize) &&
+        !Puzzle::player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
+    {
+        *move_x = nextX;
+    }
+    else
+    {
+        // Slide along wall
+        float direction = (nextX > *move_x) ? 1.0f : -1.0f;
+        if (!check_player_collision(*move_x + direction, *move_y, halfSize) &&
+            !Puzzle::player_collide_puzzles(*move_x + direction, *move_y, halfSize, puzzle_index))
         {
             player_ptr->current_player = &player_ptr->char1;
             player_ptr->current_character = 1;
@@ -186,6 +284,26 @@
 
         // Movement input
         if (AEInputCheckCurr(AEVK_W))
+        // Handle puzzle pushing
+        if (Puzzle::player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
+        {
+            move_puzzle(puzzle_index, (direction > 0.0f) ? Puzzle::RIGHT : Puzzle::LEFT, curr_elem);
+            is_pushing = true;
+        }
+    }
+
+    // Vertical movement with collision
+    if (!check_player_collision(*move_x, nextY, halfSize) &&
+        !Puzzle::player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
+    {
+        *move_y = nextY;
+    }
+    else
+    {
+        // Slide along wall
+        float direction = (nextY > *move_y) ? 1.0f : -1.0f;
+        if (!check_player_collision(*move_x, *move_y + direction, halfSize) &&
+            !Puzzle::player_collide_puzzles(*move_x, *move_y + direction, halfSize, puzzle_index))
         {
             nextY += is_dragging ? 1.0f : move_speed;
             player_ptr->last_dir_x = 0.0f;
@@ -362,6 +480,11 @@
                 player_ptr->particles.erase(player_ptr->particles.begin() + i);
                 i--;
             }
+        // Handle puzzle pushing
+        if (Puzzle::player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
+        {
+            move_puzzle(puzzle_index, (direction > 0.0f) ? Puzzle::DOWN : Puzzle::UP, curr_elem);
+            is_pushing = true;
         }
     }
 

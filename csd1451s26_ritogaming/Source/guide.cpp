@@ -29,6 +29,56 @@ namespace
 {
 	s32 mouse_x, mouse_y;
 	bool cursor_active = false;
+	static s8 guide_text_font = -1;
+	static s8 tooltip_font = -1;
+}
+
+//will move this to a tutorial.cpp i swear
+void render_guide_text(s32 row, s32 col, const char* text, color color) {
+	f32 world_x = col_to_world(col);
+	f32 world_y = row_to_world(row);
+
+	// Mirror the sprite transform pipeline
+	f32 text_x = (world_x - cam.pos.x) * zoom / (AEGfxGetWindowWidth() * 0.5f);
+	f32 text_y = (world_y - cam.pos.y) * zoom / (AEGfxGetWindowHeight() * 0.5f);
+
+	render_text_center(text, guide_text_font, text_x, text_y, 1.0f * zoom, color);
+}
+
+void render_all_guide_texts() {
+
+	//WASD
+	render_guide_text(29, 3, "WASD to move", yellow);
+
+	//Can push block
+	render_guide_text(18, 4, "Graves can be pushed", yellow);
+
+	//Can pull block
+	render_guide_text(19, 22, "Walk while dragging", yellow);
+	render_guide_text(20, 22, "to pull", yellow);
+
+	//Elements introduction (For knight)
+	render_guide_text(28, 15, "Blue blocks", blue);
+	render_guide_text(28, 19, "can only be", yellow);
+	render_guide_text(29, 17, "interacted by the knight", yellow);
+
+	//Element introduction (For wizard)
+	render_guide_text(28, 26, "Red blocks", red);
+	render_guide_text(29, 26, "by the wizard", yellow);
+
+	//How to switch characters
+	render_guide_text(38, 15, "Press 1&2 to switch", yellow);
+	render_guide_text(39, 15, "between characters", yellow);
+
+	//Invisible blocks explaination (can add invisible graves js to show oso)
+	render_guide_text(26, 36, "Some blocks are hidden", yellow);
+	render_guide_text(27, 36, "from either characters", yellow);
+
+	//LMB to attack
+	render_guide_text(17, 36, "Left click to attack", yellow);
+
+	//Enter door to go next floor
+	render_guide_text(7, 36, "Enter door to advance", yellow);
 }
 
 void guide_load() {
@@ -36,9 +86,24 @@ void guide_load() {
 	if (!load_tile_textures("Assets/Tiles"))
 		next = GS_QUIT; // If tile textures fail to load, quit the game
 	enemy_manager_instance.load_textures();
-	load_puzzle_textures();
+	Puzzle::load_puzzle_textures();
 	load_ui_textures(&ui_manager); //removing param since ui_manager is from same file as definition
 	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
+
+	// Load font from Assets folder
+	guide_text_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 36);
+	printf("Font value: %d\n", guide_text_font);
+	if (guide_text_font == -1)
+	{
+		return;
+	}
+
+	tooltip_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 28);
+	printf("Font value: %d\n", tooltip_font);
+	if (tooltip_font == -1)
+	{
+		return;
+	}
 }
 
 void guide_init() {
@@ -51,7 +116,7 @@ void guide_init() {
 
 	//Intialize default game state graphics
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-	zoom = 1.1f;
+	zoom = 1.2f;
 	init_mesh();
 
 	//Initialize minimap values
@@ -60,12 +125,12 @@ void guide_init() {
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
 	//Load tutorial level paths
-	selected_level_path = "Assets/Levels/tutorial.txt";
-	selected_level_puzzle_path = "Assets/Levels/tutorial_puzzle.txt";
+	selected_level_path = "Assets/Levels/tutorial_level.txt";
+	selected_level_puzzle_path = "Assets/Levels/tutorial_level_puzzles.txt";
 
 	//Load tutorial levels
 	load_map_from_file(selected_level_path.c_str(), map);
-	initialize_puzzle_blocks(selected_level_puzzle_path.c_str());
+	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
 	generate_walls_from_map(map, tile_size);
 
 	//Initialize & spawn player/characters
@@ -115,8 +180,8 @@ void guide_update() {
 	player_system_update(&player_instance);
 	entity_system_update(&player_instance, &enemy_manager_instance);
 
-	puzzle_button_manager();
-	puzzle_audio_update();
+	Puzzle::puzzle_button_manager();
+	Puzzle::puzzle_audio_update();
 
 	// printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 
@@ -143,18 +208,22 @@ void guide_draw() {
 	enemy_manager_instance.render();
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 
-	//Renders the player health & skills UI
-	render_player_hud(&ui_manager, &player_instance);
-	render_character_ui(&ui_manager, &player_instance);
-
 	//Renders the puzzle blocks
-	render_puzzle_blocks();
+	Puzzle::render_puzzle_blocks();
 
 	//Renders the actual player/characters
 	player_system_render(&player_instance);
 
+	//Render guide texts
+	render_all_guide_texts();
+
 	//Renders minimap
 	minimap_draw(&player_instance, map, TileTextures);
+
+	//Renders the player health & skills UI
+	render_player_hud(&ui_manager, &player_instance);
+	render_character_ui(&ui_manager, &player_instance);
+	render_tooltip(tooltip_font);
 
 	//Renders the pause ui when game is paused
 	pause_draw(); //consider putting is_pause condition here: if not look like drawing pause every frame
@@ -186,7 +255,7 @@ void guide_unload() {
 	free_tile_textures();
 	// free_mesh();
 	minimap_unload();
-	unload_puzzle_textures();
+	Puzzle::unload_puzzle_textures();
 
 	player_system_free(&player_instance);
 
@@ -195,4 +264,5 @@ void guide_unload() {
 		AEGfxTextureUnload(skeleton_texture);
 		skeleton_texture = nullptr;
 	}
+	AEGfxDestroyFont(tooltip_font);
 }

@@ -88,8 +88,8 @@ void free_tile_textures()
 // get door position in world coordinates for enemy spawn
 void get_door_world_pos(f32& out_x, f32& out_y)
 {
-    f32 world_left = -800.0f;
-    f32 world_top = 450.0f;
+    //f32 world_left = -800.0f;
+    //f32 world_top = 450.0f;
 
     for (int r = 0; r < TILE_ROWS; ++r)
     {
@@ -424,4 +424,40 @@ void preview_default_level(s32 out_map[][TILE_COLS])
     // HORIZONTAL CORRIDOR TO BOSS ROOM 2
     for (int c = 9; c < 25; ++c)  out_map[21][c] = FLOOR;
     for (int c = 10; c < 25; ++c) { out_map[20][c] = WALL; out_map[22][c] = WALL; }
+}
+
+s32 convert_to_col(f32 x) {
+    return static_cast<s32>((x - world_left) / tile_size);
+}
+
+s32 convert_to_row(f32 y) {
+    return static_cast<s32>((world_top - y) / tile_size);
+}
+
+f32 row_to_world(s32 row) {
+    return static_cast<f32>(world_top - row * tile_size);
+}
+
+f32 col_to_world(s32 col) {
+    return static_cast<f32>(col * tile_size + world_left);
+}
+
+// Converts a world-space position (x, y) into tile map indices (row, col)
+// Returns true if the position lies within the map bounds, false otherwise
+bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol)
+{
+    // Convert world X to column index
+    outCol = convert_to_col(worldX);
+
+    // Convert world Y to row index (Y increases downward in tiles)
+    outRow = convert_to_row(worldY);
+
+    // Check bounds
+    if (outRow < 0 || outRow >= TILE_ROWS ||
+        outCol < 0 || outCol >= TILE_COLS)
+    {
+        return false; // outside map
+    }
+
+    return true; // valid tile indices
 }

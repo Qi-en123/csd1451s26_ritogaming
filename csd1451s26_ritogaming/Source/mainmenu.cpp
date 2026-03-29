@@ -30,7 +30,7 @@ namespace{
     AEGfxTexture* panel = nullptr;
     AEGfxTexture* bg = nullptr;
 
-    static s8  font = -1;
+    static s8 font = -1;
     
     constexpr f32 knight_start_x = -700.0f;
     constexpr f32 ghoul_start_x = -310.0f;

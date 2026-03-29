@@ -10,11 +10,11 @@ and Restart, providing a central list of all possible game states.
 
 enum GS_STATES
 {
-    OPENING,
-	MAINMENU,
+    OPENING,            // Digipen logo opening
+	MAINMENU,           // Main menu page
     GS_LEVEL1,          // First level of the game
 	GS_LEVELS,          // Level selection screen
-    CREDIT,
+    CREDIT,             // Credits page
     GS_GUIDE,           // Tutorial level
     GS_LEVEL_EDITOR,    // Level editor state
     GS_BOSS_ROOM,       // Boss room state

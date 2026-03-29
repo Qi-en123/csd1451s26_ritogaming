@@ -11,8 +11,6 @@
 #include "map.hpp"
 #include <vector>
 
-// Forward declaration
-struct Player;
 
 // Simple axis-aligned rectangle (AABB) for walls
 struct Wall
@@ -55,9 +53,6 @@ bool check_projectile_collision(f32 projX, f32 projY, f32 projRadius);
 
 // Circle to rectangle collision (alternative implementation)
 bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh);
-
-// Convert world position to tile indices
-bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol);
 
 // Check if player is on a door and handle door opening
 void check_and_open_doors(Player* player);

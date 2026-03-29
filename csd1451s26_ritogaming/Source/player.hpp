@@ -84,7 +84,7 @@ struct Character
     AEMtx33 transform{};          // Transform matrix
 
     s32 character_id{}; // 1 or 2 for identification
-    Element element{};  // Character's element (WATER, FIRE, etc.)
+    Puzzle::Element element{};  // Character's element (WATER, FIRE, etc.)
 	bool is_dead{};     // Flag to indicate if character is dead
 };
 

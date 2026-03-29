@@ -43,7 +43,7 @@ void level2_load()
         if (!TileTextures[i])
             printf("Failed to load: %s\n", filename);
     }
-    load_puzzle_textures();
+    Puzzle::load_puzzle_textures();
     load_ui_textures(&ui_manager);
     skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
     end_screen_load();
@@ -214,7 +214,7 @@ void level2_update()
     // check_button_collision(player_instance.char1.x, player_instance.char1.y,
     //     player_instance.char2.x, player_instance.char2.y,
     //     player_instance.config.character_size / 2.0f);
-    puzzle_button_manager();
+    Puzzle::puzzle_button_manager();
 
     check_and_open_doors(&player_instance);
 
@@ -272,7 +272,7 @@ void level2_unload()
         }
     }
     free_mesh();
-    unload_puzzle_textures();
+    Puzzle::unload_puzzle_textures();
     player_system_free(&player_instance);
 
     if (skeleton_texture)

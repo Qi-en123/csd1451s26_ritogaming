@@ -34,7 +34,16 @@ namespace
 {
 	s32 mouse_x, mouse_y;
 	bool cursor_active = false;
+
+	// Transition
+	enum TransitionState { NONE, FADE_OUT, FADE_IN };
+	TransitionState transition_state = NONE;
+	f32 transition_alpha = 0.f;
+	const f32 TRANSITION_SPEED = 2.0f;
+	int pending_next_state = -1;
 }
+
+
 
 void level1_load()
 {
@@ -50,7 +59,9 @@ void level1_load()
 void level1_init()
 {
 	AEInputShowCursor(false);
-
+	transition_state = FADE_IN;
+	transition_alpha = 1.f;
+	pending_next_state = -1;
 	door_triggered = false;
 	is_win = false;
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
@@ -69,14 +80,10 @@ void level1_init()
 
 	generate_walls_from_map(map, 64.0f);
 
-	for (int r = 0; r < TILE_ROWS; ++r)
-		for (int c = 0; c < TILE_COLS; ++c)
-			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
-				printf("door at row:%d col:%d\n", r, c);
+
 
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
 	spawn_player_from_map(&player_instance, tile_size);
-
 	player_instance.stats.character_size = tile_size - 8.0f;
 	// Camera follows the active character via the pointer
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
@@ -105,9 +112,6 @@ void level1_init()
 		spawn_path = selected_level_path.substr(0, last_dot) + "_enemy_spawns.txt";
 	}
 
-	// Add this temporary printf to your console so you can see if the path is correct
-	printf("Loading Spawn File: %s\n", spawn_path.c_str());
-
 	enemy_manager_instance.load_spawn_positions(spawn_path.c_str());
 	enemy_manager_instance.initialize_tutorial_area();
 
@@ -125,12 +129,33 @@ void level1_init()
 
 void level1_update()
 {
+	dt = (f32)AEFrameRateControllerGetFrameTime();
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
 	pause_update();
 	if (is_paused)
 		return;
 
-	dt = (f32)AEFrameRateControllerGetFrameTime();
+	if (transition_state == FADE_OUT)
+	{
+		transition_alpha += dt * TRANSITION_SPEED;
+		if (transition_alpha >= 1.f)
+		{
+			transition_alpha = 1.f;
+			next = pending_next_state;
+		}
+		return;
+	}
+	if (transition_state == FADE_IN)
+	{
+		transition_alpha -= dt * TRANSITION_SPEED;
+		if (transition_alpha <= 0.f)
+		{
+			transition_alpha = 0.f;
+			transition_state = NONE;
+		}
+	}
+
+	
 
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
@@ -181,6 +206,10 @@ void level1_draw()
 	minimap_draw(&player_instance, map, TileTextures);
 
 	pause_draw();
+
+	if (transition_state != NONE && transition_alpha > 0.f)
+		draw_black_overlay(transition_alpha);
+
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 
 }
@@ -211,4 +240,14 @@ void level1_unload()
 	}
 
 	
+}
+
+bool is_transitioning()
+{
+	return transition_state != NONE;
+}
+void trigger_level_transition(int target_state)
+{
+	transition_state = FADE_OUT;
+	pending_next_state = target_state;
 }

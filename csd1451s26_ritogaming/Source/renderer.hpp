@@ -153,3 +153,4 @@ void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha
 	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
 
 void draw_black_overlay(f32 alpha);
+

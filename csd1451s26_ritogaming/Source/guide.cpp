@@ -21,9 +21,7 @@
 #include "game_state_manager.hpp"
 #include "ui_manager.hpp"
 
-int DEBUGGING = 0;
-
-static AEGfxTexture* skeleton_texture = nullptr;
+int DEBUGGING = 0; //shld put this elsewhere idk whr
 
 namespace
 {
@@ -31,54 +29,78 @@ namespace
 	bool cursor_active = false;
 	static s8 guide_text_font = -1;
 	static s8 tooltip_font = -1;
-}
+	AEGfxTexture* skeleton_texture = nullptr; //shld put this in player script or smth
+	bool cleared_guide;
 
-//will move this to a tutorial.cpp i swear
-void render_guide_text(s32 row, s32 col, const char* text, color color) {
-	f32 world_x = col_to_world(col);
-	f32 world_y = row_to_world(row);
+#pragma region HELPER FUNCTIONS
+	void render_guide_text(s32 row, s32 col, const char* text, color color) {
+		f32 world_x = col_to_world(col);
+		f32 world_y = row_to_world(row);
 
-	// Mirror the sprite transform pipeline
-	f32 text_x = (world_x - cam.pos.x) * zoom / (AEGfxGetWindowWidth() * 0.5f);
-	f32 text_y = (world_y - cam.pos.y) * zoom / (AEGfxGetWindowHeight() * 0.5f);
+		// Mirror the sprite transform pipeline
+		f32 text_x = (world_x - cam.pos.x) * zoom / (AEGfxGetWindowWidth() * 0.5f);
+		f32 text_y = (world_y - cam.pos.y) * zoom / (AEGfxGetWindowHeight() * 0.5f);
 
-	render_text_center(text, guide_text_font, text_x, text_y, 1.0f * zoom, color);
-}
+		render_text_center(text, guide_text_font, text_x, text_y, 1.0f * zoom, color);
+	}
 
-void render_all_guide_texts() {
+	void render_all_guide_texts() {
 
-	//WASD
-	render_guide_text(29, 3, "WASD to move", yellow);
+		//WASD
+		render_guide_text(29, 3, "WASD to move", yellow);
 
-	//Can push block
-	render_guide_text(18, 4, "Graves can be pushed", yellow);
+		//Can push block
+		render_guide_text(18, 4, "Graves can be pushed", yellow);
 
-	//Can pull block
-	render_guide_text(19, 22, "Walk while dragging", yellow);
-	render_guide_text(20, 22, "to pull", yellow);
+		//Can pull block
+		render_guide_text(19, 22, "Walk while dragging", yellow);
+		render_guide_text(20, 22, "to pull", yellow);
 
-	//Elements introduction (For knight)
-	render_guide_text(28, 15, "Blue blocks", blue);
-	render_guide_text(28, 19, "can only be", yellow);
-	render_guide_text(29, 17, "interacted by the knight", yellow);
+		//Elements introduction (For knight)
+		render_guide_text(28, 15, "Blue blocks", cyan);
+		render_guide_text(28, 19, "can only be", yellow);
+		render_guide_text(29, 17, "interacted by the knight", yellow);
 
-	//Element introduction (For wizard)
-	render_guide_text(28, 26, "Red blocks", red);
-	render_guide_text(29, 26, "by the wizard", yellow);
+		//Element introduction (For wizard)
+		render_guide_text(28, 26, "Red blocks", red);
+		render_guide_text(29, 26, "by the wizard", yellow);
 
-	//How to switch characters
-	render_guide_text(38, 15, "Press 1&2 to switch", yellow);
-	render_guide_text(39, 15, "between characters", yellow);
+		//How to switch characters
+		render_guide_text(38, 15, "Press 1 n 2 to switch", yellow);
+		render_guide_text(39, 15, "between characters", yellow);
 
-	//Invisible blocks explaination (can add invisible graves js to show oso)
-	render_guide_text(26, 36, "Some blocks are hidden", yellow);
-	render_guide_text(27, 36, "from either characters", yellow);
+		//Invisible blocks explaination (can add invisible graves js to show oso)
+		render_guide_text(26, 36, "Some blocks are hidden", yellow);
+		render_guide_text(27, 36, "from either characters", yellow);
 
-	//LMB to attack
-	render_guide_text(17, 36, "Left click to attack", yellow);
+		//LMB to attack
+		render_guide_text(17, 36, "Left click to attack", yellow);
 
-	//Enter door to go next floor
-	render_guide_text(7, 36, "Enter door to advance", yellow);
+		//Enter door to go next floor
+		render_guide_text(7, 36, "Enter door to advance", yellow);
+	}
+
+	void check_cleared_guide(Player* player)
+	{
+		if (next == GS_RESTART) return;
+
+		int playerRow, playerCol;
+		if (!world_to_tile(player->current_player->x, player->current_player->y, playerRow, playerCol))
+			return;
+
+		if (map[playerRow][playerCol] == OPENED_DOOR)
+		{
+			if (!door_triggered) {
+				door_triggered = true;
+
+				cleared_guide = true;
+			}
+		}
+		else {
+			door_triggered = false;
+		}
+	}
+#pragma endregion
 }
 
 void guide_load() {
@@ -110,28 +132,35 @@ void guide_init() {
 	//Disable cursor
 	AEInputShowCursor(false);
 
+
 	//Initialize default game state values
 	door_triggered = false;
 	is_win = false;
+
 
 	//Intialize default game state graphics
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.2f;
 	init_mesh();
 
+
 	//Initialize minimap values
 	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
+
 	//Load tutorial level paths
 	selected_level_path = "Assets/Levels/tutorial_level.txt";
 	selected_level_puzzle_path = "Assets/Levels/tutorial_level_puzzles.txt";
+	enemy_manager_instance.load_spawn_positions("Assets/Levels/tutorial_level_enemy_spawns.txt");
+
 
 	//Load tutorial levels
 	load_map_from_file(selected_level_path.c_str(), map);
 	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
-	generate_walls_from_map(map, tile_size);
+	//generate_walls_from_map(map, tile_size);
+
 
 	//Initialize & spawn player/characters
 	player_instance.stats.character_size = tile_size - 8.0f; //(consider moving to player system init)
@@ -140,6 +169,7 @@ void guide_init() {
 		skeleton_texture);
 	spawn_player_from_map(&player_instance, tile_size);
 
+
 	// Camera follows the active character via the pointer
 	cam = init_cam(
 		&player_instance.current_player->x,
@@ -147,9 +177,11 @@ void guide_init() {
 		60.0f, 5.0f); 
 	//(consider removing cam lim x,y, change to constexpr in cam.cpp)
 
+
 	//Initialize & spawn enemies
-	enemy_manager_instance.clear_all();
 	enemy_manager_instance.initialize_tutorial_area();
+
+	cleared_guide = false;
 }
 
 void guide_update() {
@@ -158,7 +190,7 @@ void guide_update() {
 
 	//Check if game is paused
 	pause_update();
-	if (is_paused)
+	if (is_paused || cleared_guide)
 		return;
 
 	//Update delta time
@@ -185,7 +217,7 @@ void guide_update() {
 
 	// printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 
-	check_and_open_doors(&player_instance);
+	check_cleared_guide(&player_instance);
 
 	enemy_manager_instance.update(dt, &player_instance, &cam);
 
@@ -225,9 +257,15 @@ void guide_draw() {
 	render_character_ui(&ui_manager, &player_instance);
 	render_tooltip(tooltip_font);
 
-	//Renders the pause ui when game is paused
-	pause_draw();
-
+	if (cleared_guide) {
+		is_win = true;
+		next = GS_WIN;
+	}
+	else {
+		//Renders the pause ui when game is paused
+		pause_draw();
+	}
+	
 	//Renders the custom cursor
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 

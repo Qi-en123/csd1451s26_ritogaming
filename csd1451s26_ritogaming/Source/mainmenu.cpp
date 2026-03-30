@@ -21,13 +21,12 @@ namespace{
     AEGfxTexture* door = nullptr;
     AEGfxTexture* ghoul = nullptr;
     AEGfxTexture* knight = nullptr;
-    //AEGfxTexture* button = nullptr;
     AEGfxTexture* buttons[6] = { nullptr };
 
 
     AEGfxTexture* cursor = nullptr;
     AEGfxTexture* banner = nullptr;
-    AEGfxTexture* panel = nullptr;
+    AEGfxTexture* confirmation_panel = nullptr;
     AEGfxTexture* bg = nullptr;
 
     static s8 font = -1;
@@ -81,6 +80,12 @@ namespace{
     
     bool show_exit_confirm = false;
 
+    constexpr f32 c_panel_w = 800.0f;
+    constexpr f32 c_panel_h = 400.0f;
+    constexpr f32 c_btn_w = c_panel_w / 4.0f;
+    constexpr f32 c_btn_h = c_panel_h / 5.0f;
+    constexpr f32 c_btn_x = c_panel_w / 5.0f;
+    constexpr f32 c_btn_y = -c_panel_h / 8.0f;
 }
 
 static void spawn_dust(f32 x, f32 y)
@@ -112,7 +117,7 @@ void mainmenu_load()
     knight = AEGfxTextureLoad("Assets/Tiles/tile_0004.png");
     cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     banner = AEGfxTextureLoad("Assets/Admin/title_banner.png");
-    panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
+    confirmation_panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
     bg = AEGfxTextureLoad("Assets/Admin/main_menu_bg.png");
 
     buttons[0] = AEGfxTextureLoad("Assets/Admin/main_menu_button.png");
@@ -433,39 +438,42 @@ void mainmenu_draw()
 
     if (show_exit_confirm)
     {
-
-
         draw_black_overlay(0.6f);
 
         // Popup box
-        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
-
+        render_editor_ui(confirmation_panel, //tex
+            c_panel_w, c_panel_h, //width & height
+            1.0f, 0.f, 0.f); //alpha, posx, posy
 
         // Yes button
-        render_editor_ui(buttons[2], 200.f, 80.f, 1.0f, -100.f, -50.f,
-            IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
+        render_editor_ui(buttons[2],
+            c_btn_w, c_btn_h,
+            1.0f, -c_btn_x, c_btn_y,
+            IsButtonHovered(-100.f, -50.f, 200.f, 80.f)); //to be highlighted or not
 
         // No button
-        render_editor_ui(buttons[3], 200.f, 80.f, 1.0f, 150.f, -50.f,
+        render_editor_ui(buttons[3],
+            c_btn_w, c_btn_h,
+            1.0f, c_btn_x, c_btn_y, //pos
             IsButtonHovered(150.f, -50.f, 200.f, 80.f));
 
         // Text
         if (font != -1)
         {
-            AEGfxPrint(font, "Are you sure you want to quit?",
-                -0.40f, 0.1f,
-                1.f,
-                0.f, 0.f, 0.f, 1.f);
+            render_text_center("Are you sure you want to quit?", font,
+                0.0f,
+                (c_panel_h / 5.0f) / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
 
-            AEGfxPrint(font, "Yes",
-                -0.18f, -0.14f,
-                1.f,
-                0.f, 0.f, 0.f, 1.f);
+            render_text_center("Yes", font,
+                -(c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
+                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
 
-            AEGfxPrint(font, "No",
-                0.15f, -0.14f,
-                1.f,
-                0.f, 0.f, 0.f, 1.f);
+            render_text_center("No", font,
+                (c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
+                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
         }
     }
 
@@ -532,10 +540,10 @@ for(AEGfxTexture* button : buttons){
         AEGfxTextureUnload(banner);
         banner = nullptr;
     }
-    if (panel)
+    if (confirmation_panel)
     {
-        AEGfxTextureUnload(panel);
-        panel = nullptr;
+        AEGfxTextureUnload(confirmation_panel);
+        confirmation_panel = nullptr;
     }
 
     if (font != -1)

@@ -142,6 +142,7 @@ void EnemyManager::load_spawn_positions(const char* filename)
     printf("[EnemyManager] SUCCESS: %d Ghosts, %d Bats, %d Crosses loaded.\n", ghost_count, bat_count, cross_count);
 }
 
+//shld rename this function
 void EnemyManager::initialize_tutorial_area()
 {
     load_textures();

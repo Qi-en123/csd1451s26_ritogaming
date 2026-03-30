@@ -36,6 +36,7 @@ extern const color dark_red;
 extern const color white;
 extern const color black;
 extern const color yellow;
+extern const color cyan;
 
 extern std::vector<light> lights;
 

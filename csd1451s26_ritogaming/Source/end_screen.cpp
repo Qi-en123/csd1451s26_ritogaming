@@ -35,7 +35,7 @@ namespace
     AEGfxTexture* tex_button = nullptr;
     AEGfxTexture* tex_cursor = nullptr;
     AEGfxTexture* buttons = nullptr;
-    AEGfxTexture* panel = nullptr;
+    AEGfxTexture* pause_panel = nullptr;
 
     static s8 end_font = -1;
 
@@ -93,7 +93,7 @@ void end_screen_load()
     tex_button = AEGfxTextureLoad("Assets/Admin/main_menu_button.png");
     tex_cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
     buttons = AEGfxTextureLoad("Assets/Admin/main_menu_button5.png");
-    panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
+    pause_panel = AEGfxTextureLoad("Assets/Admin/pause_panel.png");
 
     if (end_font == -1)
         end_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 36);
@@ -110,7 +110,7 @@ void end_screen_unload()
     safe_unload(tex_button);
     safe_unload(tex_cursor);
     safe_unload(buttons);
-    safe_unload(panel);
+    safe_unload(pause_panel);
     if (end_font != -1)
     {
         AEGfxDestroyFont(end_font);
@@ -179,10 +179,8 @@ void end_screen_draw()
     if (end_font != -1)
     {
         const char* msg = is_win ? "YOU WIN!" : "YOU LOSE!";
-        f32 tw = 0.f, th = 0.f;
-        AEGfxGetPrintSize(end_font, msg, TEXT_SCALE * 2.5f, &tw, &th);
-        AEGfxPrint(end_font, msg, -(tw / 2.f), 0.3f+th/2.0f, TEXT_SCALE * 2.5f, 1.0f, 0.8f, 0.f, 1.f);
-       
+        render_text_center(msg, end_font, 0.0f, 0.44f, 2.5f, { 1.0f, 0.8f, 0.f, 1.f });
+
     }
 
     // Buttons
@@ -266,16 +264,16 @@ void pause_draw()
     if (!is_paused) return;
 
     //  2. Solid panel behind the buttons
-    constexpr f32 PANEL_W = 800.f;
-    constexpr f32 PANEL_H = 650.f;
-    constexpr f32 PANEL_Y = -40.f;   // midpoint between P_BTN_Y0 and P_BTN_Y2
+    constexpr f32 PANEL_W = 700.f;
+    constexpr f32 PANEL_H = 640.f;
+    constexpr f32 PANEL_Y = 0.f;
     AEGfxSetColorToMultiply(0.1f, 0.05f, 0.0f, 0.92f);   // dark brown, nearly opaque
-    render_editor_ui(panel, PANEL_W, PANEL_H, 1.f, P_BTN_X, PANEL_Y);
+    render_editor_ui(pause_panel, PANEL_W, PANEL_H, 1.f, P_BTN_X, PANEL_Y);
 
     //  3. Reset to textured mode before buttons / text 
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-
+    
     //  4. "PAUSED" title � centred, yellow 
     if (end_font != -1)
     {

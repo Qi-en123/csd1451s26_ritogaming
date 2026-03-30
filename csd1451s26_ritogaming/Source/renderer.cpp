@@ -33,6 +33,7 @@ const color dark_red =	{ 0.5f, 0.0f, 0.0f, 0.0f };
 const color black =		{ 0.0f, 0.0f, 0.0f, 0.0f };
 const color white =		{ 1.0f, 1.0f, 1.0f, 0.0f };
 const color yellow =	{ 1.0f, 1.0f, 0.0f, 0.0f };
+const color cyan =		{ 0.0f, 1.0f, 1.0f, 0.0f };
 
 camera cam{};
 f32 zoom{};
@@ -367,6 +368,7 @@ void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,
 
 	f32 width, height;
 	AEGfxGetPrintSize(font, text, scale, &width, &height);
+
 	AEGfxPrint(font, text, pos_x - (width / 2.0f), pos_y - (height / 2.0f),
 		scale, color.r, color.g, color.b, 1.0f);
 	AEGfxTextureSet(nullptr, 0, 0);

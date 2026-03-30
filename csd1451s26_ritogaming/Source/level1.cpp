@@ -34,6 +34,7 @@ namespace
 {
 	s32 mouse_x, mouse_y;
 	bool cursor_active = false;
+	static s8 tooltip_font = -1;
 }
 
 void level1_load()
@@ -45,6 +46,13 @@ void level1_load()
 	Puzzle::load_puzzle_textures();
 	load_ui_textures(&ui_manager);
 	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
+
+	tooltip_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 28);
+	printf("Font value: %d\n", tooltip_font);
+	if (tooltip_font == -1)
+	{
+		return;
+	}
 }
 
 void level1_init()
@@ -56,8 +64,6 @@ void level1_init()
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 	ensure_level_paths_loaded(); // for both puzzles and map tile data
-
-
 
 	if (selected_level_path.empty() || selected_level_puzzle_path.empty())
 	{
@@ -183,7 +189,7 @@ void level1_draw()
 	//Renders the player health & skills UI
 	render_player_hud(&ui_manager, &player_instance);
 	render_character_ui(&ui_manager, &player_instance);
-	//render_tooltip(tooltip_font);
+	render_tooltip(tooltip_font);
 
 	//Renders the pause ui when game is paused
 	pause_draw();
@@ -220,6 +226,5 @@ void level1_unload()
 		AEGfxTextureUnload(skeleton_texture);
 		skeleton_texture = nullptr;
 	}
-
-	
+	AEGfxDestroyFont(tooltip_font);	
 }

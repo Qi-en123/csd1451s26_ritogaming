@@ -312,7 +312,7 @@ namespace Puzzle {
 
 		if (!ofs.is_open())
 		{
-			std::cerr << "Failed to open map file for overwrite: " << filename << "\n";
+			std::cerr << "Failed to open puzzle map file for overwrite: " << filename << "\n";
 			return false;
 		}
 
@@ -412,7 +412,7 @@ namespace Puzzle {
 				Element e = (elem >= 0 && elem <= NO_ELEMENT) ?
 					static_cast<Element>(elem) : NO_ELEMENT;
 
-				PuzzleType ptype;
+				PuzzleType ptype{PUZZLE_TYPE_COUNT};
 
 				if (type == "PUSHABLE") {
 					ptype = PUSHABLE;
@@ -621,10 +621,10 @@ namespace Puzzle {
 				switch (curr.element)
 				{
 				case WATER:
-					clr = { 0.0f,0.0f,3.0f,1.0f };
+					clr = { 0.0f,2.0f,2.0f,1.0f };
 					break;
 				case FIRE:
-					clr = { 3.0f,0.0f,0.0f,1.0f };
+					clr = { 2.0f,0.0f,0.0f,1.0f };
 					break;
 				default:
 					break;
@@ -661,7 +661,7 @@ namespace Puzzle {
 				}
 
 				if (curr.type == PUSHABLE) {
-					curr_tooltip = "Press & Hold [spacebar] to grab";
+					curr_tooltip = "Press n Hold [spacebar] to grab";
 				}
 				// Debug: print tile coordinates
 				//printf("Colliding with puzzle at (%.2f, %.2f)\n", e_block.position.x, e_block.position.y);
@@ -814,6 +814,9 @@ namespace Puzzle {
 				}
 				drag_was_active = true;
 			}
+		}
+		else {
+			dragging = false;
 		}
 	}
 #pragma endregion

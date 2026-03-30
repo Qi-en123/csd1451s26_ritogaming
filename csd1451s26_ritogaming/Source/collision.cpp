@@ -319,13 +319,20 @@ void check_and_open_doors(Player* player)
             }
 
             int next_index = found_index + 1;
-            while (next_index < (int)level_paths.size() && level_paths[next_index].empty())
-                next_index++;
+            while (next_index < (int)level_paths.size() &&
+                level_paths[next_index].empty() &&
+                next_index < (int)level_puzzle_paths.size() &&
+                level_puzzle_paths[next_index].empty()) {
 
-            if (found_index != -1 && next_index < (int)level_paths.size())
-            {
-              
+                next_index++;
+            }
+
+            if (found_index != -1 &&
+                next_index < (int)level_paths.size() &&
+                next_index < (int)level_puzzle_paths.size())
+            {              
                 selected_level_path = level_paths[next_index];
+                selected_level_puzzle_path = level_puzzle_paths[next_index];
                 next = GS_RESTART;
             }
             else

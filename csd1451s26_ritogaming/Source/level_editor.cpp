@@ -1,7 +1,7 @@
 /*!************************************************************************
 \file:          level_editor.cpp
-\author:        Goh Qi En
-\par DP email:  g.qien@digipen.edu
+\author:        Goh Qi En (2%), Jerod (98%) :) [rmb to change omg]
+\par DP email:  g.qien@digipen.edu, jerodyaowei.lim@digipen.edu
 \brief:         This file defines functions to load, initialize, update, draw, free, and unload
 				the game's level interface which allows users to create custom maps by painting tiles on a grid and saving them to a file. 
                 The editor features a tile palette, camera panning, and visual feedback for tile placement and saving status.
@@ -19,6 +19,7 @@
 #include "enemy_manager.hpp"
 
 namespace {
+#pragma region Static variables
 	/// Assets
 	AEGfxTexture* erase_tile = nullptr;
 	AEGfxTexture* cursor = nullptr;
@@ -26,7 +27,7 @@ namespace {
 	AEGfxTexture* tomb = nullptr;
 	AEGfxTexture* bat_spawn = nullptr;
 	s32 mouse_x, mouse_y;
-	static s8 font = -1;
+	s8 font = -1;
 
 	// --- Tile Palette ---
 	const int PALETTE_COUNT = 8;
@@ -41,11 +42,12 @@ namespace {
 	// --- Puzzle Palette ---
 	const int EDITABLE_PUZZLE_COUNT = 5;
 	const Puzzle::PuzzleType puzzle_palette_ids[EDITABLE_PUZZLE_COUNT] =
-	{	Puzzle::PUZZLE_TYPE_COUNT,
+	{ Puzzle::PUZZLE_TYPE_COUNT,
 		Puzzle::PUSHABLE,
 		Puzzle::BUTTON_UP,
 		Puzzle::PIT,
-		Puzzle::SPIKE };
+		Puzzle::SPIKE
+	};
 
 	const char* puzzle_labels[EDITABLE_PUZZLE_COUNT] =
 	{ "Erase", "Grave", "Button", "Pit", "Spike" };
@@ -53,20 +55,18 @@ namespace {
 	Puzzle::PuzzleType selected_puzzle = Puzzle::PUSHABLE; //default
 
 	// --- Palette UI (right side panel) ---
-	const f32 PANEL_X = 650;  // center X of palette panel
-	const f32 PALETTE_TOP_Y = 300.f;  // top item Y
-	const f32 PAL_W = 200.f;
-	const f32 PAL_H = 55.f;
-	const f32 PAL_GAP = 68.f;
+	const f32 PANEL_X = 650.0f;  // center X of palette panel
+	const f32 PALETTE_TOP_Y = 300.0f;  // top item Y
+	const f32 PAL_W = 200.0f;
+	const f32 PAL_H = 55.0f;
+	const f32 PAL_GAP = 68.0f;
 
 	// One-time placement limits
 	bool wizard_placed = false;
 	bool knight_placed = false;
 	bool door_placed = false;
 
-
 	// --- Grid rendering ---
-	// calculated in init
 	f32 tile_draw_size = 0.f;
 	f32 grid_start_x = 0.f;
 	f32 grid_start_y = 0.f;
@@ -86,21 +86,23 @@ namespace {
 	f32 view_w;
 	f32 view_h;
 
+	// --- Camera pan ---
+	const f32 CAM_SPEED = 300.f;
+	f32 editor_zoom_min = 1.0f;
+	f32 editor_zoom_max = 1.8f;
+	f32 cam_x, cam_y;
+
 	// --- Save feedback ---
 	bool save_success = false;
 	f32  save_msg_timer = 0.f;
 	const f32 SAVE_MSG_DUR = 2.f;
 
-	// --- Camera pan ---
-	const f32 CAM_SPEED = 300.f;
-
-	f32 editor_zoom_min = 1.0f;
-	f32 editor_zoom_max = 1.8f;
-
-	f32 cam_x, cam_y;
+	// --- Notification ---
+	const char* active_status_msg = "";
+	bool active_status_error = false;
 
 	/// --- Painting control ---
-	static bool can_paint = false;
+	bool can_paint = false;
 
 	/// --- Map data ---
 	s32** editor_map = nullptr; // for creating new map
@@ -114,7 +116,6 @@ namespace {
 	Puzzle::puzzle* editing_puzzle{ nullptr };
 	Puzzle::puzzle old_puzzle{};
 
-
 	/// --- Edit interface UI ---
 	AEGfxTexture* edit_panel = nullptr;
 	AEGfxTexture* edit_panel_save = nullptr;
@@ -127,263 +128,281 @@ namespace {
 	f32 edit_panel_x;
 	f32 edit_panel_y;
 	f32 ep_button_x;
-}
+#pragma endregion
 
+#pragma region Helper functions
 // -------------------------------------------------------
-// Helpers: convert world mouse pos to map row/col
-// -------------------------------------------------------
-static void mouse_to_world(f32& wx, f32& wy)
-{
-	wx = (f32)mouse_x - 800.f; // convert from screen (0 to 1600) to world (-800 to 800)
-	wy = -(f32)mouse_y + 450.f; // convert from screen (0 to 900) to world (450 to -450)
-}
-
-// ------------------------------------------------
-// Returns true if the world coordinates are within the grid bounds and sets row/col accordingly
-// The positions are offset according to editor space, hence function is specific for level editor
-// ------------------------------------------------
-static bool editor_screen_to_tile(f32 wx, f32 wy, int& row, int& col)
-{
-	f32 world_x = (wx / zoom) + cam.pos.x;
-	f32 world_y = (wy / zoom) + cam.pos.y;
-
-	// convert world X to column index
-	col = static_cast<int>((world_x - grid_start_x) / tile_draw_size);
-
-	// convert world Y to row index (inverted because screen Y is downwards)
-	row = static_cast<int>((grid_start_y - world_y) / tile_draw_size);
-
-	return (row >= 0 && row < TILE_ROWS && col >= 0 && col < TILE_COLS);
-}
-
-static void clamp_cam() {
-	if (AEInputCheckCurr(AEVK_LEFT)) {
-		cam.pos.x -= dt * CAM_SPEED;
-	}
-	if (AEInputCheckCurr(AEVK_RIGHT)) {
-		cam.pos.x += dt * CAM_SPEED;
-	}
-	if (AEInputCheckCurr(AEVK_UP)) {
-		cam.pos.y += dt * CAM_SPEED;
-	}
-	if (AEInputCheckCurr(AEVK_DOWN)) {
-		cam.pos.y -= dt * CAM_SPEED;
+	// Helpers: convert world mouse pos to map row/col
+	// -------------------------------------------------------
+	void mouse_to_world(f32& wx, f32& wy)
+	{
+		wx = (f32)mouse_x - 800.f; // convert from screen (0 to 1600) to world (-800 to 800)
+		wy = -(f32)mouse_y + 450.f; // convert from screen (0 to 900) to world (450 to -450)
 	}
 
-	//cam pos represents middle of cam
-	//update cam bounds (when zoom is increased, cam can go further)
-	//cam is centered on screen origin so:
-	//grid_start = campos + view_min / zoom
-	f32 cam_min_x = grid_start_x - view_min_x / zoom;
-	f32 cam_max_x = grid_start_x + (TILE_COLS * tile_draw_size) - (view_min_x + view_w) / zoom;
+	// ------------------------------------------------
+	// Returns true if the world coordinates are within the grid bounds and sets row/col accordingly
+	// The positions are offset according to editor space, hence function is specific for level editor
+	// ------------------------------------------------
+	bool editor_screen_to_tile(f32 wx, f32 wy, int& row, int& col)
+	{
+		f32 world_x = (wx / zoom) + cam.pos.x;
+		f32 world_y = (wy / zoom) + cam.pos.y;
 
-	f32 cam_min_y = grid_start_y - (TILE_ROWS * tile_draw_size) - (view_max_y - view_h) / zoom;
-	f32 cam_max_y = grid_start_y - view_max_y / zoom;
+		// convert world X to column index
+		col = static_cast<int>((world_x - grid_start_x) / tile_draw_size);
 
-	cam.pos.x = AEClamp(cam.pos.x, cam_min_x, cam_max_x);
-	cam.pos.y = AEClamp(cam.pos.y, cam_min_y, cam_max_y);
-}
+		// convert world Y to row index (inverted because screen Y is downwards)
+		row = static_cast<int>((grid_start_y - world_y) / tile_draw_size);
 
-static void draw_puzzle_edit_interface() {
+		return (row >= 0 && row < TILE_ROWS && col >= 0 && col < TILE_COLS);
+	}
 
-	edit_panel_x = grid_start_x + edit_panel_w / 2 + 20.0f;
-	edit_panel_y = edit_panel_h / 2 - grid_start_y;
+	void clamp_cam() {
+		if (AEInputCheckCurr(AEVK_LEFT)) {
+			cam.pos.x -= dt * CAM_SPEED;
+		}
+		if (AEInputCheckCurr(AEVK_RIGHT)) {
+			cam.pos.x += dt * CAM_SPEED;
+		}
+		if (AEInputCheckCurr(AEVK_UP)) {
+			cam.pos.y += dt * CAM_SPEED;
+		}
+		if (AEInputCheckCurr(AEVK_DOWN)) {
+			cam.pos.y -= dt * CAM_SPEED;
+		}
 
-	ep_button_x = edit_panel_x + (edit_panel_w / 2) + (edit_panel_h / 4.0f) - 5.0f;
+		//cam pos represents middle of cam
+		//update cam bounds (when zoom is increased, cam can go further)
+		//cam is centered on screen origin so:
+		//grid_start = campos + view_min / zoom
+		f32 cam_min_x = grid_start_x - view_min_x / zoom;
+		f32 cam_max_x = grid_start_x + (TILE_COLS * tile_draw_size) - (view_min_x + view_w) / zoom;
 
-	//Edit interface save button
-	render_editor_ui(edit_panel_save, edit_panel_h / 2.0f, edit_panel_h / 2.0f, 1.0f,
-		ep_button_x, edit_panel_y + edit_panel_h / 4.0f);
+		f32 cam_min_y = grid_start_y - (TILE_ROWS * tile_draw_size) - (view_max_y - view_h) / zoom;
+		f32 cam_max_y = grid_start_y - view_max_y / zoom;
 
-	//Edit interface exit button
-	render_editor_ui(edit_panel_exit, edit_panel_h / 2.0f, edit_panel_h / 2.0f, 1.0f,
-		ep_button_x, edit_panel_y - edit_panel_h / 4.0f);
+		cam.pos.x = AEClamp(cam.pos.x, cam_min_x, cam_max_x);
+		cam.pos.y = AEClamp(cam.pos.y, cam_min_y, cam_max_y);
+	}
 
-	//Edit interface panel (bg)
-	render_editor_ui(edit_panel, edit_panel_w, edit_panel_h, 1.0f,
-		edit_panel_x, edit_panel_y);
+	void draw_puzzle_edit_interface() {
+
+		edit_panel_x = grid_start_x + edit_panel_w / 2 + 20.0f;
+		edit_panel_y = edit_panel_h / 2 - grid_start_y;
+
+		ep_button_x = edit_panel_x + (edit_panel_w / 2) + (edit_panel_h / 4.0f) - 5.0f;
+
+		//Edit interface save button
+		render_editor_ui(edit_panel_save, edit_panel_h / 2.0f, edit_panel_h / 2.0f, 1.0f,
+			ep_button_x, edit_panel_y + edit_panel_h / 4.0f);
+
+		//Edit interface exit button
+		render_editor_ui(edit_panel_exit, edit_panel_h / 2.0f, edit_panel_h / 2.0f, 1.0f,
+			ep_button_x, edit_panel_y - edit_panel_h / 4.0f);
+
+		//Edit interface panel (bg)
+		render_editor_ui(edit_panel, edit_panel_w, edit_panel_h, 1.0f,
+			edit_panel_x, edit_panel_y);
 
 
-	//Edit interface text
-	std::string line1{};
-	std::string line2{};
+		//Edit interface text
+		std::string line1{};
+		std::string line2{};
 
-	switch (editing_puzzle->type) {
-	case Puzzle::PUSHABLE:
-	case Puzzle::PIT:
+		switch (editing_puzzle->type) {
+		case Puzzle::PUSHABLE:
+		case Puzzle::PIT:
+		case Puzzle::SPIKE:
 
-		switch (editing_puzzle->element) {
-		case Puzzle::WATER:
-			line1 = "Element: Water";
+			switch (editing_puzzle->element) {
+			case Puzzle::WATER:
+				line1 = "Element: Water";
+				break;
+			case Puzzle::FIRE:
+				line1 = "Element: Fire";
+				break;
+			default:
+				line1 = "Element: None";
+				break;
+			}
+
+			switch (editing_puzzle->hidden_from) {
+			case 1:
+				line2 = "Can't see: Knight";
+				break;
+			case 2:
+				line2 = "Can't see: Wizard";
+				break;
+			default:
+				line2 = "Can't see: None";
+				break;
+			}
+
 			break;
-		case Puzzle::FIRE:
-			line1 = "Element: Fire";
+			//Button edit is different, when button is selected it will lock
+		case Puzzle::BUTTON_UP:
+			line1 = "Place spikes to pair...";
+
+			switch (editing_puzzle->hidden_from) {
+			case 1:
+				line2 = "Can't see: Knight";
+				break;
+			case 2:
+				line2 = "Can't see: Wizard";
+				break;
+			default:
+				line2 = "Can't see: None";
+				break;
+			}
+
 			break;
+
 		default:
-			line1 = "Element: None";
 			break;
 		}
 
-		switch (editing_puzzle->hidden_from) {
-		case 1:
-			line2 = "Can't see: Knight";
-			break;
-		case 2:
-			line2 = "Can't see: Wizard";
-			break;
-		default:
-			line2 = "Can't see: None";
-			break;
+		//Print lines
+		f32 text_w, text_h;
+		char const* msg1 = line1.c_str();
+		char const* msg2 = line2.c_str();
+		f32 text_scale = 1.15f;
+		AEGfxGetPrintSize(font, msg1, text_scale, &text_w, &text_h);
+
+		f32 half_w = AEGfxGetWindowWidth() / 2.0f;
+		f32 half_h = AEGfxGetWindowHeight() / 2.0f;
+
+		f32 norm_x = edit_panel_x / half_w;
+		f32 norm_y = edit_panel_y / half_h;
+		f32 button_size = edit_panel_h / 4.0f;
+
+		//First line (1st param)
+		f32 line1_norm_y = norm_y + text_h * 1.5f;
+
+		//Button edit is different not edited using buttons (i v tired)
+		if (editing_puzzle->type != Puzzle::BUTTON_UP) {
+			//LEFT button
+			render_editor_ui(edit_panel_button_left, //tex
+				button_size, button_size, 1.0f, //width, height, alpha
+				edit_panel_x - edit_panel_w * 0.35f, //posx
+				edit_panel_y + edit_panel_h * 0.18f); //posy
+
+			//RIGHT button
+			render_editor_ui(edit_panel_button_right,
+				button_size, button_size, 1.0f,
+				edit_panel_x + edit_panel_w * 0.35f,
+				edit_panel_y + edit_panel_h * 0.18f);
 		}
+		//Actual text showing param to edit
+		render_text_center(msg1, font, norm_x, line1_norm_y, text_scale, black);
 
-		break;
-		//Button edit is different, when button is selected it will lock
-	case Puzzle::BUTTON_UP:
-		line1 = "Place spikes to pair...";
 
-		switch (editing_puzzle->hidden_from) {
-		case 1:
-			line2 = "Can't see: Knight";
-			break;
-		case 2:
-			line2 = "Can't see: Wizard";
-			break;
-		default:
-			line2 = "Can't see: None";
-			break;
-		}
+		//Second line (2nd param)
+		f32 line2_norm_y = norm_y - text_h * 1.5f;
 
-		break;
+		render_editor_ui(edit_panel_button_left,
+			button_size, button_size, 1.0f,
+			edit_panel_x - edit_panel_w * 0.35f,
+			edit_panel_y - edit_panel_h * 0.16f);
 
-	default:
-		break;
-	}
-
-	//Print lines
-	f32 text_w, text_h;
-	char const* msg1 = line1.c_str();
-	char const* msg2 = line2.c_str();
-	f32 text_scale = 1.15f;
-	AEGfxGetPrintSize(font, msg1, text_scale, &text_w, &text_h);
-
-	f32 half_w = AEGfxGetWindowWidth() / 2.0f;
-	f32 half_h = AEGfxGetWindowHeight() / 2.0f;
-
-	f32 norm_x = edit_panel_x / half_w;
-	f32 norm_y = edit_panel_y / half_h;
-	f32 button_size = edit_panel_h / 4.0f;
-
-	//First line (1st param)
-	f32 line1_norm_y = norm_y + text_h * 1.5f;
-
-	//Button edit is different not edited using buttons (i v tired)
-	if (editing_puzzle->type != Puzzle::BUTTON_UP) {
-		//LEFT button
-		render_editor_ui(edit_panel_button_left, //tex
-			button_size, button_size, 1.0f, //width, height, alpha
-			edit_panel_x - edit_panel_w * 0.35f, //posx
-			edit_panel_y + edit_panel_h * 0.18f); //posy
-
-		//RIGHT button
 		render_editor_ui(edit_panel_button_right,
 			button_size, button_size, 1.0f,
 			edit_panel_x + edit_panel_w * 0.35f,
-			edit_panel_y + edit_panel_h * 0.18f);
+			edit_panel_y - edit_panel_h * 0.16f);
+
+		render_text_center(msg2, font, norm_x, line2_norm_y, text_scale, black);
 	}
-	//Actual text showing param to edit
-	render_text_center(msg1, font, norm_x, line1_norm_y, text_scale, black);
+
+	void edit_puzzle() {
+		if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+
+			//If save button is clicked
+			if (IsButtonClicked(ep_button_x, edit_panel_y + edit_panel_h / 4.0f,
+				edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
+
+				//printf("saved\n");
+				editing = false;
+				selected_puzzle = Puzzle::PUSHABLE;
+				can_paint = false;
+			}
+
+			//If exit/cancel button is clicked (won't save)
+			if (IsButtonClicked(ep_button_x, edit_panel_y - edit_panel_h / 4.0f,
+				edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
+
+				//printf("exit\n");
+				//Restore changes
+				*editing_puzzle = old_puzzle;
+				editing = false;
+				selected_puzzle = Puzzle::PUSHABLE;
+				can_paint = false;
+			}
 
 
-	//Second line (2nd param)
-	f32 line2_norm_y = norm_y - text_h * 1.5f;
+			if (editing_puzzle->type != Puzzle::BUTTON_UP) {
+				//If left button of 1st line is clicked ("Element:" line)
+				if (IsButtonClicked(edit_panel_x - edit_panel_w * 0.35f,
+					edit_panel_y + edit_panel_h * 0.18f,
+					edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
-	render_editor_ui(edit_panel_button_left,
-		button_size, button_size, 1.0f,
-		edit_panel_x - edit_panel_w * 0.35f,
-		edit_panel_y - edit_panel_h * 0.16f);
+					//printf("left clicked\n");
+					editing_puzzle->element = previous_element(editing_puzzle->element);
+					can_paint = false;
+				}
 
-	render_editor_ui(edit_panel_button_right,
-		button_size, button_size, 1.0f,
-		edit_panel_x + edit_panel_w * 0.35f,
-		edit_panel_y - edit_panel_h * 0.16f);
+				//If right button of 1st line is clicked ("Element:" line)
+				if (IsButtonClicked(edit_panel_x + edit_panel_w * 0.35f,
+					edit_panel_y + edit_panel_h * 0.18f,
+					edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
-	render_text_center(msg2, font, norm_x, line2_norm_y, text_scale, black);
-}
+					//printf("right clicked\n");
+					editing_puzzle->element = next_element(editing_puzzle->element);
+					can_paint = false;
+				}
+			}
 
-static void edit_puzzle() {
-	if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-
-		//If save button is clicked
-		if (IsButtonClicked(ep_button_x, edit_panel_y + edit_panel_h / 4.0f,
-			edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
-
-			//printf("saved\n");
-			editing = false;
-			selected_puzzle = Puzzle::PUSHABLE;
-			can_paint = false;
-		}
-
-		//If exit/cancel button is clicked (won't save)
-		if (IsButtonClicked(ep_button_x, edit_panel_y - edit_panel_h / 4.0f,
-			edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
-
-			//printf("exit\n");
-			//Restore changes
-			*editing_puzzle = old_puzzle;
-			editing = false;
-			selected_puzzle = Puzzle::PUSHABLE;
-			can_paint = false;
-		}
-
-
-		if (editing_puzzle->type != Puzzle::BUTTON_UP) {
-			//If left button of 1st line is clicked ("Element:" line)
+			//If left button of 2nd line is clicked ("Can't see:" line)
 			if (IsButtonClicked(edit_panel_x - edit_panel_w * 0.35f,
-				edit_panel_y + edit_panel_h * 0.18f,
+				edit_panel_y - edit_panel_h * 0.16f,
 				edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
-				//printf("left clicked\n");
-				editing_puzzle->element = previous_element(editing_puzzle->element);
+				//decrement hero that puzzle is hidden from
+				editing_puzzle->hidden_from = (editing_puzzle->hidden_from + 2) % 3;
 				can_paint = false;
+				//printf("%d\n", editing_puzzle->hidden_from);
 			}
 
-			//If right button of 1st line is clicked ("Element:" line)
+			//If right button of 2nd line is clicked ("Can't see:" line)
 			if (IsButtonClicked(edit_panel_x + edit_panel_w * 0.35f,
-				edit_panel_y + edit_panel_h * 0.18f,
+				edit_panel_y - edit_panel_h * 0.16f,
 				edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
-				//printf("right clicked\n");
-				editing_puzzle->element = next_element(editing_puzzle->element);
+				//decrement hero that puzzle is hidden from
+				editing_puzzle->hidden_from = (editing_puzzle->hidden_from + 1) % 3;
 				can_paint = false;
 			}
+
 		}
-
-		//If left button of 2nd line is clicked ("Can't see:" line)
-		if (IsButtonClicked(edit_panel_x - edit_panel_w * 0.35f,
-			edit_panel_y - edit_panel_h * 0.16f,
-			edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
-
-			//decrement hero that puzzle is hidden from
-			editing_puzzle->hidden_from = (editing_puzzle->hidden_from + 2) % 3;
-			can_paint = false;
-			//printf("%d\n", editing_puzzle->hidden_from);
-		}
-
-		//If right button of 2nd line is clicked ("Can't see:" line)
-		if (IsButtonClicked(edit_panel_x + edit_panel_w * 0.35f,
-			edit_panel_y - edit_panel_h * 0.16f,
-			edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
-
-			//decrement hero that puzzle is hidden from
-			editing_puzzle->hidden_from = (editing_puzzle->hidden_from + 1) % 3;
-			can_paint = false;
-		}
-
 	}
+
+	void render_status_msg(s8 font, f32 timer, f32 duration)
+	{
+		if (!active_status_msg || active_status_msg[0] == '\0') return;
+
+		f32 r = active_status_error ? 1.0f : 0.3f;
+		f32 g = active_status_error ? 0.3f : 1.0f;
+		f32 b = 0.3f;
+		f32 alpha = timer / duration;
+		f32 tw = 0.f, th = 0.f;
+		AEGfxGetPrintSize(font, active_status_msg, 1.5f, &tw, &th);
+		AEGfxPrint(font, active_status_msg, -tw * 0.5f, 0.8f, 1.5f, r, g, b, alpha);
+
+		// Reset
+		active_status_msg = "";
+		active_status_error = false;
+	}
+#pragma endregion
 }
-
-
-
 
 void level_editor_load()
 {
@@ -421,7 +440,6 @@ void level_editor_init()
 		editor_map[r] = new int[TILE_COLS] {};  // {} zero-initializes
 	}
 
-
 	//Default init puzzle editor map (FOR PUZZLES)
 	puzzle_editor_map = new Puzzle::PuzzleType * [TILE_ROWS];
 	for (int r = 0; r < TILE_ROWS; ++r)
@@ -437,10 +455,6 @@ void level_editor_init()
 
 	// Tile size to be drawn on the grid
 	tile_draw_size = 20.f;
-
-	// Calculate grid starting position to center it in the remaining space
-	//f32 grid_w = tile_draw_size * TILE_COLS; // total width of the grid in world units
-	//f32 grid_h = tile_draw_size * TILE_ROWS; // total height of the grid in world units
 
 	grid_start_x = -750.f;  // flush to left edge of world
 	grid_start_y = 350.f;   // centered vertically
@@ -460,7 +474,6 @@ void level_editor_init()
 	view_w = view_max_x - view_min_x;
 	view_h = view_max_y - view_min_y;
 
-
 	selected_tile = 1;
 	save_success = false;
 	save_msg_timer = 0.f;
@@ -479,7 +492,10 @@ void level_editor_init()
     if (!selected_level_path.empty())
     {
         load_map_to_editor(selected_level_path.c_str(), editor_map);
-
+		Puzzle::load_puzzle_blocks_to_editor(
+			selected_level_puzzle_path.c_str(),
+			puzzle_editor_map, puzzles, button_triggers);
+		
         // Restore placement flags
         for (int r = 0; r < TILE_ROWS; ++r)
             for (int c = 0; c < TILE_COLS; ++c)
@@ -501,10 +517,10 @@ void level_editor_update()
 
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
-	
+
 	// --- ESC to exit ---
-    if (AEInputCheckTriggered(AEVK_ESCAPE))
-        next = GS_LEVELS; // adjust to your menu state
+	if (AEInputCheckTriggered(AEVK_ESCAPE))
+		next = GS_LEVELS; // adjust to your menu state
 
 	// --- Tick save message ---
 	if (save_msg_timer > 0.f)
@@ -512,7 +528,7 @@ void level_editor_update()
 	if (spawn_error_timer > 0.0f)
 		spawn_error_timer -= dt;
 
-    // --- Save with S key ---
+	// --- Save with S key ---
 	if (AEInputCheckTriggered(AEVK_S))
 	{
 		if (wizard_placed && knight_placed && door_placed)
@@ -521,7 +537,7 @@ void level_editor_update()
 			{
 				save_success =
 					save_map_to_file_overwrite(editor_map, selected_level_path) &&
-					overwrite_puzzle_blocks(puzzles, button_triggers, selected_level_path);
+					overwrite_puzzle_blocks(puzzles, button_triggers, selected_level_puzzle_path);
 				std::string spawn_path = selected_level_path.substr(0, selected_level_path.find_last_of('.')) + "_enemy_spawns.txt";
 				enemy_manager_instance.save_spawn_positions_from_map(editor_map, spawn_path);
 			}
@@ -549,9 +565,6 @@ void level_editor_update()
 		}
 		save_msg_timer = SAVE_MSG_DUR;
 	}
-
-
-
 
 	//Switch editing state
 	if (!editing) {
@@ -619,7 +632,7 @@ void level_editor_update()
 				if ((placing == 5 || placing == 6) && current != 2)
 					goto skip_paint;
 
-				if ((placing == 5 ) && row >= (TILE_ROWS - 1))
+				if ((placing == 5) && row >= (TILE_ROWS - 1))
 				{
 					spawn_error_timer = SPAWN_ERROR_DUR;
 					goto skip_paint;
@@ -629,7 +642,8 @@ void level_editor_update()
 					bool blocked =
 						(placing == 3 && wizard_placed && current != 3) ||
 						(placing == 4 && knight_placed && current != 4) ||
-						(placing == 7 && door_placed && current != 7);
+						(placing == 7 && door_placed && current != 7) ||
+						(puzzle_editor_map[row][col] != Puzzle::PUZZLE_TYPE_COUNT);
 
 					if (!blocked)
 					{
@@ -638,18 +652,18 @@ void level_editor_update()
 						if (current == 7) door_placed = false;
 
 						// Painting over a spawn marker — clear it first
-if (current == 5 || current == 6)
-    editor_map[row][col] = 2; // restore floor before overwriting
+						if (current == 5 || current == 6)
+							editor_map[row][col] = 2; // restore floor before overwriting
 
-// If placing a tomb on a tile that is the ghost_spawn row of an existing tomb above,
-// clear that tomb (turn it back to floor), so the new tomb takes over
-if (placing == 5 && row > 0 && editor_map[row - 1][col] == 5)
-    editor_map[row - 1][col] = 2; // remove the tomb above
+						// If placing a tomb on a tile that is the ghost_spawn row of an existing tomb above,
+						// clear that tomb (turn it back to floor), so the new tomb takes over
+						if (placing == 5 && row > 0 && editor_map[row - 1][col] == 5)
+							editor_map[row - 1][col] = 2; // remove the tomb above
 
-// If placing a tomb and its ghost_spawn row below already has a tomb,
-// clear that tomb below
-if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
-    editor_map[row + 1][col] = 2; // remove the tomb below
+						// If placing a tomb and its ghost_spawn row below already has a tomb,
+						// clear that tomb below
+						if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
+							editor_map[row + 1][col] = 2; // remove the tomb below
 
 						editor_map[row][col] = placing;
 
@@ -662,7 +676,9 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 			}
 
 			// RIGHT CLICK ERASE
-			if (can_paint && AEInputCheckCurr(AEVK_RBUTTON))
+			if (puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT &&
+				can_paint &&
+				AEInputCheckCurr(AEVK_RBUTTON))
 			{
 				int current = editor_map[row][col];
 
@@ -746,7 +762,7 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 
 		else if (editing_puzzle->type == Puzzle::BUTTON_UP) {
 			//offset from erase
-			selected_puzzle = puzzle_palette_ids[Puzzle::SPIKE+1];
+			selected_puzzle = puzzle_palette_ids[Puzzle::SPIKE + 1];
 		}
 
 		// --- Paint / Erase on grid ---
@@ -759,121 +775,117 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 		f32 grid_right_screen = grid_right_world + 800.f;
 		bool on_panel = ((f32)mouse_x > grid_right_screen);
 		// Allow painting only after mouse is released once inside editor
-		//if (AEInputCheckReleased(AEVK_LBUTTON))
-		//	can_paint = true;
 
-		if (on_grid && !on_panel)
-		{
+		if (!on_grid && on_panel) return;
 
-			//if not editing, or editing puzzle type is button
-			if (!editing) {
-				// LEFT CLICK PAINT
-				if (can_paint && AEInputCheckCurr(AEVK_LBUTTON))
-				{
-					//int current = puzzle_editor_map[row][col];
-					//if current tile is floor and is empty
-					if (editor_map[row][col] == 2) {
+		//if not editing, or editing puzzle type is button
+		if (!editing) {
+			// LEFT CLICK PAINT
+			if (can_paint && AEInputCheckCurr(AEVK_LBUTTON))
+			{
+				//int current = puzzle_editor_map[row][col];
+				//if current tile is floor and is empty
+				if (editor_map[row][col] == 2) {
 
-						//if erasing 
-						if (selected_puzzle == Puzzle::PUZZLE_TYPE_COUNT) {
-							puzzle_editor_map[row][col] = selected_puzzle;
-							remove_puzzle(row, col, puzzles);
-						}
-						//if adding puzzles
-						else if (puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT) {
-							puzzle_editor_map[row][col] = selected_puzzle;
-							//printf("%d %d\n", row, col);
-							place_puzzle(row, col, selected_puzzle, puzzles);
-						}
-					}
-				}
+					//if erasing 
+					if (selected_puzzle == Puzzle::PUZZLE_TYPE_COUNT) {
 
-				// RIGHT CLICK TO EDIT PUZZLE
-				if (can_paint && AEInputCheckCurr(AEVK_RBUTTON))
-				{
-					int current = puzzle_editor_map[row][col];
-
-					if (puzzle_editor_map[row][col] != Puzzle::PUZZLE_TYPE_COUNT) {
-
-						//open interface
-						editing = true;
-						editing_puzzle = get_editing_puzzle(row, col, puzzles);
-						old_puzzle = *get_editing_puzzle(row, col, puzzles);
-						can_paint = false;
-
-						if (puzzle_editor_map[row][col] == Puzzle::BUTTON_UP) {
-
-							if (editing_puzzle->button_id == -1) {
-								//button id is the number of ID triggers yet
-								editing_puzzle->button_id = button_triggers.size();
-
-								//add btnTrigger struct (containing new id and empty coords pairs)
-								button_triggers.push_back(Puzzle::buttonTrigger{ editing_puzzle->button_id,{} });
+						if (puzzle_editor_map[row][col] == Puzzle::SPIKE) {
+							for (auto& bt : button_triggers) {
+								if (spike_is_paired(row, col, bt)) {
+									remove_spike_button_pair(row, col, bt);
+									break; // a spike can only belong to one trigger
+								}
 							}
-							else {
-
-							}
-
-							//printf("now editing button id: %d\n", editing_puzzle->button_id);
 						}
-					}
 
-				}
-			}
-
-			else if (editing_puzzle->type == Puzzle::BUTTON_UP) {
-				if (AEInputCheckCurr(AEVK_LBUTTON)) {
-
-					//PLACE SPIKE DOWN
-					if (can_paint) {
-						//if theres a floor beneath and is empty
-						if (editor_map[row][col] == 2 &&
-							puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT) {
-
-							puzzle_editor_map[row][col] = selected_puzzle;
-
-							//add to puzzles vec
-							place_puzzle(row, col, Puzzle::SPIKE, puzzles);
-
-							//pairing spikes placed to id of current editing button
-							pair_spike_to_button(row, col, button_triggers[editing_puzzle->button_id]);
-
-							//printf("adding spike %d, %d to button id: %d\n", row, col, editing_puzzle->button_id);
-						}
-					}
-
-					//PAIR WITH OTHER BUTTON
-					if (puzzle_editor_map[row][col] == Puzzle::BUTTON_UP) {
-						//if clicked on button with no triggers
-						Puzzle::puzzle& curr = *get_editing_puzzle(row, col, puzzles);
-						//printf("%d\n", curr.button_id);
-						if (curr.button_id == -1) {
-							
-							curr.button_id = editing_puzzle->button_id;
-						}
-					}
-				}
-
-				else if (can_paint && AEInputCheckCurr(AEVK_RBUTTON)) {
-
-					//if is spike and the spike is paired with the id
-					if (puzzle_editor_map[row][col] == Puzzle::SPIKE &&
-						spike_is_paired(row, col, button_triggers[editing_puzzle->button_id])) {
-
-						puzzle_editor_map[row][col] = Puzzle::PUZZLE_TYPE_COUNT;
-
-						//remove spike from puzzles vec
+						puzzle_editor_map[row][col] = selected_puzzle;
 						remove_puzzle(row, col, puzzles);
+					}
+					//if adding puzzles
+					else if (puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT) {
 
-						//remove this spike from trigger list of coords
-						remove_spike_button_pair(row, col, button_triggers[editing_puzzle->button_id]);
-
-						//printf("removing spike %d, %d from button id: %d\n", row, col, editing_puzzle->button_id);
-						//printf("current coords size: %zu\n", button_triggers[editing_puzzle->button_id].coords.size());
+						puzzle_editor_map[row][col] = selected_puzzle;
+						place_puzzle(row, col, selected_puzzle, puzzles);
 					}
 				}
 			}
 
+			// RIGHT CLICK TO EDIT PUZZLE
+			if (can_paint && AEInputCheckCurr(AEVK_RBUTTON))
+			{
+				int current = puzzle_editor_map[row][col];
+
+				if (puzzle_editor_map[row][col] != Puzzle::PUZZLE_TYPE_COUNT) {
+
+					//open interface
+					editing = true;
+					editing_puzzle = get_editing_puzzle(row, col, puzzles);
+					old_puzzle = *get_editing_puzzle(row, col, puzzles);
+					can_paint = false;
+
+					if (puzzle_editor_map[row][col] == Puzzle::BUTTON_UP) {
+
+						if (editing_puzzle->button_id == -1) {
+							//button id is the number of ID triggers yet
+							editing_puzzle->button_id = button_triggers.size();
+
+							//add btnTrigger struct (containing new id and empty coords pairs)
+							button_triggers.push_back(Puzzle::buttonTrigger{ editing_puzzle->button_id,{} });
+						}
+						else {
+
+						}
+					}
+				}
+			}
+		}
+		else if (editing_puzzle->type == Puzzle::BUTTON_UP) {
+			if (AEInputCheckCurr(AEVK_LBUTTON)) {
+
+				//PLACE SPIKE DOWN
+				if (can_paint) {
+					//if theres a floor beneath and is empty
+					if (editor_map[row][col] == 2 &&
+						puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT) {
+
+						puzzle_editor_map[row][col] = selected_puzzle;
+
+						//add to puzzles vec
+						place_puzzle(row, col, Puzzle::SPIKE, puzzles);
+
+						//pairing spikes placed to id of current editing button
+						pair_spike_to_button(row, col, button_triggers[editing_puzzle->button_id]);
+					}
+				}
+
+				//PAIR WITH OTHER BUTTON
+				if (puzzle_editor_map[row][col] == Puzzle::BUTTON_UP) {
+					//if clicked on button with no triggers
+					Puzzle::puzzle& curr = *get_editing_puzzle(row, col, puzzles);
+					//printf("%d\n", curr.button_id);
+					if (curr.button_id == -1) {
+
+						curr.button_id = editing_puzzle->button_id;
+					}
+				}
+			}
+
+			else if (can_paint && AEInputCheckCurr(AEVK_RBUTTON)) {
+
+				//if is spike and the spike is paired with the id
+				if (puzzle_editor_map[row][col] == Puzzle::SPIKE &&
+					spike_is_paired(row, col, button_triggers[editing_puzzle->button_id])) {
+
+					puzzle_editor_map[row][col] = Puzzle::PUZZLE_TYPE_COUNT;
+
+					//remove spike from puzzles vec
+					remove_puzzle(row, col, puzzles);
+
+					//remove this spike from trigger list of coords
+					remove_spike_button_pair(row, col, button_triggers[editing_puzzle->button_id]);
+				}
+			}
 		}
 	}
 }
@@ -943,7 +955,6 @@ void level_editor_draw()
 
 	}
 	for (int r = 0; r < TILE_ROWS; ++r)
-	for (int r = 0; r < TILE_ROWS; ++r)
 	{
 		for (int c = 0; c < TILE_COLS; ++c)
 		{
@@ -964,7 +975,6 @@ void level_editor_draw()
 				render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
 		}
 	}
-
 
 	// Hover highlight
 	{
@@ -1028,7 +1038,6 @@ void level_editor_draw()
 
 	if (editing) {
 		draw_puzzle_edit_interface();
-
 	}
 
 	// =====================================================
@@ -1206,7 +1215,10 @@ void level_editor_draw()
 	{
 		if (font != -1)
 		{
-			const char* hint = "LMB : Paint  ---  RMB : Erase  ---  F : Fill  ---  C : Clear  ---  S : Save  ---  ESC : Exit  ---  SCROLL : Zoom --- Arrows : Pan";
+			const char* hint = (editorState == EDIT_TILES) ?
+				"LMB : Paint        RMB : Erase        F : Fill        C : Clear        S : Save        ESC : Exit        SCROLL : Zoom        Arrows : Pan"
+				:
+				"LMB : Paint        RMB : Edit        C : Clear        S : Save        ESC : Exit        SCROLL : Zoom        Arrows : Pan";
 			f32 norm_x = (grid_start_x) / 800.f;
 			f32 norm_y = -420.f / 450.f;
 			AEGfxPrint(font, hint, norm_x, norm_y, 1.f, 0.55f, 0.55f, 0.55f, 1.f);
@@ -1222,42 +1234,20 @@ void level_editor_draw()
 		f32 world_y = -(f32)mouse_y + 450.f;
 		render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x + 25.f, world_y - 25.f);
 	}
+
 	// --- Notification System (Save & Spawn Errors) ---
-	if (font != -1)
-	{
-		const char* active_msg = nullptr;
-		f32 active_alpha = 0.0f;
-		bool is_error = true;
-
-		// Priority 1: Save Feedback
-		if (save_msg_timer > 0.f) {
-			active_msg = save_success ? "Map Saved!" :
-				(!wizard_placed ? "Place Wizard first!" :
-					(!knight_placed ? "Place Knight first!" :
-						(!door_placed ? "Place Door first!" : "Save FAILED!")));
-
-			active_alpha = save_msg_timer / SAVE_MSG_DUR;
-			is_error = !save_success;
-		}
-		// Priority 2: Spawn Error (only shows if no save message is ticking)
-		else if (spawn_error_timer > 0.f) {
-			active_msg = "Cannot place ghost spawns on the last row!";
-			active_alpha = spawn_error_timer / SPAWN_ERROR_DUR;
-			is_error = true;
-		}
-
-		// Draw the active message if there is one
-		if (active_msg) {
-			f32 r = is_error ? 1.0f : 0.3f;
-			f32 g = is_error ? 0.3f : 1.0f;
-			f32 b = 0.3f;
-
-			f32 tw = 0.f, th = 0.f;
-			AEGfxGetPrintSize(font, active_msg, 1.5f, &tw, &th);
-
-			// Exact same placement as your original Save Feedback
-			AEGfxPrint(font, active_msg, -tw * 0.5f, 0.8f, 1.5f, r, g, b, active_alpha);
-		}
+	if (save_msg_timer > 0.f) {
+		active_status_msg = save_success ? "Map Saved!" :
+			(!wizard_placed ? "Place Wizard first!" :
+				(!knight_placed ? "Place Knight first!" :
+					(!door_placed ? "Place Door first!" : "Save FAILED!")));
+		active_status_error = !save_success;
+		render_status_msg(font, save_msg_timer, SAVE_MSG_DUR);
+	}
+	else if (spawn_error_timer > 0.f) {
+		active_status_error = true;
+		active_status_msg = "Cannot place ghost spawns on the last row!";
+		render_status_msg(font, spawn_error_timer, SPAWN_ERROR_DUR);
 	}
 }
 

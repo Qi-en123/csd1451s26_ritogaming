@@ -226,7 +226,7 @@ void guide_draw() {
 	render_tooltip(tooltip_font);
 
 	//Renders the pause ui when game is paused
-	pause_draw(); //consider putting is_pause condition here: if not look like drawing pause every frame
+	pause_draw();
 
 	//Renders the custom cursor
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);

@@ -426,7 +426,7 @@ void mainmenu_draw()
 
     if (show_exit_confirm)
     {
-        int result = draw_exit_confirm(panel, buttons[2], buttons[3], font,
+        int result = draw_confirm_popup(panel, buttons[2], buttons[3], font,
             "Are you sure you want to quit?");
         if (result == 1) next = GS_QUIT;
         if (result == 0) show_exit_confirm = false;

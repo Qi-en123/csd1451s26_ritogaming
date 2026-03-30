@@ -167,32 +167,6 @@ void level1_update()
 {
 	dt = (f32)AEFrameRateControllerGetFrameTime();
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
-	pause_update();
-	if (is_paused)
-		return;
-
-	// Handle fade out
-	if (transition_state == FADE_OUT)
-	{
-		transition_alpha += dt * TRANSITION_SPEED;
-		if (transition_alpha >= 1.f)
-		{
-			transition_alpha = 1.f;
-			next = pending_next_state;
-		}
-		return;
-	}
-
-	// Handle fade in
-	if (transition_state == FADE_IN)
-	{
-		transition_alpha -= dt * TRANSITION_SPEED;
-		if (transition_alpha <= 0.f)
-		{
-			transition_alpha = 0.f;
-			transition_state = NONE;
-		}
-	}
 
 	// Text fade in -> hold -> fade out (independent of black overlay)
 	if (level_text_state == TEXT_FADE_IN)
@@ -220,6 +194,34 @@ void level1_update()
 			level_text_state = TEXT_NONE;
 		}
 	}
+	pause_update();
+	if (is_paused)
+		return;
+
+	// Handle fade out
+	if (transition_state == FADE_OUT)
+	{
+		transition_alpha += dt * TRANSITION_SPEED;
+		if (transition_alpha >= 1.f)
+		{
+			transition_alpha = 1.f;
+			next = pending_next_state;
+		}
+		return;
+	}
+
+	// Handle fade in
+	if (transition_state == FADE_IN)
+	{
+		transition_alpha -= dt * TRANSITION_SPEED;
+		if (transition_alpha <= 0.f)
+		{
+			transition_alpha = 0.f;
+			transition_state = NONE;
+		}
+	}
+
+	
 
 	// Handle boss warning
 	if (show_boss_warning)

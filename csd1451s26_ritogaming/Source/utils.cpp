@@ -47,7 +47,7 @@ int IsButtonHovered(f32 rectX, f32 rectY, f32 rectW, f32 rectH)
     return 0;
 }
 
-int draw_exit_confirm(AEGfxTexture* panel, AEGfxTexture* btn_yes, AEGfxTexture* btn_no, s8 font, const char* message, f32 font_scale)
+int draw_confirm_popup(AEGfxTexture* panel, AEGfxTexture* btn_yes, AEGfxTexture* btn_no, s8 font, const char* message, f32 font_scale)
 {
     draw_black_overlay(0.6f);
     render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
@@ -58,9 +58,27 @@ int draw_exit_confirm(AEGfxTexture* panel, AEGfxTexture* btn_yes, AEGfxTexture* 
 
     if (font != -1)
     {
-        AEGfxPrint(font, message, -0.40f, 0.1f, font_scale, 0.f, 0.f, 0.f, 1.f);
-        AEGfxPrint(font, "Yes", -0.18f, -0.14f, font_scale, 0.f, 0.f, 0.f, 1.f);
-        AEGfxPrint(font, "No", 0.15f, -0.14f, font_scale, 0.f, 0.f, 0.f, 1.f);
+        f32 tw = 0.f, th = 0.f;
+
+        // Center message
+        AEGfxGetPrintSize(font, message, font_scale, &tw, &th);
+        AEGfxPrint(font, message, -tw * 0.5f, 0.1f, font_scale, 0.f, 0.f, 0.f, 1.f);
+
+        // YES button center conversion
+        f32 yes_px = -100.f / 800.f;
+        f32 yes_py = -50.f / 450.f;
+
+        AEGfxGetPrintSize(font, "Yes", font_scale, &tw, &th);
+        AEGfxPrint(font, "Yes", yes_px - tw * 0.5f, yes_py - th * 0.5f,
+            font_scale, 0.f, 0.f, 0.f, 1.f);
+
+        // NO button center conversion
+        f32 no_px = 150.f / 800.f;
+        f32 no_py = -50.f / 450.f;
+
+        AEGfxGetPrintSize(font, "No", font_scale, &tw, &th);
+        AEGfxPrint(font, "No", no_px - tw * 0.5f, no_py - th * 0.5f,
+            font_scale, 0.f, 0.f, 0.f, 1.f);
     }
 
     if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) return 1;

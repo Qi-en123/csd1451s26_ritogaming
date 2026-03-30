@@ -14,4 +14,4 @@ extern std::string selected_level_puzzle_path;
 
 
 // Returns true if "Yes" was clicked, false if "No" was clicked, -1 if neither
-int draw_exit_confirm(AEGfxTexture* panel, AEGfxTexture* btn_yes, AEGfxTexture* btn_no, s8 font, const char* message, f32 font_scale = 1.f);
+int draw_confirm_popup(AEGfxTexture* panel, AEGfxTexture* btn_yes, AEGfxTexture* btn_no, s8 font, const char* message, f32 font_scale = 1.f);

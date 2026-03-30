@@ -893,9 +893,8 @@ if (placing == 5 && row < (TILE_ROWS - 1) && editor_map[row + 1][col] == 5)
 void level_editor_draw()
 {
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	//f32 grid_right = grid_start_x + TILE_COLS * tile_draw_size;
 
-	// Draw black tile as grid background for ALL cells
+	// 1. Draw black tile as grid background
 	if (erase_tile)
 	{
 		for (int r = 0; r < TILE_ROWS; ++r)
@@ -909,21 +908,17 @@ void level_editor_draw()
 		}
 	}
 
-	// Draw actual map tiles on top
+	// 2. Draw actual map tiles and puzzles
 	for (int r = 0; r < TILE_ROWS; ++r)
 	{
 		for (int c = 0; c < TILE_COLS; ++c)
 		{
 			f32 wx = grid_start_x + c * tile_draw_size + (tile_draw_size * 0.5f);
 			f32 wy = grid_start_y - r * tile_draw_size - (tile_draw_size * 0.5f);
-			// to optimize, skip drawing tiles that are outside the visible world bounds (including right panel area)
-			f32 grid_left = grid_start_x;
-			f32 grid_right = grid_left + TILE_COLS * tile_draw_size;
-			f32 grid_top = grid_start_y;
-			f32 grid_bot = grid_top - TILE_ROWS * tile_draw_size;
 
-			if (wx < grid_left || wx > grid_right) continue;
-			if (wy > grid_top || wy < grid_bot) continue;
+			// Culling optimization
+			if (wx < grid_start_x || wx > grid_start_x + TILE_COLS * tile_draw_size) continue;
+			if (wy > grid_start_y || wy < grid_start_y - TILE_ROWS * tile_draw_size) continue;
 
 			int tile = editor_map[r][c];
 			if (tile == 5 || tile == 6)
@@ -934,51 +929,29 @@ void level_editor_draw()
 			else if (tile != 0 && TileTextures[tile])
 				render_editor_tiles(TileTextures[tile], tile_draw_size, tile_draw_size, 1.0f, wx, wy);
 
+			// Special rendering for Tomb/Ghost/Bat
+			if (tile == 5 && tomb) {
+				render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
+				if (ghost_spawn) render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy - tile_draw_size);
+			}
+			else if (tile == 6 && bat_spawn) render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
+
+			// Puzzles
 			PuzzleType ptype = puzzle_editor_map[r][c];
 			if (ptype != PUZZLE_TYPE_COUNT && puzzle_block_textures[ptype]) {
-
-				//When editing a button:
-				//Highlight other buttons and spikes that are paired together
 				puzzle* curr = get_editing_puzzle(r, c, puzzles);
-
-				bool highlight = editing &&
-					editing_puzzle->type == BUTTON_UP &&
+				bool highlight = editing && editing_puzzle->type == BUTTON_UP &&
 					(ptype == SPIKE || ptype == BUTTON_UP) &&
 					(spike_is_paired(r, c, button_triggers[editing_puzzle->button_id]) ||
-					(curr && curr->button_id == editing_puzzle->button_id));
+						(curr && curr->button_id == editing_puzzle->button_id));
 
-				render_editor_tiles(puzzle_block_textures[ptype],
-					tile_draw_size, tile_draw_size, 1.0f, wx, wy, highlight);
+				render_editor_tiles(puzzle_block_textures[ptype], tile_draw_size, tile_draw_size, 1.0f, wx, wy, highlight);
 			}
-
-		}
-
-	}
-	for (int r = 0; r < TILE_ROWS; ++r)
-	for (int r = 0; r < TILE_ROWS; ++r)
-	{
-		for (int c = 0; c < TILE_COLS; ++c)
-		{
-			f32 wx = grid_start_x + c * tile_draw_size + (tile_draw_size * 0.5f);
-			f32 wy = grid_start_y - r * tile_draw_size - (tile_draw_size * 0.5f);
-
-			if (wx < grid_start_x || wx > grid_start_x + TILE_COLS * tile_draw_size) continue;
-			if (wy > grid_start_y || wy < grid_start_y - TILE_ROWS * tile_draw_size) continue;
-
-			int tile = editor_map[r][c];
-			if (tile == 5 && tomb)
-			{
-				render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
-				if (ghost_spawn)
-					render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy - tile_draw_size);
-			}
-			else if (tile == 6 && bat_spawn)
-				render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
 		}
 	}
 
-
-	// Hover highlight
+	// 3. Grid Hover Highlight (HIDDEN IF EXITING)
+	if (!show_exit_confirm && !editing) // Also hide if currently editing a puzzle's settings
 	{
 		f32 wx_m, wy_m;
 		mouse_to_world(wx_m, wy_m);
@@ -988,299 +961,123 @@ void level_editor_draw()
 			f32 cx = grid_start_x + col * tile_draw_size + tile_draw_size * 0.5f;
 			f32 cy = grid_start_y - row * tile_draw_size - tile_draw_size * 0.5f;
 
-			// FIND:
-			if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-				render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
-
-			// REPLACE WITH:
-			if (editorState == EDIT_TILES) {
-				if (selected_tile == 0)
-				{
-					if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-						render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
-				}
-				else if (selected_tile == 5)
-				{
-					if (tomb && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-					{
+			// Bounds check for the "safe" painting area
+			if (cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f) {
+				if (editorState == EDIT_TILES) {
+					if (selected_tile == 0) render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
+					else if (selected_tile == 5) {
 						render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 0.5f, cx, cy);
-						if (ghost_spawn)
-							render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 0.5f, cx, cy - tile_draw_size);
+						render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 0.5f, cx, cy - tile_draw_size);
 					}
+					else if (selected_tile == 6) render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 0.5f, cx, cy);
+					else if (TileTextures[selected_tile]) render_editor_tiles(TileTextures[selected_tile], tile_draw_size, tile_draw_size, 0.5f, cx, cy);
 				}
-				else if (selected_tile == 6)
-				{
-					if (bat_spawn && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-						render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 0.5f, cx, cy);
-				}
-				else if (TileTextures[selected_tile] && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-				{
-					render_editor_tiles(TileTextures[selected_tile], tile_draw_size, tile_draw_size, 0.5f, cx, cy);
+				else if (editorState == EDIT_PUZZLES) {
+					if (selected_puzzle == PUZZLE_TYPE_COUNT) render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
+					else if (puzzle_block_textures[selected_puzzle]) render_editor_tiles(puzzle_block_textures[selected_puzzle], tile_draw_size, tile_draw_size, 0.5f, cx, cy);
 				}
 			}
-			else if (editorState == EDIT_PUZZLES) {
-
-				if (selected_puzzle == PUZZLE_TYPE_COUNT) {
-
-					if (erase_tile && cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f)
-						render_editor_tiles(erase_tile, tile_draw_size, tile_draw_size, 0.3f, cx, cy);
-
-				}
-				else if (puzzle_block_textures[selected_puzzle] &&
-					cx >= -800.f && cx <= 560.f && cy >= -450.f && cy <= 450.f) {
-
-					render_editor_tiles(puzzle_block_textures[selected_puzzle],
-						tile_draw_size, tile_draw_size, 0.5f, cx, cy);
-				}
-			}
-
 		}
 	}
 
+	if (editing) draw_puzzle_edit_interface();
 
-	if (editing) {
-		draw_puzzle_edit_interface();
-
-	}
-
-	// =====================================================
-	// Outer border  only draw OUTSIDE the grid area
-	// =====================================================
+	// 4. Borders
 	{
-
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-		AEGfxSetColorToMultiply({ 0.129f,0.129f,0.133f,0.0f });
-
-		draw_rect_center(0.0f, AEGfxGetWinMaxY() - top_border_height / 2,
-			static_cast<f32>(AEGfxGetWindowWidth()), top_border_height, false);
-
-		draw_rect_center(0.0f, AEGfxGetWinMinY() + bottom_border_height / 2,
-			static_cast<f32>(AEGfxGetWindowWidth()), bottom_border_height, false);
-
-		draw_rect_center(AEGfxGetWinMinX() + left_border_width / 2, -tile_draw_size / 2,
-			left_border_width, side_border_height, false);
-
-		draw_rect_center(AEGfxGetWinMaxX() - right_border_width / 2, -tile_draw_size / 2,
-			right_border_width, side_border_height, false);
+		AEGfxSetColorToMultiply({ 0.129f, 0.129f, 0.133f, 0.0f });
+		draw_rect_center(0.0f, AEGfxGetWinMaxY() - top_border_height / 2, (f32)AEGfxGetWindowWidth(), top_border_height, false);
+		draw_rect_center(0.0f, AEGfxGetWinMinY() + bottom_border_height / 2, (f32)AEGfxGetWindowWidth(), bottom_border_height, false);
+		draw_rect_center(AEGfxGetWinMinX() + left_border_width / 2, -tile_draw_size / 2, left_border_width, side_border_height, false);
+		draw_rect_center(AEGfxGetWinMaxX() - right_border_width / 2, -tile_draw_size / 2, right_border_width, side_border_height, false);
 	}
 
-	// =====================================================
-	//  Palette buttons
-	// =====================================================
+	// 5. Palette Buttons (HOVER HIDDEN IF EXITING)
 	if (editorState == EDIT_TILES) {
-
-		for (int i = 0; i < PALETTE_COUNT; ++i)
-		{
+		for (int i = 0; i < PALETTE_COUNT; ++i) {
 			f32 py = PALETTE_TOP_Y - i * PAL_GAP;
-			bool hovered = IsButtonHovered(PANEL_X, py, PAL_W, PAL_H);
 			bool is_selected = (palette_ids[i] == selected_tile);
+			bool hovered = !show_exit_confirm && IsButtonHovered(PANEL_X, py, PAL_W, PAL_H); // Block hover here
+			bool is_locked = (palette_ids[i] == 3 && wizard_placed) || (palette_ids[i] == 4 && knight_placed) || (palette_ids[i] == 7 && door_placed);
 
-			bool is_locked = (palette_ids[i] == 3 && wizard_placed) ||
-				(palette_ids[i] == 4 && knight_placed) ||
-				(palette_ids[i] == 7 && door_placed);
+			if (is_selected && TileTextures[2]) render_editor_ui(TileTextures[2], PAL_W + 8.f, PAL_H + 8.f, 0.5f, PANEL_X, py);
+			if (hovered && !is_selected && TileTextures[2]) render_editor_ui(TileTextures[2], PAL_W, PAL_H, 0.2f, PANEL_X, py);
 
-			// Selected glow border
-			if (is_selected && TileTextures[2])
-				render_editor_ui(TileTextures[2], PAL_W + 8.f, PAL_H + 8.f, 0.5f, PANEL_X, py);
-
-
-			// Hover highlight
-			if (hovered && !is_selected && TileTextures[2])
-				render_editor_ui(TileTextures[2], PAL_W, PAL_H, 0.2f, PANEL_X, py);
-
-			// Tile icon dimmed if locked
 			f32 icon_alpha = is_locked ? 0.3f : 1.0f;
-			if (palette_ids[i] == 0)
-			{
-				render_editor_ui(erase_tile,
-					PAL_H - 8.f, PAL_H - 8.f, icon_alpha,
-					PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
-			}
-			else
-			{
-				int icon_id = palette_ids[i];
-				AEGfxTexture* icon_tex = nullptr;
-				if (icon_id == 5)       icon_tex = tomb;
-				else if (icon_id == 6)  icon_tex = bat_spawn;
-				else                    icon_tex = TileTextures[icon_id];
-				if (icon_tex)
-					render_editor_ui(icon_tex,
-						PAL_H - 8.f, PAL_H - 8.f, icon_alpha,
-						PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
+			AEGfxTexture* icon_tex = (palette_ids[i] == 0) ? erase_tile :
+				(palette_ids[i] == 5) ? tomb :
+				(palette_ids[i] == 6) ? bat_spawn : TileTextures[palette_ids[i]];
+			if (icon_tex) render_editor_ui(icon_tex, PAL_H - 8.f, PAL_H - 8.f, icon_alpha, PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
 
-			}
-
-			if (font != -1)
-			{
-				f32 norm_y = (py - 10.f) / 450.f;
-
-				// Label � grey if locked, yellow if selected, white otherwise
+			if (font != -1) {
 				f32 r = is_locked ? 0.4f : (is_selected ? 1.0f : 0.85f);
 				f32 g = is_locked ? 0.4f : (is_selected ? 0.9f : 0.85f);
 				f32 b = is_locked ? 0.4f : (is_selected ? 0.2f : 0.85f);
-				f32 text_wx = PANEL_X - PAL_W * 0.5f + PAL_H + 8.f;
-				AEGfxPrint(font, palette_labels[i], text_wx / 800.f, norm_y, 1.f, r, g, b, 1.f);
-
-				// Right side � green "1/1" if locked, grey hotkey if not
-				if (is_locked)
-				{
-					f32 hx = (PANEL_X + PAL_W * 0.5f - 45.f) / 800.f;
-					AEGfxPrint(font, "1/1", hx, norm_y, 0.8f, 0.3f, 1.f, 0.3f, 1.f);
-				}
-				else
-				{
-					char hint[4];
-					snprintf(hint, sizeof(hint), "[%d]", i + 1);
-					f32 hx = (PANEL_X + PAL_W * 0.5f - 40.f) / 800.f;
-					AEGfxPrint(font, hint, hx, norm_y, 1.f, 0.45f, 0.45f, 0.45f, 1.f);
-				}
+				AEGfxPrint(font, palette_labels[i], (PANEL_X - PAL_W * 0.5f + PAL_H + 8.f) / 800.f, (py - 10.f) / 450.f, 1.f, r, g, b, 1.f);
 			}
 		}
 	}
 	else if (editorState == EDIT_PUZZLES) {
-
-		for (int i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
-		{
+		for (int i = 0; i < EDITABLE_PUZZLE_COUNT; ++i) {
 			f32 py = PALETTE_TOP_Y - i * PAL_GAP;
-			bool hovered = IsButtonHovered(PANEL_X, py, PAL_W, PAL_H);
 			bool is_selected = (puzzle_palette_ids[i] == selected_puzzle);
+			bool hovered = !show_exit_confirm && IsButtonHovered(PANEL_X, py, PAL_W, PAL_H); // Block hover here
 
-			// Selected glow border
-			if (is_selected && TileTextures[2])
-				render_editor_ui(TileTextures[2], PAL_W + 8.f, PAL_H + 8.f, 0.5f, PANEL_X, py);
+			if (is_selected && TileTextures[2]) render_editor_ui(TileTextures[2], PAL_W + 8.f, PAL_H + 8.f, 0.5f, PANEL_X, py);
+			if (hovered && !is_selected && TileTextures[2]) render_editor_ui(TileTextures[2], PAL_W, PAL_H, 0.2f, PANEL_X, py);
 
-			// Hover highlight
-			if (hovered && !is_selected && TileTextures[2])
-				render_editor_ui(TileTextures[2], PAL_W, PAL_H, 0.2f, PANEL_X, py);
+			AEGfxTexture* icon_tex = (puzzle_palette_ids[i] == PUZZLE_TYPE_COUNT) ? erase_tile : puzzle_block_textures[puzzle_palette_ids[i]];
+			if (icon_tex) render_editor_ui(icon_tex, PAL_H - 8.f, PAL_H - 8.f, 1.0f, PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
 
-			// Tile icon � dimmed if locked
-			f32 icon_alpha = 1.0f;
-
-			if (puzzle_palette_ids[i] == PUZZLE_TYPE_COUNT)
-			{
-				render_editor_ui(erase_tile,
-					PAL_H - 8.f, PAL_H - 8.f, icon_alpha,
-					PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
-			}
-			else {
-				PuzzleType icon_id = puzzle_palette_ids[i];
-				if (puzzle_block_textures[icon_id])
-					render_editor_ui(puzzle_block_textures[icon_id],
-						PAL_H - 8.f, PAL_H - 8.f, icon_alpha,
-						PANEL_X - PAL_W * 0.5f + PAL_H * 0.5f, py);
-			}
-
-
-			if (font != -1)
-			{
-				f32 norm_y = (py - 10.f) / 450.f;
-
-				// Label � grey if locked, yellow if selected, white otherwise
-				f32 r = (is_selected ? 1.0f : 0.85f);
-				f32 g = (is_selected ? 0.9f : 0.85f);
-				f32 b = (is_selected ? 0.2f : 0.85f);
-				f32 text_wx = PANEL_X - PAL_W * 0.5f + PAL_H + 8.f;
-				AEGfxPrint(font, puzzle_labels[i], text_wx / 800.f, norm_y, 1.f, r, g, b, 1.f);
-
-
-				char hint[4];
-				snprintf(hint, sizeof(hint), "[%d]", i + 1);
-				f32 hx = (PANEL_X + PAL_W * 0.5f - 40.f) / 800.f;
-				AEGfxPrint(font, hint, hx, norm_y, 1.f, 0.45f, 0.45f, 0.45f, 1.f);
-
+			if (font != -1) {
+				f32 r = (is_selected ? 1.0f : 0.85f), g = (is_selected ? 0.9f : 0.85f), b = (is_selected ? 0.2f : 0.85f);
+				AEGfxPrint(font, puzzle_labels[i], (PANEL_X - PAL_W * 0.5f + PAL_H + 8.f) / 800.f, (py - 10.f) / 450.f, 1.f, r, g, b, 1.f);
 			}
 		}
 	}
 
-
-	// =====================================================
-	//  "TILES" header above palette
-	// =====================================================
-	if (font != -1)
-	{
+	// 6. Headers and UI Text
+	if (font != -1) {
 		const char* tiles_header = "|   TILES   || PUZZLES |";
-
 		f32 tw = 0.f, th = 0.f;
 		AEGfxGetPrintSize(font, tiles_header, 1.f, &tw, &th);
+
 		f32 norm_x = (PANEL_X / 800.f) - tw * 0.5f;
 		f32 norm_y = (PALETTE_TOP_Y + 45.f) / 450.f;
+
+		// Render the Header Text
 		AEGfxPrint(font, tiles_header, norm_x, norm_y, 1.f, 0.7f, 0.6f, 0.3f, 1.f);
 
+		// RESTORED: The underline/divider
 		render_text_center("________________", font, norm_x + tw * 0.5f,
-			norm_y - th * 0.5f, 1.0f, { 0.7f,0.6f,0.3f });
+			norm_y - th * 0.5f, 1.0f, { 0.7f, 0.6f, 0.3f });
+
+		// Bottom Hint Text
+		const char* hint = "LMB : Paint  ---  RMB : Erase  ---  F : Fill  ---  C : Clear  ---  S : Save  ---  ESC : Exit";
+		AEGfxPrint(font, hint, (grid_start_x) / 800.f, -420.f / 450.f, 1.f, 0.55f, 0.55f, 0.55f, 1.f);
 	}
 
-
-	// =====================================================
-	//  Instructions at bottom of panel
-	// =====================================================
-	if (font != -1)
-	{
-		if (font != -1)
-		{
-			const char* hint = "LMB : Paint  ---  RMB : Erase  ---  F : Fill  ---  C : Clear  ---  S : Save  ---  ESC : Exit  ---  SCROLL : Zoom --- Arrows : Pan";
-			f32 norm_x = (grid_start_x) / 800.f;
-			f32 norm_y = -420.f / 450.f;
-			AEGfxPrint(font, hint, norm_x, norm_y, 1.f, 0.55f, 0.55f, 0.55f, 1.f);
-		}
+	// 7. Notification System
+	if (font != -1 && (save_msg_timer > 0.f || spawn_error_timer > 0.f)) {
+		const char* msg = (save_msg_timer > 0.f) ? (save_success ? "Map Saved!" : (!wizard_placed ? "Place Wizard!" : (!knight_placed ? "Place Knight!" : "Save Failed!"))) : "Cannot place ghost spawns on last row!";
+		f32 alpha = (save_msg_timer > 0.f) ? (save_msg_timer / SAVE_MSG_DUR) : (spawn_error_timer / SPAWN_ERROR_DUR);
+		f32 tw = 0.f, th = 0.f;
+		AEGfxGetPrintSize(font, msg, 1.5f, &tw, &th);
+		AEGfxPrint(font, msg, -tw * 0.5f, 0.8f, 1.5f, (save_success ? 0.3f : 1.0f), (save_success ? 1.0f : 0.3f), 0.3f, alpha);
 	}
 
-	// =====================================================
-	//  Show exit confirmation 
-	// =====================================================
+	// 8. Exit Confirmation (Drawn on top of everything but the cursor)
 	if (show_exit_confirm)
 	{
-		int result = draw_exit_confirm(confirm_panel, confirm_btn_yes, confirm_btn_no,
-			font, "ARE YOU SURE YOU WANT TO QUIT?", 1.8f);
-		if (result == 1) next = GS_LEVELS;
-		if (result == 0) show_exit_confirm = false;
+		// Render the modal itself (the result logic is already in your update, this just draws)
+		draw_confirm_popup(confirm_panel, confirm_btn_yes, confirm_btn_no, font, "ARE YOU SURE YOU WANT TO QUIT?", 1.8f);
 	}
 
-	// =====================================================
-	//  Cursor (always on top)
-	// =====================================================
+	// 9. Cursor (Always last)
 	if (cursor)
 	{
-		f32 world_x = (f32)mouse_x - 800.f;
-		f32 world_y = -(f32)mouse_y + 450.f;
-		render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x + 25.f, world_y - 25.f);
-	}
-	// --- Notification System (Save & Spawn Errors) ---
-	if (font != -1)
-	{
-		const char* active_msg = nullptr;
-		f32 active_alpha = 0.0f;
-		bool is_error = true;
-
-		// Priority 1: Save Feedback
-		if (save_msg_timer > 0.f) {
-			active_msg = save_success ? "Map Saved!" :
-				(!wizard_placed ? "Place Wizard first!" :
-					(!knight_placed ? "Place Knight first!" :
-						(!door_placed ? "Place Door first!" : "Save FAILED!")));
-
-			active_alpha = save_msg_timer / SAVE_MSG_DUR;
-			is_error = !save_success;
-		}
-		// Priority 2: Spawn Error (only shows if no save message is ticking)
-		else if (spawn_error_timer > 0.f) {
-			active_msg = "Cannot place ghost spawns on the last row!";
-			active_alpha = spawn_error_timer / SPAWN_ERROR_DUR;
-			is_error = true;
-		}
-
-		// Draw the active message if there is one
-		if (active_msg) {
-			f32 r = is_error ? 1.0f : 0.3f;
-			f32 g = is_error ? 0.3f : 1.0f;
-			f32 b = 0.3f;
-
-			f32 tw = 0.f, th = 0.f;
-			AEGfxGetPrintSize(font, active_msg, 1.5f, &tw, &th);
-
-			// Exact same placement as your original Save Feedback
-			AEGfxPrint(font, active_msg, -tw * 0.5f, 0.8f, 1.5f, r, g, b, active_alpha);
-		}
+		f32 wx = (f32)mouse_x - 800.f, wy = -(f32)mouse_y + 450.f;
+		render_editor_ui(cursor, 50.f, 50.f, 1.0f, wx + 25.f, wy - 25.f);
 	}
 }
 

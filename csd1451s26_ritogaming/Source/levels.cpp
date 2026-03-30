@@ -29,6 +29,9 @@ namespace {
     AEGfxTexture* button_edit = nullptr;
     AEGfxTexture* bg_wall = nullptr;
     AEGfxTexture* scroll_bar = nullptr;
+    AEGfxTexture* panel = nullptr;
+    AEGfxTexture* confirm_yes = nullptr;
+    AEGfxTexture* confirm_no = nullptr;
     static s8 font = -1;
 
     // --- Mouse position (screen space) ---
@@ -79,6 +82,9 @@ namespace {
     s32 preview_map[TILE_ROWS][TILE_COLS]{};
     int preview_idx = -1;
 
+	// confirm delete popup
+    bool show_delete_confirm = false;
+    int  pending_delete_idx = -1;   // which level is pending deletion
 
 
 } // namespace
@@ -234,7 +240,11 @@ void levels_load()
     button_edit = AEGfxTextureLoad("Assets/Admin/levels_button_edit.png");
     bg_wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
     scroll_bar = AEGfxTextureLoad("Assets/Admin/scrollbar_future_grey.png");
+    panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
+    confirm_yes = AEGfxTextureLoad("Assets/Admin/main_menu_button3.png");
+    confirm_no = AEGfxTextureLoad("Assets/Admin/main_menu_button4.png");
     font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
+
     load_tile_textures("Assets/Tiles");
 }
 
@@ -251,6 +261,10 @@ void levels_init()
     scroll_row = 0;
     scroll_row_f = 0.f;
     scroll_target = 0.f;
+
+    //reset show delete confirm 
+    show_delete_confirm = false;
+    pending_delete_idx = -1;
 
     // Rebuild level list from disk
     build_level_list();
@@ -273,6 +287,47 @@ void levels_update()
     dt = (f32)AEFrameRateControllerGetFrameTime();
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
+    // --- 1. PRIORITY: MODAL POPUP ---
+      // Check this FIRST. If it's active, handle it and EXIT the function.
+    if (show_delete_confirm)
+    {
+        int result = draw_confirm_popup(panel, confirm_yes, confirm_no, font,
+            "Delete this level?", 0.9f);
+
+        if (result == 1 && pending_delete_idx >= 0)
+        {
+            int idx = pending_delete_idx;
+            remove(levels[idx].path.c_str());
+            remove(puzzles[idx].path.c_str());
+
+            // Handle spawn file deletion
+            std::string path_str = levels[idx].path;
+            std::string spawn_path = path_str.substr(0, path_str.find_last_of('.')) + "_enemy_spawns.txt";
+            remove(spawn_path.c_str());
+
+            build_level_list();
+
+            // Sync paths
+            level_paths.clear();
+            for (auto& e : levels) level_paths.push_back(e.path);
+            level_puzzle_paths.clear();
+            for (auto& e : puzzles) level_puzzle_paths.push_back(e.path);
+
+            scroll_row = 0; scroll_row_f = 0.f; scroll_target = 0.f;
+            delete_msg_timer = 2.f;
+            pending_delete_idx = -1;
+            show_delete_confirm = false;
+        }
+        else if (result == 0) // Clicked No
+        {
+            show_delete_confirm = false;
+            pending_delete_idx = -1;
+        }
+
+        // Return here so NO OTHER BUTTONS (Back, Editor, Grid) are checked
+        return;
+    }
+
     // --- ESC / Back button — return to main menu ---
     if (AEInputCheckTriggered(AEVK_ESCAPE))
         next = MAINMENU;
@@ -284,6 +339,83 @@ void levels_update()
     if (IsButtonClicked(600.f, -380.f, 200.f, 70.f))
     {
         selected_level_path = ""; // blank map
+        selected_level_puzzle_path = "";
+        next = GS_LEVEL_EDITOR;
+    }
+
+    // Left click — context menu actions or play
+    if (AEInputCheckTriggered(AEVK_LBUTTON))
+    {
+        // Context menu is open — check its buttons first
+        if (context_menu_idx >= 0 && context_menu_idx < (int)levels.size())
+        {
+            int idx = context_menu_idx;
+            int col = idx % COLS;
+            int row = (idx / COLS) - scroll_row;
+            f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
+            f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
+
+            f32 edit_x = cx;
+            f32 edit_y = cy + CELL_H * 0.15f;
+            if (IsButtonClicked(edit_x, edit_y, CELL_W - 40.f, 50.f))
+            {
+                selected_level_path = levels[idx].path;
+                selected_level_puzzle_path = puzzles[idx].path;
+                context_menu_idx = -1;
+                next = GS_LEVEL_EDITOR;
+                return;
+            }
+
+            f32 del_x = cx;
+            f32 del_y = cy - CELL_H * 0.25f;
+            if (IsButtonClicked(del_x, del_y, CELL_W - 40.f, 50.f))
+            {
+                pending_delete_idx = idx;
+                show_delete_confirm = true;
+                context_menu_idx = -1;
+                return;
+            }
+
+            // Clicked outside context menu — close it
+            context_menu_idx = -1;
+        }
+
+        // Normal play click
+        for (int row = 0; row < ROWS_VISIBLE; ++row)
+        {
+            for (int col = 0; col < COLS; ++col)
+            {
+                int idx = (scroll_row + row) * COLS + col;
+                if (idx >= (int)levels.size()) continue;
+
+                f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
+                f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
+
+                if (IsButtonClicked(cx, cy, CELL_W, CELL_H))
+                {
+                    selected_level_path = levels[idx].path;
+                    selected_level_puzzle_path = puzzles[idx].path;
+                    next = GS_LEVEL1;
+                }
+            }
+        }
+    }
+
+
+    // --- 2. BACKGROUND UI LOGIC ---
+    // Everything below this line ONLY runs if the popup is NOT shown.
+
+    // ESC / Back button
+    if (AEInputCheckTriggered(AEVK_ESCAPE))
+        next = MAINMENU;
+
+    if (IsButtonClicked(-600.f, -380.f, 200.f, 70.f))
+        next = MAINMENU;
+
+    // Level Editor button
+    if (IsButtonClicked(600.f, -380.f, 200.f, 70.f))
+    {
+        selected_level_path = "";
         selected_level_puzzle_path = "";
         next = GS_LEVEL_EDITOR;
     }
@@ -348,75 +480,7 @@ void levels_update()
         if (!clicked_any) context_menu_idx = -1; // clicked outside — close menu
     }
 
-    // Left click — context menu actions or play
-    if (AEInputCheckTriggered(AEVK_LBUTTON))
-    {
-        // Context menu is open — check its buttons first
-        if (context_menu_idx >= 0 && context_menu_idx < (int)levels.size())
-        {
-            int idx = context_menu_idx;
-            int col = idx % COLS;
-            int row = (idx / COLS) - scroll_row;
-            f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
-            f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
 
-            f32 edit_x = cx;
-            f32 edit_y = cy + CELL_H * 0.15f;
-            if (IsButtonClicked(edit_x, edit_y, CELL_W - 40.f, 50.f))
-            {
-                selected_level_path = levels[idx].path;
-                selected_level_puzzle_path = puzzles[idx].path;
-                context_menu_idx = -1;
-                next = GS_LEVEL_EDITOR;
-                return;
-            }
-
-            f32 del_x = cx;
-            f32 del_y = cy - CELL_H * 0.25f;
-            if (IsButtonClicked(del_x, del_y, CELL_W - 40.f, 50.f))
-            {
-                remove(levels[idx].path.c_str());
-                remove(puzzles[idx].path.c_str());
-                // remove enemy file also
-                std::string spawn_path = levels[idx].path.substr(0, levels[idx].path.find_last_of('.')) + "_enemy_spawns.txt";
-                remove(spawn_path.c_str());
-                build_level_list();
-                level_paths.clear();
-                for (auto& e : levels)
-                    level_paths.push_back(e.path);
-                level_puzzle_paths.clear();  
-                for (auto& e : puzzles)
-                    level_puzzle_paths.push_back(e.path);
-                scroll_row = 0; scroll_row_f = 0.f; scroll_target = 0.f;
-                context_menu_idx = -1;
-                delete_msg_timer = 2.f;
-                return;
-            }
-
-            // Clicked outside context menu — close it
-            context_menu_idx = -1;
-        }
-
-        // Normal play click
-        for (int row = 0; row < ROWS_VISIBLE; ++row)
-        {
-            for (int col = 0; col < COLS; ++col)
-            {
-                int idx = (scroll_row + row) * COLS + col;
-                if (idx >= (int)levels.size()) continue;
-
-                f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
-                f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
-
-                if (IsButtonClicked(cx, cy, CELL_W, CELL_H))
-                {
-                    selected_level_path = levels[idx].path;
-                    selected_level_puzzle_path = puzzles[idx].path;
-                    next = GS_LEVEL1;
-                }
-            }
-        }
-    }
 }
 
 // -------------------------------------------------------
@@ -456,8 +520,8 @@ void levels_draw()
 
                 if (!is_flipped)
                 {
-                    // Normal front face
-                    bool hovered = IsButtonHovered(cx, cy, CELL_W, CELL_H);
+                    // Disable hover highlight if popup is shown
+                    bool hovered = !show_delete_confirm && IsButtonHovered(cx, cy, CELL_W, CELL_H);
                     if (button)
                         render_editor_ui(button, CELL_W, CELL_H, 1.0f, cx, cy, hovered);
 
@@ -471,7 +535,7 @@ void levels_draw()
                             (cy - 10.f) / 450.f,
                             1.f, 0.f, 0.f, 0.f, 1.f);
 
-                        if (idx > 0) // index 0 is always the default level
+                        if (idx > 0)
                         {
                             f32 tw2 = 0.f, th2 = 0.f;
                             AEGfxGetPrintSize(font, "[Custom]", 0.7f, &tw2, &th2);
@@ -497,33 +561,29 @@ void levels_draw()
 
                     if (font != -1)
                     {
-                        // Edit button (top half of cell)
                         f32 edit_x = cx;
                         f32 edit_y = cy + CELL_H * 0.15f;
-                        bool edit_h = IsButtonHovered(edit_x, edit_y, CELL_W * 0.8f, CELL_H * 0.3f);
+                        // Disable hover highlight if popup is shown
+                        bool edit_h = !show_delete_confirm && IsButtonHovered(edit_x, edit_y, CELL_W * 0.8f, CELL_H * 0.3f);
                         if (button_edit)
                             render_editor_ui(button_edit, CELL_W * 0.8f, CELL_H * 0.3f,
                                 edit_h ? 1.f : 0.7f, edit_x, edit_y);
+
                         f32 etw = 0.f, eth = 0.f;
                         AEGfxGetPrintSize(font, "Edit", 0.9f, &etw, &eth);
-                        AEGfxPrint(font, "Edit",
-                            (edit_x / 800.f) - etw * 0.5f,
-                            (edit_y - 10.f) / 450.f,
-                            0.9f, 0.f, 0.f, 0.f, 1.f);
+                        AEGfxPrint(font, "Edit", (edit_x / 800.f) - etw * 0.5f, (edit_y - 10.f) / 450.f, 0.9f, 0.f, 0.f, 0.f, 1.f);
 
-                        // Delete button (bottom half of cell)
                         f32 del_x = cx;
                         f32 del_y = cy - CELL_H * 0.20f;
-                        bool del_h = IsButtonHovered(del_x, del_y, CELL_W * 0.8f, CELL_H * 0.3f);
+                        // Disable hover highlight if popup is shown
+                        bool del_h = !show_delete_confirm && IsButtonHovered(del_x, del_y, CELL_W * 0.8f, CELL_H * 0.3f);
                         if (button_edit)
                             render_editor_ui(button_edit, CELL_W * 0.8f, CELL_H * 0.3f,
                                 del_h ? 1.f : 0.7f, del_x, del_y);
+
                         f32 dtw = 0.f, dth = 0.f;
                         AEGfxGetPrintSize(font, "Delete", 0.9f, &dtw, &dth);
-                        AEGfxPrint(font, "Delete",
-                            (del_x / 800.f) - dtw * 0.5f,
-                            (del_y - 10.f) / 450.f,
-                            0.9f, 1.f, 0.3f, 0.3f, 1.f);
+                        AEGfxPrint(font, "Delete", (del_x / 800.f) - dtw * 0.5f, (del_y - 10.f) / 450.f, 0.9f, 1.f, 0.3f, 0.3f, 1.f);
                     }
                 }
             }
@@ -535,13 +595,12 @@ void levels_draw()
         }
     }
 
-    // --- Scrollbar (only shown when there are more rows than visible) ---
+    // --- Scrollbar ---
     int tr = total_rows();
     if (tr > ROWS_VISIBLE)
     {
         if (scroll_bar)
-            render_editor_ui(scroll_bar, TRACK_W, BAR_H, 0.4f,
-                BAR_X, (BAR_TOP + BAR_BOT) * 0.5f);
+            render_editor_ui(scroll_bar, TRACK_W, BAR_H, 0.4f, BAR_X, (BAR_TOP + BAR_BOT) * 0.5f);
 
         int ms = max_scroll();
         f32 thumb_h = BAR_H * ((f32)ROWS_VISIBLE / (f32)tr);
@@ -550,42 +609,30 @@ void levels_draw()
 
         if (scroll_bar)
             render_editor_ui(scroll_bar, THUMB_W, thumb_h, 1.0f, BAR_X, thumb_cy);
-
-        if (font != -1)
-        {
-            if (scroll_row > 0)
-                AEGfxPrint(font, "^ scroll up ^", -0.14f, 0.75f, 0.8f, 1.f, 1.f, 0.4f, 1.f);
-            if (scroll_row < ms)
-                AEGfxPrint(font, "v scroll down v", -0.16f, -0.75f, 0.8f, 1.f, 1.f, 0.4f, 1.f);
-        }
     }
 
-    // --- Back button (bottom left) ---
+    // --- Back button ---
+    bool back_h = !show_delete_confirm && IsButtonHovered(-600.f, -380.f, 200.f, 70.f);
     if (back_button)
-        render_editor_ui(back_button, 200.f, 70.f, 1.0f, -600.f, -380.f,
-            IsButtonHovered(-600.f, -380.f, 200.f, 70.f));
+        render_editor_ui(back_button, 200.f, 70.f, 1.0f, -600.f, -380.f, back_h);
+
     if (font != -1)
     {
         f32 tw = 0.f, th = 0.f;
         AEGfxGetPrintSize(font, "Back", 0.8f, &tw, &th);
-        AEGfxPrint(font, "Back",
-            (-600.f / 800.f) - tw * 0.5f,
-            (-380.f - 10.f) / 450.f,
-            0.8f, 0.f, 0.f, 0.f, 1.f);
+        AEGfxPrint(font, "Back", (-600.f / 800.f) - tw * 0.5f, (-380.f - 10.f) / 450.f, 0.8f, 0.f, 0.f, 0.f, 1.f);
     }
 
-    // --- Level Editor button (bottom right) ---
+    // --- Level Editor button ---
+    bool edit_btn_h = !show_delete_confirm && IsButtonHovered(600.f, -380.f, 200.f, 70.f);
     if (editor_button)
-        render_editor_ui(editor_button, 200.f, 70.f, 1.0f, 600.f, -380.f,
-            IsButtonHovered(600.f, -380.f, 200.f, 70.f));
+        render_editor_ui(editor_button, 200.f, 70.f, 1.0f, 600.f, -380.f, edit_btn_h);
+
     if (font != -1)
     {
         f32 tw = 0.f, th = 0.f;
         AEGfxGetPrintSize(font, "Editor", 0.8f, &tw, &th);
-        AEGfxPrint(font, "Editor",
-            (600.f / 800.f) - tw * 0.5f,
-            (-380.f - 10.f) / 450.f,
-            0.8f, 0.9f, 0.7f, 0.3f, 1.f);
+        AEGfxPrint(font, "Editor", (600.f / 800.f) - tw * 0.5f, (-380.f - 10.f) / 450.f, 0.8f, 0.9f, 0.7f, 0.3f, 1.f);
     }
 
     // --- Delete confirmation toast ---
@@ -594,75 +641,74 @@ void levels_draw()
         f32 alpha = delete_msg_timer > 0.5f ? 1.f : delete_msg_timer / 0.5f;
         const char* msg = "Level deleted!";
         f32 tw = 0.f, th = 0.f;
-        AEGfxGetPrintSize(font, msg, 1.2f, &tw, &th);
-        // Draw dark background box first
+        AEGfxGetPrintSize(font, msg, 1.f, &tw, &th);
         render_editor_ui(button, 400.f, 80.f, 0.9f, 0.f, 0.f);
-        AEGfxPrint(font, msg, -tw * 0.5f, -0.05f, 1.2f, 1.f, 0.3f, 0.3f, alpha);
+        AEGfxPrint(font, msg, -tw * 0.5f, -0.05f, 1.f, 1.f, 0.3f, 0.3f, alpha);
     }
 
     // --- Map preview on hover ---
-    for (int row = 0; row < ROWS_VISIBLE; ++row)
+    if (!show_delete_confirm) // Entire preview block skipped if popup shown
     {
-        for (int col = 0; col < COLS; ++col)
+        for (int row = 0; row < ROWS_VISIBLE; ++row)
         {
-            int idx = (scroll_row + row) * COLS + col;
-            if (idx >= (int)levels.size()) continue;
-
-            f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
-            f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
-
-            if (!IsButtonHovered(cx, cy, CELL_W, CELL_H)) continue;
-            if (context_menu_idx == idx) break; // don't show preview when flipped
-
-            // Load preview map if hovering a new cell
-            if (preview_idx != idx)
+            for (int col = 0; col < COLS; ++col)
             {
-                preview_idx = idx;
-                for (int r = 0; r < TILE_ROWS; ++r)
-                    for (int c = 0; c < TILE_COLS; ++c)
-                        preview_map[r][c] = 0;
+                int idx = (scroll_row + row) * COLS + col;
+                if (idx >= (int)levels.size()) continue;
 
-                if (levels[idx].path.empty())
-                    load_map_from_file("Assets/Levels/default.txt", preview_map);
-                else
-                    load_map_from_file(levels[idx].path.c_str(), preview_map);
+                f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
+                f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
+
+                if (!IsButtonHovered(cx, cy, CELL_W, CELL_H)) continue;
+                if (context_menu_idx == idx) break;
+
+                if (preview_idx != idx)
+                {
+                    preview_idx = idx;
+                    for (int r = 0; r < TILE_ROWS; ++r)
+                        for (int c = 0; c < TILE_COLS; ++c)
+                            preview_map[r][c] = 0;
+
+                    if (levels[idx].path.empty())
+                        load_map_from_file("Assets/Levels/default.txt", preview_map);
+                    else
+                        load_map_from_file(levels[idx].path.c_str(), preview_map);
+                }
+
+                const f32 PREV_W = 256.f, PREV_H = 144.f;
+                f32 wx = (f32)mouse_x - 800.f, wy = -(f32)mouse_y + 450.f;
+                const f32 PREV_X = wx - PREV_W * 0.5f - 10.f, PREV_Y = wy - PREV_H * 0.5f - 10.f;
+
+                if (button)
+                    render_editor_ui(button, PREV_W + 16.f, PREV_H + 16.f, 0.95f, PREV_X, PREV_Y);
+
+                draw_map_preview(preview_map, PREV_X, PREV_Y, PREV_W, PREV_H);
+
+                if (font != -1)
+                {
+                    const char* lbl = levels[idx].name.c_str();
+                    f32 tw = 0.f, th = 0.f;
+                    AEGfxGetPrintSize(font, lbl, 0.8f, &tw, &th);
+                    AEGfxPrint(font, lbl, (PREV_X / 800.f) - tw * 0.5f, (PREV_Y + PREV_H * 0.5f + 25.f) / 450.f, 0.8f, 1.f, 1.f, 1.f, 1.f);
+                }
+                break;
             }
-
-            // Draw preview background box
-            const f32 PREV_W = 256.f;
-            const f32 PREV_H = 144.f;
-            f32 wx = (f32)mouse_x - 800.f;
-            f32 wy = -(f32)mouse_y + 450.f;
-            const f32 PREV_X = wx - PREV_W * 0.5f - 10.f;
-            const f32 PREV_Y = wy - PREV_H * 0.5f - 10.f;
-
-            if (button)
-                render_editor_ui(button, PREV_W + 16.f, PREV_H + 16.f, 0.95f, PREV_X, PREV_Y);
-
-            draw_map_preview(preview_map, PREV_X, PREV_Y, PREV_W, PREV_H);
-
-            // Preview label
-            if (font != -1)
-            {
-                const char* lbl = levels[idx].name.c_str();
-                f32 tw = 0.f, th = 0.f;
-                AEGfxGetPrintSize(font, lbl, 0.8f, &tw, &th);
-                AEGfxPrint(font, lbl,
-                    (PREV_X / 800.f) - tw * 0.5f,
-                    (PREV_Y + PREV_H * 0.5f + 25.f) / 450.f,
-                    0.8f, 1.f, 1.f, 1.f, 1.f);
-            }
-            break;
         }
     }
 
+    // --- FINAL MODAL OVERLAY ---
+    if (show_delete_confirm)
+    {
+        // Darkening filter (optional, just renders a semi-transparent box over everything)
+        // render_editor_ui(nullptr, 1600.f, 900.f, 0.5f, 0.f, 0.f); 
 
+        draw_confirm_popup(panel, confirm_yes, confirm_no, font, "Delete this level?", 0.9f);
+    }
 
-    // --- Custom cursor (always rendered last / on top) ---
+    // --- Custom cursor ---
     if (cursor)
     {
-        f32 wx = (f32)mouse_x - 800.f;
-        f32 wy = -(f32)mouse_y + 450.f;
+        f32 wx = (f32)mouse_x - 800.f, wy = -(f32)mouse_y + 450.f;
         render_editor_ui(cursor, 50.f, 50.f, 1.0f, wx + 25.f, wy - 25.f);
     }
 }
@@ -689,6 +735,9 @@ void levels_unload()
     if (button_edit) { AEGfxTextureUnload(button_edit);     button_edit = nullptr; }
     if (bg_wall) { AEGfxTextureUnload(bg_wall);    bg_wall = nullptr; }
     if (scroll_bar) { AEGfxTextureUnload(scroll_bar); scroll_bar = nullptr; }
+    if (panel) { AEGfxTextureUnload(panel); panel = nullptr; }
+    if (confirm_yes) { AEGfxTextureUnload(confirm_yes); confirm_yes = nullptr; }
+    if (confirm_no) { AEGfxTextureUnload(confirm_no);  confirm_no = nullptr; }
     if (font != -1) { AEGfxDestroyFont(font);         font = -1; }
     free_tile_textures();
 }

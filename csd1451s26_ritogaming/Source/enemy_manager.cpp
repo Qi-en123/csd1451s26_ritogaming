@@ -28,8 +28,8 @@ static constexpr f32 TILE_SZ = 64.0f;
 static AEVec2 tile_spot(s32 row, s32 col)
 {
     AEVec2 p;
-    p.x = MAP_START_X + col * TILE_SZ;
-    p.y = MAP_START_Y - row * TILE_SZ;
+    p.x = MAP_START_X + col * TILE_SZ + TILE_SZ * 0.5;
+    p.y = MAP_START_Y - row * TILE_SZ - TILE_SZ * 0.5;
     return p;
 }
 

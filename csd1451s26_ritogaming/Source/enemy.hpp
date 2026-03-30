@@ -351,7 +351,7 @@ struct Animator {
 
         timer += dt;
         if (timer >= 1.f / fps) {
-            timer = 0.f;
+            timer -= 1.f / fps;
             current_frame++;
 
             if (current_frame >= frame_count) {

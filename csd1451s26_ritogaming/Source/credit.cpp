@@ -68,6 +68,7 @@ namespace {
         "Copyrights for software, tools and libraries",
         "(C) Kenney Assets",
         "(C) MetaDigger",
+		"(C) Itch.io",
         NULL
     };
 }

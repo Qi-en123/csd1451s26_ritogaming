@@ -484,3 +484,5 @@ void draw_black_overlay(f32 alpha)
 	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
 	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 }
+
+

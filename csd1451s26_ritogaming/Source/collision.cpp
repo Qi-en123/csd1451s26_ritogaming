@@ -365,7 +365,7 @@ void check_and_open_doors(Player* player)
             }
             else
             {
-                trigger_level_transition(GS_BOSS_ROOM);
+                trigger_boss_warning();
             }
         }
     }

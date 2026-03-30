@@ -163,6 +163,8 @@ void level1_update()
 void level1_draw()
 {
 	AEGfxReset();
+
+	//Renders map tiles
 	draw_map(tile_size);
 	// Debug: draw all walls as semi-transparent red
 	 debug_draw_all_walls();
@@ -171,20 +173,34 @@ void level1_draw()
 
 	
 
+	//Renders enemies
 	enemy_manager_instance.render();
-
-	render_player_hud(&ui_manager, &player_instance);
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
-	render_character_ui(&ui_manager, &player_instance);
-	
+
+	//Renders the puzzle blocks
 	Puzzle::render_puzzle_blocks();
+
+	//Renders the actual player/characters
 	player_system_render(&player_instance);
+
+	//Renders minimap
 	minimap_draw(&player_instance, map, TileTextures);
 
+	//Renders the player health & skills UI
+	render_player_hud(&ui_manager, &player_instance);
+	render_character_ui(&ui_manager, &player_instance);
+	//render_tooltip(tooltip_font);
+
+	//Renders the pause ui when game is paused
 	pause_draw();
 	if (!is_paused)
+
+	//Renders the custom cursor
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 
+#if DEBUGGING
+	debug_draw_all_walls();
+#endif
 }
 
 void level1_free()

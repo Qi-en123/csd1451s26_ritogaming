@@ -28,6 +28,7 @@ namespace {
     AEGfxTexture* back_button = nullptr;
     AEGfxTexture* editor_button = nullptr;
     AEGfxTexture* button_edit = nullptr;
+    AEGfxTexture* deleted_text_bg = nullptr;
     AEGfxTexture* bg_wall = nullptr;
     AEGfxTexture* scroll_bar = nullptr;
     static s8 font = -1;
@@ -233,6 +234,7 @@ void levels_load()
     back_button = AEGfxTextureLoad("Assets/Admin/levels_back_button.png");
     editor_button = AEGfxTextureLoad("Assets/Admin/levels_editor_button.png");
     button_edit = AEGfxTextureLoad("Assets/Admin/levels_button_edit.png");
+    deleted_text_bg = AEGfxTextureLoad("Assets/Admin/levels_deleted_bg.png");
     bg_wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
     scroll_bar = AEGfxTextureLoad("Assets/Admin/scrollbar_future_grey.png");
     font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
@@ -620,8 +622,8 @@ void levels_draw()
         f32 tw = 0.f, th = 0.f;
         AEGfxGetPrintSize(font, msg, 1.2f, &tw, &th);
         // Draw dark background box first
-        render_editor_ui(button, 400.f, 80.f, 0.9f, 0.f, 0.f);
-        AEGfxPrint(font, msg, -tw * 0.5f, -0.05f, 1.2f, 1.f, 0.3f, 0.3f, alpha);
+        render_editor_ui(deleted_text_bg, 440.f, 80.f, 0.9f, 0.f, 0.f);
+        AEGfxPrint(font, msg, -tw * 0.5f, -0.04f, 1.2f, 1.f, 0.3f, 0.3f, alpha);
     }
 
     // --- Map preview on hover ---
@@ -711,6 +713,7 @@ void levels_unload()
     if (back_button) { AEGfxTextureUnload(back_button);     back_button = nullptr; }
     if (editor_button) { AEGfxTextureUnload(editor_button);     editor_button = nullptr; }
     if (button_edit) { AEGfxTextureUnload(button_edit);     button_edit = nullptr; }
+    if (deleted_text_bg) { AEGfxTextureUnload(deleted_text_bg);     deleted_text_bg = nullptr; }
     if (bg_wall) { AEGfxTextureUnload(bg_wall);    bg_wall = nullptr; }
     if (scroll_bar) { AEGfxTextureUnload(scroll_bar); scroll_bar = nullptr; }
     if (font != -1) { AEGfxDestroyFont(font);         font = -1; }

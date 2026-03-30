@@ -143,7 +143,7 @@ namespace {
 	}
 	void write_puzzles_to_text(std::ostream& ofs,
 		std::vector<Puzzle::puzzle> const& puzzles,
-		std::vector<Puzzle::buttonTrigger> const& bt) {
+		std::vector<Puzzle::buttonTrigger>& bt) {
 		//Write buttons to text
 		for (const Puzzle::puzzle& p : puzzles) {
 			if (p.type == Puzzle::BUTTON_UP || p.type == Puzzle::BUTTON_DOWN) {
@@ -181,6 +181,15 @@ namespace {
 			}
 		}
 
+		//remove empty ids (happens when player erases entirety of button|spike set)
+		bt.erase(
+			std::remove_if(bt.begin(), bt.end(),
+				[](const Puzzle::buttonTrigger& b) {
+					return b.coords.empty();
+				}),
+			bt.end()
+		);
+
 		//save triggers here
 		ofs << "\nTriggers: " << bt.size();
 		for (Puzzle::buttonTrigger const& b : bt) {
@@ -188,7 +197,7 @@ namespace {
 			ofs << '\n' << b.id << ": ";
 
 			//print coords
-			for (std::pair<int, int> const& c : b.coords) {
+			for (std::pair<s32, s32> const& c : b.coords) {
 				ofs << '(' << c.first << ',' << c.second << ')';
 			}
 		}
@@ -238,12 +247,10 @@ namespace Puzzle {
 		for (s32 i{}; i < puzzles.size(); ++i) {
 
 			if (posx == puzzles[i].posx && posy == puzzles[i].posy) {
-
 				puzzles[i] = puzzles.back();
 				puzzles.pop_back();
 				return;
 			}
-
 		}
 	}
 
@@ -270,18 +277,19 @@ namespace Puzzle {
 	// Spike : Button pairing functions
 	// ------------------------------------------------------------------------
 	void pair_spike_to_button(s32 row, s32 col, buttonTrigger& bt) {
-
-		bt.coords.push_back({ row,col });
+		if (!spike_is_paired(row, col, bt)) {
+			bt.coords.push_back({ row,col });
+		}
 	}
 	void remove_spike_button_pair(s32 row, s32 col, buttonTrigger& bt) {
 
-		for (std::pair<int, int>& c : bt.coords) {
-			if (c.first == row && c.second == col) {
-				c = bt.coords.back();
-				bt.coords.pop_back();
-				return;
-			}
-		}
+		bt.coords.erase(
+			std::remove_if(bt.coords.begin(), bt.coords.end(),
+				[row, col](const std::pair<int, int>& c) {
+					return c.first == row && c.second == col;
+				}),
+			bt.coords.end()
+		);
 	}
 	bool spike_is_paired(s32 row, s32 col, buttonTrigger const& bt) {
 
@@ -291,14 +299,13 @@ namespace Puzzle {
 			}
 		}
 		return false;
-
 	}
 
 	// ------------------------------------------------------------------------
 	// Saving/Writing puzzles to text file from level editor
 	// ------------------------------------------------------------------------
 	bool overwrite_puzzle_blocks(std::vector<puzzle> const& puzzles,
-		std::vector<buttonTrigger> const& bt,
+		std::vector<buttonTrigger>& bt,
 		const std::string& filename) {
 
 		std::ofstream ofs{ filename };
@@ -317,7 +324,7 @@ namespace Puzzle {
 		return true;
 	}
 	bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
-		std::vector<buttonTrigger> const& bt,
+		std::vector<buttonTrigger>& bt,
 		std::string& out_filename) {
 
 		// Find highest existing lvl number and go one above it
@@ -357,6 +364,98 @@ namespace Puzzle {
 
 		ofs.close();
 		return true;
+	}
+
+	bool load_puzzle_blocks_to_editor(char const* filename, PuzzleType** puzzle_editor_map,
+		std::vector<puzzle>& puzzles, std::vector<buttonTrigger>& bt) {
+
+		//nid to write to plemap
+
+		std::ifstream ifs{ filename };
+		if (!ifs.is_open()) {
+			printf("Failed to open: %s\n", filename);
+			//terminate
+			return false;
+		}
+
+		//Reads first line, gets number of puzzle blocks in level
+		std::string line;
+		s32 num_puzzle_blocks;
+		ifs >> line >> num_puzzle_blocks;
+
+		puzzles.clear();
+
+		//Reads and stores values to init puzzle blocks
+		for (int i{}; i < num_puzzle_blocks; ++i) {
+
+			std::string type;
+			s32 row, col, chara;
+			ifs >> type >> row >> col >> chara;
+
+			f32 posx = col_to_world(col);
+			f32 posy = row_to_world(row);
+
+			//buttons have no elems (by design)
+			if (type == "BUTTON") {
+				s32 id;
+				ifs >> id;
+				//save puzzle data into puzzle_editor_map
+				puzzle_editor_map[row][col] = BUTTON_UP;
+				puzzles.emplace_back(BUTTON_UP, posx, posy, id, chara);
+			}
+
+			//every other puzzle type may have elems
+			else {
+				s32 elem;
+				ifs >> elem;
+
+				Element e = (elem >= 0 && elem <= NO_ELEMENT) ?
+					static_cast<Element>(elem) : NO_ELEMENT;
+
+				PuzzleType ptype;
+
+				if (type == "PUSHABLE") {
+					ptype = PUSHABLE;
+				}
+				else if (type == "PIT") {
+					ptype = PIT;
+				}
+				else if (type == "SPIKE") {
+					ptype = SPIKE;
+				}
+
+				puzzle_editor_map[row][col] = ptype;
+				puzzles.emplace_back(ptype, posx, posy, e, chara);
+			}
+		}
+
+		//Now reading button triggers
+		s32 triggers;
+		ifs >> line >> triggers;
+		ifs.ignore();
+
+		//Storing button triggers
+		bt.clear();
+		for (int i{}; i < triggers; ++i) {
+			int id, row, col;
+			char ch;
+
+			std::getline(ifs, line);
+			std::stringstream ss(line);
+
+			ss >> id;
+			bt.push_back({ id,{} });
+			buttonTrigger& back = bt.back();
+
+			while (ss >> ch) {
+				if (ch == '(') {
+					ss >> row >> ch >> col >> ch;
+					back.coords.push_back({ row, col });
+				}
+			}
+		}
+
+		ifs.close();
 	}
 
 	// ------------------------------------------------------------------------

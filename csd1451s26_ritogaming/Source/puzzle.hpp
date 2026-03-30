@@ -65,7 +65,7 @@ namespace Puzzle {
 	// ---------------------------------------------------------------------------- 
 	struct buttonTrigger {
 		s32 id;
-		std::vector<std::pair<int, int>> coords;
+		std::vector<std::pair<s32, s32>> coords;
 	};
 
 	// ----------------------------------------------------------------------------
@@ -182,7 +182,7 @@ namespace Puzzle {
 	//
 	// ---------------------------------------------------------------------------- 
 	bool overwrite_puzzle_blocks(std::vector<puzzle> const& puzzles,
-		std::vector<buttonTrigger> const& bt,
+		std::vector<buttonTrigger>& bt,
 		const std::string& filename);
 
 	// ----------------------------------------------------------------------------
@@ -192,8 +192,17 @@ namespace Puzzle {
 	//
 	// ---------------------------------------------------------------------------- 
 	bool save_puzzle_blocks(std::vector<puzzle> const& puzzles,
-		std::vector<buttonTrigger> const& bt,
+		std::vector<buttonTrigger>& bt,
 		std::string& out_filename);
+
+	// ----------------------------------------------------------------------------
+	//
+	// Loads puzzle data from an existing level's puzzle text file into the editor.
+	// This is only used in the level editor.
+	//
+	// ---------------------------------------------------------------------------- 
+	bool load_puzzle_blocks_to_editor(char const* filename, PuzzleType** puzzle_editor_map,
+		std::vector<puzzle>& puzzles, std::vector<buttonTrigger>& bt);
 
 	// ----------------------------------------------------------------------------
 	//

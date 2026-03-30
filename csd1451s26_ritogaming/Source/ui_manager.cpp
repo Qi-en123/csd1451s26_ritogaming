@@ -88,20 +88,6 @@ void render_character_ui(UIManager *p_ui_manager, Player *player)
 		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
 		render_ui_sprite(rect_mesh_center, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
 		render_ui_sprite(rect_mesh_center, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->cursor_knight);
-
-		float counter_x = x + (paddingX * 10.f);
-		render_ui_sprite(rect_mesh_center, counter_x, y, icon_size / 1.5f, icon_size / 1.5f, p_ui_manager->primary_counter_texture);
-
-		char fireball_text[8];
-		sprintf_s(fireball_text, "%d", player->fireball_count);
-		float text_w = 0.f, text_h = 0.f;
-		AEGfxGetPrintSize(p_ui_manager->font, fireball_text, 1.f, &text_w, &text_h);
-
-		// convert counter sprite center to normalized coords, then offset by half text size
-		float norm_x = (counter_x / AEGfxGetWinMaxX()) - text_w / 2.f;
-		float norm_y = (y / AEGfxGetWinMaxY()) - text_h / 2.f;
-
-		AEGfxPrint(p_ui_manager->font, fireball_text, norm_x, norm_y, 1.f, 1.f, 1.f, 1.f, 1.f);
 	}
 }
 

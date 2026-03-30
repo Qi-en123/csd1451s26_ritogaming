@@ -1,6 +1,7 @@
 #include "AEEngine.h"
 #include <string>
 #include <vector>
+#include "renderer.hpp"
 
 std::vector<std::string> level_paths;
 std::vector<std::string> level_puzzle_paths;
@@ -44,4 +45,25 @@ int IsButtonHovered(f32 rectX, f32 rectY, f32 rectW, f32 rectH)
         return 1;
 
     return 0;
+}
+
+int draw_exit_confirm(AEGfxTexture* panel, AEGfxTexture* btn_yes, AEGfxTexture* btn_no, s8 font, const char* message, f32 font_scale)
+{
+    draw_black_overlay(0.6f);
+    render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
+    render_editor_ui(btn_yes, 200.f, 80.f, 1.0f, -100.f, -50.f,
+        IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
+    render_editor_ui(btn_no, 200.f, 80.f, 1.0f, 150.f, -50.f,
+        IsButtonHovered(150.f, -50.f, 200.f, 80.f));
+
+    if (font != -1)
+    {
+        AEGfxPrint(font, message, -0.40f, 0.1f, font_scale, 0.f, 0.f, 0.f, 1.f);
+        AEGfxPrint(font, "Yes", -0.18f, -0.14f, font_scale, 0.f, 0.f, 0.f, 1.f);
+        AEGfxPrint(font, "No", 0.15f, -0.14f, font_scale, 0.f, 0.f, 0.f, 1.f);
+    }
+
+    if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) return 1;
+    if (IsButtonClicked(150.f, -50.f, 200.f, 80.f)) return 0;
+    return -1;
 }

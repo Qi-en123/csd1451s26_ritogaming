@@ -25,6 +25,9 @@ namespace {
 	AEGfxTexture* ghost_spawn = nullptr;
 	AEGfxTexture* tomb = nullptr;
 	AEGfxTexture* bat_spawn = nullptr;
+	AEGfxTexture* confirm_panel = nullptr;
+	AEGfxTexture* confirm_btn_yes = nullptr;
+	AEGfxTexture* confirm_btn_no = nullptr;
 	s32 mouse_x, mouse_y;
 	static s8 font = -1;
 
@@ -121,6 +124,8 @@ namespace {
 	f32 edit_panel_x;
 	f32 edit_panel_y;
 	f32 ep_button_x;
+
+	bool show_exit_confirm = false;
 }
 
 // -------------------------------------------------------
@@ -393,7 +398,9 @@ void level_editor_load()
 	edit_panel_exit = AEGfxTextureLoad("Assets/Admin/edit_interface_exit.png");
 	edit_panel_button_left = AEGfxTextureLoad("Assets/Admin/ep_button_left.png");
 	edit_panel_button_right = AEGfxTextureLoad("Assets/Admin/ep_button_right.png");
-
+	confirm_panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
+	confirm_btn_yes = AEGfxTextureLoad("Assets/Admin/main_menu_button3.png");
+	confirm_btn_no = AEGfxTextureLoad("Assets/Admin/main_menu_button4.png");
 
 	load_puzzle_textures();
 }
@@ -403,7 +410,7 @@ void level_editor_init()
 	zoom = editor_zoom_min;
 	cam_x = cam_y = 0.0f;
 	cam = init_cam(&cam_x, &cam_y, 60.0f, 5.0f);
-
+	show_exit_confirm = false;
 	init_mesh(); // ensure mesh is initialized before any rendering calls
 	AEGfxSetBackgroundColor(0.08f, 0.09f, 0.12f);
 	AEInputShowCursor(false); // we'll draw our own cursor, so hide the default one
@@ -496,8 +503,20 @@ void level_editor_update()
 
 	
 	// --- ESC to exit ---
-    if (AEInputCheckTriggered(AEVK_ESCAPE))
-        next = GS_LEVELS; // adjust to your menu state
+	if (AEInputCheckTriggered(AEVK_ESCAPE))
+		show_exit_confirm = true; // show confirmation dialog instead of exiting immediately
+
+	if (show_exit_confirm)
+	{
+		if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
+			next = GS_LEVELS;
+		if (IsButtonClicked(150.f, -50.f, 200.f, 80.f))  // No
+		{
+			show_exit_confirm = false;
+			can_paint = false;  // prevent the click from bleeding through to the grid
+		}
+		return; // block all editor input while popup is open
+	}
 
 	// --- Tick save message ---
 	if (save_msg_timer > 0.f)
@@ -1046,7 +1065,7 @@ void level_editor_draw()
 	}
 
 	// =====================================================
-	// 5. Palette buttons
+	//  Palette buttons
 	// =====================================================
 	if (editorState == EDIT_TILES) {
 
@@ -1175,7 +1194,7 @@ void level_editor_draw()
 
 
 	// =====================================================
-	// 6. "TILES" header above palette
+	//  "TILES" header above palette
 	// =====================================================
 	if (font != -1)
 	{
@@ -1193,7 +1212,7 @@ void level_editor_draw()
 
 
 	// =====================================================
-	// 6. Instructions at bottom of panel
+	//  Instructions at bottom of panel
 	// =====================================================
 	if (font != -1)
 	{
@@ -1207,7 +1226,18 @@ void level_editor_draw()
 	}
 
 	// =====================================================
-	// 7. Cursor (always on top)
+	//  Show exit confirmation 
+	// =====================================================
+	if (show_exit_confirm)
+	{
+		int result = draw_exit_confirm(confirm_panel, confirm_btn_yes, confirm_btn_no,
+			font, "ARE YOU SURE YOU WANT TO QUIT?", 1.8f);
+		if (result == 1) next = GS_LEVELS;
+		if (result == 0) show_exit_confirm = false;
+	}
+
+	// =====================================================
+	//  Cursor (always on top)
 	// =====================================================
 	if (cursor)
 	{

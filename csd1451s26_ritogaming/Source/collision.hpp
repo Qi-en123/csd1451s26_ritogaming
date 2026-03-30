@@ -59,3 +59,5 @@ void check_and_open_doors(Player* player);
 
 // Debug visualization
 void debug_draw_all_walls();
+
+void debug_draw_player_tile();

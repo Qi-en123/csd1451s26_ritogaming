@@ -47,12 +47,12 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
     for (s32 row = 0; row < TILE_ROWS; ++row)
     {
         // MATCHING map.cpp: Use the exact same Y calculation
-        f32 y = startY - row * tile_size;
+        f32 y = startY - row * tile_size - tile_size * 0.5f;
 
         for (s32 col = 0; col < TILE_COLS; ++col)
         {
             // MATCHING map.cpp: Use the exact same X calculation
-            f32 x = startX + col * tile_size;
+            f32 x = startX + col * tile_size + tile_size * 0.5f;
 
             if (map[row][col] == WALL )
             {
@@ -233,6 +233,33 @@ void debug_draw_all_walls()
         // draw_square expects full width/height
         draw_square(wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f);
     }
+}
+
+void debug_draw_player_tile()
+{
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+
+    f32 size = player_instance.stats.character_size;
+
+    // Draw char1 in blue
+    AEGfxSetColorToMultiply(0.0f, 0.0f, 1.0f, 0.5f);
+    draw_square(player_instance.char1.x, player_instance.char1.y, size * 2.0f, size * 2.0f);
+
+    // Draw char2 in green
+    AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 0.5f);
+    draw_square(player_instance.char2.x, player_instance.char2.y, size * 2.0f, size * 2.0f);
+
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+    AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 0.5f); // yellow, semi-transparent
+
+    f32 door_x, door_y;
+    get_door_world_pos(door_x, door_y);
+
+    draw_square(door_x, door_y, tile_size, tile_size);
 }
 
 /*!************************************************************************

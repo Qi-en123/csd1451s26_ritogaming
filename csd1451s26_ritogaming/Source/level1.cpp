@@ -165,7 +165,8 @@ void level1_draw()
 	AEGfxReset();
 	draw_map(tile_size);
 	// Debug: draw all walls as semi-transparent red
-	// debug_draw_all_walls();
+	 debug_draw_all_walls();
+	debug_draw_player_tile();
 	// Render player system
 
 	

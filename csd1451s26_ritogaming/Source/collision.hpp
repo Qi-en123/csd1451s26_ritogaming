@@ -56,8 +56,3 @@ bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh)
 
 // Check if player is on a door and handle door opening
 void check_and_open_doors(Player* player);
-
-// Debug visualization
-void debug_draw_all_walls();
-
-void debug_draw_player_tile();

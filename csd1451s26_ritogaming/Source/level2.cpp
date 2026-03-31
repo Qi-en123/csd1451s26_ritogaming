@@ -138,7 +138,7 @@ void level2_init()
     // tile_size = 64.f;
     player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
 
-    player_instance.stats.character_size = tile_size - 4.0f;
+    player_instance.stats.character_size = tile_size - 8.0f;
 
     // FIX 1: Set player positions to bottom of boss room
     // Based on initialize_boss_map(): rows 2-11, columns 6-15

@@ -39,8 +39,7 @@ namespace DEBUG {
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetTransparency(1.0f);
         
-        f32 full = player_instance.stats.character_size;
-        f32 coll = (full / 2.0f - 2.0f) * 2.0f;
+        f32 coll = player_instance.stats.character_size;
 
         AEGfxSetColorToMultiply(0.0f, 0.0f, 1.0f, 0.5f);
         draw_square(player_instance.char1.x, player_instance.char1.y, coll, coll);
@@ -73,7 +72,7 @@ namespace DEBUG {
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetTransparency(1.0f);
 
-        f32 coll_size = (tile_size / 2.0f - 2.0f) * 2.0f;
+        //f32 coll_size = (tile_size / 2.0f - 2.0f) * 2.0f;
 
         for (Puzzle::puzzle& p : Puzzle::puzzle_blocks)
         {
@@ -90,7 +89,7 @@ namespace DEBUG {
             default: break;
             }
 
-            draw_square(p.posx, p.posy, coll_size, coll_size);
+            draw_square(p.posx, p.posy, Puzzle::puzzle_size, Puzzle::puzzle_size);
         }
     }
 

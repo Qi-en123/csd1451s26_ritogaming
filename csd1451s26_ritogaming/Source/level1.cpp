@@ -26,9 +26,6 @@ update game logic, render, free resources
 
 #include "levels.hpp"
 
-//f32 totalWorldW;
-//f32 totalWorldH;
-
 static AEGfxTexture *skeleton_texture = nullptr;
 
 namespace
@@ -62,7 +59,6 @@ void level1_init()
 
 	door_triggered = false;
 	is_win = false;
-	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 	ensure_level_paths_loaded(); // for both puzzles and map tile data
 
@@ -93,11 +89,6 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
 
-	// // Clear any existing enemies and reinitialize with ghosts in top left room
-	// g_enemy_manager.clear_all();
-	// g_enemy_manager.set_level(true);
-	// g_enemy_manager.initialize_ghost_slots();
-
 	// for enemies
 	std::string spawn_path;
 	if (selected_level_path == "Assets/Levels/default.txt")
@@ -117,17 +108,6 @@ void level1_init()
 
 	enemy_manager_instance.load_spawn_positions(spawn_path.c_str());
 	enemy_manager_instance.initialize_tutorial_area();
-
-	// lights
-	light l1{{-300.0f, -300.0f}, {0.5f, 0.5f, 0.0f, 1.0f}, 11, 2.0f};
-	light l2{{-700.0f, -300.0f}, {white}, 11, 2.0f};
-	light l3{{-700.0f, 300.0f}, {white}, 11, 2.0f};
-	lights.clear();
-	lights.push_back(l1);
-	lights.push_back(l2);
-	lights.push_back(l3);
-
-	AEInputShowCursor(false);
 }
 
 void level1_update()
@@ -173,15 +153,16 @@ void level1_draw()
 
 	//Renders map tiles
 	draw_map(tile_size);
-	// Debug: draw all walls as semi-transparent red
-	DEBUG::draw_all_walls();
-	DEBUG::draw_player_tile();
-	DEBUG::draw_puzzle_blocks();
-	DEBUG::draw_puzzle_grab_range();
-	DEBUG::draw_button_spike_links(); 
-	DEBUG::draw_enemies();
 
-	
+	if (DEBUG::DEBUGGING) {
+		// Debug: draw all walls as semi-transparent red
+		DEBUG::draw_all_walls();
+		DEBUG::draw_player_tile();
+		DEBUG::draw_puzzle_grab_range();
+		DEBUG::draw_puzzle_blocks();
+		DEBUG::draw_button_spike_links();
+		DEBUG::draw_enemies();
+	}
 
 	//Renders enemies
 	enemy_manager_instance.render();

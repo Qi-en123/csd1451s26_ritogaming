@@ -6,6 +6,7 @@
 #pragma once
 
 namespace DEBUG {
+    constexpr int DEBUGGING = 1;
 
     // Collision
     void draw_all_walls();

@@ -42,8 +42,8 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
     g_walls.clear();
 
     // MATCHING map.cpp: Use the exact same start positions
-    f32 startX = -1600.f / 2.f;
-    f32 startY = 900.f / 2.f;
+    f32 startX = AEGfxGetWinMinX();
+    f32 startY = AEGfxGetWinMaxY();
 
     for (s32 row = 0; row < TILE_ROWS; ++row)
     {

@@ -38,7 +38,6 @@ namespace {
 	// ------------------------------------------------------------------------
 	// static puzzle variables
 	// ------------------------------------------------------------------------ 
-	f32 puzzle_size;
 	bool is_drag_playing = false;
 	bool drag_was_active = false;
 
@@ -65,9 +64,9 @@ namespace {
 
 			//Check if either players are standing on button (both p1 & p2)
 			if (ss_collision(p1_x, p1_y, phs, phs,
-				curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f) ||
+				curr.posx, curr.posy, Puzzle::puzzle_size / 2.0f, Puzzle::puzzle_size / 2.0f) ||
 				ss_collision(p2_x, p2_y, phs, phs,
-					curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
+					curr.posx, curr.posy, Puzzle::puzzle_size / 2.0f, Puzzle::puzzle_size / 2.0f))
 			{
 				pressed = true;
 			}
@@ -78,8 +77,8 @@ namespace {
 				//skips inactive pushables
 				if (!pushable.active) continue;
 
-				if (ss_collision(pushable.posx, pushable.posy, puzzle_size / 2.0f, puzzle_size / 2.0f,
-					curr.posx, curr.posy, puzzle_size / 2.0f, puzzle_size / 2.0f))
+				if (ss_collision(pushable.posx, pushable.posy, Puzzle::puzzle_size / 2.0f, Puzzle::puzzle_size / 2.0f,
+					curr.posx, curr.posy, Puzzle::puzzle_size / 2.0f, Puzzle::puzzle_size / 2.0f))
 				{
 					pressed = true;
 					break;
@@ -91,7 +90,7 @@ namespace {
 		}
 	}
 	static bool puzzle_collide_puzzles(s32 index, f32 pos_x, f32 pos_y) {
-		f32 hts = puzzle_size / 2.0f;
+		f32 hts = Puzzle::puzzle_size / 2.0f;
 
 		for (int i{}; i < Puzzle::puzzle_blocks.size(); ++i) {
 			if (i == index) continue; //skips itself
@@ -113,9 +112,9 @@ namespace {
 			case Puzzle::PIT:
 				//check if pos.x and pos.y is inside the pit enough
 				//threshold represents how overlapped both axis must be to be considered "in"
-				if (fabsf(curr.posx - pos_x) / (puzzle_size + puzzle_size) <
+				if (fabsf(curr.posx - pos_x) / (Puzzle::puzzle_size + Puzzle::puzzle_size) <
 					Puzzle::WITHIN_PIT_THRESHOLD &&
-					fabsf(curr.posy - pos_y) / (puzzle_size + puzzle_size) <
+					fabsf(curr.posy - pos_y) / (Puzzle::puzzle_size + Puzzle::puzzle_size) <
 					Puzzle::WITHIN_PIT_THRESHOLD) {
 
 					//"remove" pushable, its now in the pit :(
@@ -205,6 +204,9 @@ namespace {
 }
 
 namespace Puzzle {
+
+	f32 puzzle_size;
+
 #pragma region LEVEL EDITOR HELPER FUNCTIONS
 	// ------------------------------------------------------------------------
 	// Placing and erasing on level editor

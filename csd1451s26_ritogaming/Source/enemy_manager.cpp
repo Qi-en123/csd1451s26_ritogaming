@@ -3,8 +3,6 @@
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
 \
-\co-authour  :  Jerod (5% - projectile function)
-\
 \brief:         EnemyManager implementation using dynamic memory allocation
                 (new/delete[]) to support unknown numbers of spawn slots
                 read from external configuration files.

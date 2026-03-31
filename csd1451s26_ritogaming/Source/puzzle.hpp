@@ -18,6 +18,8 @@ namespace Puzzle {
 	constexpr f32 PUZZLE_BLOCK_SPEED = 60.0f;
 	constexpr f32 PUZZLE_GRAB_RANGE = 15.0f;
 	constexpr f32 WITHIN_PIT_THRESHOLD = 0.15f;
+	
+	extern f32 puzzle_size;
 
 	// ------------------------------------------------------------------------
 	// Array to store puzzle textures

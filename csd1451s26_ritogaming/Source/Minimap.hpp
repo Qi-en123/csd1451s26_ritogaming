@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef MINIMAP_H
-#define MINIMAP_H
-
     #include "renderer.hpp"
     #include "map.hpp"
     #include "AEEngine.h"
@@ -31,9 +28,4 @@
 
     void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* pTex);
 
-    // New function to draw the layout
-    void minimap_draw_walls(int dungeonMap[TILE_ROWS][TILE_COLS]);
-
     void minimap_unload();
-
-#endif

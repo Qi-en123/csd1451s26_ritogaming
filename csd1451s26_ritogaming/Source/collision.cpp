@@ -20,6 +20,7 @@ This file defines functions to:
 #include "game_state_list.hpp"
 #include "renderer.hpp"
 #include "utils.hpp"
+#include "debug.hpp"
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
@@ -54,7 +55,7 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
             // MATCHING map.cpp: Use the exact same X calculation
             f32 x = startX + col * tile_size + tile_size * 0.5f;
 
-            if (map[row][col] == WALL )
+            if (map[row][col] == WALL || map[row][col] == EMPTY)
             {
                 Wall w;
                 w.x = x;
@@ -215,51 +216,6 @@ bool puzzle_to_inactive_collision(f32 newX, f32 newY) {
 		return true;
 	}
     return false;
-}
-
-/*!************************************************************************
-\brief Debug draw for all walls
-Shows all wall positions as red rectangles
-**************************************************************************/
-void debug_draw_all_walls()
-{
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
-    AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 0.5f); // red, semi-transparent
-
-    for (Wall& wall : g_walls)
-    {
-        // draw_square expects full width/height
-        draw_square(wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f);
-    }
-}
-
-void debug_draw_player_tile()
-{
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
-
-    f32 size = player_instance.stats.character_size;
-
-    // Draw char1 in blue
-    AEGfxSetColorToMultiply(0.0f, 0.0f, 1.0f, 0.5f);
-    draw_square(player_instance.char1.x, player_instance.char1.y, size * 2.0f, size * 2.0f);
-
-    // Draw char2 in green
-    AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 0.5f);
-    draw_square(player_instance.char2.x, player_instance.char2.y, size * 2.0f, size * 2.0f);
-
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
-    AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 0.5f); // yellow, semi-transparent
-
-    f32 door_x, door_y;
-    get_door_world_pos(door_x, door_y);
-
-    draw_square(door_x, door_y, tile_size, tile_size);
 }
 
 /*!************************************************************************

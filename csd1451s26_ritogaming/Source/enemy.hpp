@@ -405,7 +405,7 @@ private:
     DragonAnim current_anim = DragonAnim::IDLE;
 
     // --- Attack timing ---
-    float m_wave_timer{ 0.0f }; // Controls projectile wave intervals
+    float m_wave_timer{ 3.f }; // Controls projectile wave intervals
 
     void switch_anim(DragonAnim next_anim);
     void tick_attack_pattern(float dt, float tgt_x, float tgt_y);

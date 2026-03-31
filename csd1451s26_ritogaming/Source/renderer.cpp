@@ -508,13 +508,13 @@ void render_boss_projectiles(const BossProjectileManager& manager)
 	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
 	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
 	const int   SEGS = 32;   // number of segments around the ring
-	const float step = 2.0f * 3.14159265f / static_cast<float>(SEGS);
+	const float step = 2.f * 3.14159265f / static_cast<float>(SEGS);
 
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetTransparency(1.0f);
-	AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
-	AEGfxSetColorToMultiply(0.15f, 0.55f, 1.0f, 1.0f);  // vibrant blue
+	AEGfxSetTransparency(1.f);
+	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	AEGfxSetColorToMultiply(0.5f, 1.f, 1.f, 1.f);
 
 	for (const auto& p : manager.get_projectiles())
 	{

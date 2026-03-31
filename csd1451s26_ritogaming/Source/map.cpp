@@ -254,7 +254,7 @@ void draw_map(f32 tile_size)
 
     for (int row = 0; row < TILE_ROWS; ++row)
     {
-        f32 y = startY - row * tile_size;
+        f32 y = startY - row * tile_size - tile_size * 0.5f;
         for (int col = 0; col < TILE_COLS; ++col)
         {
             int tileType = map[row][col];
@@ -263,7 +263,7 @@ void draw_map(f32 tile_size)
             if (tileType == 0)
                 continue;
             
-            f32 x = startX + col * tile_size;
+            f32 x = startX + col * tile_size + tile_size * 0.5f;
 
             if (tileType == KNIGHT || tileType == WIZARD || tileType == TOMB || tileType == TREE) {
                 render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[2]);
@@ -290,7 +290,7 @@ void draw_boss_map(f32 tile_size)
 
     for (int row = 0; row < TILE_ROWS; ++row)
     {
-        f32 y = startY - row * tile_size;
+        f32 y = startY - row * tile_size - tile_size * 0.5f;
         for (int col = 0; col < TILE_COLS; ++col)
         {
             int tileType = boss_map[row][col];
@@ -299,7 +299,7 @@ void draw_boss_map(f32 tile_size)
             if (tileType == 0)
                 continue;
 
-            f32 x = startX + col * tile_size;
+            f32 x = startX + col * tile_size + tile_size * 0.5f;
             render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
@@ -435,11 +435,11 @@ s32 convert_to_row(f32 y) {
 }
 
 f32 row_to_world(s32 row) {
-    return static_cast<f32>(world_top - row * tile_size);
+    return static_cast<f32>(world_top - row * tile_size - tile_size * 0.5);
 }
 
 f32 col_to_world(s32 col) {
-    return static_cast<f32>(col * tile_size + world_left);
+    return static_cast<f32>(col * tile_size + world_left + tile_size * 0.5);
 }
 
 // Converts a world-space position (x, y) into tile map indices (row, col)

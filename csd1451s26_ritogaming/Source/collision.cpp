@@ -20,10 +20,12 @@ This file defines functions to:
 #include "game_state_list.hpp"
 #include "renderer.hpp"
 #include "utils.hpp"
+#include "debug.hpp"
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
 bool door_triggered = false;
+
 /*!************************************************************************
 \brief Generate wall objects from a 2D tile map.
 
@@ -46,14 +48,14 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
     for (s32 row = 0; row < TILE_ROWS; ++row)
     {
         // MATCHING map.cpp: Use the exact same Y calculation
-        f32 y = startY - row * tile_size;
+        f32 y = startY - row * tile_size - tile_size * 0.5f;
 
         for (s32 col = 0; col < TILE_COLS; ++col)
         {
             // MATCHING map.cpp: Use the exact same X calculation
-            f32 x = startX + col * tile_size;
+            f32 x = startX + col * tile_size + tile_size * 0.5f;
 
-            if (map[row][col] == WALL )
+            if (map[row][col] == WALL || map[row][col] == EMPTY)
             {
                 Wall w;
                 w.x = x;
@@ -214,24 +216,6 @@ bool puzzle_to_inactive_collision(f32 newX, f32 newY) {
 		return true;
 	}
     return false;
-}
-
-/*!************************************************************************
-\brief Debug draw for all walls
-Shows all wall positions as red rectangles
-**************************************************************************/
-void debug_draw_all_walls()
-{
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.0f);
-    AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 0.5f); // red, semi-transparent
-
-    for (Wall& wall : g_walls)
-    {
-        // draw_square expects full width/height
-        draw_square(wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f);
-    }
 }
 
 /*!************************************************************************

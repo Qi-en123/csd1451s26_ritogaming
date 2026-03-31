@@ -14,6 +14,7 @@
 #include "utils.hpp"
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
+#include "audio_manager.hpp"
 
 namespace {
     // cursor properties
@@ -124,6 +125,7 @@ void credit_update()
 
     if (IsButtonClicked(button_x, button_y, button_w, button_h)) // exit
     {
+        play_sfx(g_audio.sfx_button_click);
         next = MAINMENU;
     }
 
@@ -142,9 +144,26 @@ void credit_draw()
 
 
 	// draw return button at top left corner
-    render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y,
-        IsButtonHovered(button_x, button_y, button_w, button_h));
+    static bool was_hovered = false;
+    bool hovered = IsButtonHovered(button_x, button_y, button_w, button_h);
 
+    render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y, hovered);
+
+    if (hovered && !was_hovered)
+        play_sfx(g_audio.sfx_button_hover);
+    if (IsButtonClicked(button_x, button_y, button_w, button_h))
+        play_sfx(g_audio.sfx_button_click);
+
+    was_hovered = hovered;
+
+    render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y, hovered);
+
+    if (hovered && !was_hovered)
+        play_sfx(g_audio.sfx_button_hover);
+    if (IsButtonClicked(button_x, button_y, button_w, button_h))
+        play_sfx(g_audio.sfx_button_click);
+
+    was_hovered = hovered;
     // Draw custom cursor at mouse position
     if (cursor)
     {

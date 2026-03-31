@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <windows.h>
 #include "map.hpp"  
+#include "audio_manager.hpp"
 
 namespace {
 
@@ -61,7 +62,7 @@ namespace {
     // --- Level entry definition ---
     struct LevelEntry {
         std::string name; // display name shown in the cell
-        std::string path; // file path — empty means default built-in level
+        std::string path; // file path ï¿½ empty means default built-in level
     };
 
     // All levels to display (default + scanned saved files)
@@ -224,7 +225,7 @@ static void build_level_list()
 }
 
 // -------------------------------------------------------
-// Load — called once when entering this game state
+// Load ï¿½ called once when entering this game state
 // -------------------------------------------------------
 void levels_load()
 {
@@ -241,7 +242,7 @@ void levels_load()
 }
 
 // -------------------------------------------------------
-// Init — called every time we enter the levels screen
+// Init ï¿½ called every time we enter the levels screen
 // -------------------------------------------------------
 void levels_init()
 {
@@ -268,23 +269,45 @@ void levels_init()
 }
 
 // -------------------------------------------------------
-// Update — input and scroll logic each frame
+// Update ï¿½ input and scroll logic each frame
 // -------------------------------------------------------
 void levels_update()
 {
     dt = (f32)AEFrameRateControllerGetFrameTime();
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
-    // --- ESC / Back button — return to main menu ---
+    static int last_hovered = -1;
+    int current_hovered = -1;
+
+    if (IsButtonHovered(-600.f, -380.f, 200.f, 70.f)) current_hovered = 0;
+    else if (IsButtonHovered(600.f, -380.f, 200.f, 70.f)) current_hovered = 1;
+    else {
+        for (int row = 0; row < ROWS_VISIBLE; ++row)
+            for (int col = 0; col < COLS; ++col) {
+                int idx = (scroll_row + row) * COLS + col;
+                if (idx >= (int)levels.size()) continue; // skip empty cells
+                f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
+                f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
+                if (IsButtonHovered(cx, cy, CELL_W, CELL_H)) { current_hovered = 2 + idx; break; }
+            }
+    }
+
+    if (current_hovered != last_hovered && current_hovered != -1)
+        play_sfx(g_audio.sfx_button_hover);
+    last_hovered = current_hovered;
+    // --- ESC / Back button ï¿½ return to main menu ---
     if (AEInputCheckTriggered(AEVK_ESCAPE))
         next = MAINMENU;
 
-    if (IsButtonClicked(-600.f, -380.f, 200.f, 70.f))
+    if (IsButtonClicked(-600.f, -380.f, 200.f, 70.f)) {
+        play_sfx(g_audio.sfx_button_click);
         next = MAINMENU;
+    }
 
-    // --- Level Editor button — open blank editor for new level ---
+    // --- Level Editor button ï¿½ open blank editor for new level ---
     if (IsButtonClicked(600.f, -380.f, 200.f, 70.f))
     {
+        play_sfx(g_audio.sfx_button_click);
         selected_level_path = ""; // blank map
         selected_level_puzzle_path = "";
         next = GS_LEVEL_EDITOR;
@@ -320,7 +343,7 @@ void levels_update()
     scroll_row = (int)(scroll_row_f + 0.5f); // snap to nearest integer row
     if (delete_msg_timer > 0.f) delete_msg_timer -= dt;
 
-    // Right click — open/close context menu for custom levels
+    // Right click ï¿½ open/close context menu for custom levels
     if (AEInputCheckTriggered(AEVK_RBUTTON))
     {
         f32 mx = (f32)mouse_x - 800.f;
@@ -347,13 +370,13 @@ void levels_update()
                 }
             }
         }
-        if (!clicked_any) context_menu_idx = -1; // clicked outside — close menu
+        if (!clicked_any) context_menu_idx = -1; // clicked outside ï¿½ close menu
     }
 
-    // Left click — context menu actions or play
+    // Left click ï¿½ context menu actions or play
     if (AEInputCheckTriggered(AEVK_LBUTTON))
     {
-        // Context menu is open — check its buttons first
+        // Context menu is open ï¿½ check its buttons first
         if (context_menu_idx >= 0 && context_menu_idx < (int)levels.size())
         {
             int idx = context_menu_idx;
@@ -395,7 +418,7 @@ void levels_update()
                 return;
             }
 
-            // Clicked outside context menu — close it
+            // Clicked outside context menu ï¿½ close it
             context_menu_idx = -1;
         }
 
@@ -412,6 +435,7 @@ void levels_update()
 
                 if (IsButtonClicked(cx, cy, CELL_W, CELL_H))
                 {
+                    play_sfx(g_audio.sfx_button_click);
                     selected_level_path = levels[idx].path;
                     selected_level_puzzle_path = puzzles[idx].path;
                     next = GS_LEVEL1;
@@ -422,7 +446,7 @@ void levels_update()
 }
 
 // -------------------------------------------------------
-// Draw — render grid, scrollbar, buttons, cursor
+// Draw ï¿½ render grid, scrollbar, buttons, cursor
 // -------------------------------------------------------
 void levels_draw()
 {
@@ -493,7 +517,7 @@ void levels_draw()
                 }
                 else
                 {
-                    // Flipped back face — show Edit and Delete
+                    // Flipped back face ï¿½ show Edit and Delete
                     if (button)
                         render_editor_ui(button, CELL_W, CELL_H, 0.75f, cx, cy);
 
@@ -670,7 +694,7 @@ void levels_draw()
 }
 
 // -------------------------------------------------------
-// Free — called when leaving this state
+// Free ï¿½ called when leaving this state
 // -------------------------------------------------------
 void levels_free()
 {
@@ -680,7 +704,7 @@ void levels_free()
 }
 
 // -------------------------------------------------------
-// Unload — called when fully unloading this state's assets
+// Unload ï¿½ called when fully unloading this state's assets
 // -------------------------------------------------------
 void levels_unload()
 {

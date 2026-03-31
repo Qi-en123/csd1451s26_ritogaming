@@ -54,11 +54,13 @@ void free_ui_textures(UIManager *p_ui_manager)
 
 void render_character_ui(UIManager *p_ui_manager, Player *player)
 {
+	float icon_size = HUD_HEART_SIZE * 2.f;
+	float paddingX = 10.f;
+	float paddingY = 20.f;
+
 	if (player->current_player == &player->char2)
 	{
-		float icon_size = HUD_HEART_SIZE * 2.f;
-		float paddingX = 10.f;
-		float paddingY = 20.f;
+
 		float x = AEGfxGetWinMinX() + paddingX + icon_size / 2.f; // half size keeps it fully on screen
 		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
 		render_ui_sprite(rect_mesh_center, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
@@ -78,7 +80,17 @@ void render_character_ui(UIManager *p_ui_manager, Player *player)
 
 		AEGfxPrint(p_ui_manager->font, fireball_text, norm_x, norm_y, 1.f, 1.f, 1.f, 1.f, 1.f);
 	}
+
+
+	if (player->current_player == &player->char1)
+	{
+		float x = AEGfxGetWinMinX() + paddingX + icon_size / 2.f; // half size keeps it fully on screen
+		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
+		render_ui_sprite(rect_mesh_center, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
+		render_ui_sprite(rect_mesh_center, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->cursor_knight);
+	}
 }
+
 
 void render_cursor(UIManager *ui_manager, Player *player, s32 mouse_x, s32 mouse_y, bool cursor_active)
 {

@@ -22,6 +22,7 @@ update game logic, render, free resources
 #include "audio_manager.hpp"
 #include "end_screen.hpp"
 #include "mainmenu.hpp"
+#include "debug.hpp"
 
 #include "levels.hpp"
 
@@ -172,6 +173,15 @@ void level1_draw()
 
 	//Renders map tiles
 	draw_map(tile_size);
+	// Debug: draw all walls as semi-transparent red
+	DEBUG::draw_all_walls();
+	DEBUG::draw_player_tile();
+	DEBUG::draw_puzzle_blocks();
+	DEBUG::draw_puzzle_grab_range();
+	DEBUG::draw_button_spike_links(); 
+	DEBUG::draw_enemies();
+
+	
 
 	//Renders enemies
 	enemy_manager_instance.render();
@@ -193,13 +203,10 @@ void level1_draw()
 
 	//Renders the pause ui when game is paused
 	pause_draw();
+	if (!is_paused)
 
 	//Renders the custom cursor
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
-
-#if DEBUGGING
-	debug_draw_all_walls();
-#endif
 }
 
 void level1_free()

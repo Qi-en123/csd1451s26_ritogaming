@@ -16,6 +16,7 @@
     <ClCompile Include="..\Source\camera.cpp" />
     <ClCompile Include="..\Source\collision.cpp" />
     <ClCompile Include="..\Source\credit.cpp" />
+    <ClCompile Include="..\Source\debug.cpp" />
     <ClCompile Include="..\Source\end_screen.cpp" />
     <ClCompile Include="..\Source\enemy.cpp" />
     <ClCompile Include="..\Source\enemy_manager.cpp" />
@@ -42,6 +43,7 @@
     <ClInclude Include="..\Source\collision.hpp" />
     <ClInclude Include="..\Source\collision_config.hpp" />
     <ClInclude Include="..\Source\credit.hpp" />
+    <ClInclude Include="..\Source\debug.hpp" />
     <ClInclude Include="..\Source\end_screen.hpp" />
     <ClInclude Include="..\Source\enemy.hpp" />
     <ClInclude Include="..\Source\enemy_manager.hpp" />

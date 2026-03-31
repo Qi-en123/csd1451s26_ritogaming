@@ -61,7 +61,7 @@ struct PlayerStats
     f32 char2_start_y = -950.0f;
 
     // Movement settings
-    f32 char1_move_speed = 6.5f;  // knight - slower
+    f32 char1_move_speed = 10.f;  // knight - slightly slower
     f32 char2_move_speed = 13.f;  // mage   - faster
     //f32 move_speed = 4.f; // Player movement speed (4.f) makes it look more in sync with audio.
 

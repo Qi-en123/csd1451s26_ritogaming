@@ -23,6 +23,7 @@ namespace Puzzle {
 	// Array to store puzzle textures
 	// ------------------------------------------------------------------------ 
 	extern AEGfxTexture* puzzle_block_textures[];
+	
 
 #pragma region PUZZLE DATA STRUCTURES
 	// ------------------------------------------------------------------------
@@ -125,6 +126,11 @@ namespace Puzzle {
 		}
 	}; //end struct puzzle
 #pragma endregion
+	// ------------------------------------------------------------------------
+	// Global puzzle data (shared across files)
+	// ------------------------------------------------------------------------
+		extern std::vector<puzzle> puzzle_blocks;
+		extern std::vector<buttonTrigger> btns;
 
 #pragma region LEVEL EDITOR HELPER FUNCTIONS
 	// ----------------------------------------------------------------------------

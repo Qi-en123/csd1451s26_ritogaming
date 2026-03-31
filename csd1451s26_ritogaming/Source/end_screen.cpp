@@ -145,13 +145,14 @@ void end_screen_update()
     else if (IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H)) current_hovered = 1;
 
     if (current_hovered != last_hovered && current_hovered != -1)
-        play_sfx(g_audio.sfx_button_hover, 1.f);
+        play_sfx(g_audio.sfx_button_hover);
     last_hovered = current_hovered;
 
     // Restart
     if (IsButtonClicked(BTN_X, BTN_Y0, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_R))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+
+        play_sfx(g_audio.sfx_button_click);
         //next = GS_LEVEL1;
         next = restart_level_state;
     }
@@ -159,7 +160,7 @@ void end_screen_update()
     // Main Menu
     if (IsButtonClicked(BTN_X, BTN_Y1, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_M))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         next = MAINMENU;
     }
 }
@@ -205,7 +206,7 @@ void end_screen_draw()
 }
 
 // -------------------------------------------------------------------------
-// Pause update  (call every frame from your active game state's update)
+// Pause update  (call every frame from active game state's update)
 // -------------------------------------------------------------------------
 void pause_update()
 {
@@ -214,7 +215,7 @@ void pause_update()
     {
         is_paused = !is_paused;
         pause_last_hovered = -1;   // reset hover state on open / close
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
     }
 
     if (!is_paused) return;
@@ -226,13 +227,13 @@ void pause_update()
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H)) cur = 2;
 
     if (cur != pause_last_hovered && cur != -1)
-        play_sfx(g_audio.sfx_button_hover, 1.f);
+        play_sfx(g_audio.sfx_button_hover);
     pause_last_hovered = cur;
 
     // Resume  (button OR ESC a second time)
     if (IsButtonClicked(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         is_paused = false;
         pause_last_hovered = -1;
     }
@@ -241,7 +242,7 @@ void pause_update()
     if (IsButtonClicked(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H) ||
         AEInputCheckTriggered(AEVK_R))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         next = GS_RESTART;
         is_paused = false;
     }
@@ -250,14 +251,14 @@ void pause_update()
     if (IsButtonClicked(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H) ||
         AEInputCheckTriggered(AEVK_M))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click);
         next = MAINMENU;
         is_paused = false;
     }
 }
 
 // -------------------------------------------------------------------------
-// Pause draw  (call every frame AFTER your active game state's draw)
+// Pause draw  (call every frame AFTER active game state's draw)
 // -------------------------------------------------------------------------
 void pause_draw()
 {

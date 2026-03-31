@@ -21,6 +21,7 @@ This file defines functions to:
 #include "renderer.hpp"
 #include "utils.hpp"
 #include "debug.hpp"
+#include "level1.hpp"
 
 // Global vector storing all wall objects generated from the map
 std::vector<Wall> g_walls;
@@ -280,20 +281,29 @@ the transition to the boss room.
 **************************************************************************/
 void check_and_open_doors(Player* player)
 {
-    if (next == GS_RESTART || next == GS_BOSS_ROOM) return;
+    if (!player || !player->current_player) return;
 
-    int playerRow, playerCol;
-    if (!world_to_tile(player->current_player->x, player->current_player->y, playerRow, playerCol))
-        return;
+    f32 px = player->current_player->x+8.f;
+    f32 py = player->current_player->y-8.f;
 
-    if ( map[playerRow][playerCol] == OPENED_DOOR)
+    bool near_door = false;
+
+    int door_row = -1, door_col = -1;
+    if (world_to_tile(px, py, door_row, door_col))
+    {
+        if (map[door_row][door_col] == OPENED_DOOR)
+            near_door = true;
+    }
+
+    if (near_door)
     {
         if (!door_triggered)
         {
             door_triggered = true;
 
             int found_index = -1;
-            for (int i = 0; i < (int)level_paths.size(); ++i)
+            int num_levels = (int)level_paths.size();
+            for (int i = 0; i < num_levels; ++i)
             {
                 if (level_paths[i] == selected_level_path)
                 {
@@ -303,25 +313,19 @@ void check_and_open_doors(Player* player)
             }
 
             int next_index = found_index + 1;
-            while (next_index < (int)level_paths.size() &&
-                level_paths[next_index].empty() &&
-                next_index < (int)level_puzzle_paths.size() &&
-                level_puzzle_paths[next_index].empty()) {
-
+            while (next_index < num_levels && level_paths[next_index].empty())
                 next_index++;
-            }
 
-            if (found_index != -1 &&
-                next_index < (int)level_paths.size() &&
-                next_index < (int)level_puzzle_paths.size())
-            {              
+            if (found_index != -1 && next_index < num_levels)
+            {
                 selected_level_path = level_paths[next_index];
-                selected_level_puzzle_path = level_puzzle_paths[next_index];
-                next = GS_RESTART;
+                if (next_index < (int)level_puzzle_paths.size())
+                    selected_level_puzzle_path = level_puzzle_paths[next_index];
+                trigger_level_transition(GS_RESTART);
             }
             else
             {
-                next = GS_BOSS_ROOM;
+                trigger_boss_warning();
             }
         }
     }

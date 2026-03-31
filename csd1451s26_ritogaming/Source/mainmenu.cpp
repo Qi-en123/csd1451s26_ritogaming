@@ -191,17 +191,10 @@ void mainmenu_update()
 
     if (show_exit_confirm)
     {
-        // Yes button (left)
         if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f))
-        {
             next = GS_QUIT;
-        }
-
-        // No button (right)
         if (IsButtonClicked(100.f, -50.f, 200.f, 80.f))
-        {
-            show_exit_confirm = false;  // close popup
-        }
+            show_exit_confirm = false;
 
         return; // stop other menu logic while popup is active
     }
@@ -433,40 +426,10 @@ void mainmenu_draw()
 
     if (show_exit_confirm)
     {
-
-
-        draw_black_overlay(0.6f);
-
-        // Popup box
-        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
-
-
-        // Yes button
-        render_editor_ui(buttons[2], 200.f, 80.f, 1.0f, -100.f, -50.f,
-            IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
-
-        // No button
-        render_editor_ui(buttons[3], 200.f, 80.f, 1.0f, 150.f, -50.f,
-            IsButtonHovered(150.f, -50.f, 200.f, 80.f));
-
-        // Text
-        if (font != -1)
-        {
-            AEGfxPrint(font, "Are you sure you want to quit?",
-                -0.40f, 0.1f,
-                1.f,
-                0.f, 0.f, 0.f, 1.f);
-
-            AEGfxPrint(font, "Yes",
-                -0.18f, -0.14f,
-                1.f,
-                0.f, 0.f, 0.f, 1.f);
-
-            AEGfxPrint(font, "No",
-                0.15f, -0.14f,
-                1.f,
-                0.f, 0.f, 0.f, 1.f);
-        }
+        int result = draw_confirm_popup(panel, buttons[2], buttons[3], font,
+            "Are you sure you want to quit?");
+        if (result == 1) next = GS_QUIT;
+        if (result == 0) show_exit_confirm = false;
     }
 
     // Draw custom cursor at mouse position

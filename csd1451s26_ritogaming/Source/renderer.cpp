@@ -483,12 +483,11 @@ void draw_black_overlay(f32 alpha)
 	AEGfxSetColorToAdd(-1.f, -1.f, -1.f, 0.f);
 	AEGfxSetTransparency(alpha);
 
-	AEMtx33 transform, scale, translate;
+	AEMtx33 transform, s, t;
 	AEMtx33Identity(&transform);
-	AEMtx33Scale(&scale, 1600.f, 900.f);
-	AEMtx33Trans(&translate, 0.f, 0.f);
-	AEMtx33Concat(&transform, &transform, &translate);
-	AEMtx33Concat(&transform, &transform, &scale);
+	AEMtx33Scale(&s, 1600.f, 900.f);
+	AEMtx33Trans(&t, 0.f, 0.f);
+	AEMtx33Concat(&transform, &t, &s);
 	AEGfxSetTransform(transform.m);
 	AEGfxMeshDraw(square_mesh, AE_GFX_MDM_TRIANGLES);
 
@@ -510,3 +509,4 @@ void render_tooltip(s8 font) {
 	curr_tooltip = "";
 	AEGfxTextureSet(nullptr, 0, 0);
 }
+

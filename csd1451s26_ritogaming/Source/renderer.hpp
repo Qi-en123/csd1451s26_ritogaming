@@ -157,3 +157,5 @@ void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha
 
 void draw_black_overlay(f32 alpha);
 void render_tooltip(s8 font);
+
+

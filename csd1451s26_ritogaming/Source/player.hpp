@@ -4,7 +4,7 @@
 \par DP email:  c.cheong@digipen.edu
 \
 \co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
-\               Ahmad (10% - projectile for player 2 ; separated out by Claire into different functions)
+\               Ahmad (10% - projectile for character 1 & 2 ; separated out by Claire into different functions)
 \
 \brief:		    Declares the player system structures and functions.
 \               Defines PlayerStats, Character, Projectile, and Particle
@@ -16,6 +16,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "AEEngine.h"
 #include "puzzle.hpp"
 
@@ -49,28 +50,25 @@ struct Particle {
 struct PlayerStats
 {
     // Size settings
-    f32 character_size = 25.f;  // Default character size
-    f32 triangle_size = 20.f;   // Default triangle indicator size
-    f32 triangle_offset = 40.f; // How far above character the triangle sits
+    f32 character_size;
+    f32 triangle_size;
+    f32 triangle_offset;
 
     // Position settings
-    f32 char1_start_x = -400.0f;      // Character 1 starting position
-    f32 char1_start_y = 0.0f;
-
-    f32 char2_start_x = 1000.0f;       // Character 2 starting position  
-    f32 char2_start_y = -950.0f;
+    f32 char1_start_x;
+    f32 char1_start_y;
+    f32 char2_start_x;
+    f32 char2_start_y;
 
     // Movement settings
-    f32 char1_move_speed = 6.5f;  // knight - slower
-    f32 char2_move_speed = 13.f;  // mage   - faster
-    //f32 move_speed = 4.f; // Player movement speed (4.f) makes it look more in sync with audio.
+    f32 char1_move_speed;
+    f32 char2_move_speed;
 
-    // This is for hp
-    int char1_max_health{ 12 };
-    int char1_curr_health{12};
-
-    int char2_max_health{ 6 };
-    int char2_curr_health{6};
+    // HP settings
+    int char1_max_health;
+    int char1_curr_health;
+    int char2_max_health;
+    int char2_curr_health;
 };
 
 // Individual character structure
@@ -126,6 +124,46 @@ struct Player
 
 // Global player instance
 extern Player player_instance;
+
+/**************************************************************************
+    \brief
+    Saves player configuration (default stats) to a JSON file.
+
+    \param player_ptr Pointer to the player structure.
+    \param filepath Path to the JSON file.
+    \return True if successful, false otherwise.
+**************************************************************************/
+bool player_save(const Player* player, const std::string& filepath);
+
+/**************************************************************************
+    \brief
+    Loads player configuration (default stats) from a JSON file.
+
+    \param player_ptr Pointer to the player structure.
+    \param filepath Path to the JSON file.
+    \return True if successful, false otherwise.
+**************************************************************************/
+bool player_load(Player* player, const std::string& filepath);
+
+/**************************************************************************
+    \brief
+    Saves current player state (positions, health, active character) 
+    to a JSON file.
+
+    \param player_ptr Pointer to the player structure.
+    \param filepath Path to the JSON file.
+	\return True if successful, false otherwise.    
+**************************************************************************/
+bool player_save_config(const Player* player, const std::string& filepath);
+/**************************************************************************
+    \brief
+    Loads player state (positions, health, active character) from a JSON file.
+
+    \param player_ptr Pointer to the player structure.
+    \param filepath Path to the JSON file.
+    \return True if successful, false otherwise.
+**************************************************************************/
+bool player_load_config(Player* player, const std::string& filepath);
 
 /**************************************************************************
     \brief

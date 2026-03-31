@@ -48,6 +48,7 @@
     <ClInclude Include="..\Source\game_state_list.hpp" />
     <ClInclude Include="..\Source\game_state_manager.hpp" />
     <ClInclude Include="..\Source\guide.hpp" />
+    <ClInclude Include="..\Source\json.hpp" />
     <ClInclude Include="..\Source\level1.hpp" />
     <ClInclude Include="..\Source\level2.hpp" />
     <ClInclude Include="..\Source\levels.hpp" />

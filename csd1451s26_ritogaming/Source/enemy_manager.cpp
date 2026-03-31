@@ -36,11 +36,8 @@ void EnemyManager::load_spawn_positions(const char* filename)
 {
     FILE* fp = nullptr;
     fopen_s(&fp, filename, "r");
-    if (!fp)
-    {
-        printf("[EnemyManager] Failed to open spawn file: %s\n", filename);
-        return;
-    }
+    if (!fp) return;
+    
 
     int ghost_count = 0;
     int bat_count = 0;
@@ -127,10 +124,6 @@ EnemyManager::~EnemyManager() {
         AEGfxTextureUnload(bat_food_tex);
         bat_food_tex = nullptr;
     }
-    if (dragon_food_tex) {
-        AEGfxTextureUnload(dragon_food_tex);
-        dragon_food_tex = nullptr;
-    }
 
     if (cross_tex) {
         AEGfxTextureUnload(cross_tex);
@@ -151,10 +144,6 @@ EnemyManager::~EnemyManager() {
     if (ghost_tex) {
         AEGfxTextureUnload(ghost_tex);
         ghost_tex = nullptr;
-    }
-    if (dragon_tex) {
-        AEGfxTextureUnload(dragon_tex);
-        dragon_tex = nullptr;
     }
 }
 
@@ -550,23 +539,3 @@ void EnemyManager::clear_all()
     boss_room_entered = false;
     spawn_positions_loaded = false;
 }
-
-//// ============================================================================
-//// PROJECTILE TO ENEMY - by Jerod
-//// ============================================================================v
-//bool EnemyManager::check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage) {
-//    // This is the SAME loop logic you posted!
-//    for (auto& enemy : enemies) {
-//        if (!enemy || !enemy->is_active()) continue;
-//
-//        // This is the SAME collision check!
-//        if (cr_collision(px, py, radius,
-//            enemy->get_x(), enemy->get_y(),
-//            enemy->get_size(), enemy->get_size()))
-//        {
-//            enemy->take_damage(static_cast<int>(damage)); // SAME damage logic!
-//            return true;
-//        }
-//    }
-//    return false;
-//}

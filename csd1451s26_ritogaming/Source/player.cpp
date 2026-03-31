@@ -34,6 +34,12 @@ static bool footstep_was_active = false;
 // Global player instance definition
 Player player_instance;
 
+/**************************************************************************/
+/*!
+   saves player state (positions, health, active character) to a JSON file.
+   - Claire's part
+*/
+/**************************************************************************/
 bool player_save(const Player* player, const std::string& filepath)
 {
     if (!player) return false;
@@ -76,7 +82,12 @@ bool player_save(const Player* player, const std::string& filepath)
     file << data.dump(2);
     return true;
 }
-
+/**************************************************************************/
+/*!
+   loads player state (positions, health, active character) from a JSON file.
+   - Claire's part
+*/
+/**************************************************************************/
 bool player_load(Player* player, const std::string& filepath)
 {
     if (!player) return false;
@@ -137,8 +148,12 @@ bool player_load(Player* player, const std::string& filepath)
 
     return true;
 }
-
-// Saves default stats/config (character sizes, speeds, start positions)
+/**************************************************************************/
+/*!
+   saves current player state (positions, health, active character) to a JSON file.
+   - Claire's part
+*/
+/**************************************************************************/
 bool player_save_config(const Player* player, const std::string& filepath)
 {
     if (!player) return false;
@@ -171,6 +186,12 @@ bool player_save_config(const Player* player, const std::string& filepath)
     return true;
 }
 
+/**************************************************************************/
+/*!
+   loads player configuration (default stats) from a JSON file.
+   - Claire's part
+*/
+/**************************************************************************/
 bool player_load_config(Player* player, const std::string& filepath)
 {
     if (!player) return false;

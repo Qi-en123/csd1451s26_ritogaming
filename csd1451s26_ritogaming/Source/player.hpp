@@ -155,6 +155,7 @@ bool player_load(Player* player, const std::string& filepath);
 	\return True if successful, false otherwise.    
 **************************************************************************/
 bool player_save_config(const Player* player, const std::string& filepath);
+
 /**************************************************************************
     \brief
     Loads player state (positions, health, active character) from a JSON file.

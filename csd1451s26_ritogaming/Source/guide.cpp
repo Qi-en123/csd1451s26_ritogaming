@@ -159,7 +159,7 @@ void guide_init() {
 	//Load tutorial levels
 	load_map_from_file(selected_level_path.c_str(), map);
 	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
-	//generate_walls_from_map(map, tile_size);
+	generate_walls_from_map(map, tile_size);
 
 
 	//Initialize & spawn player/characters

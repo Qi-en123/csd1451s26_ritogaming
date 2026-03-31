@@ -72,7 +72,7 @@ namespace {
 
     // Default built-in level shown at index 0
     const char* default_levels[] = { "Level 1" };
-    const int   default_count = 1;
+    const int   default_count = 3;
 
 	//context pop up
     int context_menu_idx = -1; // which cell has context menu open, -1 = none
@@ -114,19 +114,17 @@ static void build_level_list()
     levels.clear();
     puzzles.clear();
 
-    // Always add default levels at the top
-    for (int i = 0; i < default_count; ++i)
-    {
+    // file created manually
         LevelEntry e;
-        e.name = default_levels[i];
+        e.name = default_levels[0];
         e.path = "Assets/Levels/default.txt";
         levels.push_back(e);
 
         LevelEntry pe;
-        pe.name = default_levels[i];
+        pe.name = default_levels[0];
         pe.path = "Assets/Levels/puzzle.txt";
         puzzles.push_back(pe);
-    }
+   
 
     // Win32 directory scan for saved custom level files
 	WIN32_FIND_DATAA find_data; // windows struct to hold file info
@@ -463,7 +461,7 @@ void levels_update()
             {
                 int idx = (scroll_row + row) * COLS + col;
                 if (idx >= (int)levels.size()) continue;
-                if (idx == 0) continue; // default level can't be edited/deleted
+                if (idx < default_count) continue; // default level can't be edited/deleted
 
                 f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
                 f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
@@ -535,7 +533,7 @@ void levels_draw()
                             (cy - 10.f) / 450.f,
                             1.f, 0.f, 0.f, 0.f, 1.f);
 
-                        if (idx > 0)
+                        if (idx >= default_count)
                         {
                             f32 tw2 = 0.f, th2 = 0.f;
                             AEGfxGetPrintSize(font, "[Custom]", 0.7f, &tw2, &th2);

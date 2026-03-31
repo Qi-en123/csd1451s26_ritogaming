@@ -87,6 +87,7 @@ void EnemyManager::load_spawn_positions(const char* filename)
     std::ifstream file(filename);
     if (!file.is_open())
     {
+        printf("[EnemyManager] ERROR: Could not open %s\n", filename);
         return;
     }
 
@@ -138,7 +139,7 @@ void EnemyManager::load_spawn_positions(const char* filename)
 
     file.close();
     spawn_positions_loaded = true;
- 
+    printf("[EnemyManager] SUCCESS: %d Ghosts, %d Bats, %d Crosses loaded.\n", ghost_count, bat_count, cross_count);
 }
 
 void EnemyManager::initialize_tutorial_area()

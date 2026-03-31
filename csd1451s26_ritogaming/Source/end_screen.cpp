@@ -23,7 +23,6 @@
 #include "game_state_list.hpp"
 #include "audio_manager.hpp"
 #include "utils.hpp"
-#include "level1.hpp"
 
 bool is_win = false;
 bool is_paused = false;
@@ -40,7 +39,7 @@ namespace
 
     static s8 end_font = -1;
 
-    //  End-screen button layout 
+    // ?? End-screen button layout ??????????????????????????????????????????
     constexpr f32 BTN_W = 280.f;
     constexpr f32 BTN_H = 90.f;
     constexpr f32 BTN_X = 0.f;
@@ -53,7 +52,7 @@ namespace
     constexpr f32 TEXT_Y = 0.15f;    
     constexpr f32 CURSOR_SIZE = 50.f;
 
-    //  Pause button layout (three stacked, centred) 
+    // ?? Pause button layout (three stacked, centred) ??????????????????????
     constexpr f32 P_BTN_W = 280.f;
     constexpr f32 P_BTN_H = 90.f;
     constexpr f32 P_BTN_X = 0.f;
@@ -65,11 +64,6 @@ namespace
     s32 mouse_x = 0, mouse_y = 0;
     int last_hovered = -1;
     int pause_last_hovered = -1;
-
-    // confirm popup
-    enum ConfirmTarget { CONFIRM_NONE, CONFIRM_RESTART, CONFIRM_MAINMENU };
-    ConfirmTarget confirm_target = CONFIRM_NONE;
-    ConfirmTarget pause_confirm_target = CONFIRM_NONE;
 }
 
 // -------------------------------------------------------------------------
@@ -134,8 +128,6 @@ void end_screen_init()
     init_mesh();
     last_hovered = -1;
     pause_last_hovered = -1;
-    confirm_target = CONFIRM_NONE;
-    pause_confirm_target = CONFIRM_NONE;
     AEInputShowCursor(false);
 }
 
@@ -156,40 +148,21 @@ void end_screen_update()
         play_sfx(g_audio.sfx_button_hover);
     last_hovered = current_hovered;
 
-    if (confirm_target != CONFIRM_NONE)
-    {
-        if (AEInputCheckTriggered(AEVK_LBUTTON))
-        {
-          if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
-{
-    play_sfx(g_audio.sfx_button_click);
-    if (confirm_target == CONFIRM_RESTART)
-    {
-        selected_level_path = "Assets/Levels/default.txt";
-        selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
-        next = GS_LEVEL1;
-    }
-    else
-        next = MAINMENU;
-    confirm_target = CONFIRM_NONE;
-}
-            else if (IsButtonClicked(150.f, -50.f, 200.f, 80.f)) // No
-            {
-                confirm_target = CONFIRM_NONE;
-            }
-        }
-        return; // block all other input while popup is open
-    }
-
+    // Restart
     if (IsButtonClicked(BTN_X, BTN_Y0, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_R))
-        confirm_target = CONFIRM_RESTART;
+    {
 
+        play_sfx(g_audio.sfx_button_click);
+        //next = GS_LEVEL1;
+        next = restart_level_state;
+    }
+
+    // Main Menu
     if (IsButtonClicked(BTN_X, BTN_Y1, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_M))
     {
         play_sfx(g_audio.sfx_button_click);
         next = MAINMENU;
     }
-        confirm_target = CONFIRM_MAINMENU;
 }
 
 // -------------------------------------------------------------------------
@@ -225,26 +198,6 @@ void end_screen_draw()
         draw_button_label("Main Menu", BTN_X, BTN_Y1, 0.9f);
     }
 
-    if (confirm_target != CONFIRM_NONE)
-    {
-        draw_black_overlay(0.6f);
-        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
-        render_editor_ui(tex_button, 200.f, 80.f, 1.0f, -100.f, -50.f,
-            IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
-        render_editor_ui(tex_button, 200.f, 80.f, 1.0f, 150.f, -50.f,
-            IsButtonHovered(150.f, -50.f, 200.f, 80.f));
-        if (end_font != -1)
-        {
-            const char* msg = (confirm_target == CONFIRM_RESTART)
-                ? "Restart level?" : "Return to Main Menu?";
-            f32 tw = 0.f, th = 0.f;
-            AEGfxGetPrintSize(end_font, msg, 0.9f, &tw, &th);
-            AEGfxPrint(end_font, msg, -tw * 0.5f, 0.1f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "Yes", -100.f / 800.f - 0.05f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "No", 150.f / 800.f - 0.03f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-        }
-    }
-
     // Custom cursor
     if (tex_cursor)
     {
@@ -259,55 +212,27 @@ void end_screen_draw()
 // -------------------------------------------------------------------------
 void pause_update()
 {
+    // Toggle pause
     if (AEInputCheckTriggered(AEVK_ESCAPE))
     {
-        if (pause_confirm_target != CONFIRM_NONE)
-            pause_confirm_target = CONFIRM_NONE; // ESC closes popup first
-        else
-        {
-            is_paused = !is_paused;
-            pause_last_hovered = -1;
-            play_sfx(g_audio.sfx_button_click);
-        }
+        is_paused = !is_paused;
+        pause_last_hovered = -1;   // reset hover state on open / close
+        play_sfx(g_audio.sfx_button_click);
     }
 
     if (!is_paused) return;
 
-    // --- Confirm popup blocks everything ---
-    if (pause_confirm_target != CONFIRM_NONE)
-    {
-        if (AEInputCheckTriggered(AEVK_LBUTTON))
-        {
-            if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
-            {
-                play_sfx(g_audio.sfx_button_click, 1.f);
-                if (pause_confirm_target == CONFIRM_RESTART)
-                {
-                    selected_level_path = "Assets/Levels/default.txt";
-                    selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
-                    trigger_level_transition(GS_RESTART);
-                }
-                else
-                    trigger_level_transition(MAINMENU);
-                is_paused = false;
-                pause_confirm_target = CONFIRM_NONE;
-            }
-            else if (IsButtonClicked(150.f, -50.f, 200.f, 80.f)) // No
-                pause_confirm_target = CONFIRM_NONE;
-        }
-        return;
-    }
-
-    // Hover SFX
+    // Hover SFX � fires once per newly-entered button
     int cur = -1;
     if (IsButtonHovered(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H)) cur = 0;
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H)) cur = 1;
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H)) cur = 2;
+
     if (cur != pause_last_hovered && cur != -1)
         play_sfx(g_audio.sfx_button_hover);
     pause_last_hovered = cur;
 
-    // Resume
+    // Resume  (button OR ESC a second time)
     if (IsButtonClicked(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H))
     {
         play_sfx(g_audio.sfx_button_click);
@@ -315,13 +240,23 @@ void pause_update()
         pause_last_hovered = -1;
     }
 
-    // Restart — show confirm instead
-    if (IsButtonClicked(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H) || AEInputCheckTriggered(AEVK_R))
-        pause_confirm_target = CONFIRM_RESTART;
+    // Restart
+    if (IsButtonClicked(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H) ||
+        AEInputCheckTriggered(AEVK_R))
+    {
+        play_sfx(g_audio.sfx_button_click);
+        next = GS_RESTART;
+        is_paused = false;
+    }
 
-    // Main Menu — show confirm instead
-    if (IsButtonClicked(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H) || AEInputCheckTriggered(AEVK_M))
-        pause_confirm_target = CONFIRM_MAINMENU;
+    // Main Menu
+    if (IsButtonClicked(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H) ||
+        AEInputCheckTriggered(AEVK_M))
+    {
+        play_sfx(g_audio.sfx_button_click);
+        next = MAINMENU;
+        is_paused = false;
+    }
 }
 
 // -------------------------------------------------------------------------
@@ -365,26 +300,6 @@ void pause_draw()
             P_BTN_X, P_BTN_Y2,
             IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H));
         draw_button_label("Main Menu", P_BTN_X, P_BTN_Y2, 1.f, 0.f, 0.f, 0.f);
-    }
-
-    if (pause_confirm_target != CONFIRM_NONE)
-    {
-        draw_black_overlay(0.6f);
-        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
-        render_editor_ui(buttons, 200.f, 80.f, 1.0f, -100.f, -50.f,
-            IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
-        render_editor_ui(buttons, 200.f, 80.f, 1.0f, 150.f, -50.f,
-            IsButtonHovered(150.f, -50.f, 200.f, 80.f));
-        if (end_font != -1)
-        {
-            const char* msg = (pause_confirm_target == CONFIRM_RESTART)
-                ? "Restart level?" : "Return to Main Menu?";
-            f32 tw = 0.f, th = 0.f;
-            AEGfxGetPrintSize(end_font, msg, 0.9f, &tw, &th);
-            AEGfxPrint(end_font, msg, -tw * 0.5f, 0.1f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "Yes", -100.f / 800.f - 0.05f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "No", 150.f / 800.f - 0.03f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-        }
     }
 
     //  6. Custom cursor

@@ -133,11 +133,9 @@ bool load_map_to_editor(const char* filename, s32** editor_map)
         ++row;
     }
     while (row < TILE_ROWS)
-    {
         for (int c = 0; c < TILE_COLS; ++c)
-            editor_map[row][c] = EMPTY;
-        row++;
-    }
+            editor_map[row++][c] = EMPTY;
+
     file.close();
     return true;
 }

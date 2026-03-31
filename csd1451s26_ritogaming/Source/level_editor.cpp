@@ -531,27 +531,37 @@ void level_editor_update()
 		{
 			if (!selected_level_path.empty())
 			{
-				save_success =
-					save_map_to_file_overwrite(editor_map, selected_level_path) &&
-					overwrite_puzzle_blocks(puzzles, button_triggers, selected_level_path);
-				std::string spawn_path = selected_level_path.substr(0, selected_level_path.find_last_of('.')) + "_enemy_spawns.txt";
+				// --- OVERWRITING EXISTING LEVEL ---
+				std::string level_path = selected_level_path;
+				std::string spawn_path = level_path.substr(0, level_path.find_last_of('.')) + "_enemy_spawns.txt";
+
+				// Fix: Create a SEPARATE string for puzzles
+				std::string puzzle_path = level_path.substr(0, level_path.find_last_of('.')) + "_puzzles.txt";
+
+				save_success = save_map_to_file_overwrite(editor_map, level_path) &&
+					overwrite_puzzle_blocks(puzzles, button_triggers, puzzle_path); // Use puzzle_path!
+
 				enemy_manager_instance.save_spawn_positions_from_map(editor_map, spawn_path);
 			}
 			else
 			{
-				std::string new_path;
-				save_success = save_map_to_file(editor_map, new_path);
+				// --- SAVING NEW LEVEL ---
+				std::string new_map_path;
+				save_success = save_map_to_file(editor_map, new_map_path);
 
 				if (save_success)
 				{
-					// Capture spawn path from map path BEFORE puzzle blocks modifies new_path
-					std::string spawn_path = new_path.substr(0, new_path.find_last_of('.')) + "_enemy_spawns.txt";
+					std::string base_path = new_map_path.substr(0, new_map_path.find_last_of('.'));
+					std::string spawn_path = base_path + "_enemy_spawns.txt";
+					std::string puzzle_path = base_path + "_puzzles.txt";
+
 					enemy_manager_instance.save_spawn_positions_from_map(editor_map, spawn_path);
 
-					save_success = save_puzzle_blocks(puzzles, button_triggers, new_path);
+					// Fix: Ensure we save puzzles to 'puzzle_path', NOT 'new_map_path'
+					save_success = save_puzzle_blocks(puzzles, button_triggers, puzzle_path);
 
 					if (save_success)
-						selected_level_path = new_path;
+						selected_level_path = new_map_path;
 				}
 			}
 		}
@@ -929,12 +939,7 @@ void level_editor_draw()
 			else if (tile != 0 && TileTextures[tile])
 				render_editor_tiles(TileTextures[tile], tile_draw_size, tile_draw_size, 1.0f, wx, wy);
 
-			// Special rendering for Tomb/Ghost/Bat
-			if (tile == 5 && tomb) {
-				render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
-				if (ghost_spawn) render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy - tile_draw_size);
-			}
-			else if (tile == 6 && bat_spawn) render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
+			
 
 			// Puzzles
 			PuzzleType ptype = puzzle_editor_map[r][c];
@@ -947,6 +952,27 @@ void level_editor_draw()
 
 				render_editor_tiles(puzzle_block_textures[ptype], tile_draw_size, tile_draw_size, 1.0f, wx, wy, highlight);
 			}
+		}
+	}
+	for (int r = 0; r < TILE_ROWS; ++r)
+	{
+		for (int c = 0; c < TILE_COLS; ++c)
+		{
+			f32 wx = grid_start_x + c * tile_draw_size + tile_draw_size * 0.5f;
+			f32 wy = grid_start_y - r * tile_draw_size - tile_draw_size * 0.5f;
+
+			if (wx < grid_start_x || wx > grid_start_x + TILE_COLS * tile_draw_size) continue;
+			if (wy > grid_start_y || wy < grid_start_y - TILE_ROWS * tile_draw_size) continue;
+
+			int tile = editor_map[r][c];
+			if (tile == 5 && tomb)
+			{
+				render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
+				if (ghost_spawn)
+					render_editor_tiles(ghost_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy - tile_draw_size);
+			}
+			else if (tile == 6 && bat_spawn)
+				render_editor_tiles(bat_spawn, tile_draw_size, tile_draw_size, 1.0f, wx, wy);
 		}
 	}
 

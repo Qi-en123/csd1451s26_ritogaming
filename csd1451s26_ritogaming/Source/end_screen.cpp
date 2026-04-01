@@ -220,7 +220,33 @@ void pause_update()
 
     if (!is_paused) return;
 
-    // Hover SFX � fires once per newly-entered button
+    // --- Confirm popup blocks everything ---
+    if (pause_confirm_target != CONFIRM_NONE)
+    {
+        if (AEInputCheckTriggered(AEVK_LBUTTON))
+        {
+            if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
+            {
+                play_sfx(g_audio.sfx_button_click, 1.f);
+                if (pause_confirm_target == CONFIRM_RESTART)
+                {
+                    selected_level_path = "Assets/Levels/default.txt";
+                    selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
+                    next = GS_RESTART;
+                }
+                else
+                    next = MAINMENU;
+
+                is_paused = false;
+                pause_confirm_target = CONFIRM_NONE;
+            }
+            else if (IsButtonClicked(150.f, -50.f, 200.f, 80.f)) // No
+                pause_confirm_target = CONFIRM_NONE;
+        }
+        return;
+    }
+
+    // Hover SFX
     int cur = -1;
     if (IsButtonHovered(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H)) cur = 0;
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H)) cur = 1;

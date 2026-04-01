@@ -32,7 +32,51 @@ namespace
 {
 	s32 mouse_x, mouse_y;
 	bool cursor_active = false;
-	static s8 tooltip_font = -1;
+	s8 tooltip_font = -1;
+
+	// Transition
+	enum TransitionState { NONE, FADE_OUT, FADE_IN };
+	TransitionState transition_state = NONE;
+	f32 transition_alpha = 0.f;
+	const f32 TRANSITION_SPEED = 2.0f;
+	int pending_next_state = -1;
+	std::string current_level_name = "";
+
+	// Level text fade in -> hold -> fade out
+	enum TextState { TEXT_NONE, TEXT_FADE_IN, TEXT_HOLD, TEXT_FADE_OUT };
+	TextState level_text_state = TEXT_NONE;
+	f32 level_text_alpha = 0.f;
+	const f32 TEXT_FADE_IN_SPEED = 3.0f;  // faster fade in
+	const f32 TEXT_HOLD_DUR = 1.0f;  // hold for 1 second
+	const f32 TEXT_FADE_OUT_SPEED = 1.5f;  // faster fade out
+	f32 text_hold_timer = 0.f;
+
+	// objective hint
+	bool show_objective_hint = false;
+
+	// Boss warning
+	bool show_boss_warning = false;
+	f32 boss_warning_timer = 0.f;
+	const f32 BOSS_WARNING_DUR = 3.f;
+	s8 warning_font = -1;
+
+}
+
+bool is_transitioning()
+{
+	return transition_state != NONE;
+}
+
+void trigger_level_transition(int target_state)
+{
+	transition_state = FADE_OUT;
+	pending_next_state = target_state;
+}
+
+void trigger_boss_warning()
+{
+	show_boss_warning = true;
+	boss_warning_timer = BOSS_WARNING_DUR;
 }
 
 void level1_load()
@@ -59,6 +103,11 @@ void level1_init()
 
 	door_triggered = false;
 	is_win = false;
+	show_boss_warning = false;
+	boss_warning_timer = 0.f;
+
+	show_objective_hint = (selected_level_path == "Assets/Levels/default.txt");
+	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 	ensure_level_paths_loaded(); // for both puzzles and map tile data
 
@@ -185,6 +234,48 @@ void level1_draw()
 	//Renders the pause ui when game is paused
 	pause_draw();
 	if (!is_paused)
+
+	// Draw black fade overlay
+	if (transition_state != NONE && transition_alpha > 0.f)
+		draw_black_overlay(transition_alpha);
+
+	// Draw level name independently with its own fade in/hold/fade out
+	if (level_text_alpha > 0.f && warning_font != -1)
+	{
+		f32 tw, th;
+		const char* lvl = current_level_name.c_str();
+		AEGfxGetPrintSize(warning_font, lvl, 2.0f, &tw, &th);
+		AEGfxPrint(warning_font, lvl,
+			-tw * 0.5f, 0.05f,
+			2.0f, 1.f, 1.f, 1.f, level_text_alpha);
+	}
+
+	// Draw boss warning
+	if (show_boss_warning)
+	{
+		draw_black_overlay(0.5f);
+
+		f32 flash = (sinf(boss_warning_timer * 10.f) + 1.f) * 0.5f;
+		f32 tw, th;
+		AEGfxGetPrintSize(warning_font, "! DANGER !", 1.5f, &tw, &th);
+		AEGfxPrint(warning_font, "! DANGER !",
+			-tw * 0.5f, 0.15f,
+			1.5f, 1.f, 0.f, 0.f, flash);
+
+		f32 tw2, th2;
+		AEGfxGetPrintSize(warning_font, "! ABOUT TO ENTER BOSS ROOM !", 1.5f, &tw2, &th2);
+		AEGfxPrint(warning_font, "! ABOUT TO ENTER BOSS ROOM !",
+			-tw2 * 0.5f, -0.15f,
+			1.5f, 1.f, 0.f, 0.f, flash);
+	}
+
+	if (show_objective_hint)
+	{
+		const char* hint = "Clear all levels and defeat the final boss to win!";
+		f32 tw2, th2;
+		AEGfxGetPrintSize(warning_font, hint, 1.0f, &tw2, &th2);
+		AEGfxPrint(warning_font, hint, -tw2 * 0.5f, -0.05f, 1.0f, 1.f, 0.f, 0.f, level_text_alpha);
+	}
 
 	//Renders the custom cursor
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);

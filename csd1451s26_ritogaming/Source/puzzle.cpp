@@ -770,6 +770,7 @@ namespace Puzzle {
 	void drag_puzzle(f32 player_pos_x, f32 player_pos_y, f32 player_half_size,
 		bool& dragging, s32 index, Element player_elem) {
 
+		if (puzzle_blocks.empty()) return;
 		puzzle& puzzle = puzzle_blocks[index];
 
 		if (puzzle.type != PUSHABLE) return;

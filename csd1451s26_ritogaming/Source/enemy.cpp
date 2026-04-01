@@ -431,11 +431,11 @@ dragon::dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32
 
 void dragon::load_anim_textures()
 {
-    tex_idle = AEGfxTextureLoad("Assets/Enemy/Boss/dragon_lord_idle_basic_74x74.png");
-    tex_walk = AEGfxTextureLoad("Assets/Enemy/Boss/dragon_lord_walk_basic_74x74.png");
-    tex_attack = AEGfxTextureLoad("Assets/Enemy/Boss/dragon_lord_attack_arms_90x70.png");
-    tex_hurt = AEGfxTextureLoad("Assets/Enemy/Boss/dragon_lord_hurt_basic_130x130.png");
-    tex_death = AEGfxTextureLoad("Assets/Enemy/Boss/dragon_lord_death_160x160.png");
+    tex_idle = AEGfxTextureLoad("Assets/Sprites/Enemy/Boss/dragon_lord_idle_basic_74x74.png");
+    tex_walk = AEGfxTextureLoad("Assets/Sprites/Enemy/Boss/dragon_lord_walk_basic_74x74.png");
+    tex_attack = AEGfxTextureLoad("Assets/Sprites/Enemy/Boss/dragon_lord_attack_arms_90x70.png");
+    tex_hurt = AEGfxTextureLoad("Assets/Sprites/Enemy/Boss/dragon_lord_hurt_basic_130x130.png");
+    tex_death = AEGfxTextureLoad("Assets/Sprites/Enemy/Boss/dragon_lord_death_160x160.png");
 
     // Start in idle
     anim.set(tex_idle, 4, 74, 74, 296, 74, 6.f, true);

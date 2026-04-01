@@ -55,15 +55,15 @@ EnemyManager::~EnemyManager()
 
 void EnemyManager::load_textures()
 {
-    if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Enemy_food/cream.png");
-    if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Enemy_food/burger.png");
+    if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_food/cream.png");
+    if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_food/burger.png");
 
-    if (!cross_tex)       cross_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0064.png");
-    if (!ghost_marker_tex) ghost_marker_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0066.png");
-    if (!bat_marker_tex)   bat_marker_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0126.png");
+    if (!cross_tex)       cross_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0064.png");
+    if (!ghost_marker_tex) ghost_marker_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0066.png");
+    if (!bat_marker_tex)   bat_marker_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0126.png");
 
-    if (!ghost_tex)       ghost_tex = AEGfxTextureLoad("Assets/Enemy/tile_0006.png");
-    if (!bat_tex)         bat_tex = AEGfxTextureLoad("Assets/Enemy/tile_0025.png");
+    if (!ghost_tex)       ghost_tex = AEGfxTextureLoad("Assets/Sprites/Enemy/tile_0006.png");
+    if (!bat_tex)         bat_tex = AEGfxTextureLoad("Assets/Sprites/Enemy/tile_0025.png");
 }
 
 void EnemyManager::unload_textures()

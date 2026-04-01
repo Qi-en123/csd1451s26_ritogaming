@@ -38,14 +38,14 @@ void level2_load()
     char filename[128];
     for (int i = 0; i < NUM_TILE_TYPES; ++i)
     {
-        sprintf_s(filename, "Assets/Tiles/tile_%04d.png", i);
+        sprintf_s(filename, "Assets/Sprites/Tiles/tile_%04d.png", i);
         TileTextures[i] = AEGfxTextureLoad(filename);
         if (!TileTextures[i])
             printf("Failed to load: %s\n", filename);
     }
     Puzzle::load_puzzle_textures();
     load_ui_textures(&ui_manager);
-    skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
+    skeleton_texture = AEGfxTextureLoad("Assets/Sprites/Tiles/dead_last_location.png");
     end_screen_load();
 }
 
@@ -84,8 +84,8 @@ void level2_init()
 
     init_mesh();
 
-    totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
-    totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
+    totalWorldW = ((f32)TILE_COLS * tile_size) / minimap_zoom;
+    totalWorldH = ((f32)TILE_ROWS * tile_size) / minimap_zoom;
     minimap_init(totalWorldW, totalWorldH, 200.0f);
 
     initialize_boss_map();

@@ -15,16 +15,16 @@ UIManager ui_manager;
 
 void load_ui_textures(UIManager *p_ui_manager)
 {
-	p_ui_manager->hp_empty_texture = AEGfxTextureLoad("Assets/UI/hp_empty.png");
-	p_ui_manager->hp_half_texture = AEGfxTextureLoad("Assets/UI/hp_half.png");
-	p_ui_manager->hp_full_texture = AEGfxTextureLoad("Assets/UI/hp_full.png");
-	p_ui_manager->primary_bg_texture = AEGfxTextureLoad("Assets/Projectile/tile_0078.png");
-	p_ui_manager->primary_counter_texture = AEGfxTextureLoad("Assets/Projectile/tile_0079.png");
-	p_ui_manager->primary_ability_texture = AEGfxTextureLoad("Assets/Projectile/fireball1.png");
-	p_ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-	p_ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Admin/wizard_wand_nonactive1.png");
-	p_ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Admin/wizard_wand_active1.png");
-	p_ui_manager->font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 48);
+	p_ui_manager->hp_empty_texture = AEGfxTextureLoad("Assets/Sprites/UI/hp_empty.png");
+	p_ui_manager->hp_half_texture = AEGfxTextureLoad("Assets/Sprites/UI/hp_half.png");
+	p_ui_manager->hp_full_texture = AEGfxTextureLoad("Assets/Sprites/UI/hp_full.png");
+	p_ui_manager->primary_bg_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/tile_0078.png");
+	p_ui_manager->primary_counter_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/tile_0079.png");
+	p_ui_manager->primary_ability_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/fireball1.png");
+	p_ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
+	p_ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_nonactive1.png");
+	p_ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_active1.png");
+	p_ui_manager->font = AEGfxCreateFont("Assets/Fonts/Exo2-Regular.ttf", 48);
 }
 
 void free_ui_textures(UIManager *p_ui_manager)

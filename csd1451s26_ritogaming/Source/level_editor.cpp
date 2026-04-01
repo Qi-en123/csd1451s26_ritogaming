@@ -408,18 +408,18 @@ namespace {
 void level_editor_load()
 {
 	// Load tile textures once and reuse for palette icons and grid rendering
-	load_tile_textures("Assets/Tiles");
-	cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-	tomb = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0064.png");
-	ghost_spawn = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0066.png");
-	bat_spawn = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0126.png");
-	level_editor_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 22);
-	erase_tile = AEGfxTextureLoad("Assets/Tiles/tile_0010.png");
-	edit_panel = AEGfxTextureLoad("Assets/Admin/edit_interface_panel.png");
-	edit_panel_save = AEGfxTextureLoad("Assets/Admin/edit_interface_save.png");
-	edit_panel_exit = AEGfxTextureLoad("Assets/Admin/edit_interface_exit.png");
-	edit_panel_button_left = AEGfxTextureLoad("Assets/Admin/ep_button_left.png");
-	edit_panel_button_right = AEGfxTextureLoad("Assets/Admin/ep_button_right.png");
+	load_tile_textures("Assets/Sprites/Tiles");
+	cursor = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
+	tomb = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0064.png");
+	ghost_spawn = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0066.png");
+	bat_spawn = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0126.png");
+	level_editor_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 22);
+	erase_tile = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0010.png");
+	edit_panel = AEGfxTextureLoad("Assets/Sprites/Admin/edit_interface_panel.png");
+	edit_panel_save = AEGfxTextureLoad("Assets/Sprites/Admin/edit_interface_save.png");
+	edit_panel_exit = AEGfxTextureLoad("Assets/Sprites/Admin/edit_interface_exit.png");
+	edit_panel_button_left = AEGfxTextureLoad("Assets/Sprites/Admin/ep_button_left.png");
+	edit_panel_button_right = AEGfxTextureLoad("Assets/Sprites/Admin/ep_button_right.png");
 
 	Puzzle::load_puzzle_textures();
 }

@@ -551,12 +551,14 @@ void render_tooltip(s8 font) {
 	//resets tooltip
 	curr_tooltip = "";
 	AEGfxTextureSet(nullptr, 0, 0);
+}
+
 void render_boss_projectiles(const BossProjectileManager& manager)
 {
 	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
 	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
 	const int   SEGS = 32;   // number of segments around the ring
-	const float step = 2.f * 3.14159265f / static_cast<float>(SEGS);
+	const float step = 2.f * PI / static_cast<float>(SEGS);
 
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);

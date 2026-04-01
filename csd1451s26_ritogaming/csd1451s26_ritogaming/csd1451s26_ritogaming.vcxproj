@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\audio_manager.cpp" />
-    <ClCompile Include="..\Source\boss.cpp" />
     <ClCompile Include="..\Source\camera.cpp" />
     <ClCompile Include="..\Source\collision.cpp" />
     <ClCompile Include="..\Source\credit.cpp" />

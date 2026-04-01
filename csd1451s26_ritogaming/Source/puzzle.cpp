@@ -494,7 +494,7 @@ namespace Puzzle {
 		char filename[128];
 		for (int i{}; i < PUZZLE_TYPE_COUNT; ++i) {
 
-			sprintf_s(filename, "Assets/Tiles/tile_1%03d.png", i);
+			sprintf_s(filename, "Assets/Sprites/Tiles/tile_1%03d.png", i);
 			puzzle_block_textures[i] = AEGfxTextureLoad(filename);
 
 			if (!puzzle_block_textures[i]) {

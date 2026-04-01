@@ -4,7 +4,7 @@
 #include "map.hpp"
 #include "AEEngine.h"
 
-#define ZOOM_LEVEL 2.0f //change name, to like minimap_zoom or smth and change to constexpr
+constexpr f32 minimap_zoom = 2.0f; //change name, to like minimap_zoom or smth and change to constexpr
 
 extern f32 totalWorldW;
 extern f32 totalWorldH;

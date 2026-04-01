@@ -75,15 +75,15 @@ namespace {
 void credit_load()
 {
     // Load textures from Assets folder
-    credit_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
-    cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
+    credit_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40);
+    cursor = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
     printf("Font value: %d\n", credit_font);
     if (credit_font == -1)
     {
         return;
     }
-    button = AEGfxTextureLoad("Assets/Admin/button_brown_close.png");
-    wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
+    button = AEGfxTextureLoad("Assets/Sprites/Admin/button_brown_close.png");
+    wall = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0001.png");
 }
 
 void credit_init()

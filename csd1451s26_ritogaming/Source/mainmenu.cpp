@@ -110,25 +110,25 @@ static void spawn_dust(f32 x, f32 y)
 void mainmenu_load()
 {
 	// Load textures 
-    ground = AEGfxTextureLoad("Assets/Tiles/tile_0002.png");
-    wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
-    door = AEGfxTextureLoad("Assets/Tiles/tile_0007.png");
-    ghoul = AEGfxTextureLoad("Assets/Enemy/tile_0006.png");
-    knight = AEGfxTextureLoad("Assets/Tiles/tile_0004.png");
-    cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-    banner = AEGfxTextureLoad("Assets/Admin/title_banner.png");
-    confirmation_panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
-    bg = AEGfxTextureLoad("Assets/Admin/main_menu_bg.png");
+    ground = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0002.png");
+    wall = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0001.png");
+    door = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0007.png");
+    ghoul = AEGfxTextureLoad("Assets/Sprites/Enemy/tile_0006.png");
+    knight = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0004.png");
+    cursor = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
+    banner = AEGfxTextureLoad("Assets/Sprites/Admin/title_banner.png");
+    confirmation_panel = AEGfxTextureLoad("Assets/Sprites/Admin/end_screen_panel.png");
+    bg = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_bg.png");
 
-    buttons[0] = AEGfxTextureLoad("Assets/Admin/main_menu_button.png");
-    buttons[1] = AEGfxTextureLoad("Assets/Admin/main_menu_button2.png");
-    buttons[2] = AEGfxTextureLoad("Assets/Admin/main_menu_button3.png");
-    buttons[3] = AEGfxTextureLoad("Assets/Admin/main_menu_button4.png");
-    buttons[4] = AEGfxTextureLoad("Assets/Admin/main_menu_button5.png");
-    buttons[5] = AEGfxTextureLoad("Assets/Admin/main_menu_button6.png");
+    buttons[0] = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button.png");
+    buttons[1] = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button2.png");
+    buttons[2] = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button3.png");
+    buttons[3] = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button4.png");
+    buttons[4] = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button5.png");
+    buttons[5] = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button6.png");
  
 	// Load font from Assets folder
-    font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
+    font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40);
     printf("Font value: %d\n", font);
     if (font == -1)
     {

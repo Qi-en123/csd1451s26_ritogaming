@@ -94,15 +94,15 @@ static void draw_button_label(const char* label, f32 btn_x, f32 btn_y,
 // -------------------------------------------------------------------------
 void end_screen_load()
 {
-    tex_win = AEGfxTextureLoad("Assets/Win  N  Lose/win.png");
-    tex_lose = AEGfxTextureLoad("Assets/Win  N  Lose/lose.png");
-    tex_button = AEGfxTextureLoad("Assets/Admin/main_menu_button.png");
-    tex_cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-    buttons = AEGfxTextureLoad("Assets/Admin/main_menu_button5.png");
-    panel = AEGfxTextureLoad("Assets/Admin/tile_0013.png");
+    tex_win = AEGfxTextureLoad("Assets/Sprites/Win N Lose/win.png");
+    tex_lose = AEGfxTextureLoad("Assets/Sprites/Win N Lose/lose.png");
+    tex_button = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button.png");
+    tex_cursor = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
+    buttons = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button5.png");
+    panel = AEGfxTextureLoad("Assets/Sprites/Admin/end_screen_panel.png");
 
     if (end_font == -1)
-        end_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 36);
+        end_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36);
 }
 
 void end_screen_unload()

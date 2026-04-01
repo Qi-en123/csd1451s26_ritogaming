@@ -71,7 +71,7 @@ namespace {
 
     // Default built-in level shown at index 0
     const char* default_levels[] = { "Level 1" };
-    const int   default_count = 1;
+    const int   default_count = 3;
 
 	//context pop up
     int context_menu_idx = -1; // which cell has context menu open, -1 = none
@@ -81,7 +81,9 @@ namespace {
     s32 preview_map[TILE_ROWS][TILE_COLS]{};
     int preview_idx = -1;
 
-
+    // confirm delete popup
+    bool show_delete_confirm = false;
+    int  pending_delete_idx = -1;   // which level is pending deletion
 
 } // namespace
 
@@ -229,16 +231,16 @@ static void build_level_list()
 // -------------------------------------------------------
 void levels_load()
 {
-    cursor = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
-    button = AEGfxTextureLoad("Assets/Admin/levels_button.png");
-    back_button = AEGfxTextureLoad("Assets/Admin/levels_back_button.png");
-    editor_button = AEGfxTextureLoad("Assets/Admin/levels_editor_button.png");
-    button_edit = AEGfxTextureLoad("Assets/Admin/levels_button_edit.png");
-    deleted_text_bg = AEGfxTextureLoad("Assets/Admin/levels_deleted_bg.png");
-    bg_wall = AEGfxTextureLoad("Assets/Tiles/tile_0001.png");
-    scroll_bar = AEGfxTextureLoad("Assets/Admin/scrollbar_future_grey.png");
-    font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 40);
-    load_tile_textures("Assets/Tiles");
+    cursor = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
+    button = AEGfxTextureLoad("Assets/Sprites/Admin/levels_button.png");
+    back_button = AEGfxTextureLoad("Assets/Sprites/Admin/levels_back_button.png");
+    editor_button = AEGfxTextureLoad("Assets/Sprites/Admin/levels_editor_button.png");
+    button_edit = AEGfxTextureLoad("Assets/Sprites/Admin/levels_button_edit.png");
+    deleted_text_bg = AEGfxTextureLoad("Assets/Sprites/Admin/levels_deleted_bg.png");
+    bg_wall = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0001.png");
+    scroll_bar = AEGfxTextureLoad("Assets/Sprites/Admin/scrollbar_future_grey.png");
+    font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40);
+    load_tile_textures("Assets/Sprites/Tiles");
 }
 
 // -------------------------------------------------------
@@ -254,6 +256,10 @@ void levels_init()
     scroll_row = 0;
     scroll_row_f = 0.f;
     scroll_target = 0.f;
+
+    //reset show delete confirm 
+    show_delete_confirm = false;
+    pending_delete_idx = -1;
 
     // Rebuild level list from disk
     build_level_list();
@@ -275,6 +281,8 @@ void levels_update()
 {
     dt = (f32)AEFrameRateControllerGetFrameTime();
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
+
+    //ltr then do
 
     static int last_hovered = -1;
     int current_hovered = -1;
@@ -356,7 +364,7 @@ void levels_update()
             {
                 int idx = (scroll_row + row) * COLS + col;
                 if (idx >= (int)levels.size()) continue;
-                if (idx == 0) continue; // default level can't be edited/deleted
+                if (idx < default_count) continue; // default level can't be edited/deleted
 
                 f32 cx = GRID_START_X + col * (CELL_W + CELL_GAP_X);
                 f32 cy = GRID_START_Y - row * (CELL_H + CELL_GAP_Y);
@@ -497,7 +505,7 @@ void levels_draw()
                             (cy - 10.f) / 450.f,
                             1.f, 0.f, 0.f, 0.f, 1.f);
 
-                        if (idx > 0) // index 0 is always the default level
+                        if (idx > default_count) // index 0 is always the default level
                         {
                             f32 tw2 = 0.f, th2 = 0.f;
                             AEGfxGetPrintSize(font, "[Custom]", 0.7f, &tw2, &th2);

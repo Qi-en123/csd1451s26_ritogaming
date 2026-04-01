@@ -81,14 +81,14 @@ void trigger_boss_warning()
 void level1_load()
 {
 	end_screen_load();
-	if (!load_tile_textures("Assets/Tiles"))
+	if (!load_tile_textures("Assets/Sprites/Tiles"))
 		next = GS_QUIT; // If tile textures fail to load, quit the game
 	enemy_manager_instance.load_textures();
 	Puzzle::load_puzzle_textures();
 	load_ui_textures(&ui_manager);
-	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
-	warning_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 60);
-	tooltip_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 28);
+	skeleton_texture = AEGfxTextureLoad("Assets/Sprites/Tiles/dead_last_location.png");
+	warning_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 60);
+	tooltip_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 28);
 	printf("Font value: %d\n", tooltip_font);
 	if (tooltip_font == -1)
 	{
@@ -153,16 +153,16 @@ void level1_init()
 	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
 	init_mesh();
 
-	totalWorldW = ((f32)TILE_COLS * tile_size) / ZOOM_LEVEL;
-	totalWorldH = ((f32)TILE_ROWS * tile_size) / ZOOM_LEVEL;
+	totalWorldW = ((f32)TILE_COLS * tile_size) / minimap_zoom;
+	totalWorldH = ((f32)TILE_ROWS * tile_size) / minimap_zoom;
 	minimap_init(totalWorldW, totalWorldH, 300.0f);
-
+	
 	// for enemies
 	std::string spawn_path;
 	if (selected_level_path == "Assets/Levels/default.txt")
 	{
 		// Ensure this path matches your folder exactly (check capitalization!)
-		spawn_path = "Assets/Enemy_spawn_location/Enemy_spawning_coordinates.txt";
+		spawn_path = "Assets/Levels/enemy.txt";
 	}
 	else
 	{

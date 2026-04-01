@@ -4,6 +4,10 @@
 
 int IsButtonClicked(f32 rectX, f32 rectY, f32 rectW, f32 rectH);
 int IsButtonHovered(f32 rectX, f32 rectY, f32 rectW, f32 rectH);
+// Returns true if "Yes" was clicked, false if "No" was clicked, -1 if neither
+int draw_confirm_popup(AEGfxTexture* panel,
+	AEGfxTexture* btn_yes, AEGfxTexture* btn_no,
+	s8 font, const char* message, f32 font_scale = 1.f);
 extern f32 dt;
 extern std::vector<std::string> level_paths;
 extern std::vector<std::string> level_puzzle_paths;

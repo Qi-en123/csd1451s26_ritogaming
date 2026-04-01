@@ -26,6 +26,10 @@ namespace {
 	AEGfxTexture* ghost_spawn = nullptr;
 	AEGfxTexture* tomb = nullptr;
 	AEGfxTexture* bat_spawn = nullptr;
+	AEGfxTexture* confirm_panel = nullptr;
+	AEGfxTexture* confirm_btn_yes = nullptr;
+	AEGfxTexture* confirm_btn_no = nullptr;
+
 	s32 mouse_x, mouse_y;
 	s8 level_editor_font = -1;
 
@@ -129,6 +133,8 @@ namespace {
 	f32 edit_panel_x;
 	f32 edit_panel_y;
 	f32 ep_button_x;
+
+	bool show_exit_confirm = false;
 #pragma endregion
 
 #pragma region Helper functions
@@ -420,6 +426,9 @@ void level_editor_load()
 	edit_panel_exit = AEGfxTextureLoad("Assets/Sprites/Admin/edit_interface_exit.png");
 	edit_panel_button_left = AEGfxTextureLoad("Assets/Sprites/Admin/ep_button_left.png");
 	edit_panel_button_right = AEGfxTextureLoad("Assets/Sprites/Admin/ep_button_right.png");
+	confirm_panel = AEGfxTextureLoad("Assets/Sprites/Admin/end_screen_panel.png");
+	confirm_btn_yes = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button3.png");
+	confirm_btn_no = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button4.png");
 
 	Puzzle::load_puzzle_textures();
 }
@@ -429,6 +438,7 @@ void level_editor_init()
 	zoom = editor_zoom_min;
 	cam_x = cam_y = 0.0f;
 	cam = init_cam(&cam_x, &cam_y, 60.0f, 5.0f);
+	show_exit_confirm = false;
 
 	init_mesh(); // ensure mesh is initialized before any rendering calls
 	AEGfxSetBackgroundColor(0.08f, 0.09f, 0.12f);
@@ -521,7 +531,19 @@ void level_editor_update()
 
 	// --- ESC to exit ---
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
-		next = GS_LEVELS; // adjust to your menu state
+		show_exit_confirm = true; // show confirmation dialog instead of exiting immediately
+
+	if (show_exit_confirm)
+	{
+		if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
+			next = GS_LEVELS;
+		if (IsButtonClicked(150.f, -50.f, 200.f, 80.f))  // No
+		{
+			show_exit_confirm = false;
+			can_paint = false;  // prevent the click from bleeding through to the grid
+		}
+		return; // block all editor input while popup is open
+	}
 
 	// --- Tick save message ---
 	if (save_msg_timer > 0.f)
@@ -1222,16 +1244,6 @@ void level_editor_draw()
 		}
 	}
 
-	// =====================================================
-	// 7. Cursor (always on top)
-	// =====================================================
-	if (cursor)
-	{
-		f32 world_x = (f32)mouse_x - 800.f;
-		f32 world_y = -(f32)mouse_y + 450.f;
-		render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x + 25.f, world_y - 25.f);
-	}
-
 	// --- Notification System (Save & Spawn Errors) ---
 	if (save_msg_timer > 0.f) {
 		active_status_msg = save_success ? "Map Saved!" :
@@ -1246,6 +1258,22 @@ void level_editor_draw()
 		active_status_msg = "Cannot place ghost spawns on the last row!";
 		render_status_msg(level_editor_font, spawn_error_timer, SPAWN_ERROR_DUR);
 	}
+
+	if (show_exit_confirm)
+	{
+		// Render the modal itself (the result logic is already in your update, this just draws)
+		draw_confirm_popup(confirm_panel,
+			confirm_btn_yes, confirm_btn_no, level_editor_font,
+			"ARE YOU SURE YOU WANT TO QUIT?", 1.8f);
+	}
+
+	// 9. Cursor (Always last)
+	if (cursor)
+	{
+		f32 wx = (f32)mouse_x - 800.f, wy = -(f32)mouse_y + 450.f;
+		render_editor_ui(cursor, 50.f, 50.f, 1.0f, wx + 25.f, wy - 25.f);
+	}
+
 }
 
 void level_editor_free()
@@ -1290,4 +1318,7 @@ void level_editor_unload()
 	if (edit_panel_exit) { AEGfxTextureUnload(edit_panel_exit); edit_panel_exit = nullptr; }
 	if (edit_panel_button_left) { AEGfxTextureUnload(edit_panel_button_left); edit_panel_button_left = nullptr; }
 	if (edit_panel_button_right) { AEGfxTextureUnload(edit_panel_button_right); edit_panel_button_right = nullptr; }
+	if (confirm_panel) { AEGfxTextureUnload(confirm_panel); confirm_panel = nullptr; }
+	if (confirm_btn_yes) { AEGfxTextureUnload(confirm_btn_yes); confirm_btn_yes = nullptr; }
+	if (confirm_btn_no) { AEGfxTextureUnload(confirm_btn_no); confirm_btn_no = nullptr; }
 }

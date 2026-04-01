@@ -238,7 +238,7 @@ void levels_load()
     button_edit = AEGfxTextureLoad("Assets/Sprites/Admin/levels_button_edit.png");
     bg_wall = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0001.png");
     scroll_bar = AEGfxTextureLoad("Assets/Sprites/Admin/scrollbar_future_grey.png");
-    panel = AEGfxTextureLoad("Assets/Sprites/Admin/tile_0013.png");
+    panel = AEGfxTextureLoad("Assets/Sprites/Admin/end_screen_panel.png");
     confirm_yes = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button3.png");
     confirm_no = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button4.png");
     font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40);

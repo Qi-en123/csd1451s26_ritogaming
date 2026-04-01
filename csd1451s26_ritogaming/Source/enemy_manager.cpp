@@ -57,7 +57,6 @@ void EnemyManager::load_textures()
 {
     if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Enemy_food/cream.png");
     if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Enemy_food/burger.png");
-    if (!dragon_food_tex) dragon_food_tex = AEGfxTextureLoad("Assets/Enemy_food/sushi.png");
 
     if (!cross_tex)       cross_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0064.png");
     if (!ghost_marker_tex) ghost_marker_tex = AEGfxTextureLoad("Assets/Enemy_spawn_location/tile_0066.png");
@@ -65,7 +64,6 @@ void EnemyManager::load_textures()
 
     if (!ghost_tex)       ghost_tex = AEGfxTextureLoad("Assets/Enemy/tile_0006.png");
     if (!bat_tex)         bat_tex = AEGfxTextureLoad("Assets/Enemy/tile_0025.png");
-    if (!dragon_tex)      dragon_tex = AEGfxTextureLoad("Assets/Enemy/tile_0005.png");
 }
 
 void EnemyManager::unload_textures()
@@ -171,10 +169,14 @@ void EnemyManager::initialize_combat_area()
     }
 }
 
-void EnemyManager::update(f32 dt, Player* player, camera* p_cam)
-{
-    for (auto& enemy : enemies)
-        if (enemy && enemy->is_active()) enemy->update(dt, player, p_cam);
+void EnemyManager::update(f32 dt, Player* player, camera* p_cam) {
+
+    for (auto& enemy : enemies) {
+        if (!enemy) continue;
+        
+        if (enemy->is_active() || enemy->get_state() == dead)
+            enemy->update(dt, player, p_cam);
+    }
 
     update_food(dt, player);
     update_respawn_particles(dt);
@@ -203,15 +205,20 @@ void EnemyManager::update(f32 dt, Player* player, camera* p_cam)
 void EnemyManager::render()
 {
     render_spawn_markers();
-    for (auto& enemy : enemies)
-        if (enemy->is_active()) render_enemy(enemy.get());
+
+    for (auto& enemy : enemies) {
+     
+        if (enemy->is_active() || enemy->get_state() == dead)
+            render_enemy(enemy.get());
+    }
+
     render_food();
     render_respawn_particles();
 }
 
 void EnemyManager::render_spawn_markers()
 {
-    // If the file hasn't been loaded or the pointer is null, don't try to render
+    if (current_zone == boss_room) return;
     if (!spawn_positions_loaded) return;
 
     // 1. Render Ghost Markers
@@ -254,10 +261,17 @@ void EnemyManager::render_spawn_markers()
     }
 }
 
-void EnemyManager::render_enemy(base_enemy* e)
+void EnemyManager::render_enemy(base_enemy* other_enemy)
 {
-    AEGfxTexture* tex = e->get_texture();
-    if (tex) render_sprite(rect_mesh_center, e->get_x(), e->get_y(), e->get_size(), e->get_size(), tex);
+    dragon* d = dynamic_cast<dragon*>(other_enemy);
+    if (d) {
+        d->render_animated(other_enemy->get_size());
+        return;
+    }
+
+    if (other_enemy->get_texture())
+        render_sprite(rect_mesh_center, other_enemy->get_x(), other_enemy->get_y(),
+            other_enemy->get_size(), other_enemy->get_size(), other_enemy->get_texture());
 }
 
 void EnemyManager::spawn_ghost_at_slot(int idx)
@@ -288,6 +302,7 @@ void EnemyManager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top
         if (enemy && enemy->get_state() != dead && dynamic_cast<dragon*>(enemy.get()) != nullptr) return;
 
     auto d = std::make_unique<dragon>(x, y, r_left, r_right, r_top, r_bottom);
+    d->load_anim_textures();          // must be called so tex_idle/walk/etc. are populated
     d->set_enemy_texture(dragon_tex);
     d->set_food_texture(dragon_food_tex);
     enemies.push_back(std::move(d));
@@ -356,6 +371,7 @@ void EnemyManager::update_food(f32 dt, Player* player)
     for (auto& food : food_drops)
     {
         if (!food.active) continue;
+
         food.lifetime -= dt;
         if (food.lifetime <= 0.0f) { food.active = false; continue; }
 
@@ -405,13 +421,23 @@ bool EnemyManager::check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage)
     return false;
 }
 
-void EnemyManager::cleanup_dead_enemies()
-{
-    for (auto& enemy : enemies)
-    {
-        if (!enemy || enemy->get_state() != dead) continue;
+void EnemyManager::cleanup_dead_enemies() {
+    for (auto& enemy : enemies) {
+        if (!enemy || enemy->is_active()) continue;
 
-        spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        if (enemy->get_state() != dead)   continue;
+
+        if (!enemy->has_food_spawned()) {
+            enemy->set_food_spawned(true);
+
+            if (enemy->is_ghost()) {
+                ghost* g = static_cast<ghost*>(enemy.get());
+                if (g->get_hits_from_player() > 0)
+                    spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+            }
+            else
+                spawn_food(enemy->get_x(), enemy->get_y(), enemy->get_food_texture());
+        }
 
         if (enemy->is_ghost())
         {
@@ -434,7 +460,10 @@ void EnemyManager::cleanup_dead_enemies()
             }
         }
     }
-    enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const auto& e) { return e->get_state() == dead; }), enemies.end());
+    enemies.erase(
+        std::remove_if(enemies.begin(), enemies.end(),
+            [](const auto& e) { return !e->is_active() && e->get_state() == dead; }),
+        enemies.end());
 }
 
 void EnemyManager::maintain_ghost_population()

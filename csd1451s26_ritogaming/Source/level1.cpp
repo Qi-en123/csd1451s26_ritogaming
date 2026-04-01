@@ -174,6 +174,7 @@ void level1_init()
 	// Add this temporary printf to your console so you can see if the path is correct
 	printf("Loading Spawn File: %s\n", spawn_path.c_str());
 
+	enemy_manager_instance.clear_all();
 	enemy_manager_instance.load_spawn_positions(spawn_path.c_str());
 	enemy_manager_instance.initialize_tutorial_area();
 }
@@ -264,8 +265,6 @@ void level1_update()
 
 	Puzzle::puzzle_button_manager();
 	Puzzle::puzzle_audio_update();
-
-	// printf("%f %f\n", player_instance.char1_x, player_instance.char1_y);
 
 	check_and_open_doors(&player_instance);
 

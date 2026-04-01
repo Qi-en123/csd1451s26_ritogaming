@@ -281,10 +281,11 @@ void pause_update()
                 {
                     selected_level_path = "Assets/Levels/default.txt";
                     selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
-                    trigger_level_transition(GS_RESTART);
+                    next = GS_RESTART;
                 }
                 else
-                    trigger_level_transition(MAINMENU);
+                    next = MAINMENU;
+
                 is_paused = false;
                 pause_confirm_target = CONFIRM_NONE;
             }

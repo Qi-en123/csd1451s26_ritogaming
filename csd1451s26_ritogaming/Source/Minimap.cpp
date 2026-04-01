@@ -23,6 +23,8 @@ namespace
     constexpr f32 OVERLAY_SCALE = 1.5f;
     constexpr f32 OVERLAY_OFFSET_DIV = 4.0f;
     constexpr f32 PLAYER_DOT_SIZE = 10.0f;
+    constexpr f32 MINIMAP_OFFSET_X = -50.0f;
+    constexpr f32 MINIMAP_OFFSET_Y = -50.0f;
 
     AEGfxTexture* pMapParts[4] = { nullptr, nullptr, nullptr, nullptr };
 
@@ -36,8 +38,8 @@ namespace
 
     void get_map_center(f32& outX, f32& outY, f32 mapSize)
     {
-        outX = (AEGfxGetWindowWidth() / HALF) - (mapSize / HALF) - MINIMAP_PADDING;
-        outY = (AEGfxGetWindowHeight() / HALF) - (mapSize / HALF) - MINIMAP_PADDING;
+        outX = (AEGfxGetWindowWidth() / HALF) - (mapSize / HALF) - MINIMAP_PADDING + MINIMAP_OFFSET_X;
+        outY = (AEGfxGetWindowHeight() / HALF) - (mapSize / HALF) - MINIMAP_PADDING + MINIMAP_OFFSET_Y;
     }
 
     void tile_to_world_center(int r, int c, f32& x, f32& y)
@@ -69,7 +71,7 @@ void minimap_init(f32 w, f32 h, f32 size)
     char filename[128];
     for (int i = 0; i < 4; ++i)
     {
-        sprintf_s(filename, "Assets/Sprites/Map/maptiles_%d.png", i + 1);
+        sprintf_s(filename, "Assets/Map/maptiles_%d.png", i + 1);
         if (!pMapParts[i])
             pMapParts[i] = AEGfxTextureLoad(filename);
     }

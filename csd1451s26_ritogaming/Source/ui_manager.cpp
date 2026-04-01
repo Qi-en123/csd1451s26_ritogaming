@@ -13,21 +13,20 @@
 
 UIManager ui_manager;
 
-void load_ui_textures(UIManager *p_ui_manager)
+void load_ui_textures(UIManager* p_ui_manager)
 {
-	p_ui_manager->hp_empty_texture = AEGfxTextureLoad("Assets/Sprites/UI/hp_empty.png");
-	p_ui_manager->hp_half_texture = AEGfxTextureLoad("Assets/Sprites/UI/hp_half.png");
-	p_ui_manager->hp_full_texture = AEGfxTextureLoad("Assets/Sprites/UI/hp_full.png");
-	p_ui_manager->primary_bg_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/tile_0078.png");
-	p_ui_manager->primary_counter_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/tile_0079.png");
-	p_ui_manager->primary_ability_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/fireball1.png");
-	p_ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
-	p_ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_nonactive1.png");
-	p_ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_active1.png");
-	p_ui_manager->font = AEGfxCreateFont("Assets/Fonts/Exo2-Regular.ttf", 48);
+	p_ui_manager->hp_empty_texture = AEGfxTextureLoad("Assets/UI/hp_empty.png");
+	p_ui_manager->hp_half_texture = AEGfxTextureLoad("Assets/UI/hp_half.png");
+	p_ui_manager->hp_full_texture = AEGfxTextureLoad("Assets/UI/hp_full.png");
+	p_ui_manager->primary_bg_texture = AEGfxTextureLoad("Assets/Projectile/tile_0078.png");
+	p_ui_manager->primary_counter_texture = AEGfxTextureLoad("Assets/Projectile/tile_0079.png");
+	p_ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Admin/cursorSword_silver.png");
+	p_ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Admin/wizard_wand_nonactive1.png");
+	p_ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Admin/wizard_wand_active1.png");
+	p_ui_manager->font = AEGfxCreateFont("Assets/Exo2-Regular.ttf", 48);
 }
 
-void free_ui_textures(UIManager *p_ui_manager)
+void free_ui_textures(UIManager* p_ui_manager)
 {
 	if (p_ui_manager->hp_empty_texture)
 		AEGfxTextureUnload(p_ui_manager->hp_empty_texture);
@@ -35,11 +34,8 @@ void free_ui_textures(UIManager *p_ui_manager)
 		AEGfxTextureUnload(p_ui_manager->hp_half_texture);
 	if (p_ui_manager->hp_full_texture)
 		AEGfxTextureUnload(p_ui_manager->hp_full_texture);
-
 	if (p_ui_manager->primary_bg_texture)
 		AEGfxTextureUnload(p_ui_manager->primary_bg_texture);
-	if (p_ui_manager->primary_ability_texture)
-		AEGfxTextureUnload(p_ui_manager->primary_ability_texture);
 	if (p_ui_manager->primary_counter_texture)
 		AEGfxTextureUnload(p_ui_manager->primary_counter_texture);
 	if (p_ui_manager->cursor_knight)
@@ -52,7 +48,7 @@ void free_ui_textures(UIManager *p_ui_manager)
 		AEGfxDestroyFont(p_ui_manager->font);
 }
 
-void render_character_ui(UIManager *p_ui_manager, Player *player)
+void render_character_ui(UIManager* p_ui_manager, Player* player)
 {
 	float icon_size = HUD_HEART_SIZE * 2.f;
 	float paddingX = 10.f;
@@ -64,7 +60,7 @@ void render_character_ui(UIManager *p_ui_manager, Player *player)
 		float x = AEGfxGetWinMinX() + paddingX + icon_size / 2.f; // half size keeps it fully on screen
 		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
 		render_ui_sprite(rect_mesh_center, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
-		render_ui_sprite(rect_mesh_center, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->primary_ability_texture);
+		render_ui_sprite(rect_mesh_center, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->cursor_wizard);
 
 		float counter_x = x + (paddingX * 10.f);
 		render_ui_sprite(rect_mesh_center, counter_x, y, icon_size / 1.5f, icon_size / 1.5f, p_ui_manager->primary_counter_texture);
@@ -92,12 +88,12 @@ void render_character_ui(UIManager *p_ui_manager, Player *player)
 }
 
 
-void render_cursor(UIManager *ui_manager, Player *player, s32 mouse_x, s32 mouse_y, bool cursor_active)
+void render_cursor(UIManager* ui_manager, Player* player, s32 mouse_x, s32 mouse_y, bool cursor_active)
 {
 	f32 world_x = (f32)mouse_x - 800.f;
 	f32 world_y = -(f32)mouse_y + 450.f;
 
-	AEGfxTexture *current_cursor = nullptr;
+	AEGfxTexture* current_cursor = nullptr;
 	if (player->current_player == &player->char1)
 		current_cursor = ui_manager->cursor_knight;
 	else
@@ -107,9 +103,9 @@ void render_cursor(UIManager *ui_manager, Player *player, s32 mouse_x, s32 mouse
 		render_editor_ui(current_cursor, 50.f, 50.f, 1.0f, world_x, world_y);
 }
 
-void render_enemy_hp(UIManager *p_ui_manager, EnemyManager *enemy_manager)
+void render_enemy_hp(UIManager* p_ui_manager, EnemyManager* enemy_manager)
 {
-	for (auto const &enemy : enemy_manager->get_enemies())
+	for (auto const& enemy : enemy_manager->get_enemies())
 	{
 		if (!enemy || !enemy->is_active())
 			continue; // skip dead/inactive enemies
@@ -121,7 +117,7 @@ void render_enemy_hp(UIManager *p_ui_manager, EnemyManager *enemy_manager)
 		float canvas_width = hearts_to_draw * heart_scale;
 		float start_x = enemy->get_x() - canvas_width / 2 + heart_scale / 2;
 
-		for (int i{1}; i < hearts_to_draw + 1; ++i)
+		for (int i{ 1 }; i < hearts_to_draw + 1; ++i)
 		{
 			f32 x_position = start_x + (i - 1) * heart_scale;
 			f32 y_position = enemy->get_y() + enemy->get_size() / 2 + heart_scale / 2;
@@ -138,7 +134,7 @@ void render_enemy_hp(UIManager *p_ui_manager, EnemyManager *enemy_manager)
 	}
 }
 
-void render_player_hud(UIManager *p_ui_manager, Player *player)
+void render_player_hud(UIManager* p_ui_manager, Player* player)
 {
 	int hearts_to_draw = player->stats.char1_max_health / 2 + player->stats.char1_max_health % 2;
 	int full_hearts = player->stats.char1_curr_health / 2;
@@ -150,7 +146,7 @@ void render_player_hud(UIManager *p_ui_manager, Player *player)
 
 	render_ui_sprite(rect_mesh_center, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char1.texture);
 
-	for (int i{1}; i < hearts_to_draw + 1; ++i)
+	for (int i{ 1 }; i < hearts_to_draw + 1; ++i)
 	{
 		f32 x_position = start_x + i * HUD_HEART_SIZE;
 
@@ -176,7 +172,7 @@ void render_player_hud(UIManager *p_ui_manager, Player *player)
 
 	render_ui_sprite(rect_mesh_center, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char2.texture);
 
-	for (int i{1}; i < hearts_to_draw + 1; ++i)
+	for (int i{ 1 }; i < hearts_to_draw + 1; ++i)
 	{
 		f32 x_position = start_x + i * HUD_HEART_SIZE;
 		if (i <= full_hearts)
@@ -193,3 +189,4 @@ void render_player_hud(UIManager *p_ui_manager, Player *player)
 		}
 	}
 }
+

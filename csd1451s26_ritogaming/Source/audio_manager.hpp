@@ -27,6 +27,8 @@ struct AudioManager
 
     // BGM
     AEAudio bgm_mainmenu{};
+    AEAudio bgm_maingame{};
+    AEAudio bgm_bossroom{};
 
     // SFX
     AEAudio sfx_fireball{};
@@ -72,7 +74,7 @@ void audio_free();
 // Plays a specific music track on the background music group.
 //
 // ---------------------------------------------------------------------------- 
-void play_bgm(AEAudio audio);
+void play_bgm(AEAudio audio, float volume = 0.07f, float pitch = 1.0f, int loop = -1);
 
 // ----------------------------------------------------------------------------
 //

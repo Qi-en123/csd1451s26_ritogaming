@@ -27,3 +27,7 @@ void level1_free();
 
 
 void level1_unload();
+
+void trigger_level_transition(int target_state);
+bool is_transitioning();
+void trigger_boss_warning();

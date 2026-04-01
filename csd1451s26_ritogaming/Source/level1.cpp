@@ -51,8 +51,7 @@ namespace
 	const f32 TEXT_FADE_OUT_SPEED = 1.5f;  // faster fade out
 	f32 text_hold_timer = 0.f;
 
-	// objective hint
-	bool show_objective_hint = false;
+
 
 	// Boss warning
 	bool show_boss_warning = false;
@@ -88,7 +87,7 @@ void level1_load()
 	Puzzle::load_puzzle_textures();
 	load_ui_textures(&ui_manager);
 	skeleton_texture = AEGfxTextureLoad("Assets/Tiles/dead_last_location.png");
-
+	warning_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 60);
 	tooltip_font = AEGfxCreateFont("Assets/Kenney Mini Square.ttf", 28);
 	printf("Font value: %d\n", tooltip_font);
 	if (tooltip_font == -1)
@@ -100,13 +99,18 @@ void level1_load()
 void level1_init()
 {
 	AEInputShowCursor(false);
-
+	transition_state = FADE_IN;
+	transition_alpha = 1.f;
+	level_text_alpha = 0.f;
+	level_text_state = TEXT_FADE_IN;
+	text_hold_timer = 0.f;
+	pending_next_state = -1;
 	door_triggered = false;
 	is_win = false;
 	show_boss_warning = false;
 	boss_warning_timer = 0.f;
 
-	show_objective_hint = (selected_level_path == "Assets/Levels/default.txt");
+	
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 	ensure_level_paths_loaded(); // for both puzzles and map tile data
@@ -115,6 +119,21 @@ void level1_init()
 	{
 		selected_level_path = "Assets/Levels/default.txt";
 		selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
+	}
+
+	// Set display name
+	if (selected_level_path == "Assets/Levels/default.txt")
+		current_level_name = "Level 1";
+	else
+	{
+		for (int i = 0; i < (int)level_paths.size(); ++i)
+		{
+			if (level_paths[i] == selected_level_path)
+			{
+				current_level_name = "Level " + std::to_string(i + 1);
+				break;
+			}
+		}
 	}
 	load_map_from_file(selected_level_path.c_str(), map);
 	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
@@ -162,12 +181,77 @@ void level1_init()
 void level1_update()
 {
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
+
+
+	dt = (f32)AEFrameRateControllerGetFrameTime();
+
+
+	// Text fade in -> hold -> fade out (independent of black overlay)
+	if (level_text_state == TEXT_FADE_IN)
+	{
+		level_text_alpha += dt * TEXT_FADE_IN_SPEED;
+		if (level_text_alpha >= 1.f)
+		{
+			level_text_alpha = 1.f;
+			level_text_state = TEXT_HOLD;
+			text_hold_timer = TEXT_HOLD_DUR;
+		}
+	}
+	else if (level_text_state == TEXT_HOLD)
+	{
+		text_hold_timer -= dt;
+		if (text_hold_timer <= 0.f)
+			level_text_state = TEXT_FADE_OUT;
+	}
+	else if (level_text_state == TEXT_FADE_OUT)
+	{
+		level_text_alpha -= dt * TEXT_FADE_OUT_SPEED;
+		if (level_text_alpha <= 0.f)
+		{
+			level_text_alpha = 0.f;
+			level_text_state = TEXT_NONE;
+		}
+	}
 	pause_update();
 	if (is_paused)
 		return;
 
-	dt = (f32)AEFrameRateControllerGetFrameTime();
+	// Handle fade out
+	if (transition_state == FADE_OUT)
+	{
+		transition_alpha += dt * TRANSITION_SPEED;
+		if (transition_alpha >= 1.f)
+		{
+			transition_alpha = 1.f;
+			next = pending_next_state;
+		}
+		return;
+	}
 
+	// Handle fade in
+	if (transition_state == FADE_IN)
+	{
+		transition_alpha -= dt * TRANSITION_SPEED;
+		if (transition_alpha <= 0.f)
+		{
+			transition_alpha = 0.f;
+			transition_state = NONE;
+		}
+	}
+
+
+
+	// Handle boss warning
+	if (show_boss_warning)
+	{
+		boss_warning_timer -= dt;
+		if (boss_warning_timer <= 0.f)
+		{
+			show_boss_warning = false;
+			trigger_level_transition(GS_BOSS_ROOM);
+		}
+		return;
+	}
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
 
@@ -269,13 +353,7 @@ void level1_draw()
 			1.5f, 1.f, 0.f, 0.f, flash);
 	}
 
-	if (show_objective_hint)
-	{
-		const char* hint = "Clear all levels and defeat the final boss to win!";
-		f32 tw2, th2;
-		AEGfxGetPrintSize(warning_font, hint, 1.0f, &tw2, &th2);
-		AEGfxPrint(warning_font, hint, -tw2 * 0.5f, -0.05f, 1.0f, 1.f, 0.f, 0.f, level_text_alpha);
-	}
+	
 
 	//Renders the custom cursor
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);

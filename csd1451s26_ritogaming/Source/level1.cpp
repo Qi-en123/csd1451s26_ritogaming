@@ -49,9 +49,6 @@ namespace
 	const f32 TEXT_FADE_OUT_SPEED = 1.5f;  // faster fade out
 	f32 text_hold_timer = 0.f;
 
-	// objective hint
-	bool show_objective_hint = false;
-
 	// Boss warning
 	bool show_boss_warning = false;
 	f32 boss_warning_timer = 0.f;
@@ -102,8 +99,6 @@ void level1_init()
 	is_win = false;
 	show_boss_warning = false;
 	boss_warning_timer = 0.f;
-
-	show_objective_hint = (selected_level_path == "Assets/Levels/default.txt");
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	zoom = 1.1f;
 	ensure_level_paths_loaded();
@@ -314,14 +309,6 @@ void level1_draw()
 		AEGfxPrint(warning_font, "! ABOUT TO ENTER BOSS ROOM !",
 			-tw2 * 0.5f, -0.15f,
 			1.5f, 1.f, 0.f, 0.f, flash);
-	}
-
-	if (show_objective_hint)
-	{
-		const char* hint = "Clear all levels and defeat the final boss to win!";
-		f32 tw2, th2;
-		AEGfxGetPrintSize(warning_font, hint, 1.0f, &tw2, &th2);
-		AEGfxPrint(warning_font, hint, -tw2 * 0.5f, -0.05f, 1.0f, 1.f, 0.f, 0.f, level_text_alpha);
 	}
 
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);

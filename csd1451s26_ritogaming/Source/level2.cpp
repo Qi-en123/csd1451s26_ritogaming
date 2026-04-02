@@ -173,6 +173,7 @@ void level2_draw()
     render_player_hud(&ui_manager, &player_instance);
 
     pause_draw();
+
 }
 
 void level2_free()

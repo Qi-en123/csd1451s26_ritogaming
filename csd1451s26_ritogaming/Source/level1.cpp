@@ -277,6 +277,27 @@ void level1_update()
 		restart_level_state = GS_LEVEL1;
 		next = GS_LOSE;
 	}
+
+	if (AEInputCheckTriggered(AEVK_F1)) {
+		DEBUG::DEBUGGING ^= 1;
+		int val = DEBUG::DEBUGGING;
+		DEBUG::DRAW_WALLS = val;
+		DEBUG::DRAW_PLAYER_TILE = val;
+		DEBUG::DRAW_PUZZLE_GRAB_RANGE = val;
+		DEBUG::DRAW_PUZZLE_BLOCKS = val;
+		DEBUG::DRAW_BUTTON_SPIKE_LINKS = val;
+		DEBUG::DRAW_ENEMIES = val;
+	}
+
+	// F2-F7: individual toggles
+	if (DEBUG::DEBUGGING) {
+		if (AEInputCheckTriggered(AEVK_F2)) DEBUG::DRAW_WALLS ^= 1;
+		if (AEInputCheckTriggered(AEVK_F3)) DEBUG::DRAW_PLAYER_TILE ^= 1;
+		if (AEInputCheckTriggered(AEVK_F4)) DEBUG::DRAW_PUZZLE_GRAB_RANGE ^= 1;
+		if (AEInputCheckTriggered(AEVK_F5)) DEBUG::DRAW_PUZZLE_BLOCKS ^= 1;
+		if (AEInputCheckTriggered(AEVK_F6)) DEBUG::DRAW_BUTTON_SPIKE_LINKS ^= 1;
+		if (AEInputCheckTriggered(AEVK_F7)) DEBUG::DRAW_ENEMIES ^= 1;
+	}
 }
 
 void level1_draw()
@@ -285,15 +306,13 @@ void level1_draw()
 
 	//Renders map tiles
 	draw_map(tile_size);
-
 	if (DEBUG::DEBUGGING) {
-		// Debug: draw all walls as semi-transparent red
-		DEBUG::draw_all_walls();
-		DEBUG::draw_player_tile();
-		DEBUG::draw_puzzle_grab_range();
-		DEBUG::draw_puzzle_blocks();
-		DEBUG::draw_button_spike_links();
-		DEBUG::draw_enemies();
+		if (DEBUG::DRAW_WALLS)             DEBUG::draw_all_walls();
+		if (DEBUG::DRAW_PLAYER_TILE)       DEBUG::draw_player_tile();
+		if (DEBUG::DRAW_PUZZLE_GRAB_RANGE) DEBUG::draw_puzzle_grab_range();
+		if (DEBUG::DRAW_PUZZLE_BLOCKS)     DEBUG::draw_puzzle_blocks();
+		if (DEBUG::DRAW_BUTTON_SPIKE_LINKS)DEBUG::draw_button_spike_links();
+		if (DEBUG::DRAW_ENEMIES)           DEBUG::draw_enemies();
 	}
 
 	//Renders enemies
@@ -317,7 +336,7 @@ void level1_draw()
 	//Renders the pause ui when game is paused
 	pause_draw();
 	if (!is_paused)
-
+		render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 	// Draw black fade overlay
 	if (transition_state != NONE && transition_alpha > 0.f)
 		draw_black_overlay(transition_alpha);
@@ -354,8 +373,6 @@ void level1_draw()
 
 	
 
-	//Renders the custom cursor
-	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 
 void level1_free()

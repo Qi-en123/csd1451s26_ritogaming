@@ -263,15 +263,27 @@ void EnemyManager::render_spawn_markers()
 
 void EnemyManager::render_enemy(base_enemy* other_enemy)
 {
-    dragon* d = dynamic_cast<dragon*>(other_enemy);
+	// Flash white when hit for visual feedback
+    bool flashing = other_enemy->get_hit_flash_timer() > 0.f;
+
+	// Note: We use additive blending for the flash effect, so we set the color to add to white when flashing,
+    if (flashing)
+        AEGfxSetColorToAdd(1.f, 1.f, 1.f, 0.f);
+    else
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f); // reset to default
+
+	dragon* d = dynamic_cast<dragon*>(other_enemy); // special case for dragon since it has its own render function to handle animations
     if (d) {
-        d->render_animated(other_enemy->get_size());
+		d->render_animated(other_enemy->get_size()); // use size as draw size since it can be scaled up for the boss
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f); // reset after drawing dragon
         return;
     }
 
     if (other_enemy->get_texture())
-        render_sprite(rect_mesh_center, other_enemy->get_x(), other_enemy->get_y(),
-            other_enemy->get_size(), other_enemy->get_size(), other_enemy->get_texture());
+        render_sprite(rect_mesh_center, other_enemy->get_x(), other_enemy->get_y(), 
+			other_enemy->get_size(), other_enemy->get_size(), other_enemy->get_texture()); // use size as both width and height for uniform scaling
+
+    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 }
 
 void EnemyManager::spawn_ghost_at_slot(int idx)

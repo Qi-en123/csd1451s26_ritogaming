@@ -86,6 +86,8 @@ struct Character
     s32 character_id{}; // 1 or 2 for identification
     Puzzle::Element element{};  // Character's element (WATER, FIRE, etc.)
 	bool is_dead{};     // Flag to indicate if character is dead
+
+	f32 hit_flash_timer = 0.f; // Timer for damage flash effect
 };
 
 
@@ -122,6 +124,9 @@ struct Player
 
     // Last movement direction for shooting
     f32 last_dir_x{}, last_dir_y{};
+
+	// Damage flash timer for player hit feedback
+    static constexpr f32 HIT_FLASH_DUR = 0.15f;
 };
 
 // Global player instance

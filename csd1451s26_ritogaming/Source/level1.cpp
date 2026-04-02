@@ -162,7 +162,7 @@ void level1_init()
 	if (selected_level_path == "Assets/Levels/default.txt")
 	{
 		// Ensure this path matches your folder exactly (check capitalization!)
-		spawn_path = "Assets/Levels/.txt";
+		spawn_path = "Assets/Levels/enemy.txt";
 	}
 	else
 	{

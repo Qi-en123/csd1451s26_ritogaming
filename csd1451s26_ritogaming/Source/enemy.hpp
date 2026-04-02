@@ -219,6 +219,10 @@ protected:
     AEGfxTexture* food_texture;
     bool food_spawned{ false };
 
+    // --- damage flash timer ---
+    f32 hit_flash_timer = 0.f;
+    static constexpr f32 HIT_FLASH_DUR = 0.15f;
+
 public:
     base_enemy(f32 start_x, f32 start_y);
     virtual ~base_enemy() {}
@@ -248,7 +252,7 @@ public:
     int get_current_health() const { return current_health; }
     enemy_state get_state() const { return state; }
     bool is_active() const { return active; }
-
+    f32 get_hit_flash_timer() const { return hit_flash_timer; }
     AEGfxTexture* get_texture() const { return texture; }
     AEGfxTexture* get_food_texture() const { return food_texture; }
 

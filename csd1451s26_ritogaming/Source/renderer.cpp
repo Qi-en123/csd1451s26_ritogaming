@@ -25,6 +25,7 @@ AEGfxVertexList* circle_mesh = nullptr;
 AEGfxVertexList* square_mesh = nullptr;
 AEGfxVertexList* triangle_mesh = nullptr;
 AEGfxVertexList* light_source_mesh = nullptr;
+AEGfxVertexList* ring_mesh = nullptr;
 
 const color red = { 1.0f, 0.0f,0.0f,0.0f };
 const color green = { 0.0f, 1.0f, 0.0f, 0.0f };
@@ -162,6 +163,32 @@ void init_mesh() {
 
 	square_mesh = create_square_mesh();
 	triangle_mesh = create_triangle_mesh();
+
+	//------------ Ring Mesh (boss projectiles) by Claire------------//
+	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
+	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
+	const int   SEGS = 32;
+	const float step = 2.f * 3.14159265f / static_cast<float>(SEGS);
+
+	AEGfxMeshStart();
+	for (int i = 0; i < SEGS; ++i)
+	{
+		float a0 = step * static_cast<float>(i);
+		float a1 = step * static_cast<float>(i + 1);
+		float ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
+		float ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
+		float ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
+		float ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
+
+		AEGfxTriAdd(ox0, oy0, 0xFF2699FF, 0.f, 0.f,
+			ox1, oy1, 0xFF2699FF, 1.f, 0.f,
+			ix0, iy0, 0xFF2699FF, 0.f, 1.f);
+		AEGfxTriAdd(ox1, oy1, 0xFF2699FF, 1.f, 0.f,
+			ix1, iy1, 0xFF2699FF, 1.f, 1.f,
+			ix0, iy0, 0xFF2699FF, 0.f, 1.f);
+	}
+	ring_mesh = AEGfxMeshEnd();
+
 }
 
 void free_mesh() {
@@ -171,6 +198,7 @@ void free_mesh() {
 	if (rect_mesh_center) { AEGfxMeshFree(rect_mesh_center);  rect_mesh_center = nullptr; }
 	if (square_mesh) { AEGfxMeshFree(square_mesh);       square_mesh = nullptr; }
 	if (triangle_mesh) { AEGfxMeshFree(triangle_mesh);     triangle_mesh = nullptr; }
+	if (ring_mesh) { AEGfxMeshFree(ring_mesh);			   ring_mesh = nullptr; }
 }
 
 static bool on_screen(f32 x, f32 y) {
@@ -505,62 +533,30 @@ void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha
 
 void render_boss_projectiles(const BossProjectileManager& manager)
 {
-	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
-	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
-	const int   SEGS = 32;   // number of segments around the ring
-	const float step = 2.f * 3.14159265f / static_cast<float>(SEGS);
+    if (!ring_mesh) return;
 
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetTransparency(1.f);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetColorToMultiply(0.5f, 1.f, 1.f, 1.f);
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.f);
+    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+    AEGfxSetColorToMultiply(0.5f, 1.f, 1.f, 1.f);
 
-	for (const auto& p : manager.get_projectiles())
-	{
-		if (!p.in_use) continue;
+    for (const auto& p : manager.get_projectiles())
+    {
+        if (!p.in_use) continue;
 
-		// Build a ring mesh made of SEGS quads (2 triangles each).
-		// Each quad bridges inner_r to outer_r at angle i and i+1.
-		// The centre gap is never filled — fully transparent.
-		AEGfxMeshStart();
-		for (int i = 0; i < SEGS; ++i)
-		{
-			float a0 = step * static_cast<float>(i);
-			float a1 = step * static_cast<float>(i + 1);
+        // Only the transform changes per projectile — no mesh rebuild
+        AEMtx33 transform, translate, cam_t, cam_z;
+        AEMtx33Trans(&translate, p.x, p.y);
+        AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
+        AEMtx33Scale(&cam_z, zoom, zoom);
 
-			float ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
-			float ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
-			float ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
-			float ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
+        AEMtx33Identity(&transform);
+        AEMtx33Concat(&transform, &transform, &cam_z);
+        AEMtx33Concat(&transform, &transform, &cam_t);
+        AEMtx33Concat(&transform, &transform, &translate);
 
-			// Triangle 1: outer0, outer1, inner0
-			AEGfxTriAdd(ox0, oy0, 0xFF2699FF, 0.f, 0.f,
-				ox1, oy1, 0xFF2699FF, 1.f, 0.f,
-				ix0, iy0, 0xFF2699FF, 0.f, 1.f);
-
-			// Triangle 2: outer1, inner1, inner0
-			AEGfxTriAdd(ox1, oy1, 0xFF2699FF, 1.f, 0.f,
-				ix1, iy1, 0xFF2699FF, 1.f, 1.f,
-				ix0, iy0, 0xFF2699FF, 0.f, 1.f);
-		}
-		AEGfxVertexList* ring_mesh = AEGfxMeshEnd();
-		if (!ring_mesh) continue;
-
-		// Position the ring in world space using the same camera transform
-		// as draw_circle() / render_sprite()
-		AEMtx33 transform, translate, cam_t, cam_z;
-		AEMtx33Trans(&translate, p.x, p.y);
-		AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
-		AEMtx33Scale(&cam_z, zoom, zoom);
-
-		AEMtx33Identity(&transform);
-		AEMtx33Concat(&transform, &transform, &cam_z);
-		AEMtx33Concat(&transform, &transform, &cam_t);
-		AEMtx33Concat(&transform, &transform, &translate);
-
-		AEGfxSetTransform(transform.m);
-		AEGfxMeshDraw(ring_mesh, AE_GFX_MDM_TRIANGLES);
-		AEGfxMeshFree(ring_mesh);
-	}
+        AEGfxSetTransform(transform.m);
+        AEGfxMeshDraw(ring_mesh, AE_GFX_MDM_TRIANGLES);
+    }
 }

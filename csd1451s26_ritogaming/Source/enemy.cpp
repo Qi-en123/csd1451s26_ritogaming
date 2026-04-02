@@ -437,7 +437,6 @@ void dragon::load_anim_textures()
     tex_hurt = AEGfxTextureLoad("Assets/Enemy/Boss/dragon_lord_hurt_basic_130x130.png");
     tex_death = AEGfxTextureLoad("Assets/Enemy/Boss/dragon_lord_death_160x160.png");
 
-    // Start in idle
     anim.set(tex_idle, 4, 74, 74, 296, 74, 6.f, true);
 }
 
@@ -445,10 +444,10 @@ void dragon::tick_attack_pattern(float dt, float tgt_x, float tgt_y)
 {
     // Simple repeating timer: fires one alternating wave every WAVE_INTERVAL seconds.
     m_wave_timer -= dt;
-    if (m_wave_timer <= 0.0f)
+    if (m_wave_timer <= 1.f)
     {
         boss_proj_manager.trigger_wave(x, y, tgt_x, tgt_y);
-        m_wave_timer = BossProjCfg::WAVE_INTERVAL;  // reset (0.45s default)
+        m_wave_timer = BossProjCfg::WAVE_INTERVAL;
     }
 }
 
@@ -481,12 +480,10 @@ void dragon::update(f32 dt, Player* player, camera* p_cam)
         x = AEClamp(x, room_left, room_right);
         y = AEClamp(y, room_bottom, room_top);
 
-        // ?? Ring-projectile attack pattern ????????????????????????????????
         tick_attack_pattern(dt,
                             player->current_player->x,
                             player->current_player->y);
 
-        // ?? Direct body-contact damage (1 unit = half a heart) ???????????
         if (collides_with_player(player))
         {
             state = enemy_state::attacking;

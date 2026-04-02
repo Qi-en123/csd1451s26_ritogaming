@@ -44,6 +44,7 @@ extern AEGfxVertexList* rect_mesh_center;
 extern AEGfxVertexList* circle_mesh;
 extern AEGfxVertexList* square_mesh;
 extern AEGfxVertexList* triangle_mesh;
+extern AEGfxVertexList* ring_mesh; 
 
 extern f32 zoom;
 constexpr f32 ZOOM_MAX = 1.65f;

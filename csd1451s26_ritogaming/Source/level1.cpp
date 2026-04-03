@@ -2,7 +2,7 @@
 \file:						level1.cpp
 \author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
-\brief:						This file implements Level 1 functions to load the assests from a file, initialize the level,
+\brief:						This file implements Level 1 functions to load the assets from a file, initialize the level,
 update game logic, render, free resources
 **************************************************************************/
 #include "AEEngine.h"
@@ -26,7 +26,7 @@ update game logic, render, free resources
 
 #include "levels.hpp"
 
-static AEGfxTexture *skeleton_texture = nullptr;
+static AEGfxTexture* skeleton_texture = nullptr;
 
 namespace
 {
@@ -59,11 +59,23 @@ namespace
 	s8 warning_font = -1;
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: is_transitioning
+// Returns whether the level is currently in a fade-in or fade-out state.
+//
+// ---------------------------------------------------------------------------- 
 bool is_transitioning()
 {
 	return transition_state != NONE;
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: trigger_level_transition
+// Starts the fade-out process and stores the next state to switch to.
+//
+// ---------------------------------------------------------------------------- 
 void trigger_level_transition(int target_state)
 {
 	stop_sfx();
@@ -72,6 +84,12 @@ void trigger_level_transition(int target_state)
 	pending_next_state = target_state;
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: trigger_boss_warning
+// Activates the danger UI warning before transitioning to the boss room.
+//
+// ---------------------------------------------------------------------------- 
 void trigger_boss_warning()
 {
 	stop_sfx();
@@ -80,6 +98,12 @@ void trigger_boss_warning()
 	boss_warning_timer = BOSS_WARNING_DUR;
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: level1_load
+// Loads textures, fonts, and UI elements needed for Level 1.
+//
+// ---------------------------------------------------------------------------- 
 void level1_load()
 {
 	end_screen_load();
@@ -98,6 +122,12 @@ void level1_load()
 	}
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: level1_init
+// Initializes level variables, spawns the player/enemies, and sets up the camera.
+//
+// ---------------------------------------------------------------------------- 
 void level1_init()
 {
 	AEInputShowCursor(false);
@@ -112,7 +142,7 @@ void level1_init()
 	show_boss_warning = false;
 	boss_warning_timer = 0.f;
 
-	
+
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	Camera::zoom = 1.1f;
 	ensure_level_paths_loaded(); // for both puzzles and map tile data
@@ -158,22 +188,19 @@ void level1_init()
 	totalWorldW = ((f32)TILE_COLS * tile_size) / minimap_zoom;
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / minimap_zoom;
 	minimap_init(totalWorldW, totalWorldH);
-	
+
 	// for enemies
 	std::string spawn_path;
 	if (selected_level_path == "Assets/Levels/default.txt")
 	{
-		// Ensure this path matches your folder exactly (check capitalization!)
 		spawn_path = "Assets/Levels/enemy.txt";
 	}
 	else
 	{
-		// Use the PUZZLE path as the base to match "l1_puzzles_enemy_spawns.txt"
 		size_t last_dot = selected_level_path.find_last_of('.');
 		spawn_path = selected_level_path.substr(0, last_dot) + "_enemy_spawns.txt";
 	}
 
-	// Add this temporary printf to your console so you can see if the path is correct
 	printf("Loading Spawn File: %s\n", spawn_path.c_str());
 
 	enemy_manager_instance.clear_all();
@@ -184,15 +211,18 @@ void level1_init()
 	play_bgm(g_audio.bgm_maingame, 0.1f);
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: level1_update
+// Updates level logic, including camera, player systems, and enemy AI.
+//
+// ---------------------------------------------------------------------------- 
 void level1_update()
 {
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
-
-
 	dt = (f32)AEFrameRateControllerGetFrameTime();
 
-
-	// Text fade in -> hold -> fade out (independent of black overlay)
+	// Text fade in -> hold -> fade out logic
 	if (level_text_state == TEXT_FADE_IN)
 	{
 		level_text_alpha += dt * TEXT_FADE_IN_SPEED;
@@ -218,11 +248,12 @@ void level1_update()
 			level_text_state = TEXT_NONE;
 		}
 	}
+
 	pause_update();
 	if (is_paused)
 		return;
 
-	// Handle fade out
+	// Handle screen fade out transition
 	if (transition_state == FADE_OUT)
 	{
 		transition_alpha += dt * TRANSITION_SPEED;
@@ -234,7 +265,7 @@ void level1_update()
 		return;
 	}
 
-	// Handle fade in
+	// Handle screen fade in transition
 	if (transition_state == FADE_IN)
 	{
 		transition_alpha -= dt * TRANSITION_SPEED;
@@ -245,9 +276,7 @@ void level1_update()
 		}
 	}
 
-
-
-	// Handle boss warning
+	// Handle boss warning timing
 	if (show_boss_warning)
 	{
 		boss_warning_timer -= dt;
@@ -262,7 +291,6 @@ void level1_update()
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
 
-	// Camera follows current_player - automatically updates when you switch characters!
 	Camera::simulate_camera(&Camera::cam,
 		&player_instance.current_player->x,
 		&player_instance.current_player->y);
@@ -277,7 +305,7 @@ void level1_update()
 
 	enemy_manager_instance.update(dt, &player_instance, &Camera::cam);
 
-	// Lose condition
+	// Check for death/lose condition
 	if (player_is_dead(&player_instance))
 	{
 		is_win = false;
@@ -285,6 +313,7 @@ void level1_update()
 		next = GS_LOSE;
 	}
 
+	// Debug Toggles
 	if (AEInputCheckTriggered(AEVK_F1)) {
 		DEBUG::DEBUGGING ^= 1;
 		int val = DEBUG::DEBUGGING;
@@ -296,7 +325,6 @@ void level1_update()
 		DEBUG::DRAW_ENEMIES = val;
 	}
 
-	// F2-F7: individual toggles
 	if (DEBUG::DEBUGGING) {
 		if (AEInputCheckTriggered(AEVK_F2)) DEBUG::DRAW_WALLS ^= 1;
 		if (AEInputCheckTriggered(AEVK_F3)) DEBUG::DRAW_PLAYER_TILE ^= 1;
@@ -307,47 +335,44 @@ void level1_update()
 	}
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: level1_draw
+// Renders all level elements, UI, transitions, and warnings.
+//
+// ---------------------------------------------------------------------------- 
 void level1_draw()
 {
 	AEGfxReset();
 
-	//Renders map tiles
 	draw_map(tile_size);
 	if (DEBUG::DEBUGGING) {
-		if (DEBUG::DRAW_WALLS)             DEBUG::draw_all_walls();
-		if (DEBUG::DRAW_PLAYER_TILE)       DEBUG::draw_player_tile();
+		if (DEBUG::DRAW_WALLS)              DEBUG::draw_all_walls();
+		if (DEBUG::DRAW_PLAYER_TILE)        DEBUG::draw_player_tile();
 		if (DEBUG::DRAW_PUZZLE_GRAB_RANGE) DEBUG::draw_puzzle_grab_range();
-		if (DEBUG::DRAW_PUZZLE_BLOCKS)     DEBUG::draw_puzzle_blocks();
+		if (DEBUG::DRAW_PUZZLE_BLOCKS)      DEBUG::draw_puzzle_blocks();
 		if (DEBUG::DRAW_BUTTON_SPIKE_LINKS)DEBUG::draw_button_spike_links();
-		if (DEBUG::DRAW_ENEMIES)           DEBUG::draw_enemies();
+		if (DEBUG::DRAW_ENEMIES)            DEBUG::draw_enemies();
 	}
 
-	//Renders enemies
 	enemy_manager_instance.render();
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
 
-	//Renders the puzzle blocks
 	Puzzle::render_puzzle_blocks();
-
-	//Renders the actual player/characters
 	player_system_render(&player_instance);
-
-	//Renders minimap
 	minimap_draw(&player_instance, map, TileTextures);
 
-	//Renders the player health & skills UI
 	render_player_hud(&ui_manager, &player_instance);
 	render_character_ui(&ui_manager, &player_instance);
 	render_tooltip(tooltip_font);
 
-	//Renders the pause ui when game is paused
 	pause_draw();
 
-	// Draw black fade overlay
+	// Render black overlay for screen transitions
 	if (transition_state != NONE && transition_alpha > 0.f)
 		draw_black_overlay(transition_alpha);
 
-	// Draw level name independently with its own fade in/hold/fade out
+	// Render level title text
 	if (level_text_alpha > 0.f && warning_font != -1)
 	{
 		f32 tw, th;
@@ -358,7 +383,7 @@ void level1_draw()
 			2.0f, 1.f, 1.f, 1.f, level_text_alpha);
 	}
 
-	// Draw boss warning
+	// Render boss warning graphics
 	if (show_boss_warning)
 	{
 		draw_black_overlay(0.5f);
@@ -380,9 +405,14 @@ void level1_draw()
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: level1_free
+// Frees temporary resources and clears enemy/player instances.
+//
+// ---------------------------------------------------------------------------- 
 void level1_free()
 {
-
 	player_system_free(&player_instance);
 	enemy_manager_instance.clear_all();
 
@@ -394,11 +424,16 @@ void level1_free()
 	g_bgm_current_track = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: level1_unload
+// Unloads textures and fonts from memory when switching levels or quitting.
+//
+// ---------------------------------------------------------------------------- 
 void level1_unload()
 {
 	end_screen_unload();
 	free_tile_textures();
-	// free_mesh();
 	minimap_unload();
 	Puzzle::unload_puzzle_textures();
 
@@ -409,5 +444,5 @@ void level1_unload()
 		AEGfxTextureUnload(skeleton_texture);
 		skeleton_texture = nullptr;
 	}
-	AEGfxDestroyFont(tooltip_font);	
+	AEGfxDestroyFont(tooltip_font);
 }

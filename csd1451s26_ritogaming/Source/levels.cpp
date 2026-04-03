@@ -129,6 +129,10 @@ namespace
     s32 preview_map[TILE_ROWS][TILE_COLS]{};
     int preview_idx = -1;
 
+    // screen 
+    s32 half_screen_w;
+    s32 half_screen_h;
+
 } // namespace
 
 // ----------------------------------------------------------------------------
@@ -396,6 +400,9 @@ void levels_init()
     show_delete_confirm = false;
     pending_delete_idx = -1;
 
+    half_screen_w = AEGfxGetWindowWidth() / 2.0f;
+    half_screen_h = AEGfxGetWindowHeight() / 2.0f;
+
     build_level_list();
     sync_global_paths();
 }
@@ -554,8 +561,8 @@ void levels_update()
     if (wheel < 0) scroll_target = scroll_target < (f32)max_scroll() ? scroll_target + 1.f : (f32)max_scroll();
 
     // --- Scrollbar drag ---
-    float sx = (float)mouse_x - 800.f;
-    float sy = -(float)mouse_y + 450.f;
+    float sx = (float)mouse_x - half_screen_w;
+    float sy = -(float)mouse_y + half_screen_h;
     bool on_bar = (sx >= cfg.scrollbar_x - cfg.scrollbar_track_w * 0.5f &&
         sx <= cfg.scrollbar_x + cfg.scrollbar_track_w * 0.5f &&
         sy <= cfg.scrollbar_top && sy >= cfg.scrollbar_bot);
@@ -583,8 +590,8 @@ void levels_update()
     // --- Right click: open/close context menu for custom levels ---
     if (AEInputCheckTriggered(AEVK_RBUTTON))
     {
-        float mx = (float)mouse_x - 800.f;
-        float my = -(float)mouse_y + 450.f;
+        float mx = (float)mouse_x - half_screen_w;
+        float my = -(float)mouse_y + half_screen_h;
         bool  clicked_any = false;
 
         for (int row = 0; row < cfg.grid_rows_visible; ++row)
@@ -624,7 +631,7 @@ void levels_draw()
     // --- Tiled background ---
     if (tex_bg_wall)
     {
-        for (float x = -800.f; x <= 800.f; x += cfg.bg_tile_step)
+        for (float x = -half_screen_w; x <= half_screen_w; x += cfg.bg_tile_step)
             for (float y = -450.f; y <= 450.f; y += cfg.bg_tile_step)
                 render_editor_ui(tex_bg_wall, cfg.bg_tile_step, cfg.bg_tile_step, 0.3f, x, y);
     }
@@ -668,7 +675,7 @@ void levels_draw()
                     float name_tw = 0.f, name_th = 0.f;
                     AEGfxGetPrintSize(font, levels[idx].name.c_str(), 1.f, &name_tw, &name_th);
                     AEGfxPrint(font, levels[idx].name.c_str(),
-                        (cx / 800.f) - name_tw * 0.5f, (cy - 10.f) / 450.f,
+                        (cx / half_screen_w) - name_tw * 0.5f, (cy - 10.f) / half_screen_h,
                         1.f, 0.f, 0.f, 0.f, 1.f);
 
                     if (idx >= cfg.default_level_count)
@@ -677,13 +684,13 @@ void levels_draw()
                         float custom_tw = 0.f, custom_th = 0.f;
                         AEGfxGetPrintSize(font, "[Custom]", 0.7f, &custom_tw, &custom_th);
                         AEGfxPrint(font, "[Custom]",
-                            (cx / 800.f) - custom_tw * 0.5f, (cy - 40.f) / 450.f,
+                            (cx / half_screen_w) - custom_tw * 0.5f, (cy - 40.f) / half_screen_h,
                             0.7f, 0.5f, 0.9f, 0.5f, 1.f);
 
                         float hint_tw = 0.f, hint_th = 0.f;
                         AEGfxGetPrintSize(font, "[RMB]", 0.5f, &hint_tw, &hint_th);
                         AEGfxPrint(font, "[RMB]",
-                            (cx / 800.f) - hint_tw * 0.5f, (cy - 58.f) / 450.f,
+                            (cx / half_screen_w) - hint_tw * 0.5f, (cy - 58.f) / half_screen_h,
                             0.5f, 0.4f, 0.4f, 0.4f, 1.f);
                     }
                 }
@@ -706,7 +713,7 @@ void levels_draw()
                     float edit_tw = 0.f, edit_th = 0.f;
                     AEGfxGetPrintSize(font, "Edit", 0.9f, &edit_tw, &edit_th);
                     AEGfxPrint(font, "Edit",
-                        (edit_x / 800.f) - edit_tw * 0.5f, (edit_y - 10.f) / 450.f,
+                        (edit_x / half_screen_w) - edit_tw * 0.5f, (edit_y - 10.f) / half_screen_h,
                         0.9f, 0.f, 0.f, 0.f, 1.f);
 
                     float del_x = cx, del_y = cy - cfg.cell_height * 0.20f;
@@ -719,7 +726,7 @@ void levels_draw()
                     float del_tw = 0.f, del_th = 0.f;
                     AEGfxGetPrintSize(font, "Delete", 0.9f, &del_tw, &del_th);
                     AEGfxPrint(font, "Delete",
-                        (del_x / 800.f) - del_tw * 0.5f, (del_y - 10.f) / 450.f,
+                        (del_x / half_screen_w) - del_tw * 0.5f, (del_y - 10.f) / half_screen_h,
                         0.9f, 1.f, 0.3f, 0.3f, 1.f);
                 }
             }
@@ -756,7 +763,7 @@ void levels_draw()
         float back_tw = 0.f, back_th = 0.f;
         AEGfxGetPrintSize(font, "Back", 0.8f, &back_tw, &back_th);
         AEGfxPrint(font, "Back",
-            (cfg.back_btn_x / 800.f) - back_tw * 0.5f, (cfg.back_btn_y - 10.f) / 450.f,
+            (cfg.back_btn_x / half_screen_w) - back_tw * 0.5f, (cfg.back_btn_y - 10.f) / half_screen_h,
             0.8f, 0.f, 0.f, 0.f, 1.f);
     }
 
@@ -772,7 +779,7 @@ void levels_draw()
         float editor_tw = 0.f, editor_th = 0.f;
         AEGfxGetPrintSize(font, "Editor", 0.8f, &editor_tw, &editor_th);
         AEGfxPrint(font, "Editor",
-            (cfg.editor_btn_x / 800.f) - editor_tw * 0.5f, (cfg.editor_btn_y - 10.f) / 450.f,
+            (cfg.editor_btn_x / half_screen_w) - editor_tw * 0.5f, (cfg.editor_btn_y - 10.f) / half_screen_h,
             0.8f, 0.9f, 0.7f, 0.3f, 1.f);
     }
 
@@ -815,7 +822,7 @@ void levels_draw()
                     load_map_from_file(levels[idx].path.c_str(), preview_map);
                 }
 
-                float wx = (float)mouse_x - 800.f, wy = -(float)mouse_y + 450.f;
+                float wx = (float)mouse_x - half_screen_w, wy = -(float)mouse_y + half_screen_h;
                 float px = wx - cfg.preview_w * 0.5f - 10.f;
                 float py = wy - cfg.preview_h * 0.5f - 10.f;
 
@@ -829,7 +836,7 @@ void levels_draw()
                     float label_tw = 0.f, label_th = 0.f;
                     AEGfxGetPrintSize(font, levels[idx].name.c_str(), 0.8f, &label_tw, &label_th);
                     AEGfxPrint(font, levels[idx].name.c_str(),
-                        (px / 800.f) - label_tw * 0.5f, (py + cfg.preview_h * 0.5f + 25.f) / 450.f,
+                        (px / half_screen_w) - label_tw * 0.5f, (py + cfg.preview_h * 0.5f + 25.f) / half_screen_h,
                         0.8f, 1.f, 1.f, 1.f, 1.f);
                 }
                 break;
@@ -844,7 +851,7 @@ void levels_draw()
     // --- Custom cursor ---
     if (tex_cursor)
     {
-        float wx = (float)mouse_x - 800.f, wy = -(float)mouse_y + 450.f;
+        float wx = (float)mouse_x - half_screen_w, wy = -(float)mouse_y + half_screen_h;
         render_editor_ui(tex_cursor, 50.f, 50.f, 1.f, wx + 25.f, wy - 25.f);
     }
 }

@@ -70,175 +70,189 @@ constexpr f32 ZOOM_MIN = 0.8f;
 // ------------------------------------------------------------------------ 
 extern const char* curr_tooltip;
 
-// ------------------------------------------------------------------------
-// 
-// Overloads using color struct instead of using r,g,b,a seperately
-// 
-// ------------------------------------------------------------------------ 
+// ----------------------------------------------------------------------------
+//
+// Function: AEGfxSetColorToAdd
+// Overload using color struct to set the additive color.
+//
+// ---------------------------------------------------------------------------- 
 void AEGfxSetColorToAdd(const color& c);
+
+// ----------------------------------------------------------------------------
+//
+// Function: AEGfxSetColorToMultiply
+// Overload using color struct to set the multiplicative color.
+//
+// ---------------------------------------------------------------------------- 
 void AEGfxSetColorToMultiply(const color& c);
 
-// ------------------------------------------------------------------------
-// 
-// Initializes all meshes for render functions to use
-// 
-// ------------------------------------------------------------------------ 
+// ----------------------------------------------------------------------------
+//
+// Function: init_mesh
+// Initializes all meshes for render functions to use.
+//
+// ---------------------------------------------------------------------------- 
 void init_mesh();
 
-// ------------------------------------------------------------------------
-// 
-// Frees all mesh created by init_mesh
-// 
-// ------------------------------------------------------------------------ 
+// ----------------------------------------------------------------------------
+//
+// Function: free_mesh
+// Frees all mesh created by init_mesh.
+//
+// ---------------------------------------------------------------------------- 
 void free_mesh();
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: get_zoom
 // Updates zoom level. Should be called every frame.
-// dt		- deltatime
-// zoom_min - minimum zoom cap
-// zoom_max - maximum zoom cap
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void get_zoom(f32 dt, f32 zoom_min = ZOOM_MIN, f32 zoom_max = ZOOM_MAX);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: draw_circle
 // Draws a circle onto screen (Position is in the center). Affected by
 // camera translation and optionally zoom.
-// trans_x - x pos centered on circle
-// trans_y - y pos centered on circle
-// scale_x - width of circle/oval
-// scale_y - height of circle/oval
-// zoom    - determines whether it should be affected by zoom or not
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void draw_circle(f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, bool zoom = true);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: draw_rect_corner
 // Draws a square/rectangle onto screen (Position is at top left corner)
 // Affected by camera translation and optionally zoom.
-// trans_x - x pos of top left of rect
-// trans_y - y pos of top left of rect
-// scale_x - width of rect
-// scale_y - height of rect
-// zoom    - determines whether it should be affected by zoom or not
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void draw_rect_corner(f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, bool zoom = true);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: draw_square
 // Draws a square/rectangle onto screen (Position is in the center).
 // Affected by camera translation and optionally zoom.
-// trans_x - x pos of center of rect
-// trans_y - y pos of center of rect
-// scale_x - width of rect
-// scale_y - height of rect
-// zoom    - determines whether it should be affected by zoom or not
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void draw_square(f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, bool zoom = true);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: draw_triangle
 // Draws a triangle onto screen (Position is in the center).
 // Affected by camera translation and optionally zoom.
-// trans_x - x pos of center of triangle
-// trans_y - y pos of center of triangle
-// scale_x - width of triangle
-// scale_y - height of triangle
-// zoom    - determines whether it should be affected by zoom or not
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void draw_triangle(f32 trans_x, f32 trans_y, f32 scale_x, f32 scale_y, bool zoom = true);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: render_text_center
 // Draws a text unto screen (Position is in center). Unaffected by camera
 // zoom and translation.
-// text  - text to draw
-// font  - font of text
-// pos_x - x pos of center of text (Normalized position [0.0f - 1.0f])
-// pos_y - y pos of center of text (Normalized position [0.0f - 1.0f])
-// scale - scale of text (differs from font size)
-// color - color of text
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,
 	f32 scale, color color);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: render_text_corner
 // Draws a text unto screen (Position is in bottom right). Unaffected by camera
 // zoom and translation.
-// text  - text to draw
-// font  - font of text
-// pos_x - x pos of bottom right of text (Normalized position [0.0f - 1.0f])
-// pos_y - y pos of bottom right of text (Normalized position [0.0f - 1.0f])
-// scale - scale of text (differs from font size)
-// color - color of text
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void render_text_corner(char const* text, s8 font, f32 pos_x, f32 pos_y,
 	f32 scale, color color);
 
-// ------------------------------------------------------------------------
-// 
-// Draws a text onto bottom right of screen (in yellow). Text/Tooltip to
-// print is represented by "curr_tooltip". Update curr_tooltip every frame
-// to change text. Default is nothing "".
-// font - tooltip font
-// 
-// ------------------------------------------------------------------------ 
+// ----------------------------------------------------------------------------
+//
+// Function: render_tooltip
+// Draws a text onto bottom right of screen (in yellow). Update 
+// curr_tooltip every frame to change text.
+//
+// ---------------------------------------------------------------------------- 
 void render_tooltip(s8 font);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: draw_black_overlay
 // Draws a black overlay onto screen. Used for darkening background for
 // UI to be drawn on top.
-// alpha - controls how dark the overlay is
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void draw_black_overlay(f32 alpha);
 
-// ------------------------------------------------------------------------
-// 
+// ----------------------------------------------------------------------------
+//
+// Function: render_sprite
 // Draws a sprite onto screen that is affected by camera zoom, translation,
 // light levels and culling.
-// rect_mesh - determines center of sprite (center or top left)
-// trans_x	 - x pos of center of sprite
-// trans_y	 - y pos of center of sprite
-// scale_x	 - width of sprite
-// scale_y	 - height of sprite
-// texture	 - texture of sprite
-// color	 - optional color to highlight sprite (affected by light)
-// 
-// ------------------------------------------------------------------------ 
+//
+// ---------------------------------------------------------------------------- 
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = { 1.0f,1.0f,1.0f,1.0f });
 
+// ----------------------------------------------------------------------------
+//
+// Function: render_ui_sprite
+// Renders a sprite for the User Interface. Not affected by camera zoom
+// or translation.
+//
+// ---------------------------------------------------------------------------- 
 void render_ui_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = { 1.0f,1.0f,1.0f,1.0f });
 
+// ----------------------------------------------------------------------------
+//
+// Function: render_editor_ui
+// Renders UI elements specifically for the Level Editor, with support
+// for alpha transparency and hover highlighting.
+//
+// ---------------------------------------------------------------------------- 
 void render_editor_ui(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
 	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
 
+// ----------------------------------------------------------------------------
+//
+// Function: render_editor_tiles
+// Renders individual map tiles in the editor. Affected by camera
+// transforms but used primarily for grid layout.
+//
+// ---------------------------------------------------------------------------- 
 void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
 	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
 
+// ----------------------------------------------------------------------------
+//
+// Function: render_sprite_flash
+// Renders a sprite with an additive white color flash. Used to indicate
+// feedback such as taking damage.
+//
+// ---------------------------------------------------------------------------- 
 void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, f32 flash);
 
-// Animation for boss
+// ----------------------------------------------------------------------------
+//
+// Function: render_anim_sprite
+// Renders a single frame of an animated sprite based on the Animator's
+// current state and UV coordinates.
+//
+// ---------------------------------------------------------------------------- 
 struct Animator;
 void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim);
 
+// ----------------------------------------------------------------------------
+//
+// Function: render_boss_projectiles
+// Processes and renders all active projectiles managed by the 
+// BossProjectileManager.
+//
+// ---------------------------------------------------------------------------- 
 class BossProjectileManager;
 void render_boss_projectiles(const BossProjectileManager& manager);
-
-

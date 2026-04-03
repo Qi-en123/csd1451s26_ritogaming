@@ -3,9 +3,9 @@
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
 \brief:         This file handles tile-based map rendering and initialization.
-                It creates the tile mesh, draws individual tiles and the 
-                full map and defines the dungeon layout including rooms, 
-                corridors, players,and boss areas.
+                It creates the tile mesh, draws individual tiles and the
+                full map and defines the dungeon layout including rooms,
+                corridors, players, and boss areas.
 **************************************************************************/
 #include "AEEngine.h"
 #include "renderer.hpp"
@@ -16,22 +16,28 @@
 #include <iostream>   
 #include <windows.h>
 
-// Dummy map
+// ----------------------------------------------------------------------------
+// Global Map Data
+// ----------------------------------------------------------------------------
 s32 map[TILE_ROWS][TILE_COLS];
-//f32 tile_size{};
 AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 
-// load textures for tile types
+// ----------------------------------------------------------------------------
+//
+// Function: load_tile_textures
+// Iterates through the Assets folder to load textures for each tile type index.
+//
+// ---------------------------------------------------------------------------- 
 bool load_tile_textures(const char* folderPath)
 {
     for (int i = 0; i < NUM_TILE_TYPES; ++i)
     {
-        // Build file path: folderPath + "tile_i.png"
+        // Build file path: folderPath + "tile_i.png" (e.g., tile_0001.png)
         char filename[256];
         snprintf(filename, sizeof(filename), "%s/tile_%04d.png", folderPath, i);
 
-        // Load the texture
-        if (TileTextures[i]) continue; // already loaded, skip
+        // Load the texture if not already in memory
+        if (TileTextures[i]) continue;
         TileTextures[i] = AEGfxTextureLoad(filename);
         if (!TileTextures[i])
         {
@@ -43,7 +49,12 @@ bool load_tile_textures(const char* folderPath)
     return true;
 }
 
-// save map to file, avoid creating new files
+// ----------------------------------------------------------------------------
+//
+// Function: save_map_to_file_overwrite
+// Saves the current state of a dynamic map to an existing file, overwriting data.
+//
+// ---------------------------------------------------------------------------- 
 bool save_map_to_file_overwrite(s32** map, const std::string& filename)
 {
     std::ofstream file{ filename };
@@ -70,26 +81,32 @@ bool save_map_to_file_overwrite(s32** map, const std::string& filename)
     return true;
 }
 
-
-// free tile textures when done
+// ----------------------------------------------------------------------------
+//
+// Function: free_tile_textures
+// Unloads all tile textures from memory to prevent leaks.
+//
+// ---------------------------------------------------------------------------- 
 void free_tile_textures()
 {
     for (int i = 0; i < NUM_TILE_TYPES; ++i)
     {
         if (TileTextures[i])
         {
-            AEGfxTextureUnload(TileTextures[i]); // unload texture
-            TileTextures[i] = nullptr;           // avoid dangling pointer
+            AEGfxTextureUnload(TileTextures[i]);
+            TileTextures[i] = nullptr;
         }
     }
 }
 
-// get door position in world coordinates for enemy spawn
+// ----------------------------------------------------------------------------
+//
+// Function: get_door_world_pos
+// Scans the map to find a door tile and returns its center world coordinates.
+//
+// ---------------------------------------------------------------------------- 
 void get_door_world_pos(f32& out_x, f32& out_y)
 {
-    //f32 world_left = -800.0f;
-    //f32 world_top = 450.0f;
-
     for (int r = 0; r < TILE_ROWS; ++r)
     {
         for (int c = 0; c < TILE_COLS; ++c)
@@ -107,7 +124,13 @@ void get_door_world_pos(f32& out_x, f32& out_y)
     out_x = 0.f;
     out_y = 0.f;
 }
-// load map to editor to edit
+
+// ----------------------------------------------------------------------------
+//
+// Function: load_map_to_editor
+// Loads a map file into a double-pointer map array used by the Level Editor.
+//
+// ---------------------------------------------------------------------------- 
 bool load_map_to_editor(const char* filename, s32** editor_map)
 {
     std::ifstream file(filename);
@@ -138,77 +161,87 @@ bool load_map_to_editor(const char* filename, s32** editor_map)
     file.close();
     return true;
 }
-// load map from file to game
+
+// ----------------------------------------------------------------------------
+//
+// Function: load_map_from_file
+// Loads a map file into the standard 2D array used by the game engine.
+//
+// ---------------------------------------------------------------------------- 
 bool load_map_from_file(const char* filename, s32 map[][TILE_COLS])
 {
-	std::ifstream file(filename); // Open the map file for reading
-	if (!file.is_open()) { // Check if the file was successfully opened
-		std::cerr << "Failed to open map file: " << filename << "\n"; // Print an error message if the file cannot be opened
-		return false; // Return false to indicate failure
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open map file: " << filename << "\n";
+        return false;
     }
 
-	std::string line; // Variable to hold each line read from the file
-	int row = 0; // Row index for the map array
+    std::string line;
+    int row = 0;
 
-	while (std::getline(file, line) && row < TILE_ROWS) // Read each line of the file
+    while (std::getline(file, line) && row < TILE_ROWS)
     {
-		std::istringstream ss(line); // ss acts as a stream for the current line
-		int col = 0; // Column index for the map array
-		int tileType; // Variable to hold the tile type read from the line
+        std::istringstream ss(line);
+        int col = 0;
+        int tileType;
 
-		while (ss >> tileType && col < TILE_COLS)  // Read each tile type in the line
+        while (ss >> tileType && col < TILE_COLS)
         {
-			map[row][col] = tileType; // Store the tile type in the map array
-			++col; // Move to the next column
+            map[row][col] = tileType;
+            ++col;
         }
 
-        // Fill remaining columns with EMPTY if line too short
+        // Fill remaining columns with EMPTY if line is shorter than TILE_COLS
         while (col < TILE_COLS)
         {
-			map[row][col] = EMPTY; // Fill with EMPTY tile type
-			++col; // Move to the next column
+            map[row][col] = EMPTY;
+            ++col;
         }
 
-		++row; // Move to the next row
+        ++row;
     }
 
-    // Fill remaining rows with EMPTY if file has fewer rows
-	while (row < TILE_ROWS) 
+    // Fill remaining rows with EMPTY if file has fewer than TILE_ROWS
+    while (row < TILE_ROWS)
     {
-		for (int c = 0; c < TILE_COLS; ++c) // Fill remaining columns with EMPTY
+        for (int c = 0; c < TILE_COLS; ++c)
             map[row][c] = EMPTY;
-		++row; // Move to the next row
+        ++row;
     }
 
-	file.close(); // Close the file after reading
-	return true; // Return true to indicate successful loading
+    file.close();
+    return true;
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: save_map_to_file
+// Searches existing level files to create a new unique level filename (e.g., lvl5.txt).
+//
+// ---------------------------------------------------------------------------- 
 bool save_map_to_file(s32** map, std::string& out_filename)
 {
-    // Find highest existing lvl number and go one above it
     s32 highest = 0;
     WIN32_FIND_DATAA find_data;
     HANDLE hFind = FindFirstFileA("Assets/Levels/lvl*.txt", &find_data);
     if (hFind != INVALID_HANDLE_VALUE)
     {
         do {
-			std::string fname = find_data.cFileName; // file name
-            size_t start = fname.find("lvl") + 3; // position of the number 
-            size_t end = fname.find(".txt"); //position of the end of number
-            if (start != std::string::npos && end != std::string::npos) // ensure both number and .txt exist
+            std::string fname = find_data.cFileName;
+            size_t start = fname.find("lvl") + 3;
+            size_t end = fname.find(".txt");
+            if (start != std::string::npos && end != std::string::npos)
             {
-				int n = std::stoi(fname.substr(start, end - start)); // extract the number from the filename
-				if (n > highest) highest = n; // update highest if this file's number is greater
+                int n = std::stoi(fname.substr(start, end - start));
+                if (n > highest) highest = n;
             }
         } while (FindNextFileA(hFind, &find_data));
         FindClose(hFind);
     }
 
     std::string filename = "Assets/Levels/lvl" + std::to_string(highest + 1) + ".txt";
-    out_filename = filename; // return the filename used
+    out_filename = filename;
 
-    // Now open that filename for writing
     std::ofstream file{ filename };
 
     if (!file.is_open())
@@ -217,7 +250,6 @@ bool save_map_to_file(s32** map, std::string& out_filename)
         return false;
     }
 
-    // Write map data
     for (int row = 0; row < TILE_ROWS; ++row)
     {
         for (int col = 0; col < TILE_COLS; ++col)
@@ -231,15 +263,16 @@ bool save_map_to_file(s32** map, std::string& out_filename)
     }
 
     file.close();
-
     std::cout << "Saved to: " << filename << "\n";
     return true;
 }
 
-
-// ------------------------------------------------------------
-// Draw the entire map perfectly centered
-// ------------------------------------------------------------
+// ----------------------------------------------------------------------------
+//
+// Function: draw_map
+// Renders the entire tile map centered on the screen.
+//
+// ---------------------------------------------------------------------------- 
 void draw_map(f32 tile_size)
 {
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -258,25 +291,29 @@ void draw_map(f32 tile_size)
         {
             int tileType = map[row][col];
 
-            // Skip empty tiles
             if (tileType == 0)
                 continue;
-            
+
             f32 x = startX + col * tile_size + tile_size * 0.5f;
 
+            // Handle special entities that occupy a floor tile
             if (tileType == KNIGHT || tileType == WIZARD || tileType == TOMB || tileType == TREE) {
                 render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[2]);
-                map[row][col] = FLOOR; // for minimap to render floor
+                map[row][col] = FLOOR; // Reset to floor for internal map logic
                 continue;
             }
-            
 
             render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
 }
 
-
+// ----------------------------------------------------------------------------
+//
+// Function: draw_map_preview
+// Renders a miniature version of the map for UI selection screens.
+//
+// ---------------------------------------------------------------------------- 
 void draw_map_preview(s32 preview[][TILE_COLS], f32 center_x, f32 center_y, f32 preview_w, f32 preview_h)
 {
     f32 dot_w = preview_w / (f32)TILE_COLS;
@@ -301,7 +338,12 @@ void draw_map_preview(s32 preview[][TILE_COLS], f32 center_x, f32 center_y, f32 
     }
 }
 
-//preview level layout for level select screen, same layout as default level
+// ----------------------------------------------------------------------------
+//
+// Function: preview_default_level
+// Hardcodes the layout for the default level preview.
+//
+// ---------------------------------------------------------------------------- 
 void preview_default_level(s32 out_map[][TILE_COLS])
 {
     for (int r = 0; r < TILE_ROWS; ++r)
@@ -357,6 +399,10 @@ void preview_default_level(s32 out_map[][TILE_COLS])
     for (int c = 10; c < 25; ++c) { out_map[20][c] = WALL; out_map[22][c] = WALL; }
 }
 
+// ----------------------------------------------------------------------------
+// Coordinate Helper Functions
+// ----------------------------------------------------------------------------
+
 s32 convert_to_col(f32 x) {
     return static_cast<s32>((x - world_left) / tile_size);
 }
@@ -373,22 +419,23 @@ f32 col_to_world(s32 col) {
     return static_cast<f32>(col * tile_size + world_left + tile_size * 0.5);
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: world_to_tile
 // Converts a world-space position (x, y) into tile map indices (row, col)
-// Returns true if the position lies within the map bounds, false otherwise
+// Returns true if the position lies within the map bounds, false otherwise.
+//
+// ---------------------------------------------------------------------------- 
 bool world_to_tile(f32 worldX, f32 worldY, int& outRow, int& outCol)
 {
-    // Convert world X to column index
     outCol = convert_to_col(worldX);
-
-    // Convert world Y to row index (Y increases downward in tiles)
     outRow = convert_to_row(worldY);
 
-    // Check bounds
     if (outRow < 0 || outRow >= TILE_ROWS ||
         outCol < 0 || outCol >= TILE_COLS)
     {
-        return false; // outside map
+        return false;
     }
 
-    return true; // valid tile indices
+    return true;
 }

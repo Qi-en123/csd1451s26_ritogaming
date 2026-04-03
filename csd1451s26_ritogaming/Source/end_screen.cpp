@@ -1,20 +1,18 @@
 /*!************************************************************************
-\file:          end_screen.cpp
-\author:
-\par DP email:
-\
-\Co-author:     Claire (60%- namespace, draw_button_label, loading, drawing,
-\                            designing win &lose)
-\
-\brief:         Win / Lose full-screen end state.
-                GS_WIN / GS_LOSE are standalone states (not overlays).
-                Draws a background, the win/lose asset, two buttons and
-                a custom cursor using render_editor_ui - same system as
-                the main menu so hover highlight and coords all match.
+\file:                      end_screen.cpp
+\author:                    Goh Qi En
+\par DP email:              g.qien@digipen.edu
+\co-author:					Claire
+\par co-author DP email:	c.cheong@digipen.edu
+\brief:                     Win / Lose full-screen end state.
+                            GS_WIN / GS_LOSE are standalone states (not overlays).
+                            Draws a background, the win/lose asset, two buttons and
+                            a custom cursor using render_editor_ui - same system as
+                            the main menu so hover highlight and coords all match.
 
-                Pause is a top-level button panel: dark overlay + three
-                centred buttons (Resume / Restart / Main Menu) drawn with
-                the same render_editor_ui / IsButtonHovered system.
+                            Pause is a top-level button panel: dark overlay + three
+                            centred buttons (Resume / Restart / Main Menu) drawn with
+                            the same render_editor_ui / IsButtonHovered system.
 **************************************************************************/
 
 #include "AEEngine.h"
@@ -136,7 +134,7 @@ static void draw_button_label(const char* label, f32 btn_x, f32 btn_y,
     f32 tw = 0.f, th = 0.f;
     AEGfxGetPrintSize(end_font, label, scale, &tw, &th);
     // render_editor_ui is centred on world coords; AEGfxPrint uses -1..1 normalised
-    f32 norm_x = (btn_x / 800.f) - (tw / 2.f);
+    f32 norm_x = (btn_x / (AEGfxGetWindowWidth() / 2.0f)) - (tw / 2.f);
     f32 norm_y = (btn_y - 15.f) / 450.f;
     AEGfxPrint(end_font, label, norm_x, norm_y, scale, 0.f, 0.f, 0.f, 1.f);
 }
@@ -281,8 +279,8 @@ void end_screen_draw()
     // Custom cursor
     if (tex_cursor)
     {
-        f32 world_x = (f32)mouse_x - 800.f;
-        f32 world_y = -(f32)mouse_y + 450.f;
+        f32 world_x = (f32)mouse_x - (AEGfxGetWindowWidth()/2.0f);
+        f32 world_y = -(f32)mouse_y + (AEGfxGetWindowHeight()/2.0f);
         render_editor_ui(tex_cursor, CURSOR_SIZE, CURSOR_SIZE, 1.f, world_x, world_y);
     }
 }

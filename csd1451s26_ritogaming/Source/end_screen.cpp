@@ -84,6 +84,44 @@ namespace
     enum ConfirmTarget { CONFIRM_NONE, CONFIRM_RESTART, CONFIRM_MAINMENU };
     ConfirmTarget confirm_target = CONFIRM_NONE;
     ConfirmTarget pause_confirm_target = CONFIRM_NONE;
+
+    void draw_confirmation() {
+        draw_black_overlay(0.6f);
+        render_editor_ui(c_panel,
+            c_panel_w, c_panel_h,
+            1.0f, 0.f, 0.f);
+
+        render_editor_ui(buttons,
+            c_btn_w, c_btn_h,
+            1.0f, -c_btn_x, c_btn_y,
+            IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h));
+
+        render_editor_ui(buttons,
+            c_btn_w, c_btn_h,
+            1.0f, c_btn_x, c_btn_y, //pos
+            IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h));
+
+        if (end_font != -1)
+        {
+            const char* msg = (pause_confirm_target == CONFIRM_RESTART)
+                ? "Restart level?" : "Return to Main Menu?";
+
+            render_text_center(msg, end_font,
+                0.0f,
+                (c_panel_h / 5.0f) / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
+
+            render_text_center("Yes", end_font,
+                -(c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
+                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
+
+            render_text_center("No", end_font,
+                (c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
+                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
+        }
+    }
 }
 
 // -------------------------------------------------------------------------
@@ -237,22 +275,7 @@ void end_screen_draw()
 
     if (confirm_target != CONFIRM_NONE)
     {
-        draw_black_overlay(0.6f);
-        render_editor_ui(c_panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
-        render_editor_ui(tex_button, 200.f, 80.f, 1.0f, -100.f, -50.f,
-            IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
-        render_editor_ui(tex_button, 200.f, 80.f, 1.0f, 150.f, -50.f,
-            IsButtonHovered(150.f, -50.f, 200.f, 80.f));
-        if (end_font != -1)
-        {
-            const char* msg = (confirm_target == CONFIRM_RESTART)
-                ? "Restart level?" : "Return to Main Menu?";
-            f32 tw = 0.f, th = 0.f;
-            AEGfxGetPrintSize(end_font, msg, 0.9f, &tw, &th);
-            AEGfxPrint(end_font, msg, -tw * 0.5f, 0.1f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "Yes", -100.f / 800.f - 0.05f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "No", 150.f / 800.f - 0.03f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-        }
+        draw_confirmation();
     }
 
     // Custom cursor
@@ -293,8 +316,6 @@ void pause_update()
                 play_sfx(g_audio.sfx_button_click, 1.f);
                 if (pause_confirm_target == CONFIRM_RESTART)
                 {
-                    selected_level_path = "Assets/Levels/default.txt";
-                    selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
                     next = GS_RESTART;
                 }
                 else
@@ -378,41 +399,7 @@ void pause_draw()
 
     if (pause_confirm_target != CONFIRM_NONE)
     {
-        draw_black_overlay(0.6f);
-        render_editor_ui(c_panel,
-            c_panel_w, c_panel_h,
-            1.0f, 0.f, 0.f);
-
-        render_editor_ui(buttons,
-            c_btn_w, c_btn_h,
-            1.0f, -c_btn_x, c_btn_y,
-            IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h));
-
-        render_editor_ui(buttons,
-            c_btn_w, c_btn_h,
-            1.0f, c_btn_x, c_btn_y, //pos
-            IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h));
-
-        if (end_font != -1)
-        {
-            const char* msg = (pause_confirm_target == CONFIRM_RESTART)
-                ? "Restart level?" : "Return to Main Menu?";
-
-            render_text_center(msg, end_font,
-                0.0f,
-                (c_panel_h / 5.0f) / (AEGfxGetWindowHeight() / 2.0f),
-                1.0f, black);
-
-            render_text_center("Yes", end_font,
-                -(c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
-                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
-                1.0f, black);
-
-            render_text_center("No", end_font,
-                (c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
-                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
-                1.0f, black);
-        }
+        draw_confirmation();
     }
 
     //  6. Custom cursor

@@ -443,7 +443,6 @@ void mainmenu_draw()
     if (show_exit_confirm)
     {
         draw_black_overlay(0.6f);
-
         // Popup box
         render_editor_ui(confirmation_panel, //tex
             c_panel_w, c_panel_h, //width & height

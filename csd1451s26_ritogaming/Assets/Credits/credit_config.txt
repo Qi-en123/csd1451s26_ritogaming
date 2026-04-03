@@ -29,8 +29,8 @@ bg_color_b               0.05
 
 # --- DigiPen Logo ---
 logo_digipen_path        Assets/Sprites/Admin/DigiPen_BLACK_credit.png
-logo_digipen_x           620.0
-logo_digipen_y           380.0
+logo_digipen_x           550.0
+logo_digipen_y           300.0
 logo_digipen_w           400.0
 logo_digipen_h           200.0
 logo_digipen_alpha       1.0

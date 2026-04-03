@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\audio_manager.cpp" />
+    <ClCompile Include="..\Source\boss_room.cpp" />
     <ClCompile Include="..\Source\camera.cpp" />
     <ClCompile Include="..\Source\collision.cpp" />
     <ClCompile Include="..\Source\credit.cpp" />
@@ -22,7 +23,6 @@
     <ClCompile Include="..\Source\game_state_manager.cpp" />
     <ClCompile Include="..\Source\guide.cpp" />
     <ClCompile Include="..\Source\level1.cpp" />
-    <ClCompile Include="..\Source\level2.cpp" />
     <ClCompile Include="..\Source\levels.cpp" />
     <ClCompile Include="..\Source\level_editor.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\audio_manager.hpp" />
+    <ClInclude Include="..\Source\boss_room.hpp" />
     <ClInclude Include="..\Source\camera.hpp" />
     <ClInclude Include="..\Source\collision.hpp" />
     <ClInclude Include="..\Source\collision_config.hpp" />
@@ -50,7 +51,6 @@
     <ClInclude Include="..\Source\game_state_manager.hpp" />
     <ClInclude Include="..\Source\guide.hpp" />
     <ClInclude Include="..\Source\level1.hpp" />
-    <ClInclude Include="..\Source\level2.hpp" />
     <ClInclude Include="..\Source\levels.hpp" />
     <ClInclude Include="..\Source\level_editor.hpp" />
     <ClInclude Include="..\Source\mainmenu.hpp" />

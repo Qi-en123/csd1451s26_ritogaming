@@ -34,7 +34,7 @@ namespace {
     s32 mouse_x, mouse_y;
 }
 
-void level2_load()
+void boss_room_load()
 {
     // Load textures properly
     if (!load_tile_textures("Assets/Sprites/Tiles"))
@@ -44,7 +44,7 @@ void level2_load()
     end_screen_load();
 }
 
-void level2_init()
+void boss_room_init()
 {
     //Disable cursor
     AEInputShowCursor(false);
@@ -102,7 +102,7 @@ void level2_init()
     play_bgm(g_audio.bgm_bossroom, 1.0f);
 }
 
-void level2_update()
+void boss_room_update()
 {
     //Get mouse position
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
@@ -155,7 +155,7 @@ void level2_update()
     }
 }
 
-void level2_draw()
+void boss_room_draw()
 {
     AEGfxReset();
     //draw_boss_map(tile_size);
@@ -186,7 +186,7 @@ void level2_draw()
     render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active); //iihih
 }
 
-void level2_free()
+void boss_room_free()
 {
     // Cleanup enemies
     free_ui_textures(&ui_manager);
@@ -200,7 +200,7 @@ void level2_free()
     g_bgm_current_track = nullptr;
 }
 
-void level2_unload()
+void boss_room_unload()
 {
     free_tile_textures();
     //free_mesh();

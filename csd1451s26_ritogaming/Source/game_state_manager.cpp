@@ -10,7 +10,7 @@
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "level1.hpp"
-#include "level2.hpp"
+#include "boss_room.hpp"
 #include "credit.hpp"
 #include "opening.hpp"
 #include "mainmenu.hpp"
@@ -78,12 +78,12 @@ void gsm_update()
 		break;
 
 	case GS_BOSS_ROOM:				//boss room 
-		fpLoad = level2_load;
-		fpInitialize = level2_init;
-		fpUpdate = level2_update;
-		fpDraw = level2_draw;
-		fpFree = level2_free;
-		fpUnload = level2_unload;
+		fpLoad = boss_room_load;
+		fpInitialize = boss_room_init;
+		fpUpdate = boss_room_update;
+		fpDraw = boss_room_draw;
+		fpFree = boss_room_free;
+		fpUnload = boss_room_unload;
 		break;
 
 	case CREDIT:					//credit screen

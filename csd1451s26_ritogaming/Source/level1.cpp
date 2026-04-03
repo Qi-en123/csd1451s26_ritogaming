@@ -181,7 +181,7 @@ void level1_init()
 	enemy_manager_instance.initialize_tutorial_area();
 
 	g_bgm_current_track = &g_audio.bgm_maingame;
-	play_bgm(g_audio.bgm_maingame, 0.5f);
+	play_bgm(g_audio.bgm_maingame, 0.1f);
 }
 
 void level1_update()

@@ -322,9 +322,9 @@ void credit_draw()
     // Draw custom cursor at current mouse world position
     if (cursor)
     {
-        f32 world_x = (f32)mouse_x - 800.f;  // convert screen x to world x
-        f32 world_y = -(f32)mouse_y + 450.f; // flip y axis for world space
-        render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
+        f32 world_x = (f32)mouse_x - AEGfxGetWindowWidth()/2.0f;  // convert screen x to world x
+        f32 world_y = -(f32)mouse_y + AEGfxGetWindowHeight()/2.0f; // flip y axis for world space
+        render_editor_ui(cursor, cursor_w, cursor_h, 1.0f, world_x, world_y);
     }
 
     // ----------------------------------------------------------------------------

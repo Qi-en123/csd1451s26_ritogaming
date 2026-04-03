@@ -509,8 +509,8 @@ void mainmenu_draw()
             AEGfxGetPrintSize(font, cfg_button_labels[i].c_str(), 1.f, &text_width, &text_height);
 
             // Convert world x to normalized [-1,1] then offset by half text width to center
-            f32 norm_x = (cfg_button_x / 800.f) - (text_width / 2.f);
-            f32 norm_y = (cfg_button_y[i] - 15.f) / 450.f;
+            f32 norm_x = (cfg_button_x / AEGfxGetWindowWidth()/2.0f) - (text_width / 2.f);
+            f32 norm_y = (cfg_button_y[i] - 15.f) / AEGfxGetWindowHeight()/2.0f;
             AEGfxPrint(font, cfg_button_labels[i].c_str(), norm_x, norm_y, 1.f, 0.f, 0.f, 0.f, 1.f);
         }
     }

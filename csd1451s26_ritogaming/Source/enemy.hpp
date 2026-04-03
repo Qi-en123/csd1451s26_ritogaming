@@ -99,7 +99,7 @@ public:
     void clear();
 
     /// Update movement, lifetime, and camera culling
-    void update(float dt, const camera* cam);
+    void update(float dt, const Camera::camera* cam);
 
     /// Check collision against player; returns number of hits this frame
     int  check_player_collision(Player* player);
@@ -224,7 +224,7 @@ public:
     virtual ~base_enemy() {}
 
     /// Per-frame update (must be implemented by derived classes)
-    virtual void update(f32 dt, struct Player* player, camera* cam) = 0;
+    virtual void update(f32 dt, struct Player* player, Camera::camera* cam) = 0;
 
     /// Apply damage and handle death state
     virtual void take_damage(int amount);
@@ -233,7 +233,7 @@ public:
     virtual int get_max_health() const { return max_health; }
 
     // --- Utility ---
-    bool is_in_camera_view(camera* cam) const;
+    bool is_in_camera_view(Camera::camera* cam) const;
     bool collides_with_player(struct Player* player) const;
     f32 distance_to_player(struct Player* player) const;
 
@@ -280,7 +280,7 @@ public:
     ghost(f32 start_x, f32 start_y);
     ~ghost() override = default;
 
-    void update(f32 dt, struct Player* player, camera* cam) override;
+    void update(f32 dt, struct Player* player, Camera::camera* cam) override;
     void take_damage(int amount) override;
 
     bool is_ghost() const override { return true; }
@@ -301,7 +301,7 @@ public:
     bat(f32 start_x, f32 start_y);
     ~bat() override = default;
 
-    void update(f32 dt, struct Player* player, camera* cam) override;
+    void update(f32 dt, struct Player* player, Camera::camera* cam) override;
 };
 
 
@@ -415,7 +415,7 @@ public:
         f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
     ~dragon() override = default;
 
-    void update(f32 dt, struct Player* player, camera* cam) override;
+    void update(f32 dt, struct Player* player, Camera::camera* cam) override;
     void take_damage(int amount) override;
 
     /// Returns true when boss is defeated and reward should spawn

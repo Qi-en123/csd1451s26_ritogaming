@@ -52,13 +52,11 @@ namespace
 	f32 text_hold_timer = 0.f;
 
 
-
 	// Boss warning
 	bool show_boss_warning = false;
 	f32 boss_warning_timer = 0.f;
 	const f32 BOSS_WARNING_DUR = 3.f;
 	s8 warning_font = -1;
-
 }
 
 bool is_transitioning()
@@ -112,7 +110,7 @@ void level1_init()
 
 	
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-	zoom = 1.1f;
+	Camera::zoom = 1.1f;
 	ensure_level_paths_loaded(); // for both puzzles and map tile data
 
 	if (selected_level_path.empty() || selected_level_puzzle_path.empty())
@@ -138,7 +136,7 @@ void level1_init()
 	load_map_from_file(selected_level_path.c_str(), map);
 	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
 
-	generate_walls_from_map(map, 64.0f);
+	generate_walls_from_map(map, tile_size);
 
 	for (int r = 0; r < TILE_ROWS; ++r)
 		for (int c = 0; c < TILE_COLS; ++c)
@@ -150,12 +148,12 @@ void level1_init()
 
 	player_instance.stats.character_size = tile_size - 8.0f;
 	// Camera follows the active character via the pointer
-	cam = init_cam(&player_instance.current_player->x, &player_instance.current_player->y, 60.0f, 5.0f);
+	Camera::cam = Camera::init_cam(&player_instance.current_player->x, &player_instance.current_player->y);
 	init_mesh();
 
 	totalWorldW = ((f32)TILE_COLS * tile_size) / minimap_zoom;
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / minimap_zoom;
-	minimap_init(totalWorldW, totalWorldH, 300.0f);
+	minimap_init(totalWorldW, totalWorldH);
 	
 	// for enemies
 	std::string spawn_path;
@@ -253,12 +251,14 @@ void level1_update()
 		}
 		return;
 	}
+
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
 
 	// Camera follows current_player - automatically updates when you switch characters!
-	simulate_camera(&cam, &player_instance.current_player->x, &player_instance.current_player->y,
-					-6000.0f, 6000.0f, -5000.0f, 5000.0f);
+	Camera::simulate_camera(&Camera::cam,
+		&player_instance.current_player->x,
+		&player_instance.current_player->y);
 
 	player_system_update(&player_instance);
 	entity_system_update(&player_instance, &enemy_manager_instance);
@@ -268,7 +268,7 @@ void level1_update()
 
 	check_and_open_doors(&player_instance);
 
-	enemy_manager_instance.update(dt, &player_instance, &cam);
+	enemy_manager_instance.update(dt, &player_instance, &Camera::cam);
 
 	// Lose condition
 	if (player_is_dead(&player_instance))

@@ -1,12 +1,16 @@
 /*!************************************************************************
-\file:          level_editor.cpp
-\author:        Goh Qi En (2%), Jerod (98%) :) [rmb to change omg]
-\par DP email:  g.qien@digipen.edu, jerodyaowei.lim@digipen.edu
-\brief:         This file defines functions to load, initialize, update, draw, free, and unload
-				the game's level interface which allows users to create custom maps by painting tiles on a grid and saving them to a file. 
-                The editor features a tile palette, camera panning, and visual feedback for tile placement and saving status.
+\file:						level_editor.cpp
+\author:					Goh Qi En
+\par DP email:				g.qien@digipen.edu
+\co-author:					Jerod Lim
+\par co-author DP email:	jerodyaowei.lim@digipen.edu
+\brief:         This file defines functions to load, initialize, update,
+				draw, free, and unload the game's level interface which
+				allows users to create custom maps by painting tiles on a
+				grid and saving them to a file. The editor features a tile
+				palette, camera panning, and visual feedback for tile
+				placement and saving status.
 **************************************************************************/
-
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "utils.hpp"
@@ -33,18 +37,24 @@ namespace {
 	s32 mouse_x, mouse_y;
 	s8 level_editor_font = -1;
 
-	// --- Tile Palette ---
+	// ------------------------------------------------------------------------
+	// Tile palettes
+	// ------------------------------------------------------------------------ 
 	const int PALETTE_COUNT = 8;
 	const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 7, 5, 6 };
 	const char* palette_labels[PALETTE_COUNT] =
 	{ "Erase", "Wall", "Floor", "Wizard", "Knight", "Door", "Ghost", "Bat" };
 	int selected_tile = 1; // default to wall
 
-	// --- Enemy Spawn message ---
+	// ------------------------------------------------------------------------
+	// Enemy Spawn messages
+	// ------------------------------------------------------------------------ 
 	float spawn_error_timer = 0.0f;
 	const float SPAWN_ERROR_DUR = 2.0f; // Message stays for 2 seconds
 
-	// --- Puzzle Palette ---
+	// ------------------------------------------------------------------------
+	// Puzzle palettes
+	// ------------------------------------------------------------------------ 
 	const int EDITABLE_PUZZLE_COUNT = 5;
 	const Puzzle::PuzzleType puzzle_palette_ids[EDITABLE_PUZZLE_COUNT] =
 	{ Puzzle::PUZZLE_TYPE_COUNT,
@@ -53,37 +63,45 @@ namespace {
 		Puzzle::PIT,
 		Puzzle::SPIKE
 	};
-
 	const char* puzzle_labels[EDITABLE_PUZZLE_COUNT] =
 	{ "Erase", "Grave", "Button", "Pit", "Spike" };
-
 	Puzzle::PuzzleType selected_puzzle = Puzzle::PUSHABLE; //default
 
-	// --- Palette UI (right side panel) ---
+	// ------------------------------------------------------------------------
+	// Palette UI (right side panel)
+	// ------------------------------------------------------------------------ 
 	const f32 PANEL_X = 650.0f;  // center X of palette panel
 	const f32 PALETTE_TOP_Y = 300.0f;  // top item Y
 	const f32 PAL_W = 200.0f;
 	const f32 PAL_H = 55.0f;
 	const f32 PAL_GAP = 68.0f;
 
+	// ------------------------------------------------------------------------
 	// One-time placement limits
+	// ------------------------------------------------------------------------ 
 	bool wizard_placed = false;
 	bool knight_placed = false;
 	bool door_placed = false;
 
-	// --- Grid rendering ---
+	// ------------------------------------------------------------------------
+	// Grid rendering
+	// ------------------------------------------------------------------------ 
 	f32 tile_draw_size = 0.f;
 	f32 grid_start_x = 0.f;
 	f32 grid_start_y = 0.f;
 
-	// --- Outer borders ---
+	// ------------------------------------------------------------------------
+	// Outer borders
+	// ------------------------------------------------------------------------ 
 	f32 top_border_height;
 	f32 bottom_border_height;
 	f32 side_border_height;
 	f32 left_border_width;
 	f32 right_border_width;
 
-	// --- Camera limits ---
+	// ------------------------------------------------------------------------
+	// Camera limits
+	// ------------------------------------------------------------------------ 
 	f32 view_min_x;
 	f32 view_max_x;
 	f32 view_min_y;
@@ -91,43 +109,56 @@ namespace {
 	f32 view_w;
 	f32 view_h;
 
-	// --- Camera pan ---
+	// ------------------------------------------------------------------------
+	// Camera pan
+	// ------------------------------------------------------------------------ 
 	const f32 CAM_SPEED = 300.f;
 	f32 editor_zoom_min = 1.0f;
 	f32 editor_zoom_max = 1.8f;
 	f32 cam_x, cam_y;
 
-	// --- Save feedback ---
+	// ------------------------------------------------------------------------
+	// Save feedback
+	// ------------------------------------------------------------------------ 
 	bool save_success = false;
 	f32  save_msg_timer = 0.f;
 	const f32 SAVE_MSG_DUR = 2.f;
 
-	// --- Notification ---
+	// ------------------------------------------------------------------------
+	// Notification
+	// ------------------------------------------------------------------------ 
 	const char* active_status_msg = "";
 	bool active_status_error = false;
 
-	/// --- Painting control ---
+	// ------------------------------------------------------------------------
+	// Painting control
+	// ------------------------------------------------------------------------ 
 	bool can_paint = false;
 
-	/// --- Map data ---
+	// ------------------------------------------------------------------------
+	// Map data 
+	// ------------------------------------------------------------------------ 
 	s32** editor_map = nullptr; // for creating new map
 	Puzzle::PuzzleType** puzzle_editor_map = nullptr;
 	std::vector<Puzzle::puzzle> puzzles;
 	std::vector<Puzzle::buttonTrigger> button_triggers{};
 
-	/// --- Editing States ---
+	// ------------------------------------------------------------------------
+	// Editing States
+	// ------------------------------------------------------------------------ 
 	EditorState editorState = EDIT_TILES;
 	bool editing{ false };
 	Puzzle::puzzle* editing_puzzle{ nullptr };
 	Puzzle::puzzle old_puzzle{};
 
-	/// --- Edit interface UI ---
+	// ------------------------------------------------------------------------
+	// Edit interface UI
+	// ------------------------------------------------------------------------ 
 	AEGfxTexture* edit_panel = nullptr;
 	AEGfxTexture* edit_panel_save = nullptr;
 	AEGfxTexture* edit_panel_exit = nullptr;
 	AEGfxTexture* edit_panel_button_left = nullptr;
 	AEGfxTexture* edit_panel_button_right = nullptr;
-
 	const f32 edit_panel_w = 350.0f;
 	const f32 edit_panel_h = 175.0f;
 	f32 edit_panel_x;
@@ -138,23 +169,26 @@ namespace {
 #pragma endregion
 
 #pragma region Helper functions
-// -------------------------------------------------------
-	// Helpers: convert world mouse pos to map row/col
-	// -------------------------------------------------------
+
+	// ------------------------------------------------------------------------
+	// Converts world mouse pos to map row/col
+	// ------------------------------------------------------------------------ 
 	void mouse_to_world(f32& wx, f32& wy)
 	{
-		wx = (f32)mouse_x - 800.f; // convert from screen (0 to 1600) to world (-800 to 800)
-		wy = -(f32)mouse_y + 450.f; // convert from screen (0 to 900) to world (450 to -450)
+		wx = (f32)mouse_x + world_left; // convert from screen (0 to 1600) to world (-800 to 800)
+		wy = -(f32)mouse_y + world_top; // convert from screen (0 to 900) to world (450 to -450)
 	}
 
-	// ------------------------------------------------
-	// Returns true if the world coordinates are within the grid bounds and sets row/col accordingly
-	// The positions are offset according to editor space, hence function is specific for level editor
-	// ------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Returns true if the world coordinates are within the grid bounds and
+	// sets row/col accordingly.
+	// The positions are offset according to editor space, hence function is
+	// specific for level editor
+	// ------------------------------------------------------------------------
 	bool editor_screen_to_tile(f32 wx, f32 wy, int& row, int& col)
 	{
-		f32 world_x = (wx / zoom) + cam.pos.x;
-		f32 world_y = (wy / zoom) + cam.pos.y;
+		f32 world_x = (wx / Camera::zoom) + Camera::cam.pos.x;
+		f32 world_y = (wy / Camera::zoom) + Camera::cam.pos.y;
 
 		// convert world X to column index
 		col = static_cast<int>((world_x - grid_start_x) / tile_draw_size);
@@ -165,34 +199,40 @@ namespace {
 		return (row >= 0 && row < TILE_ROWS && col >= 0 && col < TILE_COLS);
 	}
 
-	void clamp_cam() {
+	// ------------------------------------------------------------------------
+	// Clamps cam position to editor screen. Specific to level_editor.
+	// ------------------------------------------------------------------------
+	void simulate_editor_cam() {
+		//Moves/Pans the camera (Using Arrow Key)
 		if (AEInputCheckCurr(AEVK_LEFT)) {
-			cam.pos.x -= dt * CAM_SPEED;
+			Camera::cam.pos.x -= dt * CAM_SPEED;
 		}
 		if (AEInputCheckCurr(AEVK_RIGHT)) {
-			cam.pos.x += dt * CAM_SPEED;
+			Camera::cam.pos.x += dt * CAM_SPEED;
 		}
 		if (AEInputCheckCurr(AEVK_UP)) {
-			cam.pos.y += dt * CAM_SPEED;
+			Camera::cam.pos.y += dt * CAM_SPEED;
 		}
 		if (AEInputCheckCurr(AEVK_DOWN)) {
-			cam.pos.y -= dt * CAM_SPEED;
+			Camera::cam.pos.y -= dt * CAM_SPEED;
 		}
 
-		//cam pos represents middle of cam
-		//update cam bounds (when zoom is increased, cam can go further)
-		//cam is centered on screen origin so:
-		//grid_start = campos + view_min / zoom
-		f32 cam_min_x = grid_start_x - view_min_x / zoom;
-		f32 cam_max_x = grid_start_x + (TILE_COLS * tile_draw_size) - (view_min_x + view_w) / zoom;
+		//Compute bounds/caps for cam pos so that it stays within the editor
+		//interface
+		f32 cam_min_x = grid_start_x - view_min_x / Camera::zoom;
+		f32 cam_max_x = grid_start_x + (TILE_COLS * tile_draw_size) - (view_min_x + view_w) / Camera::zoom;
 
-		f32 cam_min_y = grid_start_y - (TILE_ROWS * tile_draw_size) - (view_max_y - view_h) / zoom;
-		f32 cam_max_y = grid_start_y - view_max_y / zoom;
+		f32 cam_min_y = grid_start_y - (TILE_ROWS * tile_draw_size) - (view_max_y - view_h) / Camera::zoom;
+		f32 cam_max_y = grid_start_y - view_max_y / Camera::zoom;
 
-		cam.pos.x = AEClamp(cam.pos.x, cam_min_x, cam_max_x);
-		cam.pos.y = AEClamp(cam.pos.y, cam_min_y, cam_max_y);
+		// Keep camera within level bounds (adjusted for viewport and zoom)
+		Camera::cam.pos.x = AEClamp(Camera::cam.pos.x, cam_min_x, cam_max_x);
+		Camera::cam.pos.y = AEClamp(Camera::cam.pos.y, cam_min_y, cam_max_y);
 	}
 
+	// ------------------------------------------------------------------------
+	// Draws/Renders the editing interface for puzzles.
+	// ------------------------------------------------------------------------
 	void draw_puzzle_edit_interface() {
 
 		edit_panel_x = grid_start_x + edit_panel_w / 2 + 20.0f;
@@ -211,7 +251,6 @@ namespace {
 		//Edit interface panel (bg)
 		render_editor_ui(edit_panel, edit_panel_w, edit_panel_h, 1.0f,
 			edit_panel_x, edit_panel_y);
-
 
 		//Edit interface text
 		std::string line1{};
@@ -320,6 +359,11 @@ namespace {
 		render_text_center(msg2, level_editor_font, norm_x, line2_norm_y, text_scale, black);
 	}
 
+	// ------------------------------------------------------------------------
+	// Handles input for when the edit_interface is up. Updates individual
+	// puzzle data through the interface. Confirms changes using save/exit 
+	// through "old_puzzle" variable.
+	// ------------------------------------------------------------------------
 	void edit_puzzle() {
 		if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 
@@ -392,6 +436,11 @@ namespace {
 		}
 	}
 
+	// ------------------------------------------------------------------------
+	// Draws text on the top of the editor interface that slowly fades out. 
+	// Text represented by "active_status_msg". Update active_status_msg every
+	// frame to change msg. Default is "";
+	// ------------------------------------------------------------------------
 	void render_status_msg(s8 font, f32 timer, f32 duration)
 	{
 		if (!active_status_msg || active_status_msg[0] == '\0') return;
@@ -435,9 +484,9 @@ void level_editor_load()
 
 void level_editor_init()
 {
-	zoom = editor_zoom_min;
+	Camera::zoom = editor_zoom_min;
 	cam_x = cam_y = 0.0f;
-	cam = init_cam(&cam_x, &cam_y, 60.0f, 5.0f);
+	Camera::cam = Camera::init_cam(&cam_x, &cam_y);
 	show_exit_confirm = false;
 
 	init_mesh(); // ensure mesh is initialized before any rendering calls
@@ -605,7 +654,7 @@ void level_editor_update()
 
 	//prevent camera from going out of map grids
 	//handles camera movement as well
-	clamp_cam();
+	simulate_editor_cam();
 
 	if (editorState == EDIT_TILES) {
 
@@ -638,9 +687,6 @@ void level_editor_update()
 		f32 grid_right_world = grid_start_x + (TILE_COLS * tile_draw_size);
 		f32 grid_right_screen = grid_right_world + 800.f;
 		bool on_panel = ((f32)mouse_x > grid_right_screen);
-		// Allow painting only after mouse is released once inside editor
-		//if (AEInputCheckReleased(AEVK_LBUTTON))
-		//	can_paint = true;
 
 		if (on_grid && !on_panel)
 		{
@@ -1067,16 +1113,16 @@ void level_editor_draw()
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 		AEGfxSetColorToMultiply({ 0.129f,0.129f,0.133f,0.0f });
 
-		draw_rect_center(0.0f, AEGfxGetWinMaxY() - top_border_height / 2,
+		draw_square(0.0f, AEGfxGetWinMaxY() - top_border_height / 2,
 			static_cast<f32>(AEGfxGetWindowWidth()), top_border_height, false);
 
-		draw_rect_center(0.0f, AEGfxGetWinMinY() + bottom_border_height / 2,
+		draw_square(0.0f, AEGfxGetWinMinY() + bottom_border_height / 2,
 			static_cast<f32>(AEGfxGetWindowWidth()), bottom_border_height, false);
 
-		draw_rect_center(AEGfxGetWinMinX() + left_border_width / 2, -tile_draw_size / 2,
+		draw_square(AEGfxGetWinMinX() + left_border_width / 2, -tile_draw_size / 2,
 			left_border_width, side_border_height, false);
 
-		draw_rect_center(AEGfxGetWinMaxX() - right_border_width / 2, -tile_draw_size / 2,
+		draw_square(AEGfxGetWinMaxX() - right_border_width / 2, -tile_draw_size / 2,
 			right_border_width, side_border_height, false);
 	}
 

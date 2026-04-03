@@ -169,7 +169,7 @@ void EnemyManager::initialize_combat_area()
     }
 }
 
-void EnemyManager::update(f32 dt, Player* player, camera* p_cam) {
+void EnemyManager::update(f32 dt, Player* player, Camera::camera* p_cam) {
 
     for (auto& enemy : enemies) {
         if (!enemy) continue;
@@ -226,7 +226,7 @@ void EnemyManager::render_spawn_markers()
     {
         for (int i = 0; i < ghost_count; ++i)
         {
-            render_sprite(rect_mesh_center,
+            render_sprite(square_mesh,
                 ghost_spawn_positions[i].x,
                 ghost_spawn_positions[i].y,
                 64.0f, 64.0f,
@@ -239,7 +239,7 @@ void EnemyManager::render_spawn_markers()
     {
         for (int i = 0; i < bat_count; ++i)
         {
-            render_sprite(rect_mesh_center,
+            render_sprite(square_mesh,
                 bat_spawn_positions[i].x,
                 bat_spawn_positions[i].y,
                 64.0f, 64.0f,
@@ -252,7 +252,7 @@ void EnemyManager::render_spawn_markers()
     {
         for (int i = 0; i < cross_count; ++i)
         {
-            render_sprite(rect_mesh_center,
+            render_sprite(square_mesh,
                 cross_positions[i].x,
                 cross_positions[i].y,
                 64.0f, 64.0f,
@@ -270,7 +270,7 @@ void EnemyManager::render_enemy(base_enemy* other_enemy)
     }
 
     if (other_enemy->get_texture())
-        render_sprite(rect_mesh_center, other_enemy->get_x(), other_enemy->get_y(),
+        render_sprite(square_mesh, other_enemy->get_x(), other_enemy->get_y(),
             other_enemy->get_size(), other_enemy->get_size(), other_enemy->get_texture());
 }
 
@@ -395,7 +395,7 @@ void EnemyManager::render_food()
 {
     for (const auto& food : food_drops)
         if (food.active && food.texture)
-            render_sprite(rect_mesh_center, food.x, food.y, food.size, food.size, food.texture);
+            render_sprite(square_mesh, food.x, food.y, food.size, food.size, food.texture);
 }
 
 void EnemyManager::check_player_attacks(Player* player, f32 attack_range, f32 damage)

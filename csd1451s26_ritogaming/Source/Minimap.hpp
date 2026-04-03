@@ -16,7 +16,7 @@ extern f32 totalWorldH;
 * @param worldH Total height of your game map (e.g., TILE_ROWS * tile_size).
 * @param mapSize The pixel size of the square minimap (e.g., 200.0f).
 */
-void minimap_init(f32 worldW, f32 worldH, f32 mapSize);
+void minimap_init(f32 worldW, f32 worldH);
 
 /**
 * @brief Draws the entire minimap HUD, including the background and player.

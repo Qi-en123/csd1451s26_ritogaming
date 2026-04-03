@@ -23,6 +23,7 @@ namespace
     constexpr f32 OVERLAY_SCALE = 1.5f;
     constexpr f32 OVERLAY_OFFSET_DIV = 4.0f;
     constexpr f32 PLAYER_DOT_SIZE = 10.0f;
+    constexpr f32 MINIMAP_SIZE = 300.0f;
 
     AEGfxTexture* pMapParts[4] = { nullptr, nullptr, nullptr, nullptr };
 
@@ -60,11 +61,11 @@ f32 mapSize;
 
 // =========================================================================
 
-void minimap_init(f32 w, f32 h, f32 size)
+void minimap_init(f32 w, f32 h)
 {
     totalWorldW = w;
     totalWorldH = h;
-    mapSize = size;
+    mapSize = MINIMAP_SIZE;
 
     char filename[128];
     for (int i = 0; i < 4; ++i)
@@ -83,10 +84,10 @@ void minimap_draw_overlay(f32 centerX, f32 centerY)
     f32 cullPadding = (TILE_SIZE * MINIMAP_ZOOM) / HALF;
     f32 offset = mapSize / OVERLAY_OFFSET_DIV + (cullPadding / HALF);
 
-    render_ui_sprite(rect_mesh_center, centerX - offset, centerY + offset, partSize, partSize, pMapParts[0], white);
-    render_ui_sprite(rect_mesh_center, centerX + offset, centerY + offset, partSize, partSize, pMapParts[1], white);
-    render_ui_sprite(rect_mesh_center, centerX - offset, centerY - offset, partSize, partSize, pMapParts[2], white);
-    render_ui_sprite(rect_mesh_center, centerX + offset, centerY - offset, partSize, partSize, pMapParts[3], white);
+    render_ui_sprite(square_mesh, centerX - offset, centerY + offset, partSize, partSize, pMapParts[0], white);
+    render_ui_sprite(square_mesh, centerX + offset, centerY + offset, partSize, partSize, pMapParts[1], white);
+    render_ui_sprite(square_mesh, centerX - offset, centerY - offset, partSize, partSize, pMapParts[2], white);
+    render_ui_sprite(square_mesh, centerX + offset, centerY - offset, partSize, partSize, pMapParts[3], white);
 }
 
 // =========================================================================
@@ -165,7 +166,7 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
                 if (distSq < (radius + cullPadding) * (radius + cullPadding))
                 {
                     render_ui_sprite(
-                        rect_mesh_center,
+                        square_mesh,
                         mapCenterX + relX,
                         mapCenterY + relY,
                         miniTileSize,
@@ -183,7 +184,7 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     f32 playerY = (pPlayer->current_player->y - clampedY) * MINIMAP_ZOOM;
 
     render_ui_sprite(
-        rect_mesh_center,
+        square_mesh,
         mapCenterX + playerX,
         mapCenterY + playerY,
         PLAYER_DOT_SIZE,
@@ -212,7 +213,7 @@ void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* p
     f32 finalX = ((worldX - startX) * scaleFactor) + mapCenterX;
     f32 finalY = ((worldY - startY) * scaleFactor) + mapCenterY;
 
-    render_ui_sprite(rect_mesh_center, finalX, finalY, spriteScale, spriteScale, pTex, white);
+    render_ui_sprite(square_mesh, finalX, finalY, spriteScale, spriteScale, pTex, white);
 }
 
 // =========================================================================

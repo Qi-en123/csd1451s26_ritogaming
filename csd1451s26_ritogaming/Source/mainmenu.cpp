@@ -54,8 +54,12 @@ namespace{
     const f32 button_x = 500.f;  // right side of screen
     f32 button_y[5] = { 250.f, 125.f, 0.f, -125.f, -250.f }; // evenly spaced
     const char* button_labels[5] = { "Play", "Levels", "Guide", "Credits", "Quit" };
+
     s32 mouse_x, mouse_y;
+    constexpr f32 CURSOR_SIZE = 50.f;
+
     f32 knight_bob_timer = 0.f;
+
     struct DustParticle {
         f32 x, y;
         f32 alpha;
@@ -449,13 +453,13 @@ void mainmenu_draw()
         render_editor_ui(buttons[2],
             c_btn_w, c_btn_h,
             1.0f, -c_btn_x, c_btn_y,
-            IsButtonHovered(-100.f, -50.f, 200.f, 80.f)); //to be highlighted or not
+            IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)); //to be highlighted or not
 
         // No button
         render_editor_ui(buttons[3],
             c_btn_w, c_btn_h,
             1.0f, c_btn_x, c_btn_y, //pos
-            IsButtonHovered(150.f, -50.f, 200.f, 80.f));
+            IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h));
 
         // Text
         if (font != -1)
@@ -481,10 +485,10 @@ void mainmenu_draw()
     if (cursor)
     {
         // Convert mouse screen coords to world coords
-        f32 world_x = (f32)mouse_x - 800.f; // center origin
-        f32 world_y = -(f32)mouse_y + 450.f; // flip Y axis
+        f32 world_x = (f32)mouse_x - AEGfxGetWindowWidth()/2.0f; // center origin
+        f32 world_y = -(f32)mouse_y + AEGfxGetWindowHeight()/2.0f; // flip Y axis
 
-        render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
+        render_editor_ui(cursor, CURSOR_SIZE, CURSOR_SIZE, 1.0f, world_x, world_y);
     }
 
 }

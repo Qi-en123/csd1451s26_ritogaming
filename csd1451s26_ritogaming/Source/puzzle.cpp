@@ -633,7 +633,7 @@ namespace Puzzle {
 				}
 			}
 
-			render_sprite(rect_mesh_center, curr.posx,
+			render_sprite(square_mesh, curr.posx,
 				curr.posy, puzzle_size, puzzle_size, puzzle_block_textures[curr.type], clr);
 		}
 	}

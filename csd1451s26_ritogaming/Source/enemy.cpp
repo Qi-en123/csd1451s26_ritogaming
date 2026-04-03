@@ -46,13 +46,12 @@ void BossProjectileManager::clear()
         p.in_use = false;
 }
 
-void BossProjectileManager::update(float dt, const camera* cam)
+void BossProjectileManager::update(float dt, const Camera::camera* cam)
 {
     if (!cam) return;
 
-    extern float zoom;
-    const float hw = (AEGfxGetWindowWidth()  * 0.5f) / zoom;
-    const float hh = (AEGfxGetWindowHeight() * 0.5f) / zoom;
+    const float hw = (AEGfxGetWindowWidth()  * 0.5f) / Camera::zoom;
+    const float hh = (AEGfxGetWindowHeight() * 0.5f) / Camera::zoom;
     const float margin = BossProjCfg::RING_RADIUS * 4.0f;
 
     for (auto& p : m_pool)
@@ -272,14 +271,13 @@ void base_enemy::take_damage(int amount)
     }
 }
 
-bool base_enemy::is_in_camera_view(camera* p_cam) const
+bool base_enemy::is_in_camera_view(Camera::camera* p_cam) const
 {
     if (!p_cam)
         return false;
 
-    extern f32 zoom;
-    f32 hw = (AEGfxGetWindowWidth() / 2.0f) / zoom;
-    f32 hh = (AEGfxGetWindowHeight() / 2.0f) / zoom;
+    f32 hw = (AEGfxGetWindowWidth() / 2.0f) / Camera::zoom;
+    f32 hh = (AEGfxGetWindowHeight() / 2.0f) / Camera::zoom;
 
     return (x > p_cam->pos.x - hw - size && x < p_cam->pos.x + hw + size &&
         y > p_cam->pos.y - hh - size && y < p_cam->pos.y + hh + size);
@@ -327,7 +325,7 @@ void ghost::take_damage(int amount)
     base_enemy::take_damage(amount);
 }
 
-void ghost::update(f32 dt, Player* player, camera* p_cam)
+void ghost::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active)
         return;
@@ -384,7 +382,7 @@ bat::bat(f32 start_x, f32 start_y)
     sight_range = 350.0f;
 }
 
-void bat::update(f32 dt, Player* player, camera* p_cam)
+void bat::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active)
         return;
@@ -452,7 +450,7 @@ void dragon::tick_attack_pattern(float dt, float tgt_x, float tgt_y)
     }
 }
 
-void dragon::update(f32 dt, Player* player, camera* p_cam)
+void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
 

@@ -37,9 +37,9 @@ void opening_init()
     elapsed = 0.f;  // Reset total elapsed time for this scene
     alpha = 0.f;    // Start fully transparent (for fade-in effect)
 
-    cam.pos.x = 0.f; // Reset camera horizontal position to center (no offset on X axis)
-    cam.pos.y = 0.f; // Reset camera vertical position to center (no offset on Y axis)
-    zoom = 1.0f; // Set camera zoom to normal scale (1.0 = no zoom in/out)
+    //Camera::cam.pos.x = 0.f; // Reset camera horizontal position to center (no offset on X axis)
+    //Camera::cam.pos.y = 0.f; // Reset camera vertical position to center (no offset on Y axis)
+    //zoom = 1.0f; // Set camera zoom to normal scale (1.0 = no zoom in/out)
 
 }
 
@@ -88,7 +88,7 @@ void opening_update()
 
 void opening_draw()
 {
-    if (!logo || !rect_mesh_center)
+    if (!logo || !square_mesh)
         return;
 
     

@@ -36,7 +36,6 @@ struct SwingArc {
     f32 duration = 0.10f;
 };
 
-
 struct Particle {
     f32 x, y;
     f32 vx, vy;
@@ -87,7 +86,6 @@ struct Character
     Puzzle::Element element{};  // Character's element (WATER, FIRE, etc.)
 	bool is_dead{};     // Flag to indicate if character is dead
 };
-
 
 // Player system structure
 struct Player

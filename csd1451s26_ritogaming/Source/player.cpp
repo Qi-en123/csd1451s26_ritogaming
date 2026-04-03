@@ -22,9 +22,9 @@ extern int map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
 
-#define DAMAGE 2 // change this for fireball damage
-#define MELEE_DAMAGE 1  // knight swing damage
-#define M_PI 3.14159265358979323846
+constexpr s32 WIZARD_DAMAGE = 2; // change this for fireball damage
+constexpr s32 MELEE_DAMAGE = 1;  // knight swing damage
+
 static bool is_footstep_playing = false;
 static bool footstep_was_active = false;
 
@@ -305,8 +305,8 @@ void player_handle_shooting(Player * player_ptr, f32 dt)
         f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
         f32 halfHeight = (f32)AEGfxGetWindowHeight() / 2.0f;
 
-        f32 mouseWorldX = (f32)mouseScreenX - halfWidth + cam.pos.x;
-        f32 mouseWorldY = halfHeight - (f32)mouseScreenY + cam.pos.y;
+        f32 mouseWorldX = (f32)mouseScreenX - halfWidth + Camera::cam.pos.x;
+        f32 mouseWorldY = halfHeight - (f32)mouseScreenY + Camera::cam.pos.y;
 
         // --- Calculate direction from player to mouse ---
         f32 dx = mouseWorldX - player_ptr->char2.x;
@@ -413,7 +413,7 @@ void player_update_projectiles(Player * player_ptr, f32 dt)
             p.active = false;
         }
 
-        if (p.active && enemy_manager_instance.check_projectile_hit(p.x, p.y, p.radius, DAMAGE))
+        if (p.active && enemy_manager_instance.check_projectile_hit(p.x, p.y, p.radius, WIZARD_DAMAGE))
         {
             p.active = false; // Destroy fireball on hit
         }
@@ -479,8 +479,8 @@ void player_handle_melee(Player * player_ptr)
     f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
     f32 halfHeight = (f32)AEGfxGetWindowHeight() / 2.0f;
 
-    f32 mouseWorldX = (f32)mouseScreenX - halfWidth + cam.pos.x;
-    f32 mouseWorldY = halfHeight - (f32)mouseScreenY + cam.pos.y;
+    f32 mouseWorldX = (f32)mouseScreenX - halfWidth + Camera::cam.pos.x;
+    f32 mouseWorldY = halfHeight - (f32)mouseScreenY + Camera::cam.pos.y;
 
     // Determine left or right of player
     float dx = mouseWorldX - player_ptr->char1.x;
@@ -507,8 +507,8 @@ void player_update_swing(Player * player_ptr, f32 dt)
         float cx = player_ptr->char1.x;
         float cy = player_ptr->char1.y;
 
-        float startAngle = M_PI * 0.5f;
-        float endAngle = -M_PI * 0.5f;
+        float startAngle = PI * 0.5f;
+        float endAngle = -PI * 0.5f;
         float currEnd = startAngle + (endAngle - startAngle) * sw.progress;
 
         int segments = 20;
@@ -546,8 +546,8 @@ void player_render_swing(Player * player_ptr)
     float cx = player_ptr->char1.x;
     float cy = player_ptr->char1.y;
 
-    float startAngle = M_PI * 0.5f;    // top
-    float endAngle = -M_PI * 0.5f;   // bottom
+    float startAngle = PI * 0.5f;    // top
+    float endAngle = -PI * 0.5f;   // bottom
     float currEnd = startAngle + (endAngle - startAngle) * sw.progress;
 
     int   segments = 20;
@@ -588,14 +588,14 @@ void player_system_render(Player * player_ptr)
     // Draw Character 1
     AEGfxTexture* tex1 = player_ptr->char1.is_dead ? player_ptr->char1.dead_texture
         : player_ptr->char1.texture;
-    render_sprite(rect_mesh_center, player_ptr->char1.x, player_ptr->char1.y,
+    render_sprite(square_mesh, player_ptr->char1.x, player_ptr->char1.y,
         player_ptr->stats.character_size,
         player_ptr->stats.character_size, tex1);
 
     // Draw Character 2
     AEGfxTexture* tex2 = player_ptr->char2.is_dead ? player_ptr->char2.dead_texture
         : player_ptr->char2.texture;
-    render_sprite(rect_mesh_center, player_ptr->char2.x, player_ptr->char2.y,
+    render_sprite(square_mesh, player_ptr->char2.x, player_ptr->char2.y,
         player_ptr->stats.character_size,
         player_ptr->stats.character_size, tex2);
 
@@ -703,39 +703,24 @@ bool player_is_dead(Player * player_ptr)
         player_ptr->stats.char2_curr_health <= 0);
 }
 
-void spawn_player_from_map(Player * player_ptr, f32 tile_size)
+void spawn_player_from_map(Player* player_ptr, f32 tile_size)
 {
-    // World bounds
-    float world_left = -800.0f;
-    float world_top = 450.0f;
+	for (int r = 0; r < TILE_ROWS; r++)
+	{
+		for (int c = 0; c < TILE_COLS; c++)
+		{
+			// Assign positions
+			if (map[r][c] == KNIGHT)
+			{
+				player_ptr->char2.x = col_to_world(c);
+				player_ptr->char2.y = row_to_world(r);
+			}
 
-    for (int r = 0; r < TILE_ROWS; r++)
-    {
-        for (int c = 0; c < TILE_COLS; c++)
-        {
-            if (map[r][c] == KNIGHT || map[r][c] == WIZARD)
-            {
-                // Compute world coordinates based on top-left origin
-                float x = world_left + c * tile_size + tile_size * 0.5f;
-
-                // Y needs to decrease from top to bottom
-                float y = world_top - (r * tile_size) - tile_size * 0.5f;
-
-                // Assign positions
-                if (map[r][c] == WIZARD)
-                {
-                    player_ptr->char1.x = x;
-                    player_ptr->char1.y = y;
-                }
-                else
-                {
-                    player_ptr->char2.x = x;
-                    player_ptr->char2.y = y;
-                }
-
-                // Remove spawn tile
-                // map[r][c] = FLOOR;
-            }
-        }
-    }
+			else if (map[r][c] == WIZARD)
+			{
+				player_ptr->char1.x = col_to_world(c);
+				player_ptr->char1.y = row_to_world(r);
+			}
+		}
+	}
 }

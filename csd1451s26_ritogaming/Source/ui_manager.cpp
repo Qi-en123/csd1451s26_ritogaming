@@ -24,7 +24,7 @@ void load_ui_textures(UIManager *p_ui_manager)
 	p_ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
 	p_ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_nonactive1.png");
 	p_ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_active1.png");
-	p_ui_manager->font = AEGfxCreateFont("Assets/Fonts/Exo2-Regular.ttf", 48);
+	p_ui_manager->font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 48);
 }
 
 void free_ui_textures(UIManager *p_ui_manager)
@@ -63,11 +63,11 @@ void render_character_ui(UIManager *p_ui_manager, Player *player)
 
 		float x = AEGfxGetWinMinX() + paddingX + icon_size / 2.f; // half size keeps it fully on screen
 		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
-		render_ui_sprite(rect_mesh_center, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
-		render_ui_sprite(rect_mesh_center, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->primary_ability_texture);
+		render_ui_sprite(square_mesh, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
+		render_ui_sprite(square_mesh, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->primary_ability_texture);
 
 		float counter_x = x + (paddingX * 10.f);
-		render_ui_sprite(rect_mesh_center, counter_x, y, icon_size / 1.5f, icon_size / 1.5f, p_ui_manager->primary_counter_texture);
+		render_ui_sprite(square_mesh, counter_x, y, icon_size / 1.5f, icon_size / 1.5f, p_ui_manager->primary_counter_texture);
 
 		char fireball_text[8];
 		sprintf_s(fireball_text, "%d", player->fireball_count);
@@ -86,8 +86,8 @@ void render_character_ui(UIManager *p_ui_manager, Player *player)
 	{
 		float x = AEGfxGetWinMinX() + paddingX + icon_size / 2.f; // half size keeps it fully on screen
 		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
-		render_ui_sprite(rect_mesh_center, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
-		render_ui_sprite(rect_mesh_center, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->cursor_knight);
+		render_ui_sprite(square_mesh, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
+		render_ui_sprite(square_mesh, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->cursor_knight);
 	}
 }
 
@@ -127,13 +127,13 @@ void render_enemy_hp(UIManager *p_ui_manager, EnemyManager *enemy_manager)
 			f32 y_position = enemy->get_y() + enemy->get_size() / 2 + heart_scale / 2;
 
 			if (i <= full_hearts)
-				render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, p_ui_manager->hp_full_texture);
+				render_sprite(square_mesh, x_position, y_position, heart_scale, heart_scale, p_ui_manager->hp_full_texture);
 
 			else if (i == full_hearts + 1 && has_half_heart)
-				render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, p_ui_manager->hp_half_texture);
+				render_sprite(square_mesh, x_position, y_position, heart_scale, heart_scale, p_ui_manager->hp_half_texture);
 
 			else
-				render_sprite(rect_mesh_center, x_position, y_position, heart_scale, heart_scale, p_ui_manager->hp_empty_texture);
+				render_sprite(square_mesh, x_position, y_position, heart_scale, heart_scale, p_ui_manager->hp_empty_texture);
 		}
 	}
 }
@@ -148,7 +148,7 @@ void render_player_hud(UIManager *p_ui_manager, Player *player)
 	float start_x = AEGfxGetWinMinX() + HUD_HEART_SIZE / 2;
 	float y_position = AEGfxGetWinMaxY() - HUD_HEART_SIZE / 2;
 
-	render_ui_sprite(rect_mesh_center, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char1.texture);
+	render_ui_sprite(square_mesh, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char1.texture);
 
 	for (int i{1}; i < hearts_to_draw + 1; ++i)
 	{
@@ -156,15 +156,15 @@ void render_player_hud(UIManager *p_ui_manager, Player *player)
 
 		if (i <= full_hearts)
 		{
-			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_full_texture);
+			render_ui_sprite(square_mesh, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_full_texture);
 		}
 		else if (i == full_hearts + 1 && has_half_heart)
 		{
-			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_half_texture);
+			render_ui_sprite(square_mesh, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_half_texture);
 		}
 		else
 		{
-			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_empty_texture);
+			render_ui_sprite(square_mesh, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_empty_texture);
 		}
 	}
 
@@ -174,22 +174,22 @@ void render_player_hud(UIManager *p_ui_manager, Player *player)
 
 	y_position = y_position - HUD_HEART_SIZE;
 
-	render_ui_sprite(rect_mesh_center, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char2.texture);
+	render_ui_sprite(square_mesh, start_x, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, player->char2.texture);
 
 	for (int i{1}; i < hearts_to_draw + 1; ++i)
 	{
 		f32 x_position = start_x + i * HUD_HEART_SIZE;
 		if (i <= full_hearts)
 		{
-			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_full_texture);
+			render_ui_sprite(square_mesh, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_full_texture);
 		}
 		else if (i == full_hearts + 1 && has_half_heart)
 		{
-			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_half_texture);
+			render_ui_sprite(square_mesh, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_half_texture);
 		}
 		else
 		{
-			render_ui_sprite(rect_mesh_center, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_empty_texture);
+			render_ui_sprite(square_mesh, x_position, y_position, HUD_HEART_SIZE, HUD_HEART_SIZE, p_ui_manager->hp_empty_texture);
 		}
 	}
 }

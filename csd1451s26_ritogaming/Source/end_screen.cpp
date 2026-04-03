@@ -36,9 +36,15 @@ namespace
     AEGfxTexture* tex_button = nullptr;
     AEGfxTexture* tex_cursor = nullptr;
     AEGfxTexture* buttons = nullptr;
-    AEGfxTexture* panel = nullptr;
+    AEGfxTexture* pause_panel = nullptr;
+    AEGfxTexture* c_panel = nullptr;
 
     static s8 end_font = -1;
+
+    //Pause panel
+    constexpr f32 PANEL_W = 700.f;
+    constexpr f32 PANEL_H = 640.f;
+    constexpr f32 PANEL_Y = 0.0f;
 
     //  End-screen button layout 
     constexpr f32 BTN_W = 280.f;
@@ -52,6 +58,14 @@ namespace
     constexpr f32 TEXT_SCALE = 1.0f;
     constexpr f32 TEXT_Y = 0.15f;
     constexpr f32 CURSOR_SIZE = 50.f;
+
+    //confirmation panel
+    constexpr f32 c_panel_w = 800.0f;
+    constexpr f32 c_panel_h = 400.0f;
+    constexpr f32 c_btn_w = c_panel_w / 4.0f;
+    constexpr f32 c_btn_h = c_panel_h / 5.0f;
+    constexpr f32 c_btn_x = c_panel_w / 5.0f;
+    constexpr f32 c_btn_y = -c_panel_h / 8.0f;
 
     //  Pause button layout (three stacked, centred) 
     constexpr f32 P_BTN_W = 280.f;
@@ -99,7 +113,8 @@ void end_screen_load()
     tex_button = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button.png");
     tex_cursor = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
     buttons = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button5.png");
-    panel = AEGfxTextureLoad("Assets/Sprites/Admin/end_screen_panel.png");
+    pause_panel = AEGfxTextureLoad("Assets/Sprites/Admin/pause_panel.png");
+    c_panel = AEGfxTextureLoad("Assets/Sprites/Admin/end_screen_panel.png");
 
     if (end_font == -1)
         end_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36);
@@ -116,7 +131,8 @@ void end_screen_unload()
     safe_unload(tex_button);
     safe_unload(tex_cursor);
     safe_unload(buttons);
-    safe_unload(panel);
+    safe_unload(pause_panel);
+    safe_unload(c_panel);
     if (end_font != -1)
     {
         AEGfxDestroyFont(end_font);
@@ -167,7 +183,7 @@ void end_screen_update()
                 {
                     selected_level_path = "Assets/Levels/default.txt";
                     selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
-                    next = GS_LEVEL1;
+                    next = restart_level_state;
                 }
                 else
                     next = MAINMENU;
@@ -203,10 +219,8 @@ void end_screen_draw()
     if (end_font != -1)
     {
         const char* msg = is_win ? "YOU WIN!" : "YOU LOSE!";
-        f32 tw = 0.f, th = 0.f;
-        AEGfxGetPrintSize(end_font, msg, TEXT_SCALE * 2.5f, &tw, &th);
-        AEGfxPrint(end_font, msg, -(tw / 2.f), 0.3f + th / 2.0f, TEXT_SCALE * 2.5f, 1.0f, 0.8f, 0.f, 1.f);
-
+        f32 msg_offset_y = 0.44f;
+        render_text_center(msg, end_font, 0.0f, msg_offset_y, 2.5f, { 1.0f, 0.8f, 0.f, 1.f });
     }
 
     // Buttons
@@ -224,7 +238,7 @@ void end_screen_draw()
     if (confirm_target != CONFIRM_NONE)
     {
         draw_black_overlay(0.6f);
-        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
+        render_editor_ui(c_panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
         render_editor_ui(tex_button, 200.f, 80.f, 1.0f, -100.f, -50.f,
             IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
         render_editor_ui(tex_button, 200.f, 80.f, 1.0f, 150.f, -50.f,
@@ -328,12 +342,10 @@ void pause_draw()
 {
     if (!is_paused) return;
 
-    //  2. Solid panel behind the buttons
-    constexpr f32 PANEL_W = 800.f;
-    constexpr f32 PANEL_H = 650.f;
-    constexpr f32 PANEL_Y = -40.f;   // midpoint between P_BTN_Y0 and P_BTN_Y2
     AEGfxSetColorToMultiply(0.1f, 0.05f, 0.0f, 0.92f);   // dark brown, nearly opaque
-    render_editor_ui(panel, PANEL_W, PANEL_H, 1.f, P_BTN_X, PANEL_Y);
+    render_editor_ui(pause_panel,
+        PANEL_W, PANEL_H,
+        1.f, P_BTN_X, PANEL_Y);
 
     //  3. Reset to textured mode before buttons / text 
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -367,30 +379,49 @@ void pause_draw()
     if (pause_confirm_target != CONFIRM_NONE)
     {
         draw_black_overlay(0.6f);
-        render_editor_ui(panel, 800.f, 400.f, 1.0f, 0.f, 0.f);
-        render_editor_ui(buttons, 200.f, 80.f, 1.0f, -100.f, -50.f,
-            IsButtonHovered(-100.f, -50.f, 200.f, 80.f));
-        render_editor_ui(buttons, 200.f, 80.f, 1.0f, 150.f, -50.f,
-            IsButtonHovered(150.f, -50.f, 200.f, 80.f));
+        render_editor_ui(c_panel,
+            c_panel_w, c_panel_h,
+            1.0f, 0.f, 0.f);
+
+        render_editor_ui(buttons,
+            c_btn_w, c_btn_h,
+            1.0f, -c_btn_x, c_btn_y,
+            IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h));
+
+        render_editor_ui(buttons,
+            c_btn_w, c_btn_h,
+            1.0f, c_btn_x, c_btn_y, //pos
+            IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h));
+
         if (end_font != -1)
         {
             const char* msg = (pause_confirm_target == CONFIRM_RESTART)
                 ? "Restart level?" : "Return to Main Menu?";
-            f32 tw = 0.f, th = 0.f;
-            AEGfxGetPrintSize(end_font, msg, 0.9f, &tw, &th);
-            AEGfxPrint(end_font, msg, -tw * 0.5f, 0.1f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "Yes", -100.f / 800.f - 0.05f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
-            AEGfxPrint(end_font, "No", 150.f / 800.f - 0.03f, -50.f / 450.f - 0.03f, 0.9f, 0.f, 0.f, 0.f, 1.f);
+
+            render_text_center(msg, end_font,
+                0.0f,
+                (c_panel_h / 5.0f) / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
+
+            render_text_center("Yes", end_font,
+                -(c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
+                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
+
+            render_text_center("No", end_font,
+                (c_btn_x / (AEGfxGetWindowWidth() / 2.0f)),
+                c_btn_y / (AEGfxGetWindowHeight() / 2.0f),
+                1.0f, black);
         }
     }
 
     //  6. Custom cursor
     if (tex_cursor)
     {
-        s32 mx = 0, my = 0;
-        AEInputGetCursorPosition(&mx, &my);
-        f32 wx = (f32)mx - 800.f;
-        f32 wy = -(f32)my + 450.f;
-        render_editor_ui(tex_cursor, CURSOR_SIZE, CURSOR_SIZE, 1.f, wx, wy);
+        // Convert mouse screen coords to world coords
+        f32 world_x = (f32)mouse_x - AEGfxGetWindowWidth() / 2.0f; // center origin
+        f32 world_y = -(f32)mouse_y + AEGfxGetWindowHeight() / 2.0f; // flip Y axis
+
+        render_editor_ui(tex_cursor, CURSOR_SIZE, CURSOR_SIZE, 1.0f, world_x, world_y);
     }
 }

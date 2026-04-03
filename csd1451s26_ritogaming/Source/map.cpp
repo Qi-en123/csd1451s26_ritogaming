@@ -266,13 +266,13 @@ void draw_map(f32 tile_size)
             f32 x = startX + col * tile_size + tile_size * 0.5f;
 
             if (tileType == KNIGHT || tileType == WIZARD || tileType == TOMB || tileType == TREE) {
-                render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[2]);
+                render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[2]);
                 map[row][col] = FLOOR; // for minimap to render floor
                 continue;
             }
             
 
-            render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);
+            render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
 }
@@ -300,7 +300,7 @@ void draw_boss_map(f32 tile_size)
                 continue;
 
             f32 x = startX + col * tile_size + tile_size * 0.5f;
-            render_sprite(rect_mesh_center, x, y, tile_size, tile_size, TileTextures[tileType]);
+            render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
 }
@@ -311,18 +311,13 @@ void draw_boss_map(f32 tile_size)
 // ------------------------------------------------------------
 void initialize_boss_map()
 {
-    // Clear the whole boss map first
-    for (int r = 0; r < TILE_ROWS; ++r)
-        for (int c = 0; c < TILE_COLS; ++c)
-            boss_map[r][c] = WALL; // start with walls everywhere
-
     // ============================================================
     // BIG BOSS ROOM
     // ============================================================
      // Clear the whole boss map first
     for (int r = 0; r < TILE_ROWS; ++r)
         for (int c = 0; c < TILE_COLS; ++c)
-            boss_map[r][c] = EMPTY; // start with walls everywhere
+            boss_map[r][c] = EMPTY;
 // Floor
     for (int r = 3; r <= 10; ++r)
         for (int c = 2; c <= 9; ++c)

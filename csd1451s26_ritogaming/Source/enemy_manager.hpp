@@ -8,8 +8,6 @@
 #include "enemy.hpp"
 #include "player.hpp"
 
-struct camera;
-
 // Logic Constants
 static constexpr f32 SPAWN_CHECK_INTERVAL = 3.f;
 static constexpr f32 RESPAWN_DELAY = 5.f;
@@ -66,7 +64,7 @@ public:
     // Lifecycle
     void load_textures();
     void unload_textures();
-    void update(f32 dt, Player* player, camera* cam);
+    void update(f32 dt, Player* player, Camera::camera* cam);
     void render();
 
     // Setup

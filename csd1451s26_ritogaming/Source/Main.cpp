@@ -2,20 +2,29 @@
 \file:						main.cpp
 \author:					Goh Qi En
 \par DP email:				g.qien@digipen.edu
-
 \brief:						The entry point for "Ahmad's Dungeon".
-                            Handles the core game loop, state transitions
-                            via the Game State Manager (GSM), and memory
-                            leak detection.
+                            Handles the core game loop, global screen
+                            transitions via the Game State Manager (GSM),
+                            and memory leak detection.
 **************************************************************************/
 
 #include <crtdbg.h>
-
 #include "AEEngine.h"
 #include "game_state_manager.hpp"
 #include "game_state_list.hpp"
 #include "enemy_manager.hpp"
 #include "audio_manager.hpp"
+#include "renderer.hpp" 
+#include "level1.hpp"
+
+// ----------------------------------------------------------------------------
+// Global Transition Variables
+// ----------------------------------------------------------------------------
+float g_transition_alpha = 0.0f;
+int g_pending_next_state = -1;
+enum TransitionState { T_NONE, T_FADE_OUT, T_FADE_IN };
+TransitionState g_transition_state = T_NONE;
+const float TRANSITION_SPEED = 2.0f;
 
 // ----------------------------------------------------------------------------
 //
@@ -34,7 +43,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // ------------------------------------------------------------------------
     int oldFlag = _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-    // _CrtSetBreakAlloc(2647); // Uncomment to break on a specific memory allocation ID
 
     // ------------------------------------------------------------------------
     // 2. Systems Initialization
@@ -43,7 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Initialize Global Systems
-    gsm_initialize(MAINMENU);
+    gsm_initialize(OPENING);
     audio_init();
 
     // ------------------------------------------------------------------------
@@ -51,7 +59,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // ------------------------------------------------------------------------
     while (current != GS_QUIT)
     {
-        // Handle logic for restarting or switching states
+        // Handle logic for switching states
         if (current != GS_RESTART)
             gsm_update();
 
@@ -61,36 +69,68 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         if (fpInitialize)
             fpInitialize();
 
+        // Reset transition to Fade In whenever a new state starts
+        g_transition_state = T_FADE_IN;
+        g_transition_alpha = 1.0f;
+
         // The Inner Loop: Runs once per frame while in the same state
         while (next == current)
         {
-            AESysFrameStart(); // Start of frame timing/input
+            AESysFrameStart();
+            float dt = (float)AEFrameRateControllerGetFrameTime();
 
-            // Ensure window remains active
             if (!AESysDoesWindowExist())
                 next = GS_QUIT;
 
-            // State-specific Update and Draw calls
+            // ----------------------------------------------------------------
+            // Global Transition Logic
+            // ----------------------------------------------------------------
+            if (g_transition_state == T_FADE_OUT)
+            {
+                g_transition_alpha += dt * TRANSITION_SPEED;
+                if (g_transition_alpha >= 1.0f)
+                {
+                    g_transition_alpha = 1.0f;
+                    next = g_pending_next_state; // Break inner loop to switch state
+                }
+            }
+            else if (g_transition_state == T_FADE_IN)
+            {
+                g_transition_alpha -= dt * TRANSITION_SPEED;
+                if (g_transition_alpha <= 0.0f)
+                {
+                    g_transition_alpha = 0.0f;
+                    g_transition_state = T_NONE;
+                }
+            }
+
+            // ----------------------------------------------------------------
+            // State Updates & Drawing
+            // ----------------------------------------------------------------
             if (fpUpdate)
                 fpUpdate();
+
             if (fpDraw)
                 fpDraw();
 
-            // Update global audio system
-            audio_update();
+            // Always draw the transition overlay LAST so it covers UI/Menu/Game
+            if (g_transition_alpha > 0.0f)
+            {
+                draw_black_overlay(g_transition_alpha);
+            }
 
-            AESysFrameEnd(); // End of frame buffers swap
+            audio_update();
+            AESysFrameEnd();
         }
 
         // --------------------------------------------------------------------
         // 4. State Cleanup
         // --------------------------------------------------------------------
         if (fpFree)
-            fpFree();   // Free resources used in the state loop
+            fpFree();
         if (fpUnload)
-            fpUnload(); // Unload assets from memory
+            fpUnload();
 
-        // Manage State Transitions
         previous = current;
         current = next;
 
@@ -105,11 +145,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // ------------------------------------------------------------------------
     // 5. Final Shutdown & Cleanup
     // ------------------------------------------------------------------------
-
-    // Explicitly clean up global singleton/manager instances before exit
     enemy_manager_instance.~EnemyManager();
-
-    // Disable automatic leak check at exit to avoid false positives with globals
     _CrtSetDbgFlag(oldFlag & ~_CRTDBG_LEAK_CHECK_DF);
 
     audio_free();

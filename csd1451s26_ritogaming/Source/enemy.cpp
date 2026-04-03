@@ -46,9 +46,9 @@ void BossProjectileManager::clear()
         p.in_use = false;
 }
 
-void BossProjectileManager::update(float dt, const Camera::camera* cam)
+void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
 {
-    if (!cam) return;
+    if (!p_cam) return;
 
     const float hw = (AEGfxGetWindowWidth()  * 0.5f) / Camera::zoom;
     const float hh = (AEGfxGetWindowHeight() * 0.5f) / Camera::zoom;
@@ -69,10 +69,10 @@ void BossProjectileManager::update(float dt, const Camera::camera* cam)
         p.y += (p.vy + p.perp_y * sine_val) * dt;
 
         const bool expired    = (p.lifetime <= 0.0f);
-        const bool off_screen = (p.x < cam->pos.x - hw - margin) ||
-                                (p.x > cam->pos.x + hw + margin) ||
-                                (p.y < cam->pos.y - hh - margin) ||
-                                (p.y > cam->pos.y + hh + margin);
+        const bool off_screen = (p.x < p_cam->pos.x - hw - margin) ||
+                                (p.x > p_cam->pos.x + hw + margin) ||
+                                (p.y < p_cam->pos.y - hh - margin) ||
+                                (p.y > p_cam->pos.y + hh + margin);
         if (expired || off_screen)
             p.in_use = false;
     }
@@ -110,7 +110,7 @@ void BossProjectileManager::trigger_wave(float boss_x, float boss_y,
     if (dist < 1.0f) { dx = 1.0f; dy = 0.0f; }
     else             { dx /= dist; dy /= dist; }
 
-    // Perpendicular (90° CCW rotation)
+    // Perpendicular (90ï¿½ CCW rotation)
     const float perp_x = -dy;
     const float perp_y =  dx;
 
@@ -182,8 +182,7 @@ int BossProjectileManager::get_active_count() const
 }
 
 //------------------------------- Pathfinding --------------------------------
-void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
-    f32 target_x, f32 target_y, f32 dt)
+void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size, f32 target_x, f32 target_y, f32 dt)
 {
     f32 dx = target_x - x;
     f32 dy = target_y - y;
@@ -201,8 +200,7 @@ void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
         y = ny;
 }
 
-void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
-    f32 from_x, f32 from_y, f32 dt)
+void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size, f32 from_x, f32 from_y, f32 dt)
 {
     f32 dx = x - from_x;
     f32 dy = y - from_y;
@@ -220,9 +218,7 @@ void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
         y = ny;
 }
 
-void enemy_flee_to_wall(f32 x, f32 y, f32 speed,
-    f32 player_x, f32 player_y, f32 dt,
-    f32& next_x, f32& next_y)
+void enemy_flee_to_wall(f32 x, f32 y, f32 speed, f32 player_x, f32 player_y, f32 dt, f32& next_x, f32& next_y)
 {
     f32 dx = x - player_x;
     f32 dy = y - player_y;
@@ -435,7 +431,6 @@ void dragon::load_anim_textures()
     tex_hurt = AEGfxTextureLoad("Assets/Sprites/Enemy/Boss/dragon_lord_hurt_basic_130x130.png");
     tex_death = AEGfxTextureLoad("Assets/Sprites/Enemy/Boss/dragon_lord_death_160x160.png");
 
-    // Start in idle
     anim.set(tex_idle, 4, 74, 74, 296, 74, 6.f, true);
 }
 
@@ -443,10 +438,10 @@ void dragon::tick_attack_pattern(float dt, float tgt_x, float tgt_y)
 {
     // Simple repeating timer: fires one alternating wave every WAVE_INTERVAL seconds.
     m_wave_timer -= dt;
-    if (m_wave_timer <= 0.0f)
+    if (m_wave_timer <= 1.f)
     {
         boss_proj_manager.trigger_wave(x, y, tgt_x, tgt_y);
-        m_wave_timer = BossProjCfg::WAVE_INTERVAL;  // reset (0.45s default)
+        m_wave_timer = BossProjCfg::WAVE_INTERVAL;
     }
 }
 
@@ -479,12 +474,10 @@ void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
         x = AEClamp(x, room_left, room_right);
         y = AEClamp(y, room_bottom, room_top);
 
-        // ?? Ring-projectile attack pattern ????????????????????????????????
         tick_attack_pattern(dt,
                             player->current_player->x,
                             player->current_player->y);
 
-        // ?? Direct body-contact damage (1 unit = half a heart) ???????????
         if (collides_with_player(player))
         {
             state = enemy_state::attacking;

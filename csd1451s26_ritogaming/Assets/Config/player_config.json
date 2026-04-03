@@ -1,0 +1,29 @@
+{
+    "char1": {
+        "x": -400.0,
+        "y": 0.0,
+        "is_dead": false
+    },
+    "char2": {
+        "x": 1000.0,
+        "y": -950.0,
+        "is_dead": false
+    },
+    "current_character": 1,
+    "stats": {
+        "char1_curr_health": 12,
+        "char2_curr_health": 6,
+        "char1_max_health": 12,
+        "char2_max_health": 6,
+        "character_size": 25.0,
+        "triangle_size": 20.0,
+        "triangle_offset": 40.0,
+        "char1_start_x": -400.0,
+        "char1_start_y": 0.0,
+        "char2_start_x": 1000.0,
+        "char2_start_y": -950.0,
+        "char1_move_speed": 6.5,
+        "char2_move_speed": 13.0
+    },
+    "fireball_count": 5
+}

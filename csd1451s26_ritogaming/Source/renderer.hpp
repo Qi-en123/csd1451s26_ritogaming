@@ -58,6 +58,7 @@ extern AEGfxVertexList* rect_mesh_corner;
 extern AEGfxVertexList* circle_mesh;
 extern AEGfxVertexList* square_mesh;
 extern AEGfxVertexList* triangle_mesh;
+extern AEGfxVertexList* ring_mesh; 
 
 // ------------------------------------------------------------------------
 // Default zoom caps for camera

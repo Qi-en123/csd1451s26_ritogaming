@@ -31,51 +31,6 @@ static AEVec2 tile_spot(s32 row, s32 col)
     return p;
 }
 
-void entity_system_update(Player* player_ptr, EnemyManager* enem)
-{
-    if (!player_ptr) return;
-    (void)enem;
-    f32 dt = (f32)AEFrameRateControllerGetFrameTime();
-    player_update_projectiles(player_ptr, dt);
-}
-
-EnemyManager::EnemyManager() :
-    ghost_slots(nullptr), bat_slots(nullptr),
-    ghost_spawn_positions(nullptr), bat_spawn_positions(nullptr), cross_positions(nullptr),
-    ghost_count(0), bat_count(0), cross_count(0)
-{
-}
-
-EnemyManager::~EnemyManager()
-{
-    std::cout << "calling destructor for EnemyManager\n";
-    clear_all();
-    unload_textures();
-}
-
-void EnemyManager::load_textures()
-{
-    if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_food/cream.png");
-    if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_food/burger.png");
-
-    if (!cross_tex)       cross_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0064.png");
-    if (!ghost_marker_tex) ghost_marker_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0066.png");
-    if (!bat_marker_tex)   bat_marker_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0126.png");
-
-    if (!ghost_tex)       ghost_tex = AEGfxTextureLoad("Assets/Sprites/Enemy/tile_0006.png");
-    if (!bat_tex)         bat_tex = AEGfxTextureLoad("Assets/Sprites/Enemy/tile_0025.png");
-}
-
-void EnemyManager::unload_textures()
-{
-    auto safe_unload = [](AEGfxTexture*& tex) {
-        if (tex) { AEGfxTextureUnload(tex); tex = nullptr; }
-        };
-    safe_unload(ghost_food_tex); safe_unload(bat_food_tex); safe_unload(dragon_food_tex);
-    safe_unload(cross_tex); safe_unload(ghost_marker_tex); safe_unload(bat_marker_tex);
-    safe_unload(ghost_tex); safe_unload(bat_tex); safe_unload(dragon_tex);
-}
-
 void EnemyManager::load_spawn_positions(const char* filename)
 {
     clear_all();
@@ -135,8 +90,53 @@ void EnemyManager::load_spawn_positions(const char* filename)
 
     file.close();
     spawn_positions_loaded = true;
-    printf("[EnemyManager] SUCCESS: %d Ghosts, %d Bats, %d Crosses loaded.\n", ghost_count, bat_count, cross_count);
 }
+
+void entity_system_update(Player* player_ptr, EnemyManager* enem)
+{
+    if (!player_ptr) return;
+    (void)enem;
+    f32 dt = (f32)AEFrameRateControllerGetFrameTime();
+    player_update_projectiles(player_ptr, dt);
+}
+
+EnemyManager::EnemyManager() :
+    ghost_slots(nullptr), bat_slots(nullptr),
+    ghost_spawn_positions(nullptr), bat_spawn_positions(nullptr), cross_positions(nullptr),
+    ghost_count(0), bat_count(0), cross_count(0)
+{
+}
+
+EnemyManager::~EnemyManager()
+{
+    std::cout << "calling destructor for EnemyManager\n";
+    clear_all();
+    unload_textures();
+}
+
+void EnemyManager::load_textures()
+{
+    if (!ghost_food_tex)  ghost_food_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_food/cream.png");
+    if (!bat_food_tex)    bat_food_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_food/burger.png");
+
+    if (!cross_tex)       cross_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0064.png");
+    if (!ghost_marker_tex) ghost_marker_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0066.png");
+    if (!bat_marker_tex)   bat_marker_tex = AEGfxTextureLoad("Assets/Sprites/Enemy_spawn_location/tile_0126.png");
+
+    if (!ghost_tex)       ghost_tex = AEGfxTextureLoad("Assets/Sprites/Enemy/tile_0006.png");
+    if (!bat_tex)         bat_tex = AEGfxTextureLoad("Assets/Sprites/Enemy/tile_0025.png");
+}
+
+void EnemyManager::unload_textures()
+{
+    auto safe_unload = [](AEGfxTexture*& tex) {
+        if (tex) { AEGfxTextureUnload(tex); tex = nullptr; }
+        };
+    safe_unload(ghost_food_tex); safe_unload(bat_food_tex); safe_unload(dragon_food_tex);
+    safe_unload(cross_tex); safe_unload(ghost_marker_tex); safe_unload(bat_marker_tex);
+    safe_unload(ghost_tex); safe_unload(bat_tex); safe_unload(dragon_tex);
+}
+
 
 //shld rename this function
 void EnemyManager::initialize_tutorial_area()

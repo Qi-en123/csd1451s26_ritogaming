@@ -49,7 +49,7 @@ namespace BossProjCfg
     constexpr int   POSITIONS_WAVE_B = 4;      // Even slots
     constexpr float ANGLE_SPREAD_DEG = 120.0f; // Total fan spread
 
-    constexpr float WAVE_INTERVAL = 1.f;     // Delay between waves
+    constexpr float WAVE_INTERVAL = 5.f;     // Delay between waves
 
     constexpr int   PROJECTILE_DAMAGE = 1;     // 1 = half-heart
 }

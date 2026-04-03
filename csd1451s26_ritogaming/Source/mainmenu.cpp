@@ -270,7 +270,11 @@ void mainmenu_init()
     for (int i = 0; i < MAX_TRAIL; ++i) ghoul_trail[i].active = false;
     trail_spawn_timer = 0.0f;
 
-    play_bgm(g_audio.bgm_mainmenu); // start main menu background music
+    if (g_bgm_current_track != &g_audio.bgm_op_n_mainmenu)
+    {
+        g_bgm_current_track = &g_audio.bgm_op_n_mainmenu;
+        play_bgm(g_audio.bgm_op_n_mainmenu);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -314,29 +318,29 @@ void mainmenu_update()
     // --- Main button clicks ---
     if (IsButtonClicked(cfg_button_x, cfg_button_y[0], cfg_button_w, cfg_button_h)) // Play
     {
-        play_sfx(g_audio.sfx_button_click);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         selected_level_path = "Assets/Levels/default.txt";
         selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
         next = GS_LEVEL1;
     }
     if (IsButtonClicked(cfg_button_x, cfg_button_y[1], cfg_button_w, cfg_button_h)) // Levels
     {
-        play_sfx(g_audio.sfx_button_click);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         next = GS_LEVELS;
     }
     if (IsButtonClicked(cfg_button_x, cfg_button_y[2], cfg_button_w, cfg_button_h)) // Guide
     {
-        play_sfx(g_audio.sfx_button_click);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         next = GS_GUIDE;
     }
     if (IsButtonClicked(cfg_button_x, cfg_button_y[3], cfg_button_w, cfg_button_h)) // Credits
     {
-        play_sfx(g_audio.sfx_button_click);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         next = CREDIT;
     }
     if (IsButtonClicked(cfg_button_x, cfg_button_y[4], cfg_button_w, cfg_button_h)) // Quit
     {
-        play_sfx(g_audio.sfx_button_click);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         show_exit_confirm = true; // show confirmation before quitting
     }
 
@@ -576,7 +580,7 @@ void mainmenu_draw()
 void mainmenu_free()
 {
     free_mesh(); // release vertex list memory created in init_mesh
-    stop_bgm();  // stop main menu BGM before leaving the state
+    stop_bgm();
 }
 
 // ----------------------------------------------------------------------------

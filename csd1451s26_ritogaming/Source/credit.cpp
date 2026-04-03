@@ -106,6 +106,9 @@ void credit_init()
     AEInputShowCursor(false);  // hide system cursor, draw custom one instead
     init_mesh();                // initialize meshes needed for rendering
     AEGfxSetBackgroundColor(0.0f, 0.0f, 0.05f);  // dark navy background
+    
+    g_bgm_current_track = &g_audio.bgm_credits;
+    play_bgm(g_audio.bgm_credits);
 }
 
 // ----------------------------------------------------------------------------
@@ -135,7 +138,7 @@ void credit_update()
     // Back button returns to main menu
     if (IsButtonClicked(button_x, button_y, button_w, button_h))
     {
-        play_sfx(g_audio.sfx_button_click);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         next = MAINMENU;
     }
 }
@@ -165,7 +168,7 @@ void credit_draw()
 
     // Play click sound when button is pressed
     if (IsButtonClicked(button_x, button_y, button_w, button_h))
-        play_sfx(g_audio.sfx_button_click);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
 
     was_hovered = hovered;  // store hover state for next frame comparison
 
@@ -231,6 +234,9 @@ void credit_draw()
 void credit_free()
 {
     free_mesh();  // release vertex list memory created in init_mesh
+
+    stop_bgm();
+    g_bgm_current_track = nullptr;
 }
 
 // ----------------------------------------------------------------------------

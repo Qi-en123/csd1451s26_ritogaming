@@ -498,20 +498,29 @@ void mainmenu_draw()
     // --- Draw menu buttons and centered text labels ---
     for (int i = 0; i < 5; ++i)
     {
-        if (buttons[i + 1]) // buttons[0] unused; 1-5 map to the 5 menu items
+        // 1. Draw the Button Sprite (Keep your existing code)
+        if (buttons[i + 1])
             render_editor_ui(buttons[i + 1], cfg_button_w, cfg_button_h, 1.0f,
                 cfg_button_x, cfg_button_y[i],
                 IsButtonHovered(cfg_button_x, cfg_button_y[i], cfg_button_w, cfg_button_h));
 
+        // 2. Draw the Text Label
         if (font != -1)
         {
             f32 text_width = 0.f, text_height = 0.f;
-            AEGfxGetPrintSize(font, cfg_button_labels[i].c_str(), 1.f, &text_width, &text_height);
+            AEGfxGetPrintSize(font, cfg_button_labels[i].c_str(), 1.0f, &text_width, &text_height);
 
-            // Convert world x to normalized [-1,1] then offset by half text width to center
-            f32 norm_x = (cfg_button_x / AEGfxGetWindowWidth()/2.0f) - (text_width / 2.f);
-            f32 norm_y = (cfg_button_y[i] - 15.f) / AEGfxGetWindowHeight()/2.0f;
-            AEGfxPrint(font, cfg_button_labels[i].c_str(), norm_x, norm_y, 1.f, 0.f, 0.f, 0.f, 1.f);
+            // Convert World X/Y to NDC [-1, 1]
+            // Formula: (WorldPos / (WindowSize / 2))
+            f32 ndc_x = (cfg_button_x / (AEGfxGetWindowWidth() / 2.0f));
+            f32 ndc_y = (cfg_button_y[i] / (AEGfxGetWindowHeight() / 2.0f));
+
+            // Center the text: Subtract half of the normalized text width
+            // We also apply a small Y offset (-0.02f) to visually center it vertically on the sign
+            AEGfxPrint(font, cfg_button_labels[i].c_str(),
+                ndc_x - (text_width / 2.0f),
+                ndc_y - 0.02f,
+                1.0f, 0.f, 0.f, 0.f, 1.0f);
         }
     }
 

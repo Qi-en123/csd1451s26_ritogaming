@@ -68,12 +68,16 @@ bool is_transitioning()
 
 void trigger_level_transition(int target_state)
 {
+	stop_sfx();
+	stop_bgm();
 	transition_state = FADE_OUT;
 	pending_next_state = target_state;
 }
 
 void trigger_boss_warning()
 {
+	stop_sfx();
+	stop_bgm();
 	show_boss_warning = true;
 	boss_warning_timer = BOSS_WARNING_DUR;
 }
@@ -177,6 +181,9 @@ void level1_init()
 	enemy_manager_instance.clear_all();
 	enemy_manager_instance.load_spawn_positions(spawn_path.c_str());
 	enemy_manager_instance.initialize_tutorial_area();
+
+	g_bgm_current_track = &g_audio.bgm_maingame;
+	play_bgm(g_audio.bgm_maingame);
 }
 
 void level1_update()
@@ -377,11 +384,16 @@ void level1_draw()
 
 void level1_free()
 {
+
 	player_system_free(&player_instance);
 	enemy_manager_instance.clear_all();
 
 	free_mesh();
 	free_ui_textures(&ui_manager);
+
+	stop_bgm();
+	stop_sfx();
+	g_bgm_current_track = nullptr;
 }
 
 void level1_unload()

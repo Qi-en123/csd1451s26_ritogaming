@@ -20,6 +20,7 @@
 #include "ui_manager.hpp"
 #include "game_state_list.hpp"
 #include "end_screen.hpp"
+#include "audio_manager.hpp"
 
 #define NUM_TILE_TYPES 9
 #define TILE_ROWS 36
@@ -109,6 +110,9 @@ void level2_init()
     f32 room_bottom = MAP_START_Y - (10 * TILE_SIZE) - (TILE_SIZE / 2.0f);
 
     enemy_manager_instance.spawn_dragon(dragon_x, dragon_y, room_left, room_right, room_top, room_bottom);
+
+    g_bgm_current_track = &g_audio.bgm_bossroom;
+    play_bgm(g_audio.bgm_bossroom);
 }
 
 void level2_update()
@@ -182,6 +186,10 @@ void level2_free()
     free_ui_textures(&ui_manager);
     boss_proj_manager.clear();
     enemy_manager_instance.clear_all();
+
+    stop_bgm();
+    stop_sfx();
+    g_bgm_current_track = nullptr;
 }
 
 void level2_unload()

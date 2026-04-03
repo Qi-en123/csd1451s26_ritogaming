@@ -16,6 +16,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "audio_manager.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -121,6 +122,9 @@ void opening_init()
     cam.pos.x = 0.f;
     cam.pos.y = 0.f;
     zoom = 1.f;
+
+    g_bgm_current_track = &g_audio.bgm_op_n_mainmenu;
+    play_bgm(g_audio.bgm_op_n_mainmenu, 0.3f);
 }
 
 // ----------------------------------------------------------------------------

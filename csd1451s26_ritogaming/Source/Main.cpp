@@ -43,7 +43,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AESysSetWindowTitle("Ahmad's Dungeon");
 
     // Initialize Global Systems
-    gsm_initialize(OPENING);
+    gsm_initialize(MAINMENU);
     audio_init();
 
     // ------------------------------------------------------------------------

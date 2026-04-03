@@ -110,7 +110,7 @@ void resume_bgm();
 // Plays a sound effect with optional volume, pitch, and loop parameters.
 //
 // ---------------------------------------------------------------------------- 
-void play_sfx(AEAudio audio, float volume = 0.01f, float pitch = 1.0f, int loop = 0);
+void play_sfx(AEAudio audio, float volume = 0.1f, float pitch = 1.0f, int loop = 0);
 
 
 void stop_sfx();

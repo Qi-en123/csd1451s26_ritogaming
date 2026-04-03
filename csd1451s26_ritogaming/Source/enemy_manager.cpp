@@ -280,7 +280,7 @@ void EnemyManager::render_enemy(base_enemy* other_enemy)
     }
 
     if (other_enemy->get_texture())
-        render_sprite(rect_mesh_center, other_enemy->get_x(), other_enemy->get_y(), 
+        render_sprite(square_mesh, other_enemy->get_x(), other_enemy->get_y(), 
 			other_enemy->get_size(), other_enemy->get_size(), other_enemy->get_texture()); // use size as both width and height for uniform scaling
 
     AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);

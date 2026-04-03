@@ -77,6 +77,7 @@ namespace
     // Mouse Input
     // ----------------------------------------------------------------------------
     s32 mouse_x, mouse_y; // current mouse position in screen space
+    constexpr f32 CURSOR_SIZE = 50.f;
 
     // ----------------------------------------------------------------------------
     // Dust Particle System
@@ -273,8 +274,10 @@ void mainmenu_init()
     if (g_bgm_current_track != &g_audio.bgm_op_n_mainmenu)
     {
         g_bgm_current_track = &g_audio.bgm_op_n_mainmenu;
-        play_bgm(g_audio.bgm_op_n_mainmenu);
+        play_bgm(g_audio.bgm_op_n_mainmenu, 1.0f);
     }
+
+    printf("Supposed to ply udio");
 }
 
 // ----------------------------------------------------------------------------

@@ -72,7 +72,7 @@ void minimap_init(f32 w, f32 h)
     char filename[128];
     for (int i = 0; i < 4; ++i)
     {
-        sprintf_s(filename, "Assets/Map/maptiles_%d.png", i + 1);
+        sprintf_s(filename, "Assets/Sprites/Map/maptiles_%d.png", i + 1);
         if (!pMapParts[i])
             pMapParts[i] = AEGfxTextureLoad(filename);
     }

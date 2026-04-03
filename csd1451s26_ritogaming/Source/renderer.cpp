@@ -608,8 +608,8 @@ void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 		AEMtx33 transform, translate, scale, cam_translate, cam_zoom;
 		AEMtx33Trans(&translate, trans_x, trans_y);
 		AEMtx33Scale(&scale, scale_x, scale_y);
-		AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
-		AEMtx33Scale(&cam_zoom, zoom, zoom);
+		AEMtx33Trans(&cam_translate, -Camera::cam.pos.x, -Camera::cam.pos.y);
+		AEMtx33Scale(&cam_zoom, Camera::zoom, Camera::zoom);
 		AEMtx33Identity(&transform);
 		AEMtx33Concat(&transform, &transform, &cam_zoom);
 		AEMtx33Concat(&transform, &transform, &cam_translate);

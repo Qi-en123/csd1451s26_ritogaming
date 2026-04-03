@@ -181,7 +181,7 @@ void level1_init()
 	enemy_manager_instance.initialize_tutorial_area();
 
 	g_bgm_current_track = &g_audio.bgm_maingame;
-	play_bgm(g_audio.bgm_maingame);
+	play_bgm(g_audio.bgm_maingame, 0.5f);
 }
 
 void level1_update()
@@ -342,8 +342,7 @@ void level1_draw()
 
 	//Renders the pause ui when game is paused
 	pause_draw();
-	if (!is_paused)
-		render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
+
 	// Draw black fade overlay
 	if (transition_state != NONE && transition_alpha > 0.f)
 		draw_black_overlay(transition_alpha);
@@ -378,8 +377,7 @@ void level1_draw()
 			1.5f, 1.f, 0.f, 0.f, flash);
 	}
 
-	
-
+	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 
 void level1_free()

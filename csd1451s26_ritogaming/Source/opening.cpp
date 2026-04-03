@@ -158,7 +158,7 @@ void opening_update()
 // ----------------------------------------------------------------------------
 void opening_draw()
 {
-    if (!logo || !square_mesh)
+    if (!logo_tex || !square_mesh)
         return;
 
     render_editor_ui(logo_tex, config.logo_width, config.logo_height, alpha);

@@ -98,7 +98,7 @@ void level2_init()
     enemy_manager_instance.spawn_dragon(dragon_x, dragon_y, room_left, room_right, room_top, room_bottom);
 
     g_bgm_current_track = &g_audio.bgm_bossroom;
-    play_bgm(g_audio.bgm_bossroom);
+    play_bgm(g_audio.bgm_bossroom, 1.0f);
 }
 
 void level2_update()

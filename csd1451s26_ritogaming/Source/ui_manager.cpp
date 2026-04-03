@@ -61,7 +61,7 @@ void render_character_ui(UIManager* p_ui_manager, Player* player)
 		float x = AEGfxGetWinMinX() + paddingX + icon_size / 2.f; // half size keeps it fully on screen
 		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
 		render_ui_sprite(square_mesh, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
-		render_ui_sprite(square_mesh, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->primary_ability_texture);
+		render_ui_sprite(square_mesh, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->cursor_wizard);
 
 		float counter_x = x + (paddingX * 10.f);
 		render_ui_sprite(square_mesh, counter_x, y, icon_size / 1.5f, icon_size / 1.5f, p_ui_manager->primary_counter_texture);

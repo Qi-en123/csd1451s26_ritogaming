@@ -401,14 +401,4 @@ void pause_draw()
     {
         draw_confirmation();
     }
-
-    //  6. Custom cursor
-    if (tex_cursor)
-    {
-        // Convert mouse screen coords to world coords
-        f32 world_x = (f32)mouse_x - AEGfxGetWindowWidth() / 2.0f; // center origin
-        f32 world_y = -(f32)mouse_y + AEGfxGetWindowHeight() / 2.0f; // flip Y axis
-
-        render_editor_ui(tex_cursor, CURSOR_SIZE, CURSOR_SIZE, 1.0f, world_x, world_y);
-    }
 }

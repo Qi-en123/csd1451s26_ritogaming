@@ -222,18 +222,17 @@ void draw_black_overlay(f32 alpha);
 void render_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = { 1.0f,1.0f,1.0f,1.0f });
 
-
-//rect_mesh - Corner or Center mode (USE RECT MESH)
-//texture is loaded outside this function
 void render_ui_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	f32 scale_x, f32 scale_y, AEGfxTexture* texture, color color = { 1.0f,1.0f,1.0f,1.0f });
-
 
 void render_editor_ui(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
 	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
 
 void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha,
 	f32 trans_x = 0.f, f32 trans_y = 0.f, bool highlighted = false);
+
+void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, f32 flash);
 
 // Animation for boss
 struct Animator;
@@ -242,5 +241,4 @@ void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim);
 class BossProjectileManager;
 void render_boss_projectiles(const BossProjectileManager& manager);
 
-void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y, AEGfxTexture* texture, f32 flash);
+

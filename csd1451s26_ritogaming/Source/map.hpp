@@ -32,11 +32,8 @@ enum TILE_ID
 extern AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 extern AEGfxVertexList* TileMesh;
 extern s32 map[TILE_ROWS][TILE_COLS];
-extern s32 boss_map[TILE_ROWS][TILE_COLS];
 constexpr f32 tile_size = 64.0f;
-void initialize_boss_map();
 
-void draw_boss_map(f32 tile_size);
 void draw_map(f32 tile_size);
 bool save_map_to_file(s32** map, std::string& out_filename);
 bool load_map_from_file(const char* filename, s32 map[][TILE_COLS]);

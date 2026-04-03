@@ -1,5 +1,5 @@
 /*!************************************************************************
-\file:			level2.cpp
+\file:			boss_room.cpp
 \author:		Jerod lim
                 [add yall name]
 \par DP email:	jerodyaowei.lim@digipen.edu
@@ -25,6 +25,7 @@
 #include "end_screen.hpp"
 #include "debug.hpp"
 #include "audio_manager.hpp"
+#include "boss_room.hpp"
 
 namespace {
     bool enemy_spawned = false;    

@@ -1,5 +1,5 @@
 /*!************************************************************************
-\file:			level2.hpp
+\file:			boss_room.hpp
 \author:		Jerod lim
                 [add yall name]
 \par DP email:	jerodyaowei.lim@digipen.edu

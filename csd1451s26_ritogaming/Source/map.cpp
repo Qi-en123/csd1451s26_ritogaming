@@ -18,7 +18,6 @@
 
 // Dummy map
 s32 map[TILE_ROWS][TILE_COLS];
-s32 boss_map[TILE_ROWS][TILE_COLS];
 //f32 tile_size{};
 AEGfxTexture* TileTextures[NUM_TILE_TYPES];
 
@@ -275,69 +274,6 @@ void draw_map(f32 tile_size)
             render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[tileType]);
         }
     }
-}
-
-void draw_boss_map(f32 tile_size)
-{
-    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetTransparency(1.f);
-    AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-
-    f32 startX = -1600.f / 2.f;
-    f32 startY = 900.f / 2.f;
-
-    for (int row = 0; row < TILE_ROWS; ++row)
-    {
-        f32 y = startY - row * tile_size - tile_size * 0.5f;
-        for (int col = 0; col < TILE_COLS; ++col)
-        {
-            int tileType = boss_map[row][col];
-
-            // Skip drawing if tileType is 0
-            if (tileType == 0)
-                continue;
-
-            f32 x = startX + col * tile_size + tile_size * 0.5f;
-            render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[tileType]);
-        }
-    }
-}
-
-
-// ------------------------------------------------------------
-// Initialize a simplified boss map layout (one big room)
-// ------------------------------------------------------------
-void initialize_boss_map()
-{
-    // ============================================================
-    // BIG BOSS ROOM
-    // ============================================================
-     // Clear the whole boss map first
-    for (int r = 0; r < TILE_ROWS; ++r)
-        for (int c = 0; c < TILE_COLS; ++c)
-            boss_map[r][c] = EMPTY;
-// Floor
-    for (int r = 3; r <= 10; ++r)
-        for (int c = 2; c <= 9; ++c)
-            boss_map[r][c + 5] = FLOOR;
-
-    // Top and bottom walls
-    for (int c = 1; c <= 10; ++c)
-    {
-        boss_map[2][c + 5] = WALL;  // top wall
-        boss_map[11][c + 5] = WALL;  // bottom wall
-    }
-
-    // Left wall
-    for (int r = 3; r <= 11; ++r)
-        boss_map[r][6] = WALL;
-
-    // Right wall
-    for (int r = 3; r <= 11; ++r)
-        boss_map[r][15] = WALL;
-
 }
 
 

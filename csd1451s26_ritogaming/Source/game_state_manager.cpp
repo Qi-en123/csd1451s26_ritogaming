@@ -68,7 +68,7 @@ void gsm_update()
 	// Assign function pointers based on the current state
 	switch (current)
 	{
-	case GS_LEVEL1:
+	case GS_LEVEL1:					//level 1
 		fpLoad = level1_load;
 		fpInitialize = level1_init;
 		fpUpdate = level1_update;
@@ -77,7 +77,7 @@ void gsm_update()
 		fpUnload = level1_unload;
 		break;
 
-	case GS_BOSS_ROOM:
+	case GS_BOSS_ROOM:				//boss room 
 		fpLoad = level2_load;
 		fpInitialize = level2_init;
 		fpUpdate = level2_update;
@@ -86,7 +86,7 @@ void gsm_update()
 		fpUnload = level2_unload;
 		break;
 
-	case CREDIT:
+	case CREDIT:					//credit screen
 		fpLoad = credit_load;
 		fpInitialize = credit_init;
 		fpUpdate = credit_update;
@@ -95,7 +95,7 @@ void gsm_update()
 		fpUnload = credit_unload;
 		break;
 
-	case GS_GUIDE:
+	case GS_GUIDE:					//guide/tutorial level
 		fpLoad = guide_load;
 		fpInitialize = guide_init;
 		fpUpdate = guide_update;
@@ -104,7 +104,7 @@ void gsm_update()
 		fpUnload = guide_unload;
 		break;
 
-	case OPENING:
+	case OPENING:					//opening logo sequence
 		fpLoad = opening_load;
 		fpInitialize = opening_init;
 		fpUpdate = opening_update;
@@ -113,7 +113,7 @@ void gsm_update()
 		fpUnload = opening_unload;
 		break;
 
-	case MAINMENU:
+	case MAINMENU:					//main menu
 		fpLoad = mainmenu_load;
 		fpInitialize = mainmenu_init;
 		fpUpdate = mainmenu_update;
@@ -122,7 +122,7 @@ void gsm_update()
 		fpUnload = mainmenu_unload;
 		break;
 
-	case GS_LEVEL_EDITOR:
+	case GS_LEVEL_EDITOR:			//internal level editor (not accessible from main menu)
 		fpLoad = level_editor_load;
 		fpInitialize = level_editor_init;
 		fpUpdate = level_editor_update;
@@ -131,7 +131,7 @@ void gsm_update()
 		fpUnload = level_editor_unload;
 		break;
 
-	case GS_LEVELS:
+	case GS_LEVELS:					//level select screen
 		fpLoad = levels_load;
 		fpInitialize = levels_init;
 		fpUpdate = levels_update;
@@ -140,12 +140,12 @@ void gsm_update()
 		fpUnload = levels_unload;
 		break;
 
-	case GS_RESTART:
+	case GS_RESTART:				//restart
 		// Logic handled within the Game State Loop in main
 		break;
 
-	case GS_WIN:
-	case GS_LOSE:
+	case GS_WIN:					// win screen
+	case GS_LOSE:					// lose screen
 		fpLoad = end_screen_load;
 		fpInitialize = end_screen_init;
 		fpUpdate = end_screen_update;
@@ -154,7 +154,7 @@ void gsm_update()
 		fpUnload = end_screen_unload;
 		break;
 
-	case GS_QUIT:
+	case GS_QUIT:					// quit
 		// Logic handled within the Game State Loop in main
 		break;
 

@@ -1,13 +1,13 @@
 Team Rito Gaming
 Team Members:
 DIRECTOR and PROGRAMMER
-Ahmad Qusyairi
-PRODUCER and PROGRAMMER
-Claire Cheong
+Jerod Lim
 PRODUCER, DESIGN LEAD and PROGRAMMER
 Goh Qi En
 AUDIO LEAD, COMPOSER, and PROGRAMMER
-Jerod Lim
+Ahmad Qusyairi
+PROGRAMMER
+Claire Cheong
  
 Faculty and Advisors
 Lab management and Instructor

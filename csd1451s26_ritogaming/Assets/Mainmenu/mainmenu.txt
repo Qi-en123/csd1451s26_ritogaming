@@ -1,0 +1,21 @@
+knight_start_x -700.0
+ghoul_start_x -310.0
+ghoul_start_y -40.0
+ghoul_grow_rate 100.0
+character_full_scale 150.0
+character_min_scale 10.0
+character_speed 200.0
+button_w 280.0
+button_h 100.0
+button_x 500.0
+button_y0 250.0
+button_y1 125.0
+button_y2 0.0
+button_y3 -125.0
+button_y4 -250.0
+title Ahmad's Dungeon
+label0 Play
+label1 Levels
+label2 Guide
+label3 Credits
+label4 Quit

@@ -262,7 +262,7 @@ void base_enemy::take_damage(int amount)
         return;
 
     current_health -= amount;
-
+    hit_flash_timer = HIT_FLASH_DUR;
     if (current_health <= 0)
     {
         current_health = 0;
@@ -329,7 +329,7 @@ void ghost::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active)
         return;
-
+    if (hit_flash_timer > 0.f) hit_flash_timer -= dt;
     visible_to_player = is_in_camera_view(p_cam);
 
     if (visible_to_player)
@@ -386,7 +386,7 @@ void bat::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active)
         return;
-
+    if (hit_flash_timer > 0.f) hit_flash_timer -= dt;
     visible_to_player = is_in_camera_view(p_cam);
 
     if (visible_to_player)
@@ -453,7 +453,7 @@ void dragon::tick_attack_pattern(float dt, float tgt_x, float tgt_y)
 void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
-
+    if (hit_flash_timer > 0.f) hit_flash_timer -= dt;
     // --- Dead: play death anim once then truly deactivate ---
     if (state == dead) {
         if (anim.update(dt))

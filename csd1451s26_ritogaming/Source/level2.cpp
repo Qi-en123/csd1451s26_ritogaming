@@ -24,6 +24,7 @@
 #include "game_state_list.hpp"
 #include "end_screen.hpp"
 #include "debug.hpp"
+#include "audio_manager.hpp"
 
 namespace {
     bool enemy_spawned = false;    
@@ -95,6 +96,9 @@ void level2_init()
     f32 room_bottom = world_top - (27 * tile_size);
 
     enemy_manager_instance.spawn_dragon(dragon_x, dragon_y, room_left, room_right, room_top, room_bottom);
+
+    g_bgm_current_track = &g_audio.bgm_bossroom;
+    play_bgm(g_audio.bgm_bossroom);
 }
 
 void level2_update()
@@ -178,7 +182,7 @@ void level2_draw()
     pause_draw();
 
     //Renders the custom cursor
-    render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
+    render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active); //iihih
 }
 
 void level2_free()
@@ -189,6 +193,10 @@ void level2_free()
     enemy_manager_instance.clear_all();
     player_system_free(&player_instance);
     free_mesh();
+
+    stop_bgm();
+    stop_sfx();
+    g_bgm_current_track = nullptr;
 }
 
 void level2_unload()

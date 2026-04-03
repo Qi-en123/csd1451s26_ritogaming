@@ -207,7 +207,7 @@ void end_screen_update()
     else if (IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H)) current_hovered = 1;
 
     if (current_hovered != last_hovered && current_hovered != -1)
-        play_sfx(g_audio.sfx_button_hover, 1.f);
+        play_sfx(g_audio.sfx_button_hover);
     last_hovered = current_hovered;
 
     if (confirm_target != CONFIRM_NONE)
@@ -216,7 +216,7 @@ void end_screen_update()
         {
             if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
             {
-                play_sfx(g_audio.sfx_button_click, 1.f);
+                play_sfx(g_audio.sfx_button_click, 0.1f);
                 if (confirm_target == CONFIRM_RESTART)
                 {
                     selected_level_path = "Assets/Levels/default.txt";
@@ -300,7 +300,7 @@ void pause_update()
         {
             is_paused = !is_paused;
             pause_last_hovered = -1;
-            play_sfx(g_audio.sfx_button_click, 1.f);
+            play_sfx(g_audio.sfx_button_click, 0.1f);
         }
     }
 
@@ -313,7 +313,7 @@ void pause_update()
         {
             if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
             {
-                play_sfx(g_audio.sfx_button_click, 1.f);
+                play_sfx(g_audio.sfx_button_click, 0.1f);
                 if (pause_confirm_target == CONFIRM_RESTART)
                 {
                     next = GS_RESTART;
@@ -336,13 +336,13 @@ void pause_update()
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H)) cur = 1;
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H)) cur = 2;
     if (cur != pause_last_hovered && cur != -1)
-        play_sfx(g_audio.sfx_button_hover, 1.f);
+        play_sfx(g_audio.sfx_button_hover);
     pause_last_hovered = cur;
 
     // Resume
     if (IsButtonClicked(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H))
     {
-        play_sfx(g_audio.sfx_button_click, 1.f);
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         is_paused = false;
         pause_last_hovered = -1;
     }

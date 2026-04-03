@@ -6,7 +6,13 @@
 #pragma once
 
 namespace DEBUG {
-    constexpr int DEBUGGING = 1;
+    static int DEBUGGING = 0;
+    static int DRAW_WALLS = 0;
+    static int DRAW_PLAYER_TILE = 0;
+    static int DRAW_PUZZLE_GRAB_RANGE = 0;
+    static int DRAW_PUZZLE_BLOCKS = 0;
+    static int DRAW_BUTTON_SPIKE_LINKS = 0;
+    static int DRAW_ENEMIES = 0;
 
     // Collision
     void draw_all_walls();

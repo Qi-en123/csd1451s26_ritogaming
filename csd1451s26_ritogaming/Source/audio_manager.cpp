@@ -3,8 +3,8 @@
 \author:					Ahmad Qusyairi Bin Mohammad Jinna
 \par DP email:				ahmadqusyairi.b@digipen.edu
 
-\brief:						Implementation of the audio management system 
-                            using the Alpha Engine audio API. Handles 
+\brief:						Implementation of the audio management system
+                            using the Alpha Engine audio API. Handles
                             loading, grouping, and playback of BGM and SFX
 
 **************************************************************************/
@@ -12,7 +12,7 @@
 #include <cstdio>
 
 AudioManager g_audio;
-
+AEAudio* g_bgm_current_track = nullptr;
 // ----------------------------------------------------------------------------
 //
 // Function: audio_init
@@ -25,27 +25,30 @@ void audio_init()
     AEAudioInit();
 
     // Create groups
-    g_audio.bgm_group           = AEAudioCreateGroup();
-    g_audio.sfx_group           = AEAudioCreateGroup();
+    g_audio.bgm_group = AEAudioCreateGroup();
+    g_audio.sfx_group = AEAudioCreateGroup();
 
     // Load BGM (loops)
-    g_audio.bgm_mainmenu        = AEAudioLoadMusic("Assets/Audio/main_menu_bg.mp3");
+    g_audio.bgm_op_n_mainmenu = AEAudioLoadMusic("Assets/Audio/opening_n_mainmenu_bg.mp3");
+    g_audio.bgm_maingame = AEAudioLoadMusic("Assets/Audio/main_game_bg.mp3");
+    g_audio.bgm_bossroom = AEAudioLoadMusic("Assets/Audio/boss_room_bg.mp3");
+    g_audio.bgm_credits = AEAudioLoadMusic("Assets/Audio/credits_bg.mp3");
 
     // Load SFX (play once)
     // Attacks
-    g_audio.sfx_fireball        = AEAudioLoadSound("Assets/Audio/mage_atk.mp3");
-    g_audio.sfx_sword_atk       = AEAudioLoadSound("Assets/Audio/sword_atk.mp3");
+    g_audio.sfx_fireball = AEAudioLoadSound("Assets/Audio/mage_atk.mp3");
+    g_audio.sfx_sword_atk = AEAudioLoadSound("Assets/Audio/sword_atk.mp3");
 
     // Damage taken
-    g_audio.sfx_mage_hurt       = AEAudioLoadSound("Assets/Audio/mage_hurt.mp3");
-    g_audio.sfx_knight_hurt     = AEAudioLoadSound("Assets/Audio/knight_hurt.mp3");
+    g_audio.sfx_mage_hurt = AEAudioLoadSound("Assets/Audio/mage_hurt.mp3");
+    g_audio.sfx_knight_hurt = AEAudioLoadSound("Assets/Audio/knight_hurt.mp3");
 
     // Puzzles
-    g_audio.sfx_button_click    = AEAudioLoadSound("Assets/Audio/button_click.mp3");
-    g_audio.sfx_button_hover    = AEAudioLoadSound("Assets/Audio/button_hover.mp3");
-    g_audio.sfx_button_puzzle   = AEAudioLoadSound("Assets/Audio/button_puzzle.mp3");
-    g_audio.sfx_drag_pull       = AEAudioLoadSound("Assets/Audio/drag_pull.mp3");
-    g_audio.sfx_footsteps       = AEAudioLoadSound("Assets/Audio/footsteps.mp3");
+    g_audio.sfx_button_click = AEAudioLoadSound("Assets/Audio/button_click.mp3");
+    g_audio.sfx_button_hover = AEAudioLoadSound("Assets/Audio/button_hover.mp3");
+    g_audio.sfx_button_puzzle = AEAudioLoadSound("Assets/Audio/button_puzzle.mp3");
+    g_audio.sfx_drag_pull = AEAudioLoadSound("Assets/Audio/drag_pull.mp3");
+    g_audio.sfx_footsteps = AEAudioLoadSound("Assets/Audio/footsteps.mp3");
 
 }
 
@@ -75,7 +78,10 @@ void audio_free()
     AEAudioStopGroup(g_audio.sfx_group);
 
     //// Unload BGM
-    AEAudioUnloadAudio(g_audio.bgm_mainmenu);
+    AEAudioUnloadAudio(g_audio.bgm_op_n_mainmenu);
+    AEAudioUnloadAudio(g_audio.bgm_maingame);
+    AEAudioUnloadAudio(g_audio.bgm_bossroom);
+    AEAudioUnloadAudio(g_audio.bgm_credits);
 
     //// Unload SFX
     AEAudioUnloadAudio(g_audio.sfx_fireball);
@@ -102,10 +108,10 @@ void audio_free()
 // specified audio track, looping it indefinitely.
 //
 // ---------------------------------------------------------------------------- 
-void play_bgm(AEAudio audio)
+void play_bgm(AEAudio audio, float volume, float pitch, int loop)
 {
     AEAudioStopGroup(g_audio.bgm_group); // stop any current BGM first
-    AEAudioPlay(audio, g_audio.bgm_group, 0.07f, 1.0f, -1); // -1 = loop forever
+    AEAudioPlay(audio, g_audio.bgm_group, volume, pitch, loop); // 0.07, 1.0, -1 = loop forever
 }
 
 // ----------------------------------------------------------------------------
@@ -151,4 +157,9 @@ void resume_bgm()
 void play_sfx(AEAudio audio, float volume, float pitch, int loop)
 {
     AEAudioPlay(audio, g_audio.sfx_group, volume, pitch, loop);
+}
+
+void stop_sfx()
+{
+    AEAudioStopGroup(g_audio.sfx_group);
 }

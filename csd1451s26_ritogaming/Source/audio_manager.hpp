@@ -12,6 +12,8 @@
 
 #include "AEAudio.h"
 
+
+
 // ----------------------------------------------------------------------------
 //
 // Struct: AudioManager
@@ -26,7 +28,10 @@ struct AudioManager
     AEAudioGroup sfx_group{};
 
     // BGM
-    AEAudio bgm_mainmenu{};
+    AEAudio bgm_op_n_mainmenu{};
+    AEAudio bgm_maingame{};
+    AEAudio bgm_bossroom{};
+    AEAudio bgm_credits{};
 
     // SFX
     AEAudio sfx_fireball{};
@@ -38,10 +43,11 @@ struct AudioManager
     AEAudio sfx_button_puzzle{};
     AEAudio sfx_drag_pull{};
     AEAudio sfx_footsteps{};
+
 };
 
 extern AudioManager g_audio;
-
+extern AEAudio* g_bgm_current_track;
 // ----------------------------------------------------------------------------
 //
 // Function: audio_init
@@ -72,7 +78,7 @@ void audio_free();
 // Plays a specific music track on the background music group.
 //
 // ---------------------------------------------------------------------------- 
-void play_bgm(AEAudio audio);
+void play_bgm(AEAudio audio, float volume = 0.07f, float pitch = 1.0f, int loop = -1);
 
 // ----------------------------------------------------------------------------
 //
@@ -105,3 +111,6 @@ void resume_bgm();
 //
 // ---------------------------------------------------------------------------- 
 void play_sfx(AEAudio audio, float volume = 0.01f, float pitch = 1.0f, int loop = 0);
+
+
+void stop_sfx();

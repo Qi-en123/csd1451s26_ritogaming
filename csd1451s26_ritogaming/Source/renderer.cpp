@@ -596,3 +596,38 @@ void render_boss_projectiles(const BossProjectileManager& manager)
 		AEGfxMeshFree(ring_mesh);
 	}
 }
+
+
+void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, f32 flash)
+{
+	if (on_screen(trans_x, trans_y)) {
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+
+		AEMtx33 transform, translate, scale, cam_translate, cam_zoom;
+		AEMtx33Trans(&translate, trans_x, trans_y);
+		AEMtx33Scale(&scale, scale_x, scale_y);
+		AEMtx33Trans(&cam_translate, -cam.pos.x, -cam.pos.y);
+		AEMtx33Scale(&cam_zoom, zoom, zoom);
+		AEMtx33Identity(&transform);
+		AEMtx33Concat(&transform, &transform, &cam_zoom);
+		AEMtx33Concat(&transform, &transform, &cam_translate);
+		AEMtx33Concat(&transform, &transform, &translate);
+		AEMtx33Concat(&transform, &transform, &scale);
+
+		color c = white;
+		update_light_level(trans_x, trans_y, c);
+		AEGfxSetColorToMultiply(c.r, c.g, c.b, 1.0f);
+
+		// Set color add AFTER render mode — this is what makes the flash work
+		AEGfxSetColorToAdd(flash, flash, flash, 0.f);
+
+		AEGfxTextureSet(texture, 0, 0);
+		AEGfxSetTransform(transform.m);
+		AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
+		AEGfxTextureSet(nullptr, 0, 0);
+
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	}
+}

@@ -241,3 +241,6 @@ void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim);
 
 class BossProjectileManager;
 void render_boss_projectiles(const BossProjectileManager& manager);
+
+void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, f32 flash);

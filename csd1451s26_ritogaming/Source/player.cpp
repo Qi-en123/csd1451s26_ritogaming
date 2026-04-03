@@ -577,7 +577,7 @@ void player_render_swing(Player * player_ptr)
   Renders the player characters and active character indicator.
 */
 /**************************************************************************/
-void player_system_render(Player * player_ptr)
+void player_system_render(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -585,19 +585,23 @@ void player_system_render(Player * player_ptr)
     player_render_swing(player_ptr);
     player_render_fireball_count(player_ptr);
 
+    // Determine flash amount based on hit timer
+    f32 flash1 = player_ptr->char1.hit_flash_timer > 0.f ? 1.f : 0.f;
+    f32 flash2 = player_ptr->char2.hit_flash_timer > 0.f ? 1.f : 0.f;
+
     // Draw Character 1
     AEGfxTexture* tex1 = player_ptr->char1.is_dead ? player_ptr->char1.dead_texture
         : player_ptr->char1.texture;
-    render_sprite(square_mesh, player_ptr->char1.x, player_ptr->char1.y,
+    render_sprite_flash(square_mesh, player_ptr->char1.x, player_ptr->char1.y,
         player_ptr->stats.character_size,
-        player_ptr->stats.character_size, tex1);
+        player_ptr->stats.character_size, tex1, flash1);
 
     // Draw Character 2
     AEGfxTexture* tex2 = player_ptr->char2.is_dead ? player_ptr->char2.dead_texture
         : player_ptr->char2.texture;
-    render_sprite(square_mesh, player_ptr->char2.x, player_ptr->char2.y,
+    render_sprite_flash(square_mesh, player_ptr->char2.x, player_ptr->char2.y,
         player_ptr->stats.character_size,
-        player_ptr->stats.character_size, tex2);
+        player_ptr->stats.character_size, tex2, flash2);
 
     // Render projectiles
     player_render_projectiles(player_ptr);
@@ -610,7 +614,6 @@ void player_system_render(Player * player_ptr)
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
-
     draw_triangle(tri_x, tri_y,
         player_ptr->stats.triangle_size,
         player_ptr->stats.triangle_size);
@@ -625,6 +628,12 @@ void player_system_update(Player * player_ptr)
 {
     if (!player_ptr)
         return;
+
+    // Tick down hit flash timer
+    if (player_ptr->char1.hit_flash_timer > 0.f)
+        player_ptr->char1.hit_flash_timer -= dt;
+    if (player_ptr->char2.hit_flash_timer > 0.f)
+        player_ptr->char2.hit_flash_timer -= dt;
 
     player_system_handle_input(player_ptr);
     player_handle_shooting(player_ptr, dt);
@@ -658,6 +667,12 @@ void player_take_damage(Player * player_ptr, int damage)
 {
     if (!player_ptr)
         return;
+
+	// Start hit flash effect on the currently active character
+    if (player_ptr->current_character == 1)
+        player_ptr->char1.hit_flash_timer = 0.15f;
+    else
+        player_ptr->char2.hit_flash_timer = 0.15f;
 
     // Play different hurt sound depending on active character
     if (player_ptr->current_character == 1)

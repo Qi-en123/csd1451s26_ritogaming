@@ -1,26 +1,63 @@
 /*!************************************************************************
-\file:          game_state_manager.hpp
-\author:        Goh Qi En
-\par DP email:  g.qien@digipen.edu
-\brief:         Declares the Game State Manager interface, including function pointers for loading, 
-initializing, updating, drawing, freeing, and unloading game states, 
-and functions to initialize and update the game state manager
-as well as global variables to keep track of current, previous and next game states
+\file:						game_state_manager.hpp
+\author:					Goh Qi En
+\par DP email:				g.qien@digipen.edu
+
+\brief:						Declares the Game State Manager (GSM) interface.
+                            Provides the mechanism for transitioning between
+                            different game states (e.g., Menu, Level 1, Game Over)
+                            using a system of global state trackers and
+                            function pointers.
 **************************************************************************/
 
 #pragma once
 
-//type definition for function pointer
+// ----------------------------------------------------------------------------
+//
+// Typedef: fp
+// A standard function pointer definition for state-specific lifecycle 
+// functions (Load, Initialize, Update, Draw, Free, Unload).
+//
+// ---------------------------------------------------------------------------- 
 typedef void(*fp)(void);
 
+// ----------------------------------------------------------------------------
+//
+// Global State Trackers (Externs)
+// Used to manage the flow of the state machine throughout the application.
+//
+// ---------------------------------------------------------------------------- 
+extern int current;   // The state currently being processed in the loop
+extern int previous;  // The state that was active before the current one
+extern int next;      // The target state to transition to after the current loop
 
-extern int current, previous, next;
+// ----------------------------------------------------------------------------
+//
+// Function Pointers (Externs)
+// These are dynamically assigned based on the 'current' state to point 
+// to specific logic (e.g., Level1_Load, Level1_Update, etc.).
+//
+// ---------------------------------------------------------------------------- 
+extern fp fpLoad;       // Called once when entering a state to load assets
+extern fp fpInitialize; // Called once when entering a state to set variables
+extern fp fpUpdate;     // Called every frame to process logic
+extern fp fpDraw;       // Called every frame to render graphics
+extern fp fpFree;       // Called once when leaving a state to reset variables
+extern fp fpUnload;     // Called once when leaving a state to free assets
 
-
-extern fp fpLoad, fpInitialize, fpUpdate, fpDraw, fpFree, fpUnload;
-
-
+// ----------------------------------------------------------------------------
+//
+// Function: gsm_initialize
+// Sets the initial starting state of the game and resets state trackers.
+//
+// ---------------------------------------------------------------------------- 
 void gsm_initialize(int startingState);
 
-
+// ----------------------------------------------------------------------------
+//
+// Function: gsm_update
+// Evaluates the 'current' state and updates the function pointers (fpLoad, 
+// fpUpdate, etc.) to match the logic required for that specific state.
+//
+// ---------------------------------------------------------------------------- 
 void gsm_update();

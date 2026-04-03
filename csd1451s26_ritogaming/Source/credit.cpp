@@ -16,70 +16,222 @@
 #include "game_state_list.hpp"
 #include "audio_manager.hpp"
 #include <fstream>
+#include <sstream>
+#include <unordered_map>
 #include <vector>
 #include <string>
 
 namespace {
+
+    // ----------------------------------------------------------------------------
+    // Config parser
+    // Reads a key-value .txt file into a map. Lines starting with # are comments.
+    // Values may contain spaces (e.g. font paths like "Kenney Mini Square.ttf")
+    // ----------------------------------------------------------------------------
+    std::unordered_map<std::string, std::string> parse_kv_file(const std::string& filepath)
+    {
+        std::unordered_map<std::string, std::string> kv;
+        std::ifstream file(filepath);
+        if (!file.is_open())
+        {
+            return kv;
+        }
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            if (line.empty() || line[0] == '#') continue;
+
+            std::istringstream iss(line);
+            std::string key;
+            if (!(iss >> key)) continue;
+
+            // Read the rest of the line as the value to support paths with spaces
+            std::string value;
+            if (std::getline(iss >> std::ws, value))
+                kv[key] = value;
+        }
+        return kv;
+    }
+
+    // Helper to safely read float from map with a fallback default
+    f32 kv_float(const std::unordered_map<std::string, std::string>& kv,
+        const std::string& key, f32 fallback = 0.f)
+    {
+        auto it = kv.find(key);
+        return (it != kv.end()) ? std::stof(it->second) : fallback;
+    }
+
+    // Helper to safely read int from map with a fallback default
+    int kv_int(const std::unordered_map<std::string, std::string>& kv,
+        const std::string& key, int fallback = 0)
+    {
+        auto it = kv.find(key);
+        return (it != kv.end()) ? std::stoi(it->second) : fallback;
+    }
+
+    // Helper to safely read string from map with a fallback default
+    std::string kv_str(const std::unordered_map<std::string, std::string>& kv,
+        const std::string& key, const std::string& fallback = "")
+    {
+        auto it = kv.find(key);
+        return (it != kv.end()) ? it->second : fallback;
+    }
+
     // ----------------------------------------------------------------------------
     // Cursor
     // ----------------------------------------------------------------------------
-    AEGfxTexture* cursor = nullptr;  // custom sword cursor texture
-    s32 mouse_x, mouse_y;            // current mouse position in screen space
+    AEGfxTexture* cursor = nullptr;
+    f32 cursor_w = 0.f;
+    f32 cursor_h = 0.f;
+    s32 mouse_x = 0;
+    s32 mouse_y = 0;
+	s32 screen_w = AEGfxGetWindowWidth();
+	s32 screen_h = AEGfxGetWindowHeight();
 
     // ----------------------------------------------------------------------------
     // Back Button
     // ----------------------------------------------------------------------------
-    AEGfxTexture* button = nullptr;   // button texture for the back/exit button
-    const f32 button_w = 200;         // button width in world units
-    const f32 button_h = 100;         // button height in world units
-    const f32 button_x = -650.f;      // button x position (left side of screen)
-    f32 button_y = 350.f;             // button y position (top side of screen)
+    AEGfxTexture* button = nullptr;
+    f32 button_w = 0.f;
+    f32 button_h = 0.f;
+    f32 button_x = 0.f;
+    f32 button_y = 0.f;
 
     // ----------------------------------------------------------------------------
     // Background
     // ----------------------------------------------------------------------------
-    AEGfxTexture* wall = nullptr;     // tiled wall texture for the background
+    AEGfxTexture* wall = nullptr;
+    f32 wall_tile_size = 0.f;
+    f32 wall_tile_min = 0.f;
+    f32 wall_tile_max = 0.f;
+    f32 wall_tint = 0.f;
+    f32 bg_color_r = 0.f;
+    f32 bg_color_g = 0.f;
+    f32 bg_color_b = 0.f;
+
+    // ----------------------------------------------------------------------------
+    // DigiPen Logo
+    // ----------------------------------------------------------------------------
+    AEGfxTexture* digipen_logo = nullptr;
+    f32 logo_x = 0.f;
+    f32 logo_y = 0.f;
+    f32 logo_w = 0.f;
+    f32 logo_h = 0.f;
+    f32 logo_alpha = 0.f;
+
+    // ----------------------------------------------------------------------------
+    // Font
+    // ----------------------------------------------------------------------------
+    s8          credit_font = -1;
+    int         font_size = 0;
+    std::string font_path;
 
     // ----------------------------------------------------------------------------
     // Credits Scroll State
     // ----------------------------------------------------------------------------
-    s8  credit_font = -1;             // font handle for rendering credit text
-    f32 scrollY = -1.3f;              // current vertical scroll position (normalized)
-    bool finishedScrolling = false;   // true when credits have scrolled off screen
-    f32 scrollSpeed = 0.25f;          // base scroll speed per second
-    f32 fastScrollMultiplier = 3;     // multiplier applied when space is held
-    f32 totalHeight = 0.f;            // total height of all credit lines combined
-    std::vector<std::string> credit_lines; // lines of text loaded from credits file
-}
+    std::string              credits_file;
+    f32                      scrollY = 0.f;
+    f32                      scroll_speed = 0.f;
+    f32                      scroll_fast_multiplier = 0.f;
+    f32                      scroll_start_y = 0.f;
+    f32                      scroll_line_spacing = 0.f;
+    f32                      scroll_reset_padding = 0.f;
+    f32                      totalHeight = 0.f;
+    std::vector<std::string> credit_lines;
+
+    // ----------------------------------------------------------------------------
+    // Perspective Settings
+    // ----------------------------------------------------------------------------
+    f32 perspective_base_line_spacing = 0.f;
+    f32 perspective_base_scale = 0.f;
+    f32 perspective_min_scale = 0.f;
+    f32 perspective_power = 0.f;
+    f32 perspective_tilt = 0.f;
+
+    // ----------------------------------------------------------------------------
+    // Text Color
+    // ----------------------------------------------------------------------------
+    f32 text_color_r = 0.f;
+    f32 text_color_g = 0.f;
+    f32 text_color_b = 0.f;
+
+} // namespace
 
 // ----------------------------------------------------------------------------
 //
 // Function: credit_load
-// Loads all assets required for the credits screen, including the font,
-// textures, and credit lines read from Assets/Credits/credit.txt
+// Loads all assets required for the credits screen. Every value is read
+// from Assets/Credits/credit_config.txt so no magic numbers live in code.
 //
 // ----------------------------------------------------------------------------
 void credit_load()
 {
-    // Load font for rendering credit text
-    credit_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40);
-    cursor = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
-    printf("Font value: %d\n", credit_font);
-    if (credit_font == -1)
-        return;
+    auto cfg = parse_kv_file("Assets/Credits/credit_config.txt");
 
-    // Load button and background textures
-    button = AEGfxTextureLoad("Assets/Sprites/Admin/button_brown_close.png");
-    wall = AEGfxTextureLoad("Assets/Sprites/Tiles/tile_0001.png");
+    // --- Cursor ---
+    cursor_w = kv_float(cfg, "cursor_w");
+    cursor_h = kv_float(cfg, "cursor_h");
+    cursor = AEGfxTextureLoad(kv_str(cfg, "cursor_path").c_str());
 
-    // Read credit lines from external file so non-programmers can edit them
+    // --- Back Button ---
+    button_w = kv_float(cfg, "button_w");
+    button_h = kv_float(cfg, "button_h");
+    button_x = kv_float(cfg, "button_x");
+    button_y = kv_float(cfg, "button_y");
+    button = AEGfxTextureLoad(kv_str(cfg, "button_path").c_str());
+
+    // --- Background ---
+    wall_tile_size = kv_float(cfg, "wall_tile_size");
+    wall_tile_min = kv_float(cfg, "wall_tile_min");
+    wall_tile_max = kv_float(cfg, "wall_tile_max");
+    wall_tint = kv_float(cfg, "wall_tint");
+    bg_color_r = kv_float(cfg, "bg_color_r");
+    bg_color_g = kv_float(cfg, "bg_color_g");
+    bg_color_b = kv_float(cfg, "bg_color_b");
+    wall = AEGfxTextureLoad(kv_str(cfg, "wall_path").c_str());
+
+    // --- DigiPen Logo ---
+    logo_x = kv_float(cfg, "logo_digipen_x");
+    logo_y = kv_float(cfg, "logo_digipen_y");
+    logo_w = kv_float(cfg, "logo_digipen_w");
+    logo_h = kv_float(cfg, "logo_digipen_h");
+    logo_alpha = kv_float(cfg, "logo_digipen_alpha");
+    digipen_logo = AEGfxTextureLoad(kv_str(cfg, "logo_digipen_path").c_str());
+
+    // --- Font: store path and size only, font is created in credit_init ---
+    font_path = kv_str(cfg, "font_path");
+    font_size = kv_int(cfg, "font_size");
+   
+
+    // --- Scroll Settings ---
+    scroll_start_y = kv_float(cfg, "scroll_start_y");
+    scroll_speed = kv_float(cfg, "scroll_speed");
+    scroll_fast_multiplier = kv_float(cfg, "scroll_fast_multiplier");
+    scroll_line_spacing = kv_float(cfg, "scroll_line_spacing");
+    scroll_reset_padding = kv_float(cfg, "scroll_reset_padding");
+
+    // --- Perspective Settings ---
+    perspective_base_line_spacing = kv_float(cfg, "perspective_base_line_spacing");
+    perspective_base_scale = kv_float(cfg, "perspective_base_scale");
+    perspective_min_scale = kv_float(cfg, "perspective_min_scale");
+    perspective_power = kv_float(cfg, "perspective_power");
+    perspective_tilt = kv_float(cfg, "perspective_tilt");
+
+    // --- Text Color ---
+    text_color_r = kv_float(cfg, "text_color_r");
+    text_color_g = kv_float(cfg, "text_color_g");
+    text_color_b = kv_float(cfg, "text_color_b");
+
+    // --- Credit Lines ---
+    credits_file = kv_str(cfg, "credits_file");
     credit_lines.clear();
-    std::ifstream file("Assets/Credits/credit.txt");
+    std::ifstream file(credits_file);
     if (file.is_open())
     {
         std::string line;
         while (std::getline(file, line))
-            credit_lines.push_back(line);  // store each line for rendering
+            credit_lines.push_back(line);
         file.close();
     }
 }
@@ -87,26 +239,24 @@ void credit_load()
 // ----------------------------------------------------------------------------
 //
 // Function: credit_init
-// Resets scroll position to below the screen and computes the total
-// height of all credit lines for scroll bounds detection
+// Creates the font (requires graphics context to be ready), resets scroll
+// position, and computes total height of all credit lines
 //
 // ----------------------------------------------------------------------------
 void credit_init()
 {
-    scrollY = -1.3f;  // start below visible screen area
+    // Font must be created here, not in load, as it requires the graphics context
+    credit_font = AEGfxCreateFont(font_path.c_str(), font_size);
 
-    // Each line occupies this much normalized screen space
-    f32 lineSpacing = 0.12f;
+    scrollY = scroll_start_y;
+
     int lineCount = (int)credit_lines.size();
-    printf("Total lines: %d\n", lineCount);
+    totalHeight = lineCount * scroll_line_spacing;
 
-    // Total height determines when to reset the scroll
-    totalHeight = lineCount * lineSpacing;
+    AEInputShowCursor(false);
+    init_mesh();
+    AEGfxSetBackgroundColor(bg_color_r, bg_color_g, bg_color_b);
 
-    AEInputShowCursor(false);  // hide system cursor, draw custom one instead
-    init_mesh();                // initialize meshes needed for rendering
-    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.05f);  // dark navy background
-    
     g_bgm_current_track = &g_audio.bgm_credits;
     play_bgm(g_audio.bgm_credits);
 }
@@ -120,22 +270,17 @@ void credit_init()
 // ----------------------------------------------------------------------------
 void credit_update()
 {
-    // Track mouse position for cursor and button interaction
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
-    // Base scroll speed, tripled when space is held
-    f32 speed = 0.25f;
+    f32 speed = scroll_speed;
     if (AEInputCheckCurr(AEVK_SPACE))
-        speed *= 3.f;
+        speed *= scroll_fast_multiplier;
 
-    // Advance scroll position upward each frame
-    scrollY += speed * AEFrameRateControllerGetFrameTime();
+    scrollY += speed * (f32)AEFrameRateControllerGetFrameTime();
 
-    // Reset scroll once all lines have moved above the top of the screen
-    if (scrollY > 1.f + totalHeight)
-        scrollY = -1.3f;
+    if (scrollY > scroll_reset_padding + totalHeight)
+        scrollY = scroll_start_y;
 
-    // Back button returns to main menu
     if (IsButtonClicked(button_x, button_y, button_w, button_h))
     {
         play_sfx(g_audio.sfx_button_click, 0.1f);
@@ -146,37 +291,39 @@ void credit_update()
 // ----------------------------------------------------------------------------
 //
 // Function: credit_draw
-// Renders the tiled background, back button, custom cursor, and all
-// credit lines with perspective scaling that shrinks text toward the top
+// Renders the tiled background, DigiPen logo, back button, custom cursor,
+// and all credit lines with perspective scaling that shrinks text toward the top
 //
 // ----------------------------------------------------------------------------
 void credit_draw()
 {
     // Tile the wall texture across the entire background
-    for (f32 x = -800.f; x <= 800.f; x += 100.f)
-        for (f32 y = -800.f; y < 800.f; y += 100.f)
-            if (wall) render_editor_ui(wall, 100.f, 100.f, 0.3f, x, y);
+    for (f32 x = wall_tile_min; x <= wall_tile_max; x += wall_tile_size)
+        for (f32 y = wall_tile_min; y < wall_tile_max; y += wall_tile_size)
+            if (wall) render_editor_ui(wall, wall_tile_size, wall_tile_size, wall_tint, x, y);
+
+    // Draw DigiPen logo at top-right
+    if (digipen_logo)
+        render_editor_ui(digipen_logo, logo_w, logo_h, logo_alpha, logo_x, logo_y);
 
     // Draw back button with hover highlight and sound feedback
     static bool was_hovered = false;
     bool hovered = IsButtonHovered(button_x, button_y, button_w, button_h);
     render_editor_ui(button, button_w, button_h, 1.0f, button_x, button_y, hovered);
 
-    // Play hover sound once when cursor first enters the button
     if (hovered && !was_hovered)
         play_sfx(g_audio.sfx_button_hover);
 
-    // Play click sound when button is pressed
     if (IsButtonClicked(button_x, button_y, button_w, button_h))
         play_sfx(g_audio.sfx_button_click, 0.1f);
 
-    was_hovered = hovered;  // store hover state for next frame comparison
+    was_hovered = hovered;
 
     // Draw custom cursor at current mouse world position
     if (cursor)
     {
-        f32 world_x = (f32)mouse_x - 800.f;   // convert screen x to world x
-        f32 world_y = -(f32)mouse_y + 450.f;  // flip y axis for world space
+        f32 world_x = (f32)mouse_x - 800.f;  // convert screen x to world x
+        f32 world_y = -(f32)mouse_y + 450.f; // flip y axis for world space
         render_editor_ui(cursor, 50.f, 50.f, 1.0f, world_x, world_y);
     }
 
@@ -185,93 +332,70 @@ void credit_draw()
     // Text starts large at the bottom and shrinks toward the top,
     // simulating a 3D receding perspective like a movie credit roll
     // ----------------------------------------------------------------------------
-    f32 y = scrollY;                   // current y position for the first line
-    const f32 baseLineSpacing = 0.18f; // spacing between lines at full scale
-    const f32 baseScale = 2.0f;        // maximum text scale at bottom of screen
-    const f32 minScale = 0.05f;        // minimum text scale before text disappears
-    const f32 perspective = 1.6f;      // controls how fast text shrinks toward top
+    f32 y = scrollY;
 
     for (int i = 0; i < (int)credit_lines.size(); ++i)
     {
-        // All credit lines use a warm yellow colour
-        float r = 1.f, g = 0.85f, b = 0.3f;
-
         // Normalize t: 0 = bottom of crawl, 1 = top of crawl
-        f32 t = (y + 1.3f) / (1.5f + totalHeight);
+        f32 t = (y - scroll_start_y) / (scroll_reset_padding + totalHeight - scroll_start_y);
         if (t > 1.f) t = 1.f;
         if (t < 0.f) t = 0.f;
 
         // Scale shrinks faster toward the top using a power curve
-        f32 scale = baseScale * powf(1.f - t, perspective);
-        if (scale < minScale) scale = minScale;  // clamp to minimum visible size
+        f32 scale = perspective_base_scale * powf(1.f - t, perspective_power);
+        if (scale < perspective_min_scale) scale = perspective_min_scale;
 
         // Tilt y offset to simulate the text receding into the distance
-        f32 yOffset = y * (1.f - t * 0.5f);
+        f32 yOffset = y * (1.f - t * perspective_tilt);
 
         // Measure text width to center it horizontally
         f32 textWidth, textHeight;
         AEGfxGetPrintSize(credit_font, credit_lines[i].c_str(), scale, &textWidth, &textHeight);
 
-        // Render the credit line centered on screen
         AEGfxPrint(credit_font,
             credit_lines[i].c_str(),
-            -textWidth / 2,   // center horizontally
+            -textWidth / 2.f,
             yOffset,
             scale,
-            r, g, b, 1.f);
+            text_color_r, text_color_g, text_color_b, 1.f);
 
-        // Advance y position by scaled line spacing so lines stay evenly spaced
-        y -= baseLineSpacing * scale;
+        // Advance y by scaled line spacing
+        y -= perspective_base_line_spacing * scale;
     }
 }
 
 // ----------------------------------------------------------------------------
 //
 // Function: credit_free
-// Frees runtime mesh resources used during the credits screen
+// Frees runtime resources: mesh, BGM, and the font (created in credit_init)
 //
 // ----------------------------------------------------------------------------
 void credit_free()
 {
-    free_mesh();  // release vertex list memory created in init_mesh
-
+    free_mesh();
     stop_bgm();
     g_bgm_current_track = nullptr;
-}
 
-// ----------------------------------------------------------------------------
-//
-// Function: credit_unload
-// Unloads all textures, destroys the font, and clears the credit lines
-// vector when leaving the credits state
-//
-// ----------------------------------------------------------------------------
-void credit_unload()
-{
-    // Destroy font handle if it was successfully created
+    // Font is destroyed here because it was created in credit_init
     if (credit_font != -1)
     {
         AEGfxDestroyFont(credit_font);
         credit_font = -1;
     }
+}
 
-    // Unload textures and null their pointers to prevent dangling references
-    if (cursor)
-    {
-        AEGfxTextureUnload(cursor);
-        cursor = nullptr;
-    }
-    if (button)
-    {
-        AEGfxTextureUnload(button);
-        button = nullptr;
-    }
-    if (wall)
-    {
-        AEGfxTextureUnload(wall);
-        wall = nullptr;
-    }
+// ----------------------------------------------------------------------------
+//
+// Function: credit_unload
+// Unloads all textures and clears the credit lines vector
+//
+// ----------------------------------------------------------------------------
+void credit_unload()
+{
+    if (cursor) { AEGfxTextureUnload(cursor);        cursor = nullptr; }
+    if (button) { AEGfxTextureUnload(button);        button = nullptr; }
+    if (wall) { AEGfxTextureUnload(wall);          wall = nullptr; }
+    if (digipen_logo) { AEGfxTextureUnload(digipen_logo);  digipen_logo = nullptr; }
 
-    // Clear credit lines so they are reloaded fresh on next entry
     credit_lines.clear();
 }

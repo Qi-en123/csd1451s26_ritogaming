@@ -17,6 +17,7 @@
 #include "level_editor.hpp"
 #include <string>
 #include "enemy_manager.hpp"
+#include "audio_manager.hpp"
 
 namespace {
 #pragma region Static variables
@@ -327,6 +328,7 @@ namespace {
 			if (IsButtonClicked(ep_button_x, edit_panel_y + edit_panel_h / 4.0f,
 				edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
 
+				play_sfx(g_audio.sfx_button_click, 0.1f);
 				//printf("saved\n");
 				editing = false;
 				selected_puzzle = Puzzle::PUSHABLE;
@@ -337,6 +339,7 @@ namespace {
 			if (IsButtonClicked(ep_button_x, edit_panel_y - edit_panel_h / 4.0f,
 				edit_panel_h / 2.0f, edit_panel_h / 2.0f)) {
 
+				play_sfx(g_audio.sfx_button_click, 0.1f);
 				//printf("exit\n");
 				//Restore changes
 				*editing_puzzle = old_puzzle;
@@ -352,6 +355,7 @@ namespace {
 					edit_panel_y + edit_panel_h * 0.18f,
 					edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
+					play_sfx(g_audio.sfx_button_click, 0.1f);
 					//printf("left clicked\n");
 					editing_puzzle->element = previous_element(editing_puzzle->element);
 					can_paint = false;
@@ -362,6 +366,7 @@ namespace {
 					edit_panel_y + edit_panel_h * 0.18f,
 					edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
+					play_sfx(g_audio.sfx_button_click, 0.1f);
 					//printf("right clicked\n");
 					editing_puzzle->element = next_element(editing_puzzle->element);
 					can_paint = false;
@@ -373,6 +378,7 @@ namespace {
 				edit_panel_y - edit_panel_h * 0.16f,
 				edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
+				play_sfx(g_audio.sfx_button_click, 0.1f);
 				//decrement hero that puzzle is hidden from
 				editing_puzzle->hidden_from = (editing_puzzle->hidden_from + 2) % 3;
 				can_paint = false;
@@ -384,6 +390,7 @@ namespace {
 				edit_panel_y - edit_panel_h * 0.16f,
 				edit_panel_h / 4.0f, edit_panel_h / 4.0f)) {
 
+				play_sfx(g_audio.sfx_button_click, 0.1f);
 				//decrement hero that puzzle is hidden from
 				editing_puzzle->hidden_from = (editing_puzzle->hidden_from + 1) % 3;
 				can_paint = false;
@@ -528,6 +535,47 @@ void level_editor_update()
 
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
+	// --- Button hover sound ---
+	static int last_hovered = -1;
+	int current_hovered = -1;
+
+	// Check tile palette
+	if (editorState == EDIT_TILES)
+	{
+		for (int i = 0; i < PALETTE_COUNT; ++i)
+		{
+			f32 py = PALETTE_TOP_Y - i * PAL_GAP;
+			if (IsButtonHovered(PANEL_X, py, PAL_W, PAL_H))
+			{
+				current_hovered = i;
+				break;
+			}
+		}
+	}
+	// Check puzzle palette
+	else if (editorState == EDIT_PUZZLES)
+	{
+		for (int i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
+		{
+			f32 py = PALETTE_TOP_Y - i * PAL_GAP;
+			if (IsButtonHovered(PANEL_X, py, PAL_W, PAL_H))
+			{
+				current_hovered = i + 100; // offset so it doesn't clash with tile indices
+				break;
+			}
+		}
+	}
+
+	// Check exit confirm buttons
+	if (show_exit_confirm)
+	{
+		if (IsButtonHovered(-100.f, -50.f, 200.f, 80.f)) current_hovered = 9998;
+		if (IsButtonHovered(150.f, -50.f, 200.f, 80.f))  current_hovered = 9999;
+	}
+
+	if (current_hovered != last_hovered && current_hovered != -1)
+		play_sfx(g_audio.sfx_button_hover);
+	last_hovered = current_hovered;
 
 	// --- ESC to exit ---
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
@@ -536,9 +584,13 @@ void level_editor_update()
 	if (show_exit_confirm)
 	{
 		if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
+		{
+			play_sfx(g_audio.sfx_button_click, 0.1f);
 			next = GS_LEVELS;
+		}
 		if (IsButtonClicked(150.f, -50.f, 200.f, 80.f))  // No
 		{
+			play_sfx(g_audio.sfx_button_click, 0.1f);
 			show_exit_confirm = false;
 			can_paint = false;  // prevent the click from bleeding through to the grid
 		}
@@ -592,9 +644,11 @@ void level_editor_update()
 	if (!editing) {
 		if (AEInputCheckTriggered(AEVK_LBUTTON)) {
 			if (IsButtonClicked(PANEL_X + PAL_W / 4, PALETTE_TOP_Y + PAL_H, PAL_W / 2, PAL_H)) {
+				play_sfx(g_audio.sfx_button_click, 0.1f);
 				editorState = EDIT_PUZZLES;
 			}
 			if (IsButtonClicked(PANEL_X - PAL_W / 4, PALETTE_TOP_Y + PAL_H, PAL_W / 2, PAL_H)) {
+				play_sfx(g_audio.sfx_button_click, 0.1f);
 				editorState = EDIT_TILES;
 			}
 		}
@@ -623,6 +677,7 @@ void level_editor_update()
 				f32 py = PALETTE_TOP_Y - i * PAL_GAP;
 				if (IsButtonClicked(PANEL_X, py, PAL_W, PAL_H))
 				{
+					play_sfx(g_audio.sfx_button_click, 0.1f);
 					selected_tile = palette_ids[i];
 					return; // stop here, don't also paint on grid
 				}
@@ -760,6 +815,7 @@ void level_editor_update()
 					f32 py = PALETTE_TOP_Y - i * PAL_GAP;
 					if (IsButtonClicked(PANEL_X, py, PAL_W, PAL_H))
 					{
+						play_sfx(g_audio.sfx_button_click, 0.1f);
 						if (puzzle_palette_ids[i] != Puzzle::SPIKE) {
 							selected_puzzle = puzzle_palette_ids[i];
 							return; // stop here, don't also paint on grid

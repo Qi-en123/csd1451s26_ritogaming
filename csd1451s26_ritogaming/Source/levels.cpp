@@ -16,6 +16,7 @@
 #include "game_state_list.hpp"
 #include "utils.hpp"
 #include "map.hpp"
+#include "audio_manager.hpp"
 
 #include <vector>
 #include <string>
@@ -412,6 +413,34 @@ void levels_update()
     dt = (f32)AEFrameRateControllerGetFrameTime();
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
+    // --- Button hover sound ---
+    static int last_hovered = -1;
+    int current_hovered = -1;
+    for (int row = 0; row < cfg.grid_rows_visible; ++row)
+    {
+        for (int col = 0; col < cfg.grid_cols; ++col)
+        {
+            int   idx = (scroll_row + row) * cfg.grid_cols + col;
+            if (idx >= (int)levels.size()) continue;
+            float cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
+            float cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
+            if (IsButtonHovered(cx, cy, cfg.cell_width, cfg.cell_height))
+            {
+                current_hovered = idx;
+                break;
+            }
+        }
+    }
+    if (IsButtonHovered(cfg.back_btn_x, cfg.back_btn_y, cfg.back_btn_w, cfg.back_btn_h))
+        current_hovered = 9998;
+    if (IsButtonHovered(cfg.editor_btn_x, cfg.editor_btn_y, cfg.editor_btn_w, cfg.editor_btn_h))
+        current_hovered = 9999;
+
+    if (current_hovered != last_hovered && current_hovered != -1)
+        play_sfx(g_audio.sfx_button_hover);
+    last_hovered = current_hovered;
+
+
     // Modal popup takes priority — all other input is blocked while it is open
     if (show_delete_confirm)
     {
@@ -450,10 +479,13 @@ void levels_update()
         next = MAINMENU;
 
     if (IsButtonClicked(cfg.back_btn_x, cfg.back_btn_y, cfg.back_btn_w, cfg.back_btn_h))
+    {
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         next = MAINMENU;
-
+    }
     if (IsButtonClicked(cfg.editor_btn_x, cfg.editor_btn_y, cfg.editor_btn_w, cfg.editor_btn_h))
     {
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         selected_level_path = "";
         selected_level_puzzle_path = "";
         next = GS_LEVEL_EDITOR;
@@ -473,6 +505,7 @@ void levels_update()
             float edit_x = cx, edit_y = cy + cfg.cell_height * 0.15f;
             if (IsButtonClicked(edit_x, edit_y, cfg.cell_width - 40.f, 50.f))
             {
+                play_sfx(g_audio.sfx_button_click, 0.1f);
                 selected_level_path = levels[idx].path;
                 selected_level_puzzle_path = puzzles[idx].path;
                 context_menu_idx = -1;
@@ -483,6 +516,7 @@ void levels_update()
             float del_x = cx, del_y = cy - cfg.cell_height * 0.25f;
             if (IsButtonClicked(del_x, del_y, cfg.cell_width - 40.f, 50.f))
             {
+                play_sfx(g_audio.sfx_button_click, 0.1f);
                 pending_delete_idx = idx;
                 show_delete_confirm = true;
                 context_menu_idx = -1;
@@ -504,6 +538,7 @@ void levels_update()
 
                 if (IsButtonClicked(cx, cy, cfg.cell_width, cfg.cell_height))
                 {
+                    play_sfx(g_audio.sfx_button_click, 0.1f);
                     selected_level_path = levels[idx].path;
                     selected_level_puzzle_path = puzzles[idx].path;
                     next = GS_LEVEL1;

@@ -24,7 +24,7 @@ float g_transition_alpha = 0.0f;
 int g_pending_next_state = -1;
 enum TransitionState { T_NONE, T_FADE_OUT, T_FADE_IN };
 TransitionState g_transition_state = T_NONE;
-const float TRANSITION_SPEED = 2.0f;
+const float TRANSITION_SPEED = 1.0f;
 
 // ----------------------------------------------------------------------------
 //

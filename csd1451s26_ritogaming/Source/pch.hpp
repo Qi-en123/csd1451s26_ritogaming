@@ -12,6 +12,8 @@
 #pragma once
 
 #include "AEEngine.h"
+#include "json.hpp"
+
 #include "map.hpp"
 #include "collision.hpp"
 #include "renderer.hpp"

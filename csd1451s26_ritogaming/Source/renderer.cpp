@@ -31,6 +31,7 @@ AEGfxVertexList* square_mesh = nullptr;
 AEGfxVertexList* circle_mesh = nullptr;
 AEGfxVertexList* triangle_mesh = nullptr;
 AEGfxVertexList* light_source_mesh = nullptr;
+AEGfxVertexList* ring_mesh = nullptr;
 
 // ------------------------------------------------------------------------
 // Colors (shorcuts)
@@ -250,6 +251,32 @@ void init_mesh() {
 	circle_mesh = create_circle_mesh();
 	triangle_mesh = create_triangle_mesh();
 	light_source_mesh = create_ls_mesh();
+
+	//------------ Ring Mesh (boss projectiles) by Claire------------//
+	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
+	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
+	const int   SEGS = 32;
+	const float step = 2.f * 3.14159265f / static_cast<float>(SEGS);
+
+	AEGfxMeshStart();
+	for (int i = 0; i < SEGS; ++i)
+	{
+		float a0 = step * static_cast<float>(i);
+		float a1 = step * static_cast<float>(i + 1);
+		float ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
+		float ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
+		float ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
+		float ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
+
+		AEGfxTriAdd(ox0, oy0, 0xFF2699FF, 0.f, 0.f,
+			ox1, oy1, 0xFF2699FF, 1.f, 0.f,
+			ix0, iy0, 0xFF2699FF, 0.f, 1.f);
+		AEGfxTriAdd(ox1, oy1, 0xFF2699FF, 1.f, 0.f,
+			ix1, iy1, 0xFF2699FF, 1.f, 1.f,
+			ix0, iy0, 0xFF2699FF, 0.f, 1.f);
+	}
+	ring_mesh = AEGfxMeshEnd();
+
 }
 void free_mesh() {
 	if (light_source_mesh) { AEGfxMeshFree(light_source_mesh); light_source_mesh = nullptr; }
@@ -257,6 +284,7 @@ void free_mesh() {
 	if (rect_mesh_corner) { AEGfxMeshFree(rect_mesh_corner);  rect_mesh_corner = nullptr; }
 	if (square_mesh) { AEGfxMeshFree(square_mesh);       square_mesh = nullptr; }
 	if (triangle_mesh) { AEGfxMeshFree(triangle_mesh);     triangle_mesh = nullptr; }
+	if (ring_mesh) { AEGfxMeshFree(ring_mesh);			   ring_mesh = nullptr; }
 }
 
 #pragma endregion
@@ -368,46 +396,6 @@ void render_ui_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	AEGfxTextureSet(texture, 0, 0);
 	AEGfxSetTransform(transform.m);
 	AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
-	AEGfxTextureSet(nullptr, 0, 0);
-}
-
-void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
-{
-	if (!anim.sheet || !square_mesh) return;
-
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-
-	// Build a one-off mesh with the correct UV window
-	AEGfxMeshStart();
-	float u0 = anim.u0(), u1 = anim.u1();
-	float v0 = anim.v0(), v1 = anim.v1();
-	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, u0, v1,
-		0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
-		-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
-		0.5f, 0.5f, 0xFFFFFFFF, u1, v0,
-		-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
-	AEGfxVertexList* mesh = AEGfxMeshEnd();
-
-	AEGfxTextureSet(anim.sheet, 0, 0);
-
-	AEMtx33 transform, scale, translate, cam_t, cam_z;
-	AEMtx33Scale(&scale, w, h);
-	AEMtx33Trans(&translate, x, y);
-	AEMtx33Trans(&cam_t, -Camera::cam.pos.x, -Camera::cam.pos.y);
-	AEMtx33Scale(&cam_z, Camera::zoom, Camera::zoom);
-	AEMtx33Identity(&transform);
-	AEMtx33Concat(&transform, &transform, &cam_z);
-	AEMtx33Concat(&transform, &transform, &cam_t);
-	AEMtx33Concat(&transform, &transform, &translate);
-	AEMtx33Concat(&transform, &transform, &scale);
-
-	AEGfxSetTransform(transform.m);
-	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
-	AEGfxMeshFree(mesh);
 	AEGfxTextureSet(nullptr, 0, 0);
 }
 
@@ -535,99 +523,79 @@ void render_tooltip(s8 font) {
 	AEGfxTextureSet(nullptr, 0, 0);
 }
 
-void render_boss_projectiles(const BossProjectileManager& manager)
+void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
 {
-	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
-	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
-	const int   SEGS = 32;   // number of segments around the ring
-	const float step = 2.f * PI / static_cast<float>(SEGS);
+	if (!anim.sheet || !rect_mesh_center) return;
 
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetTransparency(1.f);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetColorToMultiply(0.5f, 1.f, 1.f, 1.f);
-
-	for (const auto& p : manager.get_projectiles())
+	// Only rebuild the mesh when the frame has actually changed
+	if (anim.current_frame != anim.last_built_frame)
 	{
-		if (!p.in_use) continue;
+		if (anim.cached_mesh) AEGfxMeshFree(anim.cached_mesh);
 
-		// Build a ring mesh made of SEGS quads (2 triangles each).
-		// Each quad bridges inner_r to outer_r at angle i and i+1.
-		// The centre gap is never filled � fully transparent.
+		float u0 = anim.u0(), u1 = anim.u1();
+		float v0 = anim.v0(), v1 = anim.v1();
+
 		AEGfxMeshStart();
-		for (int i = 0; i < SEGS; ++i)
-		{
-			float a0 = step * static_cast<float>(i);
-			float a1 = step * static_cast<float>(i + 1);
-
-			float ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
-			float ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
-			float ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
-			float ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
-
-			// Triangle 1: outer0, outer1, inner0
-			AEGfxTriAdd(ox0, oy0, 0xFF2699FF, 0.f, 0.f,
-				ox1, oy1, 0xFF2699FF, 1.f, 0.f,
-				ix0, iy0, 0xFF2699FF, 0.f, 1.f);
-
-			// Triangle 2: outer1, inner1, inner0
-			AEGfxTriAdd(ox1, oy1, 0xFF2699FF, 1.f, 0.f,
-				ix1, iy1, 0xFF2699FF, 1.f, 1.f,
-				ix0, iy0, 0xFF2699FF, 0.f, 1.f);
-		}
-		AEGfxVertexList* ring_mesh = AEGfxMeshEnd();
-		if (!ring_mesh) continue;
-
-		// Position the ring in world space using the same camera transform
-		// as draw_circle() / render_sprite()
-		AEMtx33 transform, translate, cam_t, cam_z;
-		AEMtx33Trans(&translate, p.x, p.y);
-		AEMtx33Trans(&cam_t, -Camera::cam.pos.x, -Camera::cam.pos.y);
-		AEMtx33Scale(&cam_z, Camera::zoom, Camera::zoom);
-
-		AEMtx33Identity(&transform);
-		AEMtx33Concat(&transform, &transform, &cam_z);
-		AEMtx33Concat(&transform, &transform, &cam_t);
-		AEMtx33Concat(&transform, &transform, &translate);
-
-		AEGfxSetTransform(transform.m);
-		AEGfxMeshDraw(ring_mesh, AE_GFX_MDM_TRIANGLES);
-		AEGfxMeshFree(ring_mesh);
+		AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, u0, v1,
+			0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
+			-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
+		AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
+			0.5f, 0.5f, 0xFFFFFFFF, u1, v0,
+			-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
+		anim.cached_mesh = AEGfxMeshEnd();
+		anim.last_built_frame = anim.current_frame;
 	}
+
+	if (!anim.cached_mesh) return;
+
+	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+	AEGfxTextureSet(anim.sheet, 0, 0);
+
+	AEMtx33 transform, scale, translate, cam_t, cam_z;
+	AEMtx33Scale(&scale, w, h);
+	AEMtx33Trans(&translate, x, y);
+	AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
+	AEMtx33Scale(&cam_z, zoom, zoom);
+	AEMtx33Identity(&transform);
+	AEMtx33Concat(&transform, &transform, &cam_z);
+	AEMtx33Concat(&transform, &transform, &cam_t);
+	AEMtx33Concat(&transform, &transform, &translate);
+	AEMtx33Concat(&transform, &transform, &scale);
+
+	AEGfxSetTransform(transform.m);
+	AEGfxMeshDraw(anim.cached_mesh, AE_GFX_MDM_TRIANGLES);
+	AEGfxTextureSet(nullptr, 0, 0);
 }
 
-
-void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
-	f32 scale_x, f32 scale_y, AEGfxTexture* texture, f32 flash)
+void render_boss_projectiles(const BossProjectileManager& manager)
 {
-	if (on_screen(trans_x, trans_y)) {
-		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    if (!ring_mesh) return;
 
-		AEMtx33 transform, translate, scale, cam_translate, cam_zoom;
-		AEMtx33Trans(&translate, trans_x, trans_y);
-		AEMtx33Scale(&scale, scale_x, scale_y);
-		AEMtx33Trans(&cam_translate, -Camera::cam.pos.x, -Camera::cam.pos.y);
-		AEMtx33Scale(&cam_zoom, Camera::zoom, Camera::zoom);
-		AEMtx33Identity(&transform);
-		AEMtx33Concat(&transform, &transform, &cam_zoom);
-		AEMtx33Concat(&transform, &transform, &cam_translate);
-		AEMtx33Concat(&transform, &transform, &translate);
-		AEMtx33Concat(&transform, &transform, &scale);
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.f);
+    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+    AEGfxSetColorToMultiply(0.5f, 1.f, 1.f, 1.f);
 
-		color c = white;
-		update_light_level(trans_x, trans_y, c);
-		AEGfxSetColorToMultiply(c.r, c.g, c.b, 1.0f);
+    for (const auto& p : manager.get_projectiles())
+    {
+        if (!p.in_use) continue;
 
-		// Set color add AFTER render mode — this is what makes the flash work
-		AEGfxSetColorToAdd(flash, flash, flash, 0.f);
+        // Only the transform changes per projectile � no mesh rebuild
+        AEMtx33 transform, translate, cam_t, cam_z;
+        AEMtx33Trans(&translate, p.x, p.y);
+        AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
+        AEMtx33Scale(&cam_z, zoom, zoom);
 
-		AEGfxTextureSet(texture, 0, 0);
-		AEGfxSetTransform(transform.m);
-		AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
-		AEGfxTextureSet(nullptr, 0, 0);
+        AEMtx33Identity(&transform);
+        AEMtx33Concat(&transform, &transform, &cam_z);
+        AEMtx33Concat(&transform, &transform, &cam_t);
+        AEMtx33Concat(&transform, &transform, &translate);
 
-		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	}
+        AEGfxSetTransform(transform.m);
+        AEGfxMeshDraw(ring_mesh, AE_GFX_MDM_TRIANGLES);
+    }
 }

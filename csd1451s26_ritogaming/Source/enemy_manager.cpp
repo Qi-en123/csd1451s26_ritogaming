@@ -31,6 +31,53 @@ static AEVec2 tile_spot(s32 row, s32 col)
     return p;
 }
 
+void EnemyManager::load_spawn_positions(const char* filename)
+{
+    FILE* fp = nullptr;
+    fopen_s(&fp, filename, "r");
+    if (!fp) return;
+    
+
+    int ghost_count = 0;
+    int bat_count = 0;
+    int cross_count = 0;
+    char token[32];
+
+    while (fscanf_s(fp, "%31s", token, (unsigned)sizeof(token)) == 1)
+    {
+        if (strcmp(token, "GHOST") == 0)
+        {
+            int row, col;
+            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && ghost_count < NUM_GHOST_SLOTS)
+            {
+                ghost_spawn_positions[ghost_count] = tile_spot(row, col);
+                ++ghost_count;
+            }
+        }
+        else if (strcmp(token, "BAT") == 0)
+        {
+            int row, col;
+            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && bat_count < NUM_BAT_SLOTS)
+            {
+                bat_spawn_positions[bat_count] = tile_spot(row, col);
+                ++bat_count;
+            }
+        }
+        else if (strcmp(token, "CROSS") == 0)
+        {
+            int row, col;
+            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && cross_count < NUM_CROSS_MARKERS)
+            {
+                cross_positions[cross_count] = tile_spot(row, col);
+                ++cross_count;
+            }
+        }
+    }
+
+    fclose(fp);
+    spawn_positions_loaded = true;
+}
+
 void entity_system_update(Player* player_ptr, EnemyManager* enem)
 {
     if (!player_ptr) return;
@@ -76,67 +123,6 @@ void EnemyManager::unload_textures()
     safe_unload(ghost_tex); safe_unload(bat_tex); safe_unload(dragon_tex);
 }
 
-void EnemyManager::load_spawn_positions(const char* filename)
-{
-    clear_all();
-
-    std::ifstream file(filename);
-    if (!file.is_open())
-    {
-        printf("[EnemyManager] ERROR: Could not open %s\n", filename);
-        return;
-    }
-
-    std::string type;
-    int r, c;
-
-    // --- PASS 1: COUNTING ---
-    while (file >> type >> r >> c)
-    {
-        if (type == "GHOST")      ghost_count++;
-        else if (type == "BAT")   bat_count++;
-        else if (type == "CROSS") cross_count++;
-    }
-
-    // --- CRITICAL: RESET FILE FOR PASS 2 ---
-    file.clear();                 // Clear eof bits
-    file.seekg(0, std::ios::beg); // Go back to the very beginning
-
-    // --- ALLOCATION ---
-    if (ghost_count > 0) {
-        ghost_slots = new enemy_slot[ghost_count];
-        ghost_spawn_positions = new AEVec2[ghost_count];
-    }
-    if (bat_count > 0) {
-        bat_slots = new enemy_slot[bat_count];
-        bat_spawn_positions = new AEVec2[bat_count];
-    }
-    if (cross_count > 0) {
-        cross_positions = new AEVec2[cross_count];
-    }
-
-    // --- PASS 2: POPULATING ---
-    int gc = 0, bc = 0, cc = 0;
-    while (file >> type >> r >> c)
-    {
-        AEVec2 pos = tile_spot(r, c);
-        if (type == "GHOST") {
-            ghost_spawn_positions[gc] = pos;
-            ghost_slots[gc++] = { nullptr, 0.0f };
-        }
-        else if (type == "BAT") {
-            bat_spawn_positions[bc] = pos;
-            bat_slots[bc++] = { nullptr, 0.0f };
-        }
-        else if (type == "CROSS") {
-            cross_positions[cc++] = pos;
-        }
-    }
-
-    file.close();
-    spawn_positions_loaded = true;
-    printf("[EnemyManager] SUCCESS: %d Ghosts, %d Bats, %d Crosses loaded.\n", ghost_count, bat_count, cross_count);
-}
 
 //shld rename this function
 void EnemyManager::initialize_tutorial_area()

@@ -49,7 +49,7 @@ namespace BossProjCfg
     constexpr int   POSITIONS_WAVE_B = 4;      // Even slots
     constexpr float ANGLE_SPREAD_DEG = 120.0f; // Total fan spread
 
-    constexpr float WAVE_INTERVAL = 0.45f;     // Delay between waves
+    constexpr float WAVE_INTERVAL = 3.f;     // Delay between waves
 
     constexpr int   PROJECTILE_DAMAGE = 1;     // 1 = half-heart
 }
@@ -317,6 +317,8 @@ public:
 // ============================================================================
 struct Animator {
     AEGfxTexture* sheet = nullptr;
+    AEGfxVertexList* cached_mesh = nullptr; // NEW: rebuilt only on frame change
+    int last_built_frame = -1;
 
     int   frame_count = 1;
     int   current_frame = 0;
@@ -332,6 +334,31 @@ struct Animator {
     bool  looping = true;
     bool  finished = false; // true when non-looping animation completes
 
+    void free_mesh()
+    {
+        if (cached_mesh) { AEGfxMeshFree(cached_mesh); cached_mesh = nullptr; }
+        last_built_frame = -1;
+    }
+
+    bool update(float dt)
+    {
+        if (finished) return false;
+        timer += dt;
+        if (timer >= 1.f / fps) {
+            timer -= 1.f / fps;
+            current_frame++;
+            if (current_frame >= frame_count) {
+                if (looping) current_frame = 0;
+                else {
+                    current_frame = frame_count - 1;
+                    finished = true;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     void set(AEGfxTexture* tex,
         int frames, float fw, float fh, float sw, float sh,
         float playback_fps, bool loop)
@@ -346,28 +373,6 @@ struct Animator {
         current_frame = 0;
         timer = 0.f;
         finished = false;
-    }
-
-    /// Advance animation; returns true if a one-shot animation just finished
-    bool update(float dt)
-    {
-        if (finished) return false;
-
-        timer += dt;
-        if (timer >= 1.f / fps) {
-            timer -= 1.f / fps;
-            current_frame++;
-
-            if (current_frame >= frame_count) {
-                if (looping) current_frame = 0;
-                else {
-                    current_frame = frame_count - 1;
-                    finished = true;
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     // UV coordinates (0–1 range)
@@ -415,8 +420,7 @@ private:
     void tick_attack_pattern(float dt, float tgt_x, float tgt_y);
 
 public:
-    dragon(f32 start_x, f32 start_y,
-        f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
+    dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
     ~dragon() override = default;
 
     void update(f32 dt, struct Player* player, Camera::camera* cam) override;

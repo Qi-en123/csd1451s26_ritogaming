@@ -147,6 +147,7 @@ void level1_init()
 			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
 				printf("door at row:%d col:%d\n", r, c);
 
+	player_load_config(&player_instance, "Assets/Config/player_config.json");
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
 	spawn_player_from_map(&player_instance, tile_size);
 

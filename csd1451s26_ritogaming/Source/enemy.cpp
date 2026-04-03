@@ -46,9 +46,9 @@ void BossProjectileManager::clear()
         p.in_use = false;
 }
 
-void BossProjectileManager::update(float dt, const camera* cam)
+void BossProjectileManager::update(float dt, const camera* p_cam)
 {
-    if (!cam) return;
+    if (!p_cam) return;
 
     extern float zoom;
     const float hw = (AEGfxGetWindowWidth()  * 0.5f) / zoom;
@@ -70,10 +70,10 @@ void BossProjectileManager::update(float dt, const camera* cam)
         p.y += (p.vy + p.perp_y * sine_val) * dt;
 
         const bool expired    = (p.lifetime <= 0.0f);
-        const bool off_screen = (p.x < cam->pos.x - hw - margin) ||
-                                (p.x > cam->pos.x + hw + margin) ||
-                                (p.y < cam->pos.y - hh - margin) ||
-                                (p.y > cam->pos.y + hh + margin);
+        const bool off_screen = (p.x < p_cam->pos.x - hw - margin) ||
+                                (p.x > p_cam->pos.x + hw + margin) ||
+                                (p.y < p_cam->pos.y - hh - margin) ||
+                                (p.y > p_cam->pos.y + hh + margin);
         if (expired || off_screen)
             p.in_use = false;
     }
@@ -183,8 +183,7 @@ int BossProjectileManager::get_active_count() const
 }
 
 //------------------------------- Pathfinding --------------------------------
-void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
-    f32 target_x, f32 target_y, f32 dt)
+void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size, f32 target_x, f32 target_y, f32 dt)
 {
     f32 dx = target_x - x;
     f32 dy = target_y - y;
@@ -202,8 +201,7 @@ void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
         y = ny;
 }
 
-void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
-    f32 from_x, f32 from_y, f32 dt)
+void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size, f32 from_x, f32 from_y, f32 dt)
 {
     f32 dx = x - from_x;
     f32 dy = y - from_y;
@@ -221,9 +219,7 @@ void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
         y = ny;
 }
 
-void enemy_flee_to_wall(f32 x, f32 y, f32 speed,
-    f32 player_x, f32 player_y, f32 dt,
-    f32& next_x, f32& next_y)
+void enemy_flee_to_wall(f32 x, f32 y, f32 speed, f32 player_x, f32 player_y, f32 dt, f32& next_x, f32& next_y)
 {
     f32 dx = x - player_x;
     f32 dy = y - player_y;

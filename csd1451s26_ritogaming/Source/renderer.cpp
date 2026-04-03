@@ -387,46 +387,6 @@ void render_ui_sprite(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
 	AEGfxTextureSet(nullptr, 0, 0);
 }
 
-void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
-{
-	if (!anim.sheet || !rect_mesh_center) return;
-
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-
-	// Build a one-off mesh with the correct UV window
-	AEGfxMeshStart();
-	float u0 = anim.u0(), u1 = anim.u1();
-	float v0 = anim.v0(), v1 = anim.v1();
-	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, u0, v1,
-		0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
-		-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
-		0.5f, 0.5f, 0xFFFFFFFF, u1, v0,
-		-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
-	AEGfxVertexList* mesh = AEGfxMeshEnd();
-
-	AEGfxTextureSet(anim.sheet, 0, 0);
-
-	AEMtx33 transform, scale, translate, cam_t, cam_z;
-	AEMtx33Scale(&scale, w, h);
-	AEMtx33Trans(&translate, x, y);
-	AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
-	AEMtx33Scale(&cam_z, zoom, zoom);
-	AEMtx33Identity(&transform);
-	AEMtx33Concat(&transform, &transform, &cam_z);
-	AEMtx33Concat(&transform, &transform, &cam_t);
-	AEMtx33Concat(&transform, &transform, &translate);
-	AEMtx33Concat(&transform, &transform, &scale);
-
-	AEGfxSetTransform(transform.m);
-	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
-	AEGfxMeshFree(mesh);
-	AEGfxTextureSet(nullptr, 0, 0);
-}
-
 void render_text_center(char const* text, s8 font, f32 pos_x, f32 pos_y,
 	f32 scale, color color) {
 
@@ -528,6 +488,53 @@ void render_editor_tiles(AEGfxTexture* texture, f32 width, f32 height, f32 alpha
 	AEGfxSetTransform(transform.m);
 
 	AEGfxMeshDraw(rect_mesh_center, AE_GFX_MDM_TRIANGLES);
+	AEGfxTextureSet(nullptr, 0, 0);
+}
+
+void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
+{
+	if (!anim.sheet || !rect_mesh_center) return;
+
+	// Only rebuild the mesh when the frame has actually changed
+	if (anim.current_frame != anim.last_built_frame)
+	{
+		if (anim.cached_mesh) AEGfxMeshFree(anim.cached_mesh);
+
+		float u0 = anim.u0(), u1 = anim.u1();
+		float v0 = anim.v0(), v1 = anim.v1();
+
+		AEGfxMeshStart();
+		AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, u0, v1,
+			0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
+			-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
+		AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
+			0.5f, 0.5f, 0xFFFFFFFF, u1, v0,
+			-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
+		anim.cached_mesh = AEGfxMeshEnd();
+		anim.last_built_frame = anim.current_frame;
+	}
+
+	if (!anim.cached_mesh) return;
+
+	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+	AEGfxTextureSet(anim.sheet, 0, 0);
+
+	AEMtx33 transform, scale, translate, cam_t, cam_z;
+	AEMtx33Scale(&scale, w, h);
+	AEMtx33Trans(&translate, x, y);
+	AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
+	AEMtx33Scale(&cam_z, zoom, zoom);
+	AEMtx33Identity(&transform);
+	AEMtx33Concat(&transform, &transform, &cam_z);
+	AEMtx33Concat(&transform, &transform, &cam_t);
+	AEMtx33Concat(&transform, &transform, &translate);
+	AEMtx33Concat(&transform, &transform, &scale);
+
+	AEGfxSetTransform(transform.m);
+	AEGfxMeshDraw(anim.cached_mesh, AE_GFX_MDM_TRIANGLES);
 	AEGfxTextureSet(nullptr, 0, 0);
 }
 

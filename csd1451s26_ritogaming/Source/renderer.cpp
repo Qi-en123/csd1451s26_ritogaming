@@ -492,6 +492,40 @@ void render_editor_tiles(AEGfxTexture* texture,
 	AEGfxTextureSet(nullptr, 0, 0);
 }
 
+void render_sprite_flash(AEGfxVertexList* rect_mesh, f32 trans_x, f32 trans_y,
+	f32 scale_x, f32 scale_y, AEGfxTexture* texture, f32 flash)
+{
+	if (on_screen(trans_x, trans_y)) {
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+
+		AEMtx33 transform, translate, scale, cam_translate, cam_zoom;
+		AEMtx33Trans(&translate, trans_x, trans_y);
+		AEMtx33Scale(&scale, scale_x, scale_y);
+		AEMtx33Trans(&cam_translate, -Camera::cam.pos.x, -Camera::cam.pos.y);
+		AEMtx33Scale(&cam_zoom, Camera::zoom, Camera::zoom);
+		AEMtx33Identity(&transform);
+		AEMtx33Concat(&transform, &transform, &cam_zoom);
+		AEMtx33Concat(&transform, &transform, &cam_translate);
+		AEMtx33Concat(&transform, &transform, &translate);
+		AEMtx33Concat(&transform, &transform, &scale);
+
+		color c = white;
+		update_light_level(trans_x, trans_y, c);
+		AEGfxSetColorToMultiply(c.r, c.g, c.b, 1.0f);
+
+		// Set color add AFTER render mode — this is what makes the flash work
+		AEGfxSetColorToAdd(flash, flash, flash, 0.f);
+
+		AEGfxTextureSet(texture, 0, 0);
+		AEGfxSetTransform(transform.m);
+		AEGfxMeshDraw(rect_mesh, AE_GFX_MDM_TRIANGLES);
+		AEGfxTextureSet(nullptr, 0, 0);
+
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	}
+}
+
 // for tint in mainmenu
 void draw_black_overlay(f32 alpha)
 {
@@ -502,7 +536,7 @@ void draw_black_overlay(f32 alpha)
 	AEGfxSetTransparency(alpha);
 
 	//Draws a black square covering the screen
-	draw_shape(square_mesh, 0.0f, 0.0f, AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), false);
+	draw_shape(square_mesh, 0.0f, 0.0f, (f32)AEGfxGetWindowWidth(), (f32)AEGfxGetWindowHeight(), false);
 
 	AEGfxSetTransparency(1.f);
 	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
@@ -525,7 +559,7 @@ void render_tooltip(s8 font) {
 
 void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
 {
-	if (!anim.sheet || !rect_mesh_center) return;
+	if (!anim.sheet || !square_mesh) return;
 
 	// Only rebuild the mesh when the frame has actually changed
 	if (anim.current_frame != anim.last_built_frame)
@@ -557,8 +591,8 @@ void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
 	AEMtx33 transform, scale, translate, cam_t, cam_z;
 	AEMtx33Scale(&scale, w, h);
 	AEMtx33Trans(&translate, x, y);
-	AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
-	AEMtx33Scale(&cam_z, zoom, zoom);
+	AEMtx33Trans(&cam_t, -Camera::cam.pos.x, -Camera::cam.pos.y);
+	AEMtx33Scale(&cam_z, Camera::zoom, Camera::zoom);
 	AEMtx33Identity(&transform);
 	AEMtx33Concat(&transform, &transform, &cam_z);
 	AEMtx33Concat(&transform, &transform, &cam_t);
@@ -587,8 +621,8 @@ void render_boss_projectiles(const BossProjectileManager& manager)
         // Only the transform changes per projectile � no mesh rebuild
         AEMtx33 transform, translate, cam_t, cam_z;
         AEMtx33Trans(&translate, p.x, p.y);
-        AEMtx33Trans(&cam_t, -cam.pos.x, -cam.pos.y);
-        AEMtx33Scale(&cam_z, zoom, zoom);
+        AEMtx33Trans(&cam_t, -Camera::cam.pos.x, -Camera::cam.pos.y);
+        AEMtx33Scale(&cam_z, Camera::zoom, Camera::zoom);
 
         AEMtx33Identity(&transform);
         AEMtx33Concat(&transform, &transform, &cam_z);

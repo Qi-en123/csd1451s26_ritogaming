@@ -46,7 +46,7 @@ void BossProjectileManager::clear()
         p.in_use = false;
 }
 
-void BossProjectileManager::update(float dt, const Camera::camera* cam)
+void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
 {
     if (!p_cam) return;
 

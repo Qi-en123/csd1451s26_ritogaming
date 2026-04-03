@@ -33,48 +33,62 @@ static AEVec2 tile_spot(s32 row, s32 col)
 
 void EnemyManager::load_spawn_positions(const char* filename)
 {
-    FILE* fp = nullptr;
-    fopen_s(&fp, filename, "r");
-    if (!fp) return;
-    
+    clear_all();
 
-    int ghost_count = 0;
-    int bat_count = 0;
-    int cross_count = 0;
-    char token[32];
-
-    while (fscanf_s(fp, "%31s", token, (unsigned)sizeof(token)) == 1)
+    std::ifstream file(filename);
+    if (!file.is_open())
     {
-        if (strcmp(token, "GHOST") == 0)
-        {
-            int row, col;
-            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && ghost_count < NUM_GHOST_SLOTS)
-            {
-                ghost_spawn_positions[ghost_count] = tile_spot(row, col);
-                ++ghost_count;
-            }
+        printf("[EnemyManager] ERROR: Could not open %s\n", filename);
+        return;
+    }
+
+    std::string type;
+    int r, c;
+
+    // --- PASS 1: COUNTING ---
+    while (file >> type >> r >> c)
+    {
+        if (type == "GHOST")      ghost_count++;
+        else if (type == "BAT")   bat_count++;
+        else if (type == "CROSS") cross_count++;
+    }
+
+    // --- CRITICAL: RESET FILE FOR PASS 2 ---
+    file.clear();                 // Clear eof bits
+    file.seekg(0, std::ios::beg); // Go back to the very beginning
+
+    // --- ALLOCATION ---
+    if (ghost_count > 0) {
+        ghost_slots = new enemy_slot[ghost_count];
+        ghost_spawn_positions = new AEVec2[ghost_count];
+    }
+    if (bat_count > 0) {
+        bat_slots = new enemy_slot[bat_count];
+        bat_spawn_positions = new AEVec2[bat_count];
+    }
+    if (cross_count > 0) {
+        cross_positions = new AEVec2[cross_count];
+    }
+
+    // --- PASS 2: POPULATING ---
+    int gc = 0, bc = 0, cc = 0;
+    while (file >> type >> r >> c)
+    {
+        AEVec2 pos = tile_spot(r, c);
+        if (type == "GHOST") {
+            ghost_spawn_positions[gc] = pos;
+            ghost_slots[gc++] = { nullptr, 0.0f };
         }
-        else if (strcmp(token, "BAT") == 0)
-        {
-            int row, col;
-            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && bat_count < NUM_BAT_SLOTS)
-            {
-                bat_spawn_positions[bat_count] = tile_spot(row, col);
-                ++bat_count;
-            }
+        else if (type == "BAT") {
+            bat_spawn_positions[bc] = pos;
+            bat_slots[bc++] = { nullptr, 0.0f };
         }
-        else if (strcmp(token, "CROSS") == 0)
-        {
-            int row, col;
-            if (fscanf_s(fp, "%d %d", &row, &col) == 2 && cross_count < NUM_CROSS_MARKERS)
-            {
-                cross_positions[cross_count] = tile_spot(row, col);
-                ++cross_count;
-            }
+        else if (type == "CROSS") {
+            cross_positions[cc++] = pos;
         }
     }
 
-    fclose(fp);
+    file.close();
     spawn_positions_loaded = true;
 }
 

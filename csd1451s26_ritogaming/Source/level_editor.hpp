@@ -1,9 +1,12 @@
 /*!************************************************************************
-\file:          level_editor.hpp
-\author:        Goh Qi En
-\par DP email:  g.qien@digipen.edu
-\brief:         Declares functions to load, initialize, update, draw, free, and unload
-                the game's level editor
+\file:                          level_editor.hpp
+\author:                        Goh Qi En
+\par DP email:                  g.qien@digipen.edu
+\co-author:                     Jerod Lim
+\par co-author DP email:        jerodyaowei.lim@digipen.edu
+
+\brief:         Declares functions to load, initialize, update, draw,
+                free, and unload the game's level editor
 **************************************************************************/
 
 #pragma once

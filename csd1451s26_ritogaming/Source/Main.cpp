@@ -20,11 +20,11 @@
 // ----------------------------------------------------------------------------
 // Global Transition Variables
 // ----------------------------------------------------------------------------
-float g_transition_alpha = 0.0f;
-int g_pending_next_state = -1;
+f32 g_transition_alpha = 0.0f;
+s32 g_pending_next_state = -1;
 enum TransitionState { T_NONE, T_FADE_OUT, T_FADE_IN };
 TransitionState g_transition_state = T_NONE;
-const float TRANSITION_SPEED = 1.0f;
+const f32 TRANSITION_SPEED = 1.0f;
 
 // ----------------------------------------------------------------------------
 //
@@ -77,7 +77,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         while (next == current)
         {
             AESysFrameStart();
-            float dt = (float)AEFrameRateControllerGetFrameTime();
+            f32 dt = (float)AEFrameRateControllerGetFrameTime();
 
             if (!AESysDoesWindowExist())
                 next = GS_QUIT;

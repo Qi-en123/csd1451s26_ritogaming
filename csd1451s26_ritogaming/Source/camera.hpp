@@ -2,6 +2,7 @@
 \file:			camera.hpp
 \author:		Jerod Lim
 \par DP email:	jerodyaowei.lim@digipen.edu
+
 \brief:			This header declares the camera structure and camera
 				control functions. Manages a single camera instance that
 				follows player.

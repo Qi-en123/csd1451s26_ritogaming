@@ -1,10 +1,13 @@
 /*!************************************************************************
-\file:						level1.cpp
-\author:					Goh Qi En
-\par DP email:				g.qien@digipen.edu
-\brief:						This file implements Level 1 functions to load the assets from a file, initialize the level,
-update game logic, render, free resources
+\file:			level1.cpp
+\author:		Goh Qi En
+\par DP email:	g.qien@digipen.edu
+
+\brief:			This file implements Level 1 functions to load the assets
+				from a file, initialize the level, update game logic,
+				render, free resources
 **************************************************************************/
+
 #include "AEEngine.h"
 #include <cstdio>
 #include "map.hpp"
@@ -192,7 +195,7 @@ void level1_init()
 
 	load_map_from_file(selected_level_path.c_str(), map);
 	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
-	generate_walls_from_map(map, tile_size);
+	generate_walls_from_map(map);
 
 	player_load_config(&player_instance, Constants::PATH_PLAYER_CONFIG);
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);

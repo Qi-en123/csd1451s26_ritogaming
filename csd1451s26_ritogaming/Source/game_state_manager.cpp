@@ -2,6 +2,7 @@
 \file:          game_state_manager.cpp
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
+
 \brief:         This file implements the Game State Manager (GSM), which
 				controls which game state is active and which functions are
 				executed at any time during the game.
@@ -25,9 +26,9 @@
 // Tracks the progression and flow of game states.
 //
 // ----------------------------------------------------------------------------
-int current = 0;   // The currently active game state
-int previous = 0;  // The previously active game state 
-int next = 0;      // The next game state to switch to
+s32 current = 0;   // The currently active game state
+s32 previous = 0;  // The previously active game state 
+s32 next = 0;      // The next game state to switch to
 
 // ----------------------------------------------------------------------------
 //
@@ -50,7 +51,7 @@ fp fpUnload = nullptr;      // Function to unload assets after the game state en
 // the start of the application.
 //
 // ----------------------------------------------------------------------------
-void gsm_initialize(int startingState)
+void gsm_initialize(s32 startingState)
 {
 	current = previous = next = startingState;
 }

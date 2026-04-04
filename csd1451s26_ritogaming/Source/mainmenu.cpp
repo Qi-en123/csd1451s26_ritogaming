@@ -2,6 +2,7 @@
 \file:          mainmenu.cpp
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
+
 \brief:         This file defines the 6 cycle functions that load,
                 initialize, update, draw, free, and unload the main menu
                 game state. Features an animated knight and ghoul,
@@ -91,7 +92,7 @@ namespace
         f32  vx, vy;    // velocity per second
         bool active;    // true if this slot is in use
     };
-    const int MAX_DUST = 60;               // maximum simultaneous dust particles
+    const s32 MAX_DUST = 60;               // maximum simultaneous dust particles
     DustParticle dust_particles[MAX_DUST]; // fixed-size pool of dust particles
 
     // ----------------------------------------------------------------------------
@@ -104,7 +105,7 @@ namespace
         f32  alpha;  // current opacity (fades out over time)
         bool active; // true if this slot is in use
     };
-    const int MAX_TRAIL = 5;            // number of trail snapshots kept at once
+    const s32 MAX_TRAIL = 5;            // number of trail snapshots kept at once
     GhoulTrail ghoul_trail[MAX_TRAIL];  // ring buffer of recent ghoul positions
     f32 trail_spawn_timer = 0.f;        // time since the last trail snapshot was taken
 
@@ -163,7 +164,7 @@ static void load_mainmenu_config()
     }
 
     // Trim leading space from getline values (caused by space after key)
-    for (int i = 0; i < 5; ++i)
+    for (s32 i = 0; i < 5; ++i)
     {
         if (!cfg_button_labels[i].empty() && cfg_button_labels[i][0] == ' ')
             cfg_button_labels[i] = cfg_button_labels[i].substr(1);
@@ -183,7 +184,7 @@ static void load_mainmenu_config()
 // ----------------------------------------------------------------------------
 static void spawn_dust(f32 x, f32 y)
 {
-    for (int i = 0; i < MAX_DUST; ++i)
+    for (s32 i = 0; i < MAX_DUST; ++i)
     {
         if (!dust_particles[i].active)
         {
@@ -265,8 +266,8 @@ void mainmenu_init()
     AEInputShowCursor(false); // hide system cursor, custom one is drawn instead
 
     // Deactivate all dust particles and trail snapshots from previous visits
-    for (int i = 0; i < MAX_DUST; ++i) dust_particles[i].active = false;
-    for (int i = 0; i < MAX_TRAIL; ++i) ghoul_trail[i].active = false;
+    for (s32 i = 0; i < MAX_DUST; ++i) dust_particles[i].active = false;
+    for (s32 i = 0; i < MAX_TRAIL; ++i) ghoul_trail[i].active = false;
     trail_spawn_timer = 0.0f;
 
     if (g_bgm_current_track != &g_audio.bgm_op_n_mainmenu)
@@ -291,9 +292,9 @@ void mainmenu_update()
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
     // --- Button hover sound (fires once per newly-entered button) ---
-    static int last_hovered = -1;
-    int current_hovered = -1;
-    for (int i = 0; i < 5; ++i)
+    static s32 last_hovered = -1;
+    s32 current_hovered = -1;
+    for (s32 i = 0; i < 5; ++i)
     {
         if (IsButtonHovered(cfg_button_x, cfg_button_y[i], cfg_button_w, cfg_button_h))
         {
@@ -390,7 +391,7 @@ void mainmenu_update()
     }
 
     // --- Update active dust particles (move, fade, deactivate) ---
-    for (int i = 0; i < MAX_DUST; ++i)
+    for (s32 i = 0; i < MAX_DUST; ++i)
     {
         if (!dust_particles[i].active) continue;
 
@@ -408,7 +409,7 @@ void mainmenu_update()
     if (ghoul_scale >= cfg_character_full_scale && trail_spawn_timer > 0.08f)
     {
         // Shift existing trail entries back to make room for the newest
-        for (int i = MAX_TRAIL - 1; i > 0; --i)
+        for (s32 i = MAX_TRAIL - 1; i > 0; --i)
             ghoul_trail[i] = ghoul_trail[i - 1];
 
         // Store current ghoul state as the newest trail entry
@@ -421,7 +422,7 @@ void mainmenu_update()
     }
 
     // --- Fade out existing trail entries ---
-    for (int i = 0; i < MAX_TRAIL; ++i)
+    for (s32 i = 0; i < MAX_TRAIL; ++i)
     {
         if (!ghoul_trail[i].active) continue;
         ghoul_trail[i].alpha -= dt * 0.8f;
@@ -449,7 +450,7 @@ void mainmenu_draw()
     render_editor_ui(bg, AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), 1, 0, 0);
 
     // --- Draw dust particles using the ground tile as a puff sprite ---
-    for (int i = 0; i < MAX_DUST; ++i)
+    for (s32 i = 0; i < MAX_DUST; ++i)
     {
         if (!dust_particles[i].active) continue;
         if (ground)
@@ -473,7 +474,7 @@ void mainmenu_draw()
     }
 
     // --- Draw ghoul trail behind the ghoul (oldest entry first) ---
-    for (int i = MAX_TRAIL - 1; i >= 0; --i)
+    for (s32 i = MAX_TRAIL - 1; i >= 0; --i)
     {
         if (!ghoul_trail[i].active) continue;
         if (ghoul)
@@ -493,7 +494,7 @@ void mainmenu_draw()
     }
 
     // --- Draw menu buttons and centered text labels ---
-    for (int i = 0; i < 5; ++i)
+    for (s32 i = 0; i < 5; ++i)
     {
         // 1. Draw the Button Sprite (Keep your existing code)
         if (buttons[i + 1])

@@ -1,11 +1,13 @@
 /*!************************************************************************
 \file:			puzzle.hpp
-\author:		Jerod
+\author:		Jerod Lim
 \par DP email:	jerodyaowei.lim@digipen.edu
+
 \brief:			This file contains all puzzle related functions. E.g load
 				puzzle data from text file, render puzzles, puzzle collision,
 				move/drag puzzle etc.
 **************************************************************************/
+
 #pragma once
 #include "AEEngine.h"
 #include <vector>
@@ -128,11 +130,12 @@ namespace Puzzle {
 		}
 	}; //end struct puzzle
 #pragma endregion
+
 	// ------------------------------------------------------------------------
 	// Global puzzle data (shared across files)
 	// ------------------------------------------------------------------------
-		extern std::vector<puzzle> puzzle_blocks;
-		extern std::vector<buttonTrigger> btns;
+	extern std::vector<puzzle> puzzle_blocks;
+	extern std::vector<buttonTrigger> btns;
 
 #pragma region LEVEL EDITOR HELPER FUNCTIONS
 	// ----------------------------------------------------------------------------
@@ -169,7 +172,7 @@ namespace Puzzle {
 	// ----------------------------------------------------------------------------
 	//
 	// "Erases" spike tied to Button ID by removing its coordinates from the vec of
-	// coords tied to the Button ID. (NEEDS FIXING)
+	// coords tied to the Button ID.
 	//
 	// ---------------------------------------------------------------------------- 
 	void remove_spike_button_pair(s32 row, s32 col, buttonTrigger& bt);

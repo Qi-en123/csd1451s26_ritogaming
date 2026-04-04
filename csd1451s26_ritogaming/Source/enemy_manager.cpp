@@ -16,18 +16,19 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include "map.hpp"
 
 EnemyManager enemy_manager_instance;
 
-static constexpr f32 MAP_START_X = -800.0f;
-static constexpr f32 MAP_START_Y = 450.0f;
-static constexpr f32 TILE_SZ = 64.0f;
+//static constexpr f32 MAP_START_X = -800.0f;
+//static constexpr f32 MAP_START_Y = 450.0f;
+//static constexpr f32 TILE_SZ = 64.0f;
 
 static AEVec2 tile_spot(s32 row, s32 col)
 {
     AEVec2 p;
-    p.x = MAP_START_X + col * TILE_SZ + TILE_SZ * 0.5;
-    p.y = MAP_START_Y - row * TILE_SZ - TILE_SZ * 0.5;
+    p.x = world_left + col * tile_size + tile_size * 0.5;
+    p.y = world_top - row * tile_size - tile_size * 0.5;
     return p;
 }
 

@@ -1,10 +1,10 @@
 /*!************************************************************************
-\file:                          debug.cpp
-\author:                        Ahmad Qusyairi Bin Mohammad Jinna
-\par DP email:                  ahmadqusyairi.b@digipen.edu
+\file:          debug.cpp
+\author:        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:  ahmadqusyairi.b@digipen.edu
 
-\brief:                         Implementation of debug drawing utilities.
-                                Moved from collision.cpp.
+\brief:         Implementation of debug drawing utilities.
+                Moved from collision.cpp.
 **************************************************************************/
 
 #include <cmath>
@@ -17,6 +17,13 @@
 #include "enemy_manager.hpp"
 
 namespace DEBUG {
+    s32 DEBUGGING = 0;
+    s32 DRAW_WALLS = 0;
+    s32 DRAW_PLAYER_TILE = 0;
+    s32 DRAW_PUZZLE_GRAB_RANGE = 0;
+    s32 DRAW_PUZZLE_BLOCKS = 0;
+    s32 DRAW_BUTTON_SPIKE_LINKS = 0;
+    s32 DRAW_ENEMIES = 0;
 
     // ----------------------------------------------------------------------------
     //

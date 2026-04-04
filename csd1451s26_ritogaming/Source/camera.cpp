@@ -2,11 +2,13 @@
 \file:			camera.cpp
 \author:		Jerod Lim
 \par DP email:	jerodyaowei.lim@digipen.edu
+
 \brief:			This source file implements the camera structure and camera
 				control functions. Manages a single camera instance that
 				follows player. The camera deadzones are adjusted in this
 				file.
 **************************************************************************/
+
 #include "camera.hpp"
 #include "map.hpp"
 #include "AEEngine.h"

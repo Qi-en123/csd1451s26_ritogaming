@@ -1,16 +1,16 @@
 /*!************************************************************************
-\file:						game_state_manager.hpp
-\author:					Goh Qi En
-\par DP email:				g.qien@digipen.edu
+\file:			game_state_manager.hpp
+\author:		Goh Qi En
+\par DP email:	g.qien@digipen.edu
 
-\brief:						Declares the Game State Manager (GSM) interface.
-                            Provides the mechanism for transitioning between
-                            different game states (e.g., Menu, Level 1, Game Over)
-                            using a system of global state trackers and
-                            function pointers.
+\brief:			Declares the Game State Manager (GSM) interface. Provides
+                the mechanism for transitioning between different game
+                states (e.g., Menu, Level 1, Game Over) using a system of
+                global state trackers and function pointers.
 **************************************************************************/
 
 #pragma once
+#include "AETypes.h"
 
 // ----------------------------------------------------------------------------
 //
@@ -27,9 +27,9 @@ typedef void(*fp)(void);
 // Used to manage the flow of the state machine throughout the application.
 //
 // ---------------------------------------------------------------------------- 
-extern int current;   // The state currently being processed in the loop
-extern int previous;  // The state that was active before the current one
-extern int next;      // The target state to transition to after the current loop
+extern s32 current;   // The state currently being processed in the loop
+extern s32 previous;  // The state that was active before the current one
+extern s32 next;      // The target state to transition to after the current loop
 
 // ----------------------------------------------------------------------------
 //
@@ -51,7 +51,7 @@ extern fp fpUnload;     // Called once when leaving a state to free assets
 // Sets the initial starting state of the game and resets state trackers.
 //
 // ---------------------------------------------------------------------------- 
-void gsm_initialize(int startingState);
+void gsm_initialize(s32 startingState);
 
 // ----------------------------------------------------------------------------
 //

@@ -1,11 +1,12 @@
 /*!************************************************************************
-\file:						game_state_list.hpp
-\author:					Goh Qi En
-\par DP email:				g.qien@digipen.edu
-\brief:						This header defines the enumeration of game
-                            states used by the Game State Manager (GSM).
-                            It provides a centralized list of all possible
-                            states, such as levels, menus, and system states.
+\file:			game_state_list.hpp
+\author:		Goh Qi En
+\par DP email:	g.qien@digipen.edu
+
+\brief:			This header defines the enumeration of game states used by
+                the Game State Manager (GSM). It provides a centralized
+                list of all possible states, such as levels, menus, and
+                system states.
 **************************************************************************/
 
 #pragma once

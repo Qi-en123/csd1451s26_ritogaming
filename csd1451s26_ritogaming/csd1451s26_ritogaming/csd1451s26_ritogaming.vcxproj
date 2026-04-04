@@ -41,7 +41,6 @@
     <ClInclude Include="..\Source\boss_room.hpp" />
     <ClInclude Include="..\Source\camera.hpp" />
     <ClInclude Include="..\Source\collision.hpp" />
-    <ClInclude Include="..\Source\collision_config.hpp" />
     <ClInclude Include="..\Source\credit.hpp" />
     <ClInclude Include="..\Source\debug.hpp" />
     <ClInclude Include="..\Source\end_screen.hpp" />

@@ -1,15 +1,14 @@
-#pragma once
-
 /*!************************************************************************
-\file:                          collision.hpp
-\author:                        Ahmad Qusyairi Bin Mohammad Jinna
-\par DP email:                  ahmadqusyairi.b@digipen.edu
+\file:          collision.hpp
+\author:        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:  ahmadqusyairi.b@digipen.edu
 
-\brief:                         This file consists of declarations of functions
-                                for map-based wall generation and various
-                                collision detection algorithms (AABB, Circle).
+\brief:         This file consists of declarations of functions
+                for map-based wall generation and various
+                collision detection algorithms (AABB, Circle).
 **************************************************************************/
 
+#pragma once
 #include "player.hpp"
 #include "map.hpp"
 #include <vector>
@@ -38,7 +37,7 @@ extern bool door_triggered;
 // Generate walls from actual dungeon map.
 //
 // ---------------------------------------------------------------------------- 
-void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size);
+void generate_walls_from_map(s32 tile_grid[TILE_ROWS][TILE_COLS]);
 
 // ----------------------------------------------------------------------------
 //

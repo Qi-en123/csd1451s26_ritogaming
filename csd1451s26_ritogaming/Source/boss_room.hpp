@@ -4,10 +4,12 @@
 \par DP email:	            jerodyaowei.lim@digipen.edu
 \co-author:					Goh Qi En
 \par co-author DP email:	g.qien@digipen.edu
-\brief:			This file declares functions for the boss fight (level)
+
+\brief:		    This file declares functions for the boss fight (level)
                 to load assets, initialize level, update game logic,
                 render & free resources.
 **************************************************************************/
+
 #pragma once
 
 // ------------------------------------------------------------------------

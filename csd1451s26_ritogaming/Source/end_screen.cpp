@@ -2,17 +2,15 @@
 \file:                      end_screen.cpp
 \author:                    Goh Qi En
 \par DP email:              g.qien@digipen.edu
-\co-author:					Claire
-\par co-author DP email:	c.cheong@digipen.edu
-\brief:                     Win / Lose full-screen end state.
-                            GS_WIN / GS_LOSE are standalone states (not overlays).
-                            Draws a background, the win/lose asset, two buttons and
-                            a custom cursor using render_editor_ui - same system as
-                            the main menu so hover highlight and coords all match.
+\co-author:					Jerod Lim
+\par co-author DP email:	jerodyaowei.lim@digipen.edu
 
-                            Pause is a top-level button panel: dark overlay + three
-                            centred buttons (Resume / Restart / Main Menu) drawn with
-                            the same render_editor_ui / IsButtonHovered system.
+\brief:     Win / Lose full-screen end state.
+            GS_WIN / GS_LOSE are standalone states (not overlays). Draws a
+            background, the win/lose asset and two buttons. Pause is a
+            top-level button panel: dark overlay + three centred buttons
+            (Resume / Restart / Main Menu) drawn with the same
+            render_editor_ui / IsButtonHovered system.
 **************************************************************************/
 
 #include "AEEngine.h"
@@ -25,7 +23,7 @@
 
 bool is_win = false;
 bool is_paused = false;
-int restart_level_state = GS_LEVEL1;
+s32 restart_level_state = GS_LEVEL1;
 
 namespace
 {
@@ -75,9 +73,9 @@ namespace
     constexpr f32 P_BTN_Y2 = -160.f;  // Main Menu
 
     s32 mouse_x = 0, mouse_y = 0;
-    int last_hovered = -1;
-    int pause_last_hovered = -1;
-    static int confirm_last_hovered = -1;
+    s32 last_hovered = -1;
+    s32 pause_last_hovered = -1;
+    static s32 confirm_last_hovered = -1;
 
     // confirm popup
     enum ConfirmTarget { CONFIRM_NONE, CONFIRM_RESTART, CONFIRM_MAINMENU };
@@ -127,17 +125,14 @@ namespace
 // Shared helper   centres a label on a button
 // -------------------------------------------------------------------------
 static void draw_button_label(const char* label, f32 btn_x, f32 btn_y,
-    f32 scale = 1.f,
-    f32 r = 0.f, f32 g = 0.f, f32 b = 0.f)
+    f32 scale = 1.f)
 {
     if (end_font == -1) return;
 
-    f32 tw = 0.f, th = 0.f;
-    AEGfxGetPrintSize(end_font, label, scale, &tw, &th);
-    // render_editor_ui is centred on world coords; AEGfxPrint uses -1..1 normalised
-    f32 norm_x = (btn_x / (AEGfxGetWindowWidth() / 2.0f)) - (tw / 2.f);
-    f32 norm_y = (btn_y - 15.f) / 450.f;
-    AEGfxPrint(end_font, label, norm_x, norm_y, scale, 0.f, 0.f, 0.f, 1.f);
+    render_text_center(label, end_font,
+        btn_x / (AEGfxGetWindowWidth() / 2.0f),
+        btn_y / (AEGfxGetWindowHeight() / 2.0f),
+        scale, { 0.f, 0.f, 0.f });
 }
 
 // -------------------------------------------------------------------------
@@ -211,7 +206,7 @@ void end_screen_update()
 
     if (confirm_target != CONFIRM_NONE)
     {
-        int cur_conf = -1;
+        s32 cur_conf = -1;
         if (IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 0;      // Yes
         else if (IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 1; // No
 
@@ -247,7 +242,7 @@ void end_screen_update()
     }
 
     // Hover SFX   fires once per newly-entered button
-    int current_hovered = -1;
+    s32 current_hovered = -1;
     if (IsButtonHovered(BTN_X, BTN_Y0, BTN_W, BTN_H)) current_hovered = 0;
     else if (IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H)) current_hovered = 1;
 
@@ -336,7 +331,7 @@ void pause_update()
     if (pause_confirm_target != CONFIRM_NONE)
     {
         //--- Hover in confirmation---
-        int cur_conf = -1;
+        s32 cur_conf = -1;
         if (IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 0;      // Yes
         else if (IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 1; // No
 
@@ -372,7 +367,7 @@ void pause_update()
     }
 
     // Hover SFX
-    int cur = -1;
+    s32 cur = -1;
     if (IsButtonHovered(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H)) cur = 0;
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H)) cur = 1;
     else if (IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H)) cur = 2;
@@ -422,7 +417,7 @@ void pause_draw()
     //  4. "PAUSED" title   centred, yellow 
     if (end_font != -1)
     {
-        draw_button_label("Paused", P_BTN_X, P_BTN_Y, 2.f, 0.f, 0.f, 0.f);
+        draw_button_label("Paused", P_BTN_X, P_BTN_Y, 2.f);
     }
 
     //  5. Buttons (drawn on top of panel) 
@@ -431,17 +426,17 @@ void pause_draw()
         render_editor_ui(buttons, P_BTN_W, P_BTN_H, 1.f,
             P_BTN_X, P_BTN_Y0,
             IsButtonHovered(P_BTN_X, P_BTN_Y0, P_BTN_W, P_BTN_H));
-        draw_button_label("Resume", P_BTN_X, P_BTN_Y0, 1.f, 0.f, 0.f, 0.f);
+        draw_button_label("Resume", P_BTN_X, P_BTN_Y0, 1.f);
 
         render_editor_ui(buttons, P_BTN_W, P_BTN_H, 1.f,
             P_BTN_X, P_BTN_Y1,
             IsButtonHovered(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H));
-        draw_button_label("Restart", P_BTN_X, P_BTN_Y1, 1.f, 0.f, 0.f, 0.f);
+        draw_button_label("Restart", P_BTN_X, P_BTN_Y1, 1.f);
 
         render_editor_ui(buttons, P_BTN_W, P_BTN_H, 1.f,
             P_BTN_X, P_BTN_Y2,
             IsButtonHovered(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H));
-        draw_button_label("Main Menu", P_BTN_X, P_BTN_Y2, 1.f, 0.f, 0.f, 0.f);
+        draw_button_label("Main Menu", P_BTN_X, P_BTN_Y2, 1.f);
     }
 
     if (pause_confirm_target != CONFIRM_NONE)

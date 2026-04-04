@@ -1,10 +1,11 @@
 /*!************************************************************************
-\file:						opening.hpp
-\author:					Goh Qi En
-\par DP email:				g.qien@digipen.edu
-\brief:						This file declares the 6 cycle functions that
-							load, initialize, update, draw, and unload
-							the opening logo with fade-in/out effects.
+\file:			opening.hpp
+\author:		Goh Qi En
+\par DP email:	g.qien@digipen.edu
+
+\brief:			This file declares the 6 cycle functions that
+				load, initialize, update, draw, and unload
+				the opening logo with fade-in/out effects.
 **************************************************************************/
 
 #pragma once

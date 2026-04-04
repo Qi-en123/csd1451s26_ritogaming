@@ -1,10 +1,11 @@
 /*!************************************************************************
-\file:                          Minimap.cpp
-\author:                        Ahmad Qusyairi Bin Mohammad Jinna
-\par DP email:                  ahmadqusyairi.b@digipen.edu
-\brief:                         Implementation of the minimap rendering system.
-                                Handles scrolling map logic, world-to-UI
-                                coordinate conversion, and tile-based culling.
+\file:          minimap.cpp
+\author:        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:  ahmadqusyairi.b@digipen.edu
+
+\brief:         Implementation of the minimap rendering system.
+                Handles scrolling map logic, world-to-UI
+                coordinate conversion, and tile-based culling.
 **************************************************************************/
 
 #include "Minimap.hpp"

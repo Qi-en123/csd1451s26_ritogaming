@@ -1,18 +1,15 @@
-#pragma once
-
 /*!************************************************************************
-\file:						audio_manager.hpp
-\author:					Ahmad Qusyairi Bin Mohammad Jinna
-\par DP email:				ahmadqusyairi.b@digipen.edu
+\file:			audio_manager.hpp
+\author:		Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:	ahmadqusyairi.b@digipen.edu
 
-\brief:						Header file containing the AudioManager
-                            structure and function declarations for
-                            global audio control.
+\brief:			Header file containing the AudioManager structure and
+                function declarations for global audio control.
 **************************************************************************/
 
+#pragma once
 #include "AEAudio.h"
-
-
+#include "AETypes.h"
 
 // ----------------------------------------------------------------------------
 //
@@ -82,7 +79,7 @@ void audio_free();
 // Plays a specific music track on the background music group.
 //
 // ---------------------------------------------------------------------------- 
-void play_bgm(AEAudio audio, float volume = 0.07f, float pitch = 1.0f, int loop = -1);
+void play_bgm(AEAudio audio, f32 volume = 0.07f, f32 pitch = 1.0f, s32 loop = -1);
 
 // ----------------------------------------------------------------------------
 //
@@ -114,7 +111,7 @@ void resume_bgm();
 // Plays a sound effect with optional volume, pitch, and loop parameters.
 //
 // ---------------------------------------------------------------------------- 
-void play_sfx(AEAudio audio, float volume = 0.1f, float pitch = 1.0f, int loop = 0);
+void play_sfx(AEAudio audio, f32 volume = 0.1f, f32 pitch = 1.0f, s32 loop = 0);
 
 // ----------------------------------------------------------------------------
 //
@@ -130,7 +127,7 @@ void stop_sfx();
 // Plays a sound effect specifically on the loop group (e.g. for dragging).
 //
 // ----------------------------------------------------------------------------
-void play_sfx_loop(AEAudio audio, float volume = 0.1f, float pitch = 1.0f);
+void play_sfx_loop(AEAudio audio, f32 volume = 0.1f, f32 pitch = 1.0f);
 
 // ----------------------------------------------------------------------------
 //

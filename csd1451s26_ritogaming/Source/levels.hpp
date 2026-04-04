@@ -2,6 +2,7 @@
 \file:          levels.hpp
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
+
 \brief:         Declares functions to load, initialize, update, draw, free,
                 and unload the game's level selection or editor state.
 **************************************************************************/

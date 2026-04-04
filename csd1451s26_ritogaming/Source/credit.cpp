@@ -63,8 +63,8 @@ namespace {
     }
 
     // Helper to safely read int from map with a fallback default
-    int kv_int(const std::unordered_map<std::string, std::string>& kv,
-        const std::string& key, int fallback = 0)
+    s32 kv_int(const std::unordered_map<std::string, std::string>& kv,
+        const std::string& key, s32 fallback = 0)
     {
         auto it = kv.find(key);
         return (it != kv.end()) ? std::stoi(it->second) : fallback;
@@ -124,7 +124,7 @@ namespace {
     // Font
     // ----------------------------------------------------------------------------
     s8          credit_font = -1;
-    int         font_size = 0;
+    s32         font_size = 0;
     std::string font_path;
 
     // ----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ void credit_init()
 
     scrollY = scroll_start_y;
 
-    int lineCount = (int)credit_lines.size();
+    s32 lineCount = (int)credit_lines.size();
     totalHeight = lineCount * scroll_line_spacing;
 
     AEInputShowCursor(false);
@@ -334,7 +334,7 @@ void credit_draw()
     // ----------------------------------------------------------------------------
     f32 y = scrollY;
 
-    for (int i = 0; i < (int)credit_lines.size(); ++i)
+    for (s32 i = 0; i < (int)credit_lines.size(); ++i)
     {
         // Normalize t: 0 = bottom of crawl, 1 = top of crawl
         f32 t = (y - scroll_start_y) / (scroll_reset_padding + totalHeight - scroll_start_y);

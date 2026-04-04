@@ -6,11 +6,13 @@
 \par co-author DP email:	c.cheong@digipen.edu
 \co-author:					Goh Qi En
 \par co-author DP email:	g.qien@digipen.edu
+
 \brief:						This file handles mesh initialization and
 							rendering of shapes, sprites, and text, including
 							camera zoom support and a dynamic lighting system
 							using AEEngine.
 **************************************************************************/
+
 #include "renderer.hpp"
 #include "AEEngine.h"
 #include "camera.hpp"
@@ -284,20 +286,20 @@ void init_mesh() {
 	light_source_mesh = create_ls_mesh();
 
 	//------------ Ring Mesh (boss projectiles) by Claire------------//
-	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
-	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
-	const int   SEGS = 32;
-	const float step = 2.f * 3.14159265f / static_cast<float>(SEGS);
+	const f32 outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
+	const f32 inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
+	const s32   SEGS = 32;
+	const f32 step = 2.f * 3.14159265f / static_cast<float>(SEGS);
 
 	AEGfxMeshStart();
-	for (int i = 0; i < SEGS; ++i)
+	for (s32 i = 0; i < SEGS; ++i)
 	{
-		float a0 = step * static_cast<float>(i);
-		float a1 = step * static_cast<float>(i + 1);
-		float ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
-		float ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
-		float ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
-		float ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
+		f32 a0 = step * static_cast<float>(i);
+		f32 a1 = step * static_cast<float>(i + 1);
+		f32 ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
+		f32 ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
+		f32 ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
+		f32 ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
 
 		AEGfxTriAdd(ox0, oy0, 0xFF2699FF, 0.f, 0.f,
 			ox1, oy1, 0xFF2699FF, 1.f, 0.f,
@@ -482,8 +484,8 @@ void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
 	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
 
 	AEGfxMeshStart();
-	float u0 = anim.u0(), u1 = anim.u1();
-	float v0 = anim.v0(), v1 = anim.v1();
+	f32 u0 = anim.u0(), u1 = anim.u1();
+	f32 v0 = anim.v0(), v1 = anim.v1();
 	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, u0, v1,
 		0.5f, -0.5f, 0xFFFFFFFF, u1, v1,
 		-0.5f, 0.5f, 0xFFFFFFFF, u0, v0);
@@ -654,10 +656,10 @@ void render_tooltip(s8 font) {
 // ---------------------------------------------------------------------------- 
 void render_boss_projectiles(const BossProjectileManager& manager)
 {
-	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
-	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
-	const int SEGS = 32;
-	const float step = 2.f * PI / static_cast<float>(SEGS);
+	const f32 outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
+	const f32 inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
+	const s32 SEGS = 32;
+	const f32 step = 2.f * PI / static_cast<float>(SEGS);
 
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
@@ -669,14 +671,14 @@ void render_boss_projectiles(const BossProjectileManager& manager)
 	{
 		if (!p.in_use) continue;
 		AEGfxMeshStart();
-		for (int i = 0; i < SEGS; ++i)
+		for (s32 i = 0; i < SEGS; ++i)
 		{
-			float a0 = step * static_cast<float>(i);
-			float a1 = step * static_cast<float>(i + 1);
-			float ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
-			float ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
-			float ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
-			float ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
+			f32 a0 = step * static_cast<float>(i);
+			f32 a1 = step * static_cast<float>(i + 1);
+			f32 ox0 = cosf(a0) * outer_r, oy0 = sinf(a0) * outer_r;
+			f32 ox1 = cosf(a1) * outer_r, oy1 = sinf(a1) * outer_r;
+			f32 ix0 = cosf(a0) * inner_r, iy0 = sinf(a0) * inner_r;
+			f32 ix1 = cosf(a1) * inner_r, iy1 = sinf(a1) * inner_r;
 			AEGfxTriAdd(ox0, oy0, 0xFF2699FF, 0.f, 0.f, ox1, oy1, 0xFF2699FF, 1.f, 0.f, ix0, iy0, 0xFF2699FF, 0.f, 1.f);
 			AEGfxTriAdd(ox1, oy1, 0xFF2699FF, 1.f, 0.f, ix1, iy1, 0xFF2699FF, 1.f, 1.f, ix0, iy0, 0xFF2699FF, 0.f, 1.f);
 		}

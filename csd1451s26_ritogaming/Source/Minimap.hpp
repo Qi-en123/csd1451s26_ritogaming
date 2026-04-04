@@ -1,15 +1,14 @@
-#pragma once
-
 /*!************************************************************************
-\file:                          minimap.hpp
-\author:                        Ahmad Qusyairi Bin Mohammad Jinna
-\par DP email:                  ahmadqusyairi.b@digipen.edu
+\file:          minimap.hpp
+\author:        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:  ahmadqusyairi.b@digipen.edu
 
-\brief:                         Declarations for the HUD minimap system.
-                                Handles coordinate transformation from world
-                                space to UI space and renders a scaled
-                                representation of the dungeon and entities.
+\brief:         Declarations for the HUD minimap system. Handles coordinate
+                transformation from world space to UI space and renders a
+                scaled representation of the dungeon and entities.
 **************************************************************************/
+
+#pragma once
 
 #include "renderer.hpp"
 #include "map.hpp"

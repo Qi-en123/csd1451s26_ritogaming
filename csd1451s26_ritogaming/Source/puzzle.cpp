@@ -2,11 +2,13 @@
 \file:			puzzle.cpp
 \author:		Jerod
 \par DP email:	jerodyaowei.lim@digipen.edu
+
 \brief:			This file contains all puzzle related functions. E.g load
 				puzzle data from text file, render puzzles, puzzle collision,
 				move/drag puzzle etc. More detailed function briefs in
 				puzzle.hpp
 **************************************************************************/
+
 #include "puzzle.hpp"
 #include "AEEngine.h"
 #include "renderer.hpp"
@@ -146,7 +148,6 @@ namespace {
 		//Write buttons to text
 		for (const Puzzle::puzzle& p : puzzles) {
 			if (p.type == Puzzle::BUTTON_UP || p.type == Puzzle::BUTTON_DOWN) {
-				//I need a world to grid helper fnc to conver pos.x to rows etc.
 				ofs << "BUTTON\t "
 					<< convert_to_row(p.posy) << ' '
 					<< convert_to_col(p.posx) << ' '
@@ -279,12 +280,13 @@ namespace Puzzle {
 	// Spike : Button pairing functions
 	// ------------------------------------------------------------------------
 	void pair_spike_to_button(s32 row, s32 col, buttonTrigger& bt) {
+		// Links a spike tile to a button trigger if not already paired
 		if (!spike_is_paired(row, col, bt)) {
 			bt.coords.push_back({ row,col });
 		}
 	}
 	void remove_spike_button_pair(s32 row, s32 col, buttonTrigger& bt) {
-
+		// Removes a spike tile from a button trigger's paired coords
 		bt.coords.erase(
 			std::remove_if(bt.coords.begin(), bt.coords.end(),
 				[row, col](const std::pair<int, int>& c) {
@@ -294,7 +296,7 @@ namespace Puzzle {
 		);
 	}
 	bool spike_is_paired(s32 row, s32 col, buttonTrigger const& bt) {
-
+		// Returns true if the spike tile is already paired to the button trigger
 		for (std::pair<int, int> const& c : bt.coords) {
 			if (c.first == row && c.second == col) {
 				return true;
@@ -352,7 +354,6 @@ namespace Puzzle {
 		out_filename = filename; // return the filename used
 
 		//filename now represents next available level
-		//std::cout << filename << '\n';
 		std::ofstream ofs{ filename };
 		if (!ofs)
 		{
@@ -370,8 +371,6 @@ namespace Puzzle {
 
 	bool load_puzzle_blocks_to_editor(char const* filename, PuzzleType** puzzle_editor_map,
 		std::vector<puzzle>& puzzles, std::vector<buttonTrigger>& bt) {
-
-		//nid to write to plemap
 
 		std::ifstream ifs{ filename };
 		if (!ifs.is_open()) {
@@ -493,7 +492,7 @@ namespace Puzzle {
 	void load_puzzle_textures() {
 		char filename[128];
 		for (int i{}; i < PUZZLE_TYPE_COUNT; ++i) {
-
+			//puzzle textures start from tile_100x onwards
 			sprintf_s(filename, "Assets/Sprites/Tiles/tile_1%03d.png", i);
 			puzzle_block_textures[i] = AEGfxTextureLoad(filename);
 
@@ -618,7 +617,7 @@ namespace Puzzle {
 
 			color clr{ white };
 
-			//for now, only pushables have elements
+			//Tint/Highlight pushables with corresponding element color
 			if (curr.type == PUSHABLE) {
 				switch (curr.element)
 				{
@@ -734,6 +733,7 @@ namespace Puzzle {
 
 		f32 dx{}, dy{};
 
+		//Moves puzzle based on direction player is moving
 		switch (direction)
 		{
 		case LEFT:
@@ -808,6 +808,7 @@ namespace Puzzle {
 			const f32 move_dist_sq = (newX - puzzle.posx) * (newX - puzzle.posx) +
 				(newY - puzzle.posy) * (newY - puzzle.posy);
 
+			//Stops puzzle from being dragged through collidables
 			if (!puzzle_to_wall_collision(newX, newY) &&
 				!puzzle_collide_puzzles(index, newX, newY)) {
 				puzzle.posx = newX;

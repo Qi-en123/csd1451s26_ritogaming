@@ -1,8 +1,20 @@
+/*!************************************************************************
+\file:                      end_screen.cpp
+\author:                    Goh Qi En
+\par DP email:              g.qien@digipen.edu
+\co-author:					Jerod Lim
+\par co-author DP email:	jerodyaowei.lim@digipen.edu
+
+\brief:     End screen utilities for pause, win, and lose states. Handles
+            screen rendering and transitions for game over and completion
+            events.
+**************************************************************************/
+
 #pragma once
 
 extern bool is_win;
 extern bool is_paused;
-extern int restart_level_state;
+extern s32 restart_level_state;
 
 // ----------------------------------------------------------------------------
 //

@@ -2,6 +2,7 @@
 \file           levels.cpp
 \author         Goh Qi En
 \par DP email:  g.qien@digipen.edu
+
 \brief          Defines the load/init/update/draw/free/unload cycle for
                 the level select screen. Features a scrollable grid of
                 levels (default + saved files), with play, edit, and
@@ -44,47 +45,47 @@ namespace
         std::string tex_confirm_yes;
         std::string tex_confirm_no;
         std::string font_path;
-        int         font_size;
+        s32         font_size;
         std::string tile_sprites_dir;
 
         // Grid layout
-        int   grid_cols;
-        int   grid_rows_visible;
-        float cell_width;
-        float cell_height;
-        float cell_gap_x;
-        float cell_gap_y;
-        float grid_start_y;
+        s32   grid_cols;
+        s32   grid_rows_visible;
+        f32 cell_width;
+        f32 cell_height;
+        f32 cell_gap_x;
+        f32 cell_gap_y;
+        f32 grid_start_y;
 
         // Scrollbar
-        float scrollbar_x;
-        float scrollbar_top;
-        float scrollbar_bot;
-        float scrollbar_track_w;
+        f32 scrollbar_x;
+        f32 scrollbar_top;
+        f32 scrollbar_bot;
+        f32 scrollbar_track_w;
 
         // Background
-        float bg_color_r;
-        float bg_color_g;
-        float bg_color_b;
-        float bg_tile_step;
+        f32 bg_color_r;
+        f32 bg_color_g;
+        f32 bg_color_b;
+        f32 bg_tile_step;
 
         // Navigation buttons
-        float back_btn_x, back_btn_y, back_btn_w, back_btn_h;
-        float editor_btn_x, editor_btn_y, editor_btn_w, editor_btn_h;
+        f32 back_btn_x, back_btn_y, back_btn_w, back_btn_h;
+        f32 editor_btn_x, editor_btn_y, editor_btn_w, editor_btn_h;
 
         // Map preview tooltip
-        float preview_w;
-        float preview_h;
+        f32 preview_w;
+        f32 preview_h;
 
         // Scroll
-        float scroll_lerp_speed;
+        f32 scroll_lerp_speed;
 
         // Misc
-        int default_level_count;
+        s32 default_level_count;
 
         // Derived — computed after loading
-        float grid_start_x;
-        float scrollbar_height;
+        f32 grid_start_x;
+        f32 scrollbar_height;
     };
 
     // ---------------------------------------------------------------------------
@@ -117,17 +118,17 @@ namespace
     std::vector<LevelEntry> levels;
     std::vector<LevelEntry> puzzles;
 
-    int   context_menu_idx = -1;
-    float delete_msg_timer = 0.f;
+    s32   context_menu_idx = -1;
+    f32 delete_msg_timer = 0.f;
     bool  show_delete_confirm = false;
-    int   pending_delete_idx = -1;
+    s32   pending_delete_idx = -1;
 
-    float scroll_row_f = 0.f;
-    float scroll_target = 0.f;
-    int   scroll_row = 0;
+    f32 scroll_row_f = 0.f;
+    f32 scroll_target = 0.f;
+    s32   scroll_row = 0;
 
     s32 preview_map[TILE_ROWS][TILE_COLS]{};
-    int preview_idx = -1;
+    s32 preview_idx = -1;
 
     // screen 
     s32 half_screen_w;
@@ -254,7 +255,7 @@ static std::vector<std::string> scan_level_files(const char* pattern,
 // Used as the sort key when ordering the level list numerically.
 //
 // ----------------------------------------------------------------------------
-static int extract_level_num(const std::string& path)
+static s32 extract_level_num(const std::string& path)
 {
     size_t start = path.find("lvl") + 3;
     size_t end = path.find(".txt");
@@ -268,7 +269,7 @@ static int extract_level_num(const std::string& path)
 // Uses rfind to locate the last 'l' before "_puzzles" to handle prefixes correctly.
 //
 // ----------------------------------------------------------------------------
-static int extract_puzzle_num(const std::string& path)
+static s32 extract_puzzle_num(const std::string& path)
 {
     size_t end = path.find("_puzzles.txt");
     size_t start = path.rfind("l", end) + 1; // search backwards to avoid matching earlier 'l' characters
@@ -282,7 +283,7 @@ static int extract_puzzle_num(const std::string& path)
 // rounding up so the last partial row is still counted.
 //
 // ----------------------------------------------------------------------------
-static int total_rows()
+static s32 total_rows()
 {
     return ((int)levels.size() + cfg.grid_cols - 1) / cfg.grid_cols;
 }
@@ -294,9 +295,9 @@ static int total_rows()
 // past its last row of content.
 //
 // ----------------------------------------------------------------------------
-static int max_scroll()
+static s32 max_scroll()
 {
-    int m = total_rows() - cfg.grid_rows_visible;
+    s32 m = total_rows() - cfg.grid_rows_visible;
     return m < 0 ? 0 : m;
 }
 
@@ -339,7 +340,7 @@ static void build_level_list()
         [](const std::string& a, const std::string& b)
         { return extract_level_num(a) < extract_level_num(b); });
 
-    int level_num = 2;
+    s32 level_num = 2;
     for (const auto& path : level_paths_raw)
         levels.push_back({ "Level " + std::to_string(level_num++), path });
 
@@ -349,7 +350,7 @@ static void build_level_list()
         [](const std::string& a, const std::string& b)
         { return extract_puzzle_num(a) < extract_puzzle_num(b); });
 
-    int puzzle_num = 1;
+    s32 puzzle_num = 1;
     for (const auto& path : puzzle_paths_raw)
         puzzles.push_back({ "Puzzle " + std::to_string(puzzle_num++), path });
 }
@@ -421,16 +422,16 @@ void levels_update()
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
     // --- Button hover sound ---
-    static int last_hovered = -1;
-    int current_hovered = -1;
-    for (int row = 0; row < cfg.grid_rows_visible; ++row)
+    static s32 last_hovered = -1;
+    s32 current_hovered = -1;
+    for (s32 row = 0; row < cfg.grid_rows_visible; ++row)
     {
-        for (int col = 0; col < cfg.grid_cols; ++col)
+        for (s32 col = 0; col < cfg.grid_cols; ++col)
         {
-            int   idx = (scroll_row + row) * cfg.grid_cols + col;
+            s32   idx = (scroll_row + row) * cfg.grid_cols + col;
             if (idx >= (int)levels.size()) continue;
-            float cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
-            float cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
+            f32 cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
+            f32 cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
             if (IsButtonHovered(cx, cy, cfg.cell_width, cfg.cell_height))
             {
                 current_hovered = idx;
@@ -451,12 +452,12 @@ void levels_update()
     // Modal popup takes priority — all other input is blocked while it is open
     if (show_delete_confirm)
     {
-        int result = draw_confirm_popup(tex_panel, tex_confirm_yes, tex_confirm_no,
+        s32 result = draw_confirm_popup(tex_panel, tex_confirm_yes, tex_confirm_no,
             font, "Delete this level?", 0.9f);
 
         if (result == 1 && pending_delete_idx >= 0)
         {
-            int idx = pending_delete_idx;
+            s32 idx = pending_delete_idx;
             remove(levels[idx].path.c_str());
             remove(puzzles[idx].path.c_str());
 
@@ -503,13 +504,13 @@ void levels_update()
     {
         if (context_menu_idx >= 0 && context_menu_idx < (int)levels.size())
         {
-            int   idx = context_menu_idx;
-            int   col = idx % cfg.grid_cols;
-            int   row = (idx / cfg.grid_cols) - scroll_row;
-            float cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
-            float cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
+            s32   idx = context_menu_idx;
+            s32   col = idx % cfg.grid_cols;
+            s32   row = (idx / cfg.grid_cols) - scroll_row;
+            f32 cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
+            f32 cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
 
-            float edit_x = cx, edit_y = cy + cfg.cell_height * 0.15f;
+            f32 edit_x = cx, edit_y = cy + cfg.cell_height * 0.15f;
             if (IsButtonClicked(edit_x, edit_y, cfg.cell_width - 40.f, 50.f))
             {
                 play_sfx(g_audio.sfx_button_click, 0.1f);
@@ -520,7 +521,7 @@ void levels_update()
                 return;
             }
 
-            float del_x = cx, del_y = cy - cfg.cell_height * 0.25f;
+            f32 del_x = cx, del_y = cy - cfg.cell_height * 0.25f;
             if (IsButtonClicked(del_x, del_y, cfg.cell_width - 40.f, 50.f))
             {
                 play_sfx(g_audio.sfx_button_click, 0.1f);
@@ -533,15 +534,15 @@ void levels_update()
             context_menu_idx = -1; // clicked outside context menu — close it
         }
 
-        for (int row = 0; row < cfg.grid_rows_visible; ++row)
+        for (s32 row = 0; row < cfg.grid_rows_visible; ++row)
         {
-            for (int col = 0; col < cfg.grid_cols; ++col)
+            for (s32 col = 0; col < cfg.grid_cols; ++col)
             {
-                int   idx = (scroll_row + row) * cfg.grid_cols + col;
+                s32   idx = (scroll_row + row) * cfg.grid_cols + col;
                 if (idx >= (int)levels.size()) continue;
 
-                float cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
-                float cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
+                f32 cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
+                f32 cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
 
                 if (IsButtonClicked(cx, cy, cfg.cell_width, cfg.cell_height))
                 {
@@ -561,20 +562,20 @@ void levels_update()
     if (wheel < 0) scroll_target = scroll_target < (f32)max_scroll() ? scroll_target + 1.f : (f32)max_scroll();
 
     // --- Scrollbar drag ---
-    float sx = (float)mouse_x - half_screen_w;
-    float sy = -(float)mouse_y + half_screen_h;
+    f32 sx = (float)mouse_x - half_screen_w;
+    f32 sy = -(float)mouse_y + half_screen_h;
     bool on_bar = (sx >= cfg.scrollbar_x - cfg.scrollbar_track_w * 0.5f &&
         sx <= cfg.scrollbar_x + cfg.scrollbar_track_w * 0.5f &&
         sy <= cfg.scrollbar_top && sy >= cfg.scrollbar_bot);
 
     if (on_bar && AEInputCheckCurr(AEVK_LBUTTON))
     {
-        int ms = max_scroll();
+        s32 ms = max_scroll();
         if (ms > 0)
         {
             // Map the mouse Y position within the bar track to a scroll row target
-            float ratio = (cfg.scrollbar_top - sy) / cfg.scrollbar_height;
-            float raw_target = ratio * (float)ms;
+            f32 ratio = (cfg.scrollbar_top - sy) / cfg.scrollbar_height;
+            f32 raw_target = ratio * (float)ms;
             if (raw_target < 0.f)       scroll_target = 0.f;
             else if (raw_target > (float)ms) scroll_target = (float)ms;
             else                             scroll_target = raw_target;
@@ -590,20 +591,20 @@ void levels_update()
     // --- Right click: open/close context menu for custom levels ---
     if (AEInputCheckTriggered(AEVK_RBUTTON))
     {
-        float mx = (float)mouse_x - half_screen_w;
-        float my = -(float)mouse_y + half_screen_h;
+        f32 mx = (float)mouse_x - half_screen_w;
+        f32 my = -(float)mouse_y + half_screen_h;
         bool  clicked_any = false;
 
-        for (int row = 0; row < cfg.grid_rows_visible; ++row)
+        for (s32 row = 0; row < cfg.grid_rows_visible; ++row)
         {
-            for (int col = 0; col < cfg.grid_cols; ++col)
+            for (s32 col = 0; col < cfg.grid_cols; ++col)
             {
-                int idx = (scroll_row + row) * cfg.grid_cols + col;
+                s32 idx = (scroll_row + row) * cfg.grid_cols + col;
                 if (idx >= (int)levels.size())     continue;
                 if (idx < cfg.default_level_count) continue; // built-in levels cannot be edited/deleted
 
-                float cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
-                float cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
+                f32 cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
+                f32 cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
 
                 bool in_cell = (mx >= cx - cfg.cell_width * 0.5f && mx <= cx + cfg.cell_width * 0.5f &&
                     my >= cy - cfg.cell_height * 0.5f && my <= cy + cfg.cell_height * 0.5f);
@@ -631,8 +632,8 @@ void levels_draw()
     // --- Tiled background ---
     if (tex_bg_wall)
     {
-        for (float x = -half_screen_w; x <= half_screen_w; x += cfg.bg_tile_step)
-            for (float y = -450.f; y <= 450.f; y += cfg.bg_tile_step)
+        for (f32 x = -half_screen_w; x <= half_screen_w; x += cfg.bg_tile_step)
+            for (f32 y = -450.f; y <= 450.f; y += cfg.bg_tile_step)
                 render_editor_ui(tex_bg_wall, cfg.bg_tile_step, cfg.bg_tile_step, 0.3f, x, y);
     }
 
@@ -640,19 +641,19 @@ void levels_draw()
     if (font != -1)
     {
         const char* title = "-- SELECT LEVEL --";
-        float tw = 0.f, th = 0.f;
+        f32 tw = 0.f, th = 0.f;
         AEGfxGetPrintSize(font, title, 1.2f, &tw, &th);
         AEGfxPrint(font, title, -tw * 0.5f, 0.9f, 1.2f, 0.9f, 0.8f, 0.3f, 1.f);
     }
 
     // --- Level grid ---
-    for (int row = 0; row < cfg.grid_rows_visible; ++row)
+    for (s32 row = 0; row < cfg.grid_rows_visible; ++row)
     {
-        for (int col = 0; col < cfg.grid_cols; ++col)
+        for (s32 col = 0; col < cfg.grid_cols; ++col)
         {
-            int   idx = (scroll_row + row) * cfg.grid_cols + col;
-            float cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
-            float cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
+            s32   idx = (scroll_row + row) * cfg.grid_cols + col;
+            f32 cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
+            f32 cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
 
             if (idx >= (int)levels.size())
             {
@@ -672,7 +673,7 @@ void levels_draw()
 
                 if (font != -1)
                 {
-                    float name_tw = 0.f, name_th = 0.f;
+                    f32 name_tw = 0.f, name_th = 0.f;
                     AEGfxGetPrintSize(font, levels[idx].name.c_str(), 1.f, &name_tw, &name_th);
                     AEGfxPrint(font, levels[idx].name.c_str(),
                         (cx / half_screen_w) - name_tw * 0.5f, (cy - 10.f) / half_screen_h,
@@ -681,13 +682,13 @@ void levels_draw()
                     if (idx >= cfg.default_level_count)
                     {
                         // Custom level badge and right-click hint
-                        float custom_tw = 0.f, custom_th = 0.f;
+                        f32 custom_tw = 0.f, custom_th = 0.f;
                         AEGfxGetPrintSize(font, "[Custom]", 0.7f, &custom_tw, &custom_th);
                         AEGfxPrint(font, "[Custom]",
                             (cx / half_screen_w) - custom_tw * 0.5f, (cy - 40.f) / half_screen_h,
                             0.7f, 0.5f, 0.9f, 0.5f, 1.f);
 
-                        float hint_tw = 0.f, hint_th = 0.f;
+                        f32 hint_tw = 0.f, hint_th = 0.f;
                         AEGfxGetPrintSize(font, "[RMB]", 0.5f, &hint_tw, &hint_th);
                         AEGfxPrint(font, "[RMB]",
                             (cx / half_screen_w) - hint_tw * 0.5f, (cy - 58.f) / half_screen_h,
@@ -703,27 +704,27 @@ void levels_draw()
 
                 if (font != -1)
                 {
-                    float edit_x = cx, edit_y = cy + cfg.cell_height * 0.15f;
+                    f32 edit_x = cx, edit_y = cy + cfg.cell_height * 0.15f;
                     bool  edit_h = !show_delete_confirm &&
                         IsButtonHovered(edit_x, edit_y, cfg.cell_width * 0.8f, cfg.cell_height * 0.3f);
                     if (tex_button_edit)
                         render_editor_ui(tex_button_edit, cfg.cell_width * 0.8f, cfg.cell_height * 0.3f,
                             edit_h ? 1.f : 0.7f, edit_x, edit_y);
 
-                    float edit_tw = 0.f, edit_th = 0.f;
+                    f32 edit_tw = 0.f, edit_th = 0.f;
                     AEGfxGetPrintSize(font, "Edit", 0.9f, &edit_tw, &edit_th);
                     AEGfxPrint(font, "Edit",
                         (edit_x / half_screen_w) - edit_tw * 0.5f, (edit_y - 10.f) / half_screen_h,
                         0.9f, 0.f, 0.f, 0.f, 1.f);
 
-                    float del_x = cx, del_y = cy - cfg.cell_height * 0.20f;
+                    f32 del_x = cx, del_y = cy - cfg.cell_height * 0.20f;
                     bool  del_h = !show_delete_confirm &&
                         IsButtonHovered(del_x, del_y, cfg.cell_width * 0.8f, cfg.cell_height * 0.3f);
                     if (tex_button_edit)
                         render_editor_ui(tex_button_edit, cfg.cell_width * 0.8f, cfg.cell_height * 0.3f,
                             del_h ? 1.f : 0.7f, del_x, del_y);
 
-                    float del_tw = 0.f, del_th = 0.f;
+                    f32 del_tw = 0.f, del_th = 0.f;
                     AEGfxGetPrintSize(font, "Delete", 0.9f, &del_tw, &del_th);
                     AEGfxPrint(font, "Delete",
                         (del_x / half_screen_w) - del_tw * 0.5f, (del_y - 10.f) / half_screen_h,
@@ -736,16 +737,16 @@ void levels_draw()
     // --- Scrollbar ---
     if (total_rows() > cfg.grid_rows_visible)
     {
-        float bar_center_y = (cfg.scrollbar_top + cfg.scrollbar_bot) * 0.5f;
+        f32 bar_center_y = (cfg.scrollbar_top + cfg.scrollbar_bot) * 0.5f;
         if (tex_scroll_bar)
             render_editor_ui(tex_scroll_bar, cfg.scrollbar_track_w, cfg.scrollbar_height,
                 0.4f, cfg.scrollbar_x, bar_center_y);
 
         // Thumb height is proportional to visible rows vs total rows
-        int   ms = max_scroll();
-        float thumb_h = cfg.scrollbar_height * ((float)cfg.grid_rows_visible / (float)total_rows());
-        float thumb_ratio = (ms > 0) ? scroll_row_f / (float)ms : 0.f;
-        float thumb_cy = cfg.scrollbar_top - thumb_h * 0.5f - thumb_ratio * (cfg.scrollbar_height - thumb_h);
+        s32   ms = max_scroll();
+        f32 thumb_h = cfg.scrollbar_height * ((float)cfg.grid_rows_visible / (float)total_rows());
+        f32 thumb_ratio = (ms > 0) ? scroll_row_f / (float)ms : 0.f;
+        f32 thumb_cy = cfg.scrollbar_top - thumb_h * 0.5f - thumb_ratio * (cfg.scrollbar_height - thumb_h);
 
         if (tex_scroll_bar)
             render_editor_ui(tex_scroll_bar, cfg.scrollbar_track_w, thumb_h, 1.f, cfg.scrollbar_x, thumb_cy);
@@ -760,7 +761,7 @@ void levels_draw()
 
     if (font != -1)
     {
-        float back_tw = 0.f, back_th = 0.f;
+        f32 back_tw = 0.f, back_th = 0.f;
         AEGfxGetPrintSize(font, "Back", 0.8f, &back_tw, &back_th);
         AEGfxPrint(font, "Back",
             (cfg.back_btn_x / half_screen_w) - back_tw * 0.5f, (cfg.back_btn_y - 10.f) / half_screen_h,
@@ -776,7 +777,7 @@ void levels_draw()
 
     if (font != -1)
     {
-        float editor_tw = 0.f, editor_th = 0.f;
+        f32 editor_tw = 0.f, editor_th = 0.f;
         AEGfxGetPrintSize(font, "Editor", 0.8f, &editor_tw, &editor_th);
         AEGfxPrint(font, "Editor",
             (cfg.editor_btn_x / half_screen_w) - editor_tw * 0.5f, (cfg.editor_btn_y - 10.f) / half_screen_h,
@@ -787,9 +788,9 @@ void levels_draw()
     if (delete_msg_timer > 0.f && font != -1)
     {
         // Fade out during the last 0.5 seconds of the timer
-        float toast_alpha = delete_msg_timer > 0.5f ? 1.f : delete_msg_timer / 0.5f;
+        f32 toast_alpha = delete_msg_timer > 0.5f ? 1.f : delete_msg_timer / 0.5f;
         const char* msg = "Level deleted!";
-        float msg_tw = 0.f, msg_th = 0.f;
+        f32 msg_tw = 0.f, msg_th = 0.f;
         AEGfxGetPrintSize(font, msg, 1.f, &msg_tw, &msg_th);
         render_editor_ui(tex_button, 400.f, 80.f, 0.9f, 0.f, 0.f);
         AEGfxPrint(font, msg, -msg_tw * 0.5f, -0.05f, 1.f, 1.f, 0.3f, 0.3f, toast_alpha);
@@ -798,15 +799,15 @@ void levels_draw()
     // --- Map preview tooltip on hover ---
     if (!show_delete_confirm)
     {
-        for (int row = 0; row < cfg.grid_rows_visible; ++row)
+        for (s32 row = 0; row < cfg.grid_rows_visible; ++row)
         {
-            for (int col = 0; col < cfg.grid_cols; ++col)
+            for (s32 col = 0; col < cfg.grid_cols; ++col)
             {
-                int   idx = (scroll_row + row) * cfg.grid_cols + col;
+                s32   idx = (scroll_row + row) * cfg.grid_cols + col;
                 if (idx >= (int)levels.size()) continue;
 
-                float cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
-                float cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
+                f32 cx = cfg.grid_start_x + col * (cfg.cell_width + cfg.cell_gap_x);
+                f32 cy = cfg.grid_start_y - row * (cfg.cell_height + cfg.cell_gap_y);
 
                 if (!IsButtonHovered(cx, cy, cfg.cell_width, cfg.cell_height)) continue;
                 if (context_menu_idx == idx) break;
@@ -815,16 +816,16 @@ void levels_draw()
                 if (preview_idx != idx)
                 {
                     preview_idx = idx;
-                    for (int r = 0; r < TILE_ROWS; ++r)
-                        for (int c = 0; c < TILE_COLS; ++c)
+                    for (s32 r = 0; r < TILE_ROWS; ++r)
+                        for (s32 c = 0; c < TILE_COLS; ++c)
                             preview_map[r][c] = 0;
 
                     load_map_from_file(levels[idx].path.c_str(), preview_map);
                 }
 
-                float wx = (float)mouse_x - half_screen_w, wy = -(float)mouse_y + half_screen_h;
-                float px = wx - cfg.preview_w * 0.5f - 10.f;
-                float py = wy - cfg.preview_h * 0.5f - 10.f;
+                f32 wx = (float)mouse_x - half_screen_w, wy = -(float)mouse_y + half_screen_h;
+                f32 px = wx - cfg.preview_w * 0.5f - 10.f;
+                f32 py = wy - cfg.preview_h * 0.5f - 10.f;
 
                 if (tex_button)
                     render_editor_ui(tex_button, cfg.preview_w + 16.f, cfg.preview_h + 16.f, 0.95f, px, py);
@@ -833,7 +834,7 @@ void levels_draw()
 
                 if (font != -1)
                 {
-                    float label_tw = 0.f, label_th = 0.f;
+                    f32 label_tw = 0.f, label_th = 0.f;
                     AEGfxGetPrintSize(font, levels[idx].name.c_str(), 0.8f, &label_tw, &label_th);
                     AEGfxPrint(font, levels[idx].name.c_str(),
                         (px / half_screen_w) - label_tw * 0.5f, (py + cfg.preview_h * 0.5f + 25.f) / half_screen_h,
@@ -851,7 +852,7 @@ void levels_draw()
     // --- Custom cursor ---
     if (tex_cursor)
     {
-        float wx = (float)mouse_x - half_screen_w, wy = -(float)mouse_y + half_screen_h;
+        f32 wx = (float)mouse_x - half_screen_w, wy = -(float)mouse_y + half_screen_h;
         render_editor_ui(tex_cursor, 50.f, 50.f, 1.f, wx + 25.f, wy - 25.f);
     }
 }

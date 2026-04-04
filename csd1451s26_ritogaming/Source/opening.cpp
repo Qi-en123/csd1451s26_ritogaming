@@ -1,10 +1,11 @@
 /*!************************************************************************
-\file:						opening.cpp
-\author:					Goh Qi En
-\par DP email:				g.qien@digipen.edu
-\brief:						Defines the load/init/update/draw/free/unload cycle for the
-                            opening logo screen, including fade-in and fade-out effects.
-                            Timing and display values are driven by opening_config.txt.
+\file:			opening.cpp
+\author:		Goh Qi En
+\par DP email:	g.qien@digipen.edu
+
+\brief:			Defines the load/init/update/draw/free/unload cycle for the
+                opening logo screen, including fade-in and fade-out effects.
+                Timing and display values are driven by opening_config.txt.
 **************************************************************************/
 
 #include "opening.hpp"
@@ -28,17 +29,17 @@ namespace
     struct OpeningConfig
     {
         std::string logo_path;
-        float       logo_width;
-        float       logo_height;
-        float       fade_in_duration;   // seconds logo fades in
-        float       hold_duration;      // seconds logo stays fully visible
-        float       fade_out_duration;  // seconds logo fades out
+        f32       logo_width;
+        f32       logo_height;
+        f32       fade_in_duration;   // seconds logo fades in
+        f32       hold_duration;      // seconds logo stays fully visible
+        f32       fade_out_duration;  // seconds logo fades out
     };
 
     OpeningConfig   config = {};        // Stores parameters loaded from file
     AEGfxTexture* logo_tex = nullptr; // Texture pointer for the logo image
-    float           elapsed = 0.f;      // Timer to track state duration
-    float           alpha = 0.f;        // Current transparency of the logo
+    f32           elapsed = 0.f;      // Timer to track state duration
+    f32           alpha = 0.f;        // Current transparency of the logo
 }
 
 // ----------------------------------------------------------------------------
@@ -48,11 +49,11 @@ namespace
 // relative to the configured fade-in, hold, and fade-out durations.
 //
 // ----------------------------------------------------------------------------
-static float compute_fade_alpha(float elapsed, const OpeningConfig& cfg)
+static f32 compute_fade_alpha(f32 elapsed, const OpeningConfig& cfg)
 {
-    const float fade_in_end = cfg.fade_in_duration;
-    const float hold_end = fade_in_end + cfg.hold_duration;
-    const float sequence_end = hold_end + cfg.fade_out_duration;
+    const f32 fade_in_end = cfg.fade_in_duration;
+    const f32 hold_end = fade_in_end + cfg.hold_duration;
+    const f32 sequence_end = hold_end + cfg.fade_out_duration;
 
     // Fade-in Phase
     if (elapsed < fade_in_end)
@@ -75,7 +76,7 @@ static float compute_fade_alpha(float elapsed, const OpeningConfig& cfg)
 // Returns the total time the opening screen should run.
 //
 // ----------------------------------------------------------------------------
-static float total_sequence_duration(const OpeningConfig& cfg)
+static f32 total_sequence_duration(const OpeningConfig& cfg)
 {
     return cfg.fade_in_duration + cfg.hold_duration + cfg.fade_out_duration;
 }

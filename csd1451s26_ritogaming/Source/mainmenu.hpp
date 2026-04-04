@@ -2,10 +2,12 @@
 \file:          mainmenu.hpp
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
+
 \brief:         This file declares the 6 cycle functions that load,
                 initialize, update, draw, free, and unload the main menu
                 game state.
 **************************************************************************/
+
 #pragma once
 
 // ----------------------------------------------------------------------------

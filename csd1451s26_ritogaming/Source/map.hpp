@@ -2,9 +2,11 @@
 \file:          map.hpp
 \author:        Goh Qi En
 \par DP email:  g.qien@digipen.edu
+
 \brief:         This header declares dungeon map rendering, coordinate
                 conversion, and file I/O initialization functions.
 **************************************************************************/
+
 #pragma once
 #include "AEEngine.h"
 #include <string>
@@ -26,7 +28,7 @@ constexpr f32 tile_size = 64.0f;    // The width/height of a single square tile
 // ----------------------------------------------------------------------------
 enum TILE_ID
 {
-    EMPTY,
+    EMPTY, //0
     WALL,
     FLOOR,
     KNIGHT,
@@ -34,7 +36,7 @@ enum TILE_ID
     TOMB,
     TREE,
     OPENED_DOOR,
-    DOOR,
+    DOOR, //8
 };
 
 // ----------------------------------------------------------------------------

@@ -1,11 +1,11 @@
 /*!************************************************************************
-\file:                          collision.cpp
-\author:                        Ahmad Qusyairi Bin Mohammad Jinna
-\par DP email:                  ahmadqusyairi.b@digipen.edu
-\brief:                         Implementation of collision detection for
-                                tile-based maps. Includes wall generation
-                                from a map, AABB, Circle-to-Circle, and
-                                Circle-to-AABB collision checks.
+\file:          collision.cpp
+\author:        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:  ahmadqusyairi.b@digipen.edu
+
+\brief:         Implementation of collision detection fortile-based
+                maps. Includes wall generationfrom a map, AABB,
+                Circle-to-Circle, and Circle-to-AABB collision checks.
 **************************************************************************/
 
 #include "collision.hpp"
@@ -31,7 +31,7 @@ bool door_triggered = false;
 // respective tile positions and stored in the global g_walls vector.
 //
 // ---------------------------------------------------------------------------- 
-void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
+void generate_walls_from_map(s32 tile_grid[TILE_ROWS][TILE_COLS])
 {
     g_walls.clear();
 
@@ -49,7 +49,7 @@ void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size)
             // MATCHING map.cpp: Use the exact same X calculation
             f32 x = startX + col * tile_size + tile_size * 0.5f;
 
-            if (map[row][col] == WALL || map[row][col] == EMPTY)
+            if (tile_grid[row][col] == WALL || tile_grid[row][col] == EMPTY)
             {
                 Wall w;
                 w.x = x;
@@ -256,7 +256,7 @@ void check_and_open_doors(Player* player)
 
     bool near_door = false;
 
-    int door_row = -1, door_col = -1;
+    s32 door_row = -1, door_col = -1;
     if (world_to_tile(px, py, door_row, door_col))
     {
         if (map[door_row][door_col] == OPENED_DOOR)
@@ -269,9 +269,9 @@ void check_and_open_doors(Player* player)
         {
             door_triggered = true;
 
-            int found_index = -1;
-            int num_levels = (int)level_paths.size();
-            for (int i = 0; i < num_levels; ++i)
+            s32 found_index = -1;
+            s32 num_levels = (s32)level_paths.size();
+            for (s32 i = 0; i < num_levels; ++i)
             {
                 if (level_paths[i] == selected_level_path)
                 {
@@ -280,14 +280,14 @@ void check_and_open_doors(Player* player)
                 }
             }
 
-            int next_index = found_index + 1;
+            s32 next_index = found_index + 1;
             while (next_index < num_levels && level_paths[next_index].empty())
                 next_index++;
 
             if (found_index != -1 && next_index < num_levels)
             {
                 selected_level_path = level_paths[next_index];
-                if (next_index < (int)level_puzzle_paths.size())
+                if (next_index < (s32)level_puzzle_paths.size())
                     selected_level_puzzle_path = level_puzzle_paths[next_index];
                 trigger_level_transition(GS_RESTART);
             }

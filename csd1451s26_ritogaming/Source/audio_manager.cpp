@@ -1,11 +1,11 @@
 /*!************************************************************************
-\file:						audio_manager.cpp
-\author:					Ahmad Qusyairi Bin Mohammad Jinna
-\par DP email:				ahmadqusyairi.b@digipen.edu
+\file:			audio_manager.cpp
+\author:		Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:	ahmadqusyairi.b@digipen.edu
 
-\brief:						Implementation of the audio management system
-                            using the Alpha Engine audio API. Handles
-                            loading, grouping, and playback of BGM and SFX
+\brief:			Implementation of the audio management system using the
+                Alpha Engine audio API. Handles loading, grouping, and
+                playback of BGM and SFX
 
 **************************************************************************/
 #include "audio_manager.hpp"
@@ -120,7 +120,7 @@ void audio_free()
 // specified audio track, looping it indefinitely.
 //
 // ---------------------------------------------------------------------------- 
-void play_bgm(AEAudio audio, float volume, float pitch, int loop)
+void play_bgm(AEAudio audio, f32 volume, f32 pitch, s32 loop)
 {
     AEAudioStopGroup(g_audio.bgm_group); // stop any current BGM first
     AEAudioPlay(audio, g_audio.bgm_group, volume, pitch, loop); // 0.07, 1.0, -1 = loop forever
@@ -166,7 +166,7 @@ void resume_bgm()
 // volume, pitch, and loop count.
 //
 // ---------------------------------------------------------------------------- 
-void play_sfx(AEAudio audio, float volume, float pitch, int loop)
+void play_sfx(AEAudio audio, f32 volume, f32 pitch, s32 loop)
 {
     AEAudioPlay(audio, g_audio.sfx_group, volume, pitch, loop);
 }
@@ -182,7 +182,7 @@ void stop_sfx()
     AEAudioStopGroup(g_audio.sfx_group);
 }
 
-void play_sfx_loop(AEAudio audio, float volume, float pitch)
+void play_sfx_loop(AEAudio audio, f32 volume, f32 pitch)
 {
     AEAudioPlay(audio, g_audio.sfx_loop_group, volume, pitch, -1);
 }

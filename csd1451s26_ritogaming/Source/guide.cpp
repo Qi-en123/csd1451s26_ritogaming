@@ -2,6 +2,7 @@
 \file:			guide.cpp
 \author:		Jerod lim
 \par DP email:	jerodyaowei.lim@digipen.edu
+
 \brief:			This source file implements functions for the Guide/Tutorial
 				level. The level data is retrieved from text files. Guide
 				texts along the levels are set in this file.
@@ -94,7 +95,7 @@ namespace
 	{
 		if (next == GS_RESTART) return;
 
-		int playerRow, playerCol;
+		s32 playerRow, playerCol;
 		if (!world_to_tile(player->current_player->x, player->current_player->y, playerRow, playerCol))
 			return;
 
@@ -112,6 +113,9 @@ namespace
 	}
 }
 
+// ----------------------------------------------------------------------------
+// Function: guide_load
+// ---------------------------------------------------------------------------- 
 void guide_load() {
 	end_screen_load();
 	if (!load_tile_textures("Assets/Sprites/Tiles"))
@@ -131,6 +135,9 @@ void guide_load() {
 	if (tooltip_font == -1) return;
 }
 
+// ----------------------------------------------------------------------------
+// Function: guide_init
+// ---------------------------------------------------------------------------- 
 void guide_init() {
 	//Disable cursor
 	AEInputShowCursor(false);
@@ -157,7 +164,7 @@ void guide_init() {
 	//Load tutorial levels
 	load_map_from_file(selected_level_path.c_str(), map);
 	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
-	generate_walls_from_map(map, tile_size);
+	generate_walls_from_map(map);
 
 	//Initialize & spawn player/characters
 	player_instance.stats.character_size = tile_size - 8.0f; //(consider moving to player system init)
@@ -178,6 +185,9 @@ void guide_init() {
 	cleared_guide = false;
 }
 
+// ----------------------------------------------------------------------------
+// Function: guide_update
+// ---------------------------------------------------------------------------- 
 void guide_update() {
 	//Get mouse position
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
@@ -218,22 +228,40 @@ void guide_update() {
 		restart_level_state = GS_LEVEL1;
 		next = GS_LOSE;
 	}
+
+	// Debug Toggles
+	if (AEInputCheckTriggered(AEVK_F1)) {
+		DEBUG::DEBUGGING ^= 1;
+		s32 val = DEBUG::DEBUGGING;
+		DEBUG::DRAW_WALLS = DEBUG::DRAW_PLAYER_TILE = DEBUG::DRAW_PUZZLE_GRAB_RANGE =
+			DEBUG::DRAW_PUZZLE_BLOCKS = DEBUG::DRAW_BUTTON_SPIKE_LINKS = DEBUG::DRAW_ENEMIES = val;
+	}
+
+	if (DEBUG::DEBUGGING) {
+		if (AEInputCheckTriggered(AEVK_F2)) DEBUG::DRAW_WALLS ^= 1;
+		if (AEInputCheckTriggered(AEVK_F3)) DEBUG::DRAW_PLAYER_TILE ^= 1;
+		if (AEInputCheckTriggered(AEVK_F4)) DEBUG::DRAW_PUZZLE_GRAB_RANGE ^= 1;
+		if (AEInputCheckTriggered(AEVK_F5)) DEBUG::DRAW_PUZZLE_BLOCKS ^= 1;
+		if (AEInputCheckTriggered(AEVK_F6)) DEBUG::DRAW_BUTTON_SPIKE_LINKS ^= 1;
+		if (AEInputCheckTriggered(AEVK_F7)) DEBUG::DRAW_ENEMIES ^= 1;
+	}
 }
 
+// ----------------------------------------------------------------------------
+// Function: guide_draw
+// ---------------------------------------------------------------------------- 
 void guide_draw() {
 	AEGfxReset();
 
 	//Renders map tiles
 	draw_map(tile_size);
-
 	if (DEBUG::DEBUGGING) {
-		// Debug: draw all walls as semi-transparent red
-		DEBUG::draw_all_walls();
-		DEBUG::draw_player_tile();
-		DEBUG::draw_puzzle_grab_range();
-		DEBUG::draw_puzzle_blocks();
-		DEBUG::draw_button_spike_links();
-		DEBUG::draw_enemies();
+		if (DEBUG::DRAW_WALLS)              DEBUG::draw_all_walls();
+		if (DEBUG::DRAW_PLAYER_TILE)        DEBUG::draw_player_tile();
+		if (DEBUG::DRAW_PUZZLE_GRAB_RANGE)  DEBUG::draw_puzzle_grab_range();
+		if (DEBUG::DRAW_PUZZLE_BLOCKS)      DEBUG::draw_puzzle_blocks();
+		if (DEBUG::DRAW_BUTTON_SPIKE_LINKS) DEBUG::draw_button_spike_links();
+		if (DEBUG::DRAW_ENEMIES)            DEBUG::draw_enemies();
 	}
 
 	//Renders enemies
@@ -270,6 +298,9 @@ void guide_draw() {
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 
+// ----------------------------------------------------------------------------
+// Function: guide_free
+// ---------------------------------------------------------------------------- 
 void guide_free() {
 	//Frees player assets
 	player_system_free(&player_instance);
@@ -288,6 +319,9 @@ void guide_free() {
 	g_bgm_current_track = nullptr;
 }
 
+// ----------------------------------------------------------------------------
+// Function: guide_unload
+// ---------------------------------------------------------------------------- 
 void guide_unload() {
 	end_screen_unload();
 	free_tile_textures();

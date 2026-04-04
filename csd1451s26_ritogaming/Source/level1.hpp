@@ -1,11 +1,12 @@
 /*!************************************************************************
-\file:						level1.hpp
-\author:					Goh Qi En
-\par DP email:				g.qien@digipen.edu
-\brief:						This header declares Level 1 functions for loading,
-                            initializing, updating, drawing, freeing resources,
-                            and unloading, defining the interface for Level 1
-                            game logic and state management.
+\file:			level1.hpp
+\author:		Goh Qi En
+\par DP email:	g.qien@digipen.edu
+
+\brief:			This header declares Level 1 functions for loading,
+				initializing, updating, drawing, freeing resources, and
+				unloading, defining the interface for Level 1 game logic
+				and state management.
 **************************************************************************/
 
 #pragma once

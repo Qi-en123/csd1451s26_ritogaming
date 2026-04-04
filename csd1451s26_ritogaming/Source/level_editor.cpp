@@ -4,6 +4,7 @@
 \par DP email:                  g.qien@digipen.edu
 \co-author:                     Jerod Lim
 \par co-author DP email:        jerodyaowei.lim@digipen.edu
+
 \brief:         This file defines functions to load, initialize, update,
                 draw, free, and unload the game's level interface which
                 allows users to create custom maps by painting tiles on a
@@ -11,6 +12,7 @@
                 palette, camera panning, and visual feedback for tile
                 placement and saving status.
 **************************************************************************/
+
 #include "AEEngine.h"
 #include "renderer.hpp"
 #include "utils.hpp"
@@ -62,8 +64,8 @@ namespace {
         return (it != kv.end()) ? std::stof(it->second) : fallback;
     }
     // Helper to get int from map with fallback
-    int kv_int(const std::unordered_map<std::string, std::string>& kv,
-        const std::string& key, int fallback = 0)
+    s32 kv_int(const std::unordered_map<std::string, std::string>& kv,
+        const std::string& key, s32 fallback = 0)
     {
         auto it = kv.find(key);
         return (it != kv.end()) ? std::stoi(it->second) : fallback;
@@ -209,14 +211,14 @@ namespace {
     f32 world_y_offset = 0.f;
 
     // --- Tile palettes ---
-    const int PALETTE_COUNT = 8;
-    const int palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 7, 5, 6 };
+    const s32 PALETTE_COUNT = 8;
+    const s32 palette_ids[PALETTE_COUNT] = { 0, 1, 2, 3, 4, 7, 5, 6 };
     const char* palette_labels[PALETTE_COUNT] =
     { "Erase", "Wall", "Floor", "Wizard", "Knight", "Door", "Ghost", "Bat" };
-    int selected_tile = 1;
+    s32 selected_tile = 1;
 
     // --- Puzzle palettes ---
-    const int EDITABLE_PUZZLE_COUNT = 5;
+    const s32 EDITABLE_PUZZLE_COUNT = 5;
     const Puzzle::PuzzleType puzzle_palette_ids[EDITABLE_PUZZLE_COUNT] =
     {
         Puzzle::PUZZLE_TYPE_COUNT,
@@ -563,7 +565,7 @@ void level_editor_load()
     // --- Font (path + size stored; font created in init) ---
     // Store into local statics so init can use them
     static std::string s_font_path;
-    static int         s_font_size = 0;
+    static s32         s_font_size = 0;
     s_font_path = kv_str(cfg, "font_path");
     s_font_size = kv_int(cfg, "font_size");
 
@@ -688,7 +690,7 @@ void level_editor_init()
     {
         auto cfg = parse_kv_file("Assets/LevelEditor/level_editor_config.txt");
         std::string fp = kv_str(cfg, "font_path");
-        int         fs = kv_int(cfg, "font_size");
+        s32         fs = kv_int(cfg, "font_size");
         level_editor_font = AEGfxCreateFont(fp.c_str(), fs);
     }
 
@@ -703,15 +705,15 @@ void level_editor_init()
 
     // Allocate tile map
     editor_map = new int* [TILE_ROWS];
-    for (int r = 0; r < TILE_ROWS; ++r)
+    for (s32 r = 0; r < TILE_ROWS; ++r)
         editor_map[r] = new int[TILE_COLS] {};
 
     // Allocate puzzle map
     puzzle_editor_map = new Puzzle::PuzzleType * [TILE_ROWS];
-    for (int r = 0; r < TILE_ROWS; ++r)
+    for (s32 r = 0; r < TILE_ROWS; ++r)
         puzzle_editor_map[r] = new Puzzle::PuzzleType[TILE_COLS]{ Puzzle::PUZZLE_TYPE_COUNT };
-    for (int r = 0; r < TILE_ROWS; ++r)
-        for (int c = 0; c < TILE_COLS; ++c)
+    for (s32 r = 0; r < TILE_ROWS; ++r)
+        for (s32 c = 0; c < TILE_COLS; ++c)
             puzzle_editor_map[r][c] = Puzzle::PUZZLE_TYPE_COUNT;
 
     puzzles.reserve(100);
@@ -751,8 +753,8 @@ void level_editor_init()
             selected_level_puzzle_path.c_str(),
             puzzle_editor_map, puzzles, button_triggers);
 
-        for (int r = 0; r < TILE_ROWS; ++r)
-            for (int c = 0; c < TILE_COLS; ++c)
+        for (s32 r = 0; r < TILE_ROWS; ++r)
+            for (s32 c = 0; c < TILE_COLS; ++c)
             {
                 if (editor_map[r][c] == 3) wizard_placed = true;
                 if (editor_map[r][c] == 4) knight_placed = true;
@@ -774,12 +776,12 @@ void level_editor_update()
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
     // --- Button hover sound ---
-    static int last_hovered = -1;
-    int current_hovered = -1;
+    static s32 last_hovered = -1;
+    s32 current_hovered = -1;
 
     if (editorState == EDIT_TILES)
     {
-        for (int i = 0; i < PALETTE_COUNT; ++i)
+        for (s32 i = 0; i < PALETTE_COUNT; ++i)
         {
             f32 py = PALETTE_TOP_Y - i * PAL_GAP;
             if (IsButtonHovered(PANEL_X, py, PAL_W, PAL_H)) { current_hovered = i; break; }
@@ -787,7 +789,7 @@ void level_editor_update()
     }
     else if (editorState == EDIT_PUZZLES)
     {
-        for (int i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
+        for (s32 i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
         {
             f32 py = PALETTE_TOP_Y - i * PAL_GAP;
             if (IsButtonHovered(PANEL_X, py, PAL_W, PAL_H)) { current_hovered = i + 100; break; }
@@ -887,13 +889,13 @@ void level_editor_update()
     if (editorState == EDIT_TILES)
     {
         const u8 hotkeys[8] = { AEVK_1, AEVK_2, AEVK_3, AEVK_4, AEVK_5, AEVK_6, AEVK_7, AEVK_8 };
-        for (int i = 0; i < PALETTE_COUNT; ++i)
+        for (s32 i = 0; i < PALETTE_COUNT; ++i)
             if (AEInputCheckTriggered(hotkeys[i]))
                 selected_tile = palette_ids[i];
 
         if (AEInputCheckTriggered(AEVK_LBUTTON))
         {
-            for (int i = 0; i < PALETTE_COUNT; ++i)
+            for (s32 i = 0; i < PALETTE_COUNT; ++i)
             {
                 f32 py = PALETTE_TOP_Y - i * PAL_GAP;
                 if (IsButtonClicked(PANEL_X, py, PAL_W, PAL_H))
@@ -907,7 +909,7 @@ void level_editor_update()
 
         f32 wx, wy;
         mouse_to_world(wx, wy);
-        int row, col;
+        s32 row, col;
         bool on_grid = editor_screen_to_tile(wx, wy, row, col);
         f32  grid_right_world = grid_start_x + (TILE_COLS * tile_draw_size);
         f32  grid_right_screen = grid_right_world + world_x_offset;
@@ -917,8 +919,8 @@ void level_editor_update()
         {
             if (can_paint && AEInputCheckCurr(AEVK_LBUTTON))
             {
-                int curr = editor_map[row][col];
-                int placing = selected_tile;
+                s32 curr = editor_map[row][col];
+                s32 placing = selected_tile;
 
                 if ((placing == 5 || placing == 6) && curr != 2) goto skip_paint;
                 if (placing == 5 && row >= (TILE_ROWS - 1)) { spawn_error_timer = SPAWN_ERROR_DUR; goto skip_paint; }
@@ -956,7 +958,7 @@ void level_editor_update()
             if (puzzle_editor_map[row][col] == Puzzle::PUZZLE_TYPE_COUNT &&
                 can_paint && AEInputCheckCurr(AEVK_RBUTTON))
             {
-                int curr = editor_map[row][col];
+                s32 curr = editor_map[row][col];
                 if (curr == 3) wizard_placed = false;
                 if (curr == 4) knight_placed = false;
                 if (curr == 7) door_placed = false;
@@ -967,16 +969,16 @@ void level_editor_update()
         if (AEInputCheckTriggered(AEVK_F))
         {
             if (selected_tile == 3 || selected_tile == 4 || selected_tile == 7) return;
-            for (int r = 0; r < TILE_ROWS; ++r)
-                for (int c = 0; c < TILE_COLS; ++c)
+            for (s32 r = 0; r < TILE_ROWS; ++r)
+                for (s32 c = 0; c < TILE_COLS; ++c)
                     if (editor_map[r][c] == 0)
                         editor_map[r][c] = selected_tile;
         }
 
         if (AEInputCheckTriggered(AEVK_C))
         {
-            for (int r = 0; r < TILE_ROWS; ++r)
-                for (int c = 0; c < TILE_COLS; ++c)
+            for (s32 r = 0; r < TILE_ROWS; ++r)
+                for (s32 c = 0; c < TILE_COLS; ++c)
                     editor_map[r][c] = 0;
             wizard_placed = knight_placed = door_placed = false;
         }
@@ -986,13 +988,13 @@ void level_editor_update()
         if (!editing)
         {
             const u8 hotkeys[EDITABLE_PUZZLE_COUNT] = { AEVK_1, AEVK_2, AEVK_3, AEVK_4 };
-            for (int i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
+            for (s32 i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
                 if (AEInputCheckTriggered(hotkeys[i]))
                     selected_puzzle = puzzle_palette_ids[i];
 
             if (AEInputCheckTriggered(AEVK_LBUTTON))
             {
-                for (int i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
+                for (s32 i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
                 {
                     f32 py = PALETTE_TOP_Y - i * PAL_GAP;
                     if (IsButtonClicked(PANEL_X, py, PAL_W, PAL_H))
@@ -1009,8 +1011,8 @@ void level_editor_update()
 
             if (AEInputCheckTriggered(AEVK_C))
             {
-                for (int r = 0; r < TILE_ROWS; ++r)
-                    for (int c = 0; c < TILE_COLS; ++c)
+                for (s32 r = 0; r < TILE_ROWS; ++r)
+                    for (s32 c = 0; c < TILE_COLS; ++c)
                         puzzle_editor_map[r][c] = Puzzle::PUZZLE_TYPE_COUNT;
                 puzzles.clear();
             }
@@ -1022,7 +1024,7 @@ void level_editor_update()
 
         f32 wx, wy;
         mouse_to_world(wx, wy);
-        int row, col;
+        s32 row, col;
         bool on_grid = editor_screen_to_tile(wx, wy, row, col);
         f32  grid_right_world = grid_start_x + (TILE_COLS * tile_draw_size);
         f32  grid_right_screen = grid_right_world + world_x_offset;
@@ -1117,8 +1119,8 @@ void level_editor_draw()
     // Grid background
     if (erase_tile)
     {
-        for (int r = 0; r < TILE_ROWS; ++r)
-            for (int c = 0; c < TILE_COLS; ++c)
+        for (s32 r = 0; r < TILE_ROWS; ++r)
+            for (s32 c = 0; c < TILE_COLS; ++c)
             {
                 f32 wx = grid_start_x + c * tile_draw_size + tile_draw_size * 0.5f;
                 f32 wy = grid_start_y - r * tile_draw_size - tile_draw_size * 0.5f;
@@ -1127,9 +1129,9 @@ void level_editor_draw()
     }
 
     // Map tiles
-    for (int r = 0; r < TILE_ROWS; ++r)
+    for (s32 r = 0; r < TILE_ROWS; ++r)
     {
-        for (int c = 0; c < TILE_COLS; ++c)
+        for (s32 c = 0; c < TILE_COLS; ++c)
         {
             f32 wx = grid_start_x + c * tile_draw_size + tile_draw_size * 0.5f;
             f32 wy = grid_start_y - r * tile_draw_size - tile_draw_size * 0.5f;
@@ -1141,7 +1143,7 @@ void level_editor_draw()
             if (wx < grid_left || wx > grid_right) continue;
             if (wy > grid_top || wy < grid_bot)   continue;
 
-            int tile = editor_map[r][c];
+            s32 tile = editor_map[r][c];
             if (tile == 5 || tile == 6)
             {
                 if (TileTextures[2])
@@ -1167,9 +1169,9 @@ void level_editor_draw()
     }
 
     // Spawn overlays
-    for (int r = 0; r < TILE_ROWS; ++r)
+    for (s32 r = 0; r < TILE_ROWS; ++r)
     {
-        for (int c = 0; c < TILE_COLS; ++c)
+        for (s32 c = 0; c < TILE_COLS; ++c)
         {
             f32 wx = grid_start_x + c * tile_draw_size + tile_draw_size * 0.5f;
             f32 wy = grid_start_y - r * tile_draw_size - tile_draw_size * 0.5f;
@@ -1177,7 +1179,7 @@ void level_editor_draw()
             if (wx < grid_start_x || wx > grid_start_x + TILE_COLS * tile_draw_size) continue;
             if (wy > grid_start_y || wy < grid_start_y - TILE_ROWS * tile_draw_size) continue;
 
-            int tile = editor_map[r][c];
+            s32 tile = editor_map[r][c];
             if (tile == 5 && tomb)
             {
                 render_editor_tiles(tomb, tile_draw_size, tile_draw_size, 1.f, wx, wy);
@@ -1194,7 +1196,7 @@ void level_editor_draw()
     {
         f32 wx_m, wy_m;
         mouse_to_world(wx_m, wy_m);
-        int row, col;
+        s32 row, col;
         if (editor_screen_to_tile(wx_m, wy_m, row, col))
         {
             f32 cx = grid_start_x + col * tile_draw_size + tile_draw_size * 0.5f;
@@ -1250,7 +1252,7 @@ void level_editor_draw()
     // Palette
     if (editorState == EDIT_TILES)
     {
-        for (int i = 0; i < PALETTE_COUNT; ++i)
+        for (s32 i = 0; i < PALETTE_COUNT; ++i)
         {
             f32  py = PALETTE_TOP_Y - i * PAL_GAP;
             bool hovered = IsButtonHovered(PANEL_X, py, PAL_W, PAL_H);
@@ -1273,7 +1275,7 @@ void level_editor_draw()
                     icon_alpha, icon_x, py);
             else
             {
-                int icon_id = palette_ids[i];
+                s32 icon_id = palette_ids[i];
                 AEGfxTexture* icon_tex =
                     (icon_id == 5) ? tomb :
                     (icon_id == 6) ? bat_spawn :
@@ -1312,7 +1314,7 @@ void level_editor_draw()
     }
     else if (editorState == EDIT_PUZZLES)
     {
-        for (int i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
+        for (s32 i = 0; i < EDITABLE_PUZZLE_COUNT; ++i)
         {
             f32  py = PALETTE_TOP_Y - i * PAL_GAP;
             bool hovered = IsButtonHovered(PANEL_X, py, PAL_W, PAL_H);
@@ -1415,13 +1417,13 @@ void level_editor_free()
 
     if (editor_map)
     {
-        for (int r = 0; r < TILE_ROWS; ++r) delete[] editor_map[r];
+        for (s32 r = 0; r < TILE_ROWS; ++r) delete[] editor_map[r];
         delete[] editor_map;
         editor_map = nullptr;
     }
     if (puzzle_editor_map)
     {
-        for (int r = 0; r < TILE_ROWS; ++r) delete[] puzzle_editor_map[r];
+        for (s32 r = 0; r < TILE_ROWS; ++r) delete[] puzzle_editor_map[r];
         delete[] puzzle_editor_map;
         puzzle_editor_map = nullptr;
     }

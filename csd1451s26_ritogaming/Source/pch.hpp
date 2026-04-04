@@ -2,11 +2,11 @@
 \file:          pch.hpp
 \author:        Claire
 \par DP email:  c.cheong@digipen.edu
-\
+
 \brief:         Precompiled header that includes all core engine headers
-\               and game system headers (enemy, player, camera, map,
-\               collision, renderer, puzzle, ui_manager) for faster
-\               compilation across the project.
+                and game system headers (enemy, player, camera, map,
+                collision, renderer, puzzle, ui_manager) for faster
+                compilation across the project.
 **************************************************************************/
 
 #pragma once

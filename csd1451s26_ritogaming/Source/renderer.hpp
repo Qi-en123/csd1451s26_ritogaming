@@ -1,15 +1,17 @@
 /*!************************************************************************
-\file:						render.hpp
-\author:					Jerod
+\file:						renderer.hpp
+\author:					Jerod Lim
 \par DP email:				jerodyaowei.lim@digipen.edu
 \co-author:					Claire
 \par co-author DP email:	c.cheong@digipen.edu
 \co-author:					Goh Qi En
 \par co-author DP email:	g.qien@digipen.edu
+
 \brief:						This header declares rendering-related data
 							structures and drawing functions using
 							AEEngine.
 **************************************************************************/
+
 #pragma once
 #include "AEEngine.h"
 #include "player.hpp"

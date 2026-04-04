@@ -1,11 +1,10 @@
 /*!************************************************************************
-\file:						utils.cpp
-\author:					Goh Qi En
-\par DP email:				g.qien@digipen.edu
+\file:			utils.cpp
+\author:		Goh Qi En
+\par DP email:	g.qien@digipen.edu
 
-\brief:						Implementation of utility functions for UI
-                            interaction, input handling, and level state
-                            management.
+\brief:			Implementation of utility functions for UI interaction,
+                input handling, and level state management.
 **************************************************************************/
 
 #include "AEEngine.h"

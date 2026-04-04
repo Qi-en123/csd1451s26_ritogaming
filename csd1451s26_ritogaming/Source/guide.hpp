@@ -2,10 +2,12 @@
 \file:			guide.hpp
 \author:		Jerod lim
 \par DP email:	jerodyaowei.lim@digipen.edu
+
 \brief:			This source file declares the Game State functions, Load,
 				Init, Update, Draw, Free & Unload. For use when transitioning
 				between game states.
 **************************************************************************/
+
 #pragma once
 
 // ------------------------------------------------------------------------

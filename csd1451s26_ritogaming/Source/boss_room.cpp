@@ -4,6 +4,7 @@
 \par DP email:	            jerodyaowei.lim@digipen.edu
 \co-author:		            Goh Qi En
 \par co-author DP email:	g.qien@digipen.edu
+
 \brief:			This file implements functions for the boss fight (level)
                 to load assets, initialize level, update game logic,
                 render & free resources.
@@ -35,6 +36,12 @@ namespace {
     s32 mouse_x, mouse_y;
 }
 
+// ------------------------------------------------------------------------
+// 
+// Loads all required assets/resources for the boss room state
+// (e.g., textures, audio)
+// 
+// ------------------------------------------------------------------------ 
 void boss_room_load()
 {
     // Load textures properly
@@ -45,6 +52,11 @@ void boss_room_load()
     end_screen_load();
 }
 
+// ------------------------------------------------------------------------
+// 
+// Initializes variables and sets up the initial state before execution begins
+// 
+// ------------------------------------------------------------------------ 
 void boss_room_init()
 {
     //Disable cursor
@@ -60,7 +72,7 @@ void boss_room_init()
 
     //Load boos room
     load_map_from_file("Assets/Levels/boss_room.txt", map);
-    generate_walls_from_map(map, tile_size);
+    generate_walls_from_map(map);
 
     enemy_spawned = false;
     
@@ -75,10 +87,6 @@ void boss_room_init()
     Camera::cam = Camera::init_cam(
         &player_instance.current_player->x,
         &player_instance.current_player->y);
-
-    //totalWorldW = ((f32)TILE_COLS * tile_size) / minimap_zoom;
-    //totalWorldH = ((f32)TILE_ROWS * tile_size) / minimap_zoom;
-    //minimap_init(totalWorldW, totalWorldH, 200.0f);
 
     // Clear any existing enemies then lock zone so ghost/bat respawn never fires here
     boss_proj_manager.clear();
@@ -103,6 +111,11 @@ void boss_room_init()
     play_bgm(g_audio.bgm_bossroom, 1.0f);
 }
 
+// ------------------------------------------------------------------------
+// 
+// Updates game logic every frame (e.g., input handling, state changes)
+// 
+// ------------------------------------------------------------------------ 
 void boss_room_update()
 {
     //Get mouse position
@@ -154,8 +167,30 @@ void boss_room_update()
         restart_level_state = GS_BOSS_ROOM;
         next = GS_WIN;
     }
+
+    // Debug Toggles
+    if (AEInputCheckTriggered(AEVK_F1)) {
+        DEBUG::DEBUGGING ^= 1;
+        s32 val = DEBUG::DEBUGGING;
+        DEBUG::DRAW_WALLS = DEBUG::DRAW_PLAYER_TILE = DEBUG::DRAW_PUZZLE_GRAB_RANGE =
+            DEBUG::DRAW_PUZZLE_BLOCKS = DEBUG::DRAW_BUTTON_SPIKE_LINKS = DEBUG::DRAW_ENEMIES = val;
+    }
+
+    if (DEBUG::DEBUGGING) {
+        if (AEInputCheckTriggered(AEVK_F2)) DEBUG::DRAW_WALLS ^= 1;
+        if (AEInputCheckTriggered(AEVK_F3)) DEBUG::DRAW_PLAYER_TILE ^= 1;
+        if (AEInputCheckTriggered(AEVK_F4)) DEBUG::DRAW_PUZZLE_GRAB_RANGE ^= 1;
+        if (AEInputCheckTriggered(AEVK_F5)) DEBUG::DRAW_PUZZLE_BLOCKS ^= 1;
+        if (AEInputCheckTriggered(AEVK_F6)) DEBUG::DRAW_BUTTON_SPIKE_LINKS ^= 1;
+        if (AEInputCheckTriggered(AEVK_F7)) DEBUG::DRAW_ENEMIES ^= 1;
+    }
 }
 
+// ------------------------------------------------------------------------
+// 
+// Renders all visuals related to the boss room state to the screen
+// 
+// ------------------------------------------------------------------------ 
 void boss_room_draw()
 {
     AEGfxReset();
@@ -187,6 +222,12 @@ void boss_room_draw()
     render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active); //iihih
 }
 
+// ------------------------------------------------------------------------
+// 
+// Frees dynamically allocated memory and temporary resources used during
+// the state
+// 
+// ------------------------------------------------------------------------ 
 void boss_room_free()
 {
     // Cleanup enemies
@@ -201,6 +242,11 @@ void boss_room_free()
     g_bgm_current_track = nullptr;
 }
 
+// ------------------------------------------------------------------------
+// 
+// Unloads assets/resources that were loaded in level2_load()
+// 
+// ------------------------------------------------------------------------ 
 void boss_room_unload()
 {
     free_tile_textures();

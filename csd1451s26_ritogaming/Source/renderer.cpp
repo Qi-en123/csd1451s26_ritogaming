@@ -253,10 +253,10 @@ void init_mesh() {
 	light_source_mesh = create_ls_mesh();
 
 	//------------ Ring Mesh (boss projectiles) by Claire------------//
-	const float outer_r = BossProjCfg::RING_RADIUS + BossProjCfg::RING_THICKNESS * 0.5f;
-	const float inner_r = BossProjCfg::RING_RADIUS - BossProjCfg::RING_THICKNESS * 0.5f;
+	const float outer_r = e_bp_ring_radius + e_bp_ring_thickness * 0.5f;
+	const float inner_r = e_bp_ring_radius - e_bp_ring_thickness * 0.5f;
 	const int   SEGS = 32;
-	const float step = 2.f * 3.14159265f / static_cast<float>(SEGS);
+	const float step = 2.f * PI/ static_cast<float>(SEGS);
 
 	AEGfxMeshStart();
 	for (int i = 0; i < SEGS; ++i)

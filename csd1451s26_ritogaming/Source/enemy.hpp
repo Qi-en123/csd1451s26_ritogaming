@@ -11,6 +11,7 @@
     - Enemy types: ghost, bat, dragon (boss)
     - Boss projectile system
     - Movement helper utilities
+    - Global config variables loaded from enemy_data.txt via dave_Data()
 
     Use this file as the main reference for:
     - Enemy tuning (speed, damage, detection, etc.)
@@ -22,69 +23,117 @@
 
 #include <cmath>
 #include <vector>
+#include <string>
 #include <cstring>
 #include "AEEngine.h"
 #include "camera.hpp"
 
 
 // ============================================================================
-// BOSS PROJECTILE CONFIG
+// ENEMY DATA  —  loaded from Assets/Config/enemy_data.txt by dave_Data()
 // ----------------------------------------------------------------------------
-// Centralized tuning values for boss attacks.
-// Safe to modify for gameplay balancing (difficulty, pacing, feel).
+// All values below are populated once at startup.
+// enemy_manager.cpp (and any other file) can use them directly via extern.
+// Do NOT reassign these anywhere except inside dave_Data().
 // ============================================================================
-namespace BossProjCfg
-{
-    constexpr float RING_RADIUS = 10.f;        // Hitbox + visual size
-    constexpr float RING_THICKNESS = 3.f;      // Visual only
 
-    constexpr float BASE_SPEED = 220.f;        // Forward velocity
-    constexpr float WAVE_AMPLITUDE = 80.f;     // Sideways wave distance
-    constexpr float WAVE_FREQUENCY = 10.f;     // Wave oscillation speed
+// --- Texture filepaths ---
+extern std::string e_ghost_tex;
+extern std::string e_bat_tex;
+extern std::string e_ghost_food_tex;
+extern std::string e_bat_food_tex;
+extern std::string e_cross_tex;
+extern std::string e_ghost_marker_tex;
+extern std::string e_bat_marker_tex;
+extern std::string e_dragon_tex_idle;
+extern std::string e_dragon_tex_walk;
+extern std::string e_dragon_tex_attack;
+extern std::string e_dragon_tex_hurt;
+extern std::string e_dragon_tex_death;
 
-    constexpr float MAX_LIFETIME = 5.f;        // Seconds before despawn
+// --- Ghost stats ---
+extern float e_ghost_speed;
+extern int   e_ghost_max_health;
+extern float e_ghost_size;
+extern float e_ghost_sight_range;
 
-    // Pattern layout (alternating waves)
-    constexpr int   POSITIONS_WAVE_A = 5;      // Odd slots
-    constexpr int   POSITIONS_WAVE_B = 4;      // Even slots
-    constexpr float ANGLE_SPREAD_DEG = 120.0f; // Total fan spread
+// --- Bat stats ---
+extern float e_bat_speed;
+extern int   e_bat_max_health;
+extern float e_bat_size;
+extern float e_bat_sight_range;
+extern float e_bat_attack_cooldown;
+extern int   e_bat_attack_damage;
 
-    constexpr float WAVE_INTERVAL = 3.f;     // Delay between waves
+// --- Dragon stats ---
+extern float e_dragon_speed;
+extern int   e_dragon_max_health;
+extern float e_dragon_size;
+extern float e_dragon_attack_cooldown;
+extern int   e_dragon_attack_damage;
 
-    constexpr int   PROJECTILE_DAMAGE = 1;     // 1 = half-heart
-}
+// --- Boss projectile ---
+extern float e_bp_ring_radius;
+extern float e_bp_ring_thickness;
+extern float e_bp_base_speed;
+extern float e_bp_wave_amplitude;
+extern float e_bp_wave_frequency;
+extern float e_bp_max_lifetime;
+extern int   e_bp_positions_wave_a;
+extern int   e_bp_positions_wave_b;
+extern float e_bp_angle_spread_deg;
+extern float e_bp_wave_interval;
+extern int   e_bp_projectile_damage;
+extern int   e_bp_pool_size;
+
+// --- Manager / world ---
+extern float e_spawn_check_interval;
+extern float e_respawn_delay;
+extern float e_food_lifetime;
+extern float e_food_size;
+extern float e_map_start_x;
+extern float e_map_start_y;
+extern float e_tile_size;
+
+// --- Respawn particles ---
+extern int   e_rp_burst_count;
+extern float e_rp_speed_min;
+extern float e_rp_speed_max;
+extern float e_rp_life_min;
+extern float e_rp_life_max;
+extern float e_rp_size_min;
+extern float e_rp_size_max;
+extern float e_rp_gravity;
+extern float e_rp_rise_boost;
+
+/**************************************************************************
+    \brief
+    Reads enemy_data.txt and assigns every token to its matching global
+    variable. Uses ifstream + getline + istringstream for tokenization.
+    Call once at startup before any enemy or EnemyManager is constructed.
+
+    \param filepath  Path to the data file
+                     (e.g. "Assets/Config/enemy_data.txt").
+    \return True if the file was opened and fully parsed,
+            false if the file could not be opened.
+**************************************************************************/
+bool save_Data(const std::string& filepath);
 
 
 // ============================================================================
-// BossProjectile
-// ----------------------------------------------------------------------------
-// Represents a single projectile instance.
-// Motion = forward direction + sine offset along perpendicular axis.
+// BossProjectile  (unchanged)
 // ============================================================================
 struct BossProjectile
 {
-    float x{}, y{};            // World position
-
-    float vx{}, vy{};          // Forward velocity
-    float perp_x{}, perp_y{};  // Perpendicular axis (for wave motion)
-
-    float phase{};             // Unique offset (prevents uniform motion)
-    float age{};               // Time alive
-    float lifetime{ BossProjCfg::MAX_LIFETIME };
-
-    bool  in_use{ false };     // Object pool flag
+    float x{}, y{};
+    float vx{}, vy{};
+    float perp_x{}, perp_y{};
+    float phase{};
+    float age{};
+    float lifetime{};
+    bool  in_use{ false };
 };
 
-
-// ============================================================================
-// BossProjectileManager
-// ----------------------------------------------------------------------------
-// Responsibilities:
-// - Manages projectile pool (no runtime allocations)
-// - Spawns attack patterns
-// - Updates movement and lifetime
-// - Handles player collision
-// ============================================================================
 struct Player;
 
 class BossProjectileManager
@@ -92,19 +141,10 @@ class BossProjectileManager
 public:
     BossProjectileManager();
 
-    /// Initialize projectile pool (call once on boss setup)
-    void init(int pool_size = 128);
-
-    /// Reset all projectiles (call when boss resets/despawns)
+    void init(int pool_size = 0);   // 0 = use e_bp_pool_size from data file
     void clear();
-
-    /// Update movement, lifetime, and camera culling
     void update(float dt, const Camera::camera* cam);
-
-    /// Check collision against player; returns number of hits this frame
     int  check_player_collision(Player* player);
-
-    /// Spawn a projectile wave aimed at target position
     void trigger_wave(float boss_x, float boss_y,
         float target_x, float target_y);
 
@@ -112,72 +152,47 @@ public:
     int  get_active_count() const;
 
 private:
-    /// Get an unused projectile from pool
     BossProjectile* acquire_slot();
-
-    /// Initialize a projectile instance with movement parameters
     void spawn_one(float bx, float by,
         float dir_x, float dir_y,
         float perp_x, float perp_y,
         float phase);
 
     std::vector<BossProjectile> m_pool;
-
-    bool m_wave_toggle{ false }; // Alternates between wave patterns
+    bool m_wave_toggle{ false };
 };
 
-
-// Global projectile system (shared by boss logic)
 extern BossProjectileManager boss_proj_manager;
 
 
 // ============================================================================
-// Gameplay Constants
+// Gameplay constants  (unchanged)
 // ============================================================================
-constexpr int player_heart_damage{ 50 };     // Damage applied to player
-constexpr f32 food_health_percent{ 0.50f }; // % heal from food pickup
-constexpr f32 food_lifetime{ 10.f };        // Seconds before despawn
+constexpr int player_heart_damage{ 50 };
+constexpr f32 food_health_percent{ 0.50f };
+constexpr f32 food_lifetime{ 10.f };
 
 
 // ============================================================================
-// Movement Helpers
-// ----------------------------------------------------------------------------
-// Wall-aware movement utilities.
-// Use these instead of directly modifying position to avoid clipping.
+// Movement helpers  (unchanged)
 // ============================================================================
-
-/// Move toward target while respecting collision boundaries
 void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
     f32 target_x, f32 target_y, f32 dt);
-
-/// Move away from source while respecting collision boundaries
 void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
     f32 from_x, f32 from_y, f32 dt);
-
-/// Compute flee position (does NOT apply movement)
 void enemy_flee_to_wall(f32 x, f32 y, f32 speed,
     f32 player_x, f32 player_y, f32 dt,
     f32& next_x, f32& next_y);
 
 
 // ============================================================================
-// Enemy State Machine
+// Enemy state machine  (unchanged)
 // ============================================================================
-enum enemy_state
-{
-    idle,
-    chasing,
-    fleeing,
-    attacking,
-    dead
-};
+enum enemy_state { idle, chasing, fleeing, attacking, dead };
 
 
 // ============================================================================
-// Base Enemy Class
-// ----------------------------------------------------------------------------
-// Shared data and behavior for all enemies.
-// Derive from this class to implement custom enemy logic.
+// Base enemy class  (unchanged)
 // ============================================================================
 class base_enemy
 {
@@ -186,40 +201,23 @@ public:
     static constexpr int enemy_damage_per_hit{ 50 };
 
 protected:
-    // --- Transform ---
     f32 x, y;
     f32 spawn_x, spawn_y;
-
-    // --- Movement ---
     f32 velocity_x, velocity_y;
     f32 speed;
     f32 size;
-
-    // --- Health ---
     int current_health;
     int max_health;
-
-    // --- Combat ---
     f32 attack_cooldown;
     f32 attack_timer;
-
-    // --- State ---
     enemy_state state;
     bool active;
     bool visible_to_player;
-
-    // --- Detection ---
     f32 collision_radius;
     f32 sight_range;
-
-    // --- Rendering ---
     AEGfxTexture* texture;
-
-    // --- Drops ---
     AEGfxTexture* food_texture;
     bool food_spawned{ false };
-
-    // --- damage flash timer ---
     f32 hit_flash_timer = 0.f;
     static constexpr f32 HIT_FLASH_DUR = 0.15f;
 
@@ -227,112 +225,78 @@ public:
     base_enemy(f32 start_x, f32 start_y);
     virtual ~base_enemy() {}
 
-    /// Per-frame update (must be implemented by derived classes)
     virtual void update(f32 dt, struct Player* player, Camera::camera* cam) = 0;
-
-    /// Apply damage and handle death state
     virtual void take_damage(int amount);
-
     virtual bool is_ghost() const { return false; }
-    virtual int get_max_health() const { return max_health; }
+    virtual int  get_max_health() const { return max_health; }
 
-    // --- Utility ---
     bool is_in_camera_view(Camera::camera* cam) const;
     bool collides_with_player(struct Player* player) const;
-    f32 distance_to_player(struct Player* player) const;
+    f32  distance_to_player(struct Player* player) const;
 
-    // --- Drops ---
     bool has_food_spawned() const { return food_spawned; }
     void set_food_spawned(bool val) { food_spawned = val; }
 
-    // --- Getters ---
-    f32 get_x() const { return x; }
-    f32 get_y() const { return y; }
-    f32 get_size() const { return size; }
-    int get_current_health() const { return current_health; }
-    enemy_state get_state() const { return state; }
-    bool is_active() const { return active; }
-    f32 get_hit_flash_timer() const { return hit_flash_timer; }
-    AEGfxTexture* get_texture() const { return texture; }
-    AEGfxTexture* get_food_texture() const { return food_texture; }
+    f32           get_x()              const { return x; }
+    f32           get_y()              const { return y; }
+    f32           get_size()           const { return size; }
+    int           get_current_health() const { return current_health; }
+    enemy_state   get_state()          const { return state; }
+    bool          is_active()          const { return active; }
+    f32           get_hit_flash_timer()const { return hit_flash_timer; }
+    AEGfxTexture* get_texture()        const { return texture; }
+    AEGfxTexture* get_food_texture()   const { return food_texture; }
 
     void set_active(bool val) { active = val; }
-
-    void set_position(f32 new_x, f32 new_y)
-    {
-        x = new_x;
-        y = new_y;
-    }
-
+    void set_position(f32 nx, f32 ny) { x = nx; y = ny; }
     void set_enemy_texture(AEGfxTexture* tex) { texture = tex; }
     void set_food_texture(AEGfxTexture* tex) { food_texture = tex; }
 };
 
 
 // ============================================================================
-// GHOST
-// ----------------------------------------------------------------------------
-// Behavior:
-// - Flees immediately when visible to player
-// - Tracks number of hits taken from player
+// Ghost  (unchanged interface)
 // ============================================================================
 class ghost : public base_enemy
 {
     int hits_from_player;
-
 public:
     ghost(f32 start_x, f32 start_y);
     ~ghost() override = default;
-
     void update(f32 dt, struct Player* player, Camera::camera* cam) override;
     void take_damage(int amount) override;
-
     bool is_ghost() const override { return true; }
-    int get_hits_from_player() const { return hits_from_player; }
+    int  get_hits_from_player() const { return hits_from_player; }
 };
 
 
 // ============================================================================
-// BAT
-// ----------------------------------------------------------------------------
-// Behavior:
-// - Actively chases player
-// - Can attack but is not required to defeat
+// Bat  (unchanged interface)
 // ============================================================================
 class bat : public base_enemy
 {
 public:
     bat(f32 start_x, f32 start_y);
     ~bat() override = default;
-
     void update(f32 dt, struct Player* player, Camera::camera* cam) override;
 };
 
 
 // ============================================================================
-// Animator
-// ----------------------------------------------------------------------------
-// Handles sprite sheet animation playback.
-// Supports looping and one-shot animations.
+// Animator  (unchanged)
 // ============================================================================
 struct Animator {
     AEGfxTexture* sheet = nullptr;
-    AEGfxVertexList* cached_mesh = nullptr; // NEW: rebuilt only on frame change
-    int last_built_frame = -1;
-
-    int   frame_count = 1;
-    int   current_frame = 0;
-
-    float frame_w = 1.f;
-    float frame_h = 1.f;
-    float sheet_w = 1.f;
-    float sheet_h = 1.f;
-
+    AEGfxVertexList* cached_mesh = nullptr;
+    int  last_built_frame = -1;
+    int  frame_count = 1;
+    int  current_frame = 0;
+    float frame_w = 1.f, frame_h = 1.f;
+    float sheet_w = 1.f, sheet_h = 1.f;
     float fps = 8.f;
     float timer = 0.f;
-
     bool  looping = true;
-    bool  finished = false; // true when non-looping animation completes
+    bool  finished = false;
 
     void free_mesh()
     {
@@ -349,33 +313,22 @@ struct Animator {
             current_frame++;
             if (current_frame >= frame_count) {
                 if (looping) current_frame = 0;
-                else {
-                    current_frame = frame_count - 1;
-                    finished = true;
-                    return true;
-                }
+                else { current_frame = frame_count - 1; finished = true; return true; }
             }
         }
         return false;
     }
 
-    void set(AEGfxTexture* tex,
-        int frames, float fw, float fh, float sw, float sh,
+    void set(AEGfxTexture* tex, int frames,
+        float fw, float fh, float sw, float sh,
         float playback_fps, bool loop)
     {
-        sheet = tex;
-        frame_count = frames;
-        frame_w = fw;  frame_h = fh;
-        sheet_w = sw;  sheet_h = sh;
-        fps = playback_fps;
-        looping = loop;
-
-        current_frame = 0;
-        timer = 0.f;
-        finished = false;
+        sheet = tex; frame_count = frames;
+        frame_w = fw; frame_h = fh; sheet_w = sw; sheet_h = sh;
+        fps = playback_fps; looping = loop;
+        current_frame = 0; timer = 0.f; finished = false;
     }
 
-    // UV coordinates (0–1 range)
     float u0() const { return (current_frame * frame_w) / sheet_w; }
     float u1() const { return u0() + frame_w / sheet_w; }
     float v0() const { return 0.f; }
@@ -384,24 +337,15 @@ struct Animator {
 
 
 // ============================================================================
-// DRAGON (Boss)
-// ----------------------------------------------------------------------------
-// Behavior:
-// - Confined within room bounds
-// - Uses animation state machine
-// - Fires projectile waves at player
+// Dragon (boss)  (unchanged interface)
 // ============================================================================
 class dragon : public base_enemy {
 private:
-    // --- Room bounds (movement limits) ---
     f32 room_left, room_right, room_top, room_bottom;
-
-    // --- Combat tracking ---
     s32 hits_received;
     s32 hits_until_attack;
     bool is_boss;
 
-    // --- Animation textures ---
     AEGfxTexture* tex_idle = nullptr;
     AEGfxTexture* tex_walk = nullptr;
     AEGfxTexture* tex_attack = nullptr;
@@ -413,22 +357,19 @@ private:
     enum class DragonAnim { IDLE, WALK, ATTACK, HURT, DEATH };
     DragonAnim current_anim = DragonAnim::IDLE;
 
-    // --- Attack timing ---
-    float m_wave_timer{ 3.f }; // Controls projectile wave intervals
+    float m_wave_timer{ 3.f };
 
     void switch_anim(DragonAnim next_anim);
     void tick_attack_pattern(float dt, float tgt_x, float tgt_y);
 
 public:
-    dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
+    dragon(f32 start_x, f32 start_y,
+        f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
     ~dragon() override = default;
 
     void update(f32 dt, struct Player* player, Camera::camera* cam) override;
     void take_damage(int amount) override;
-
-    /// Returns true when boss is defeated and reward should spawn
     bool has_dropped_sister() const { return is_boss && state == dead; }
-
     void load_anim_textures();
     void render_animated(f32 draw_size);
 };

@@ -1,0 +1,75 @@
+# -----------------------------------------------------------------------
+# enemy_data.txt
+# All enemy tuning values and asset filepaths.
+# Format: token  value
+# Lines starting with '#' are comments and are ignored.
+# -----------------------------------------------------------------------
+
+# --- Texture filepaths ---
+ghost_tex               Assets/Sprites/Enemy/tile_0006.png
+bat_tex                 Assets/Sprites/Enemy/tile_0025.png
+ghost_food_tex          Assets/Sprites/Enemy_food/cream.png
+bat_food_tex            Assets/Sprites/Enemy_food/burger.png
+cross_tex               Assets/Sprites/Enemy_spawn_location/tile_0064.png
+ghost_marker_tex        Assets/Sprites/Enemy_spawn_location/tile_0066.png
+bat_marker_tex          Assets/Sprites/Enemy_spawn_location/tile_0126.png
+dragon_tex_idle         Assets/Sprites/Enemy/Boss/dragon_lord_idle_basic_74x74.png
+dragon_tex_walk         Assets/Sprites/Enemy/Boss/dragon_lord_walk_basic_74x74.png
+dragon_tex_attack       Assets/Sprites/Enemy/Boss/dragon_lord_attack_arms_90x70.png
+dragon_tex_hurt         Assets/Sprites/Enemy/Boss/dragon_lord_hurt_basic_130x130.png
+dragon_tex_death        Assets/Sprites/Enemy/Boss/dragon_lord_death_160x160.png
+
+# --- Ghost stats ---
+ghost_speed             80.0
+ghost_max_health        2
+ghost_size              50.0
+ghost_sight_range       400.0
+
+# --- Bat stats ---
+bat_speed               80.0
+bat_max_health          4
+bat_size                70.0
+bat_sight_range         350.0
+bat_attack_cooldown     1.0
+bat_attack_damage       3
+
+# --- Dragon stats ---
+dragon_speed            40.0
+dragon_max_health       10
+dragon_size             300.0
+dragon_attack_cooldown  1.0
+dragon_attack_damage    1
+
+# --- Boss projectile ---
+bp_ring_radius          10.0
+bp_ring_thickness       3.0
+bp_base_speed           220.0
+bp_wave_amplitude       80.0
+bp_wave_frequency       10.0
+bp_max_lifetime         5.0
+bp_positions_wave_a     5
+bp_positions_wave_b     4
+bp_angle_spread_deg     120.0
+bp_wave_interval        3.0
+bp_projectile_damage    1
+bp_pool_size            128
+
+# --- Manager / world ---
+spawn_check_interval    3.0
+respawn_delay           5.0
+food_lifetime           9.0
+food_size               50.0
+map_start_x             -800.0
+map_start_y             450.0
+tile_size               64.0
+
+# --- Respawn particles ---
+rp_burst_count          20
+rp_speed_min            30.0
+rp_speed_max            110.0
+rp_life_min             0.4
+rp_life_max             0.8
+rp_size_min             4.0
+rp_size_max             10.0
+rp_gravity              120.0
+rp_rise_boost           40.0

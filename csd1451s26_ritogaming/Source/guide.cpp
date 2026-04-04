@@ -169,7 +169,7 @@ void guide_init() {
 	player_system_init(&player_instance,
 		TileTextures[4], TileTextures[3],
 		skeleton_texture);
-	spawn_player_from_map(&player_instance, tile_size);
+	spawn_player_from_map(&player_instance);
 
 	// Camera follows the active character via the pointer
 	Camera::cam = Camera::init_cam(

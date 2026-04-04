@@ -476,21 +476,6 @@ int BossProjectileManager::get_active_count() const
 bool g_enemy_debug_draw = false;
 
 // ----------------------------------------------------------------------------
-// path_is_clear() — samples 10 points along the line from (x,y) to (tx,ty).
-// Returns false if any sample point collides with a wall.
-// ----------------------------------------------------------------------------
-static bool path_is_clear(f32 x, f32 y, f32 tx, f32 ty, f32 half)
-{
-    for (int i = 1; i <= 10; ++i)
-    {
-        f32 t = i / 10.f;
-        if (check_player_collision(x + (tx - x) * t, y + (ty - y) * t, half))
-            return false;
-    }
-    return true;
-}
-
-// ----------------------------------------------------------------------------
 // enemy_move_towards() — steps toward (target_x, target_y) this frame.
 // Applies X and Y movement independently so the enemy slides along walls.
 // ----------------------------------------------------------------------------

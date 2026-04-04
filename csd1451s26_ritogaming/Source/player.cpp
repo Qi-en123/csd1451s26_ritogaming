@@ -4,7 +4,8 @@
 \par DP email:  c.cheong@digipen.edu
 \
 \co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
-\               Ahmad (10% - projectile for character 1 & 2, audio management for footsteps
+\               Ahmad (10% - projectile for character 1 & 2, audio management for footsteps)
+\                     (^ separated out projectile by Claire into different functions)
 \
 \brief:         Implements the player system including character switching,
 \               movement with collision detection, puzzle interaction,
@@ -535,12 +536,12 @@ void player_system_handle_input(Player *player_ptr)
   Handles shooting logic (CHARACTER 2 ONLY). - Ahmad's part
 */
 /**************************************************************************/
-void player_handle_shooting(Player * player_ptr, f32 dt)
+void player_handle_shooting(Player * player_ptr, f32 p_dt)
 {
     if (!player_ptr)
         return;
     // Recharge one fireball every 1 second (up to max 5)
-    player_ptr->shoot_cooldown += dt;
+    player_ptr->shoot_cooldown += p_dt;
     if (player_ptr->shoot_cooldown >= 1.0f && player_ptr->fireball_count < 5)
     {
         player_ptr->fireball_count++;
@@ -602,15 +603,15 @@ void player_handle_shooting(Player * player_ptr, f32 dt)
 	- Ahmad's part
 */
 /**************************************************************************/
-void player_update_particles(Player * player_ptr, f32 dt)
+void player_update_particles(Player * player_ptr, f32 p_dt)
 {
     for (size_t i = 0; i < player_ptr->particles.size(); ++i)
     {
         Particle& p = player_ptr->particles[i];
 
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.life -= dt;
+        p.x += p.vx * p_dt;
+        p.y += p.vy * p_dt;
+        p.life -= p_dt;
 
         if (p.life <= 0)
         {
@@ -646,7 +647,7 @@ void player_render_particles(Player *player_ptr)
   Updates projectile positions and handles collisions. - Ahmad's part
 */
 /**************************************************************************/
-void player_update_projectiles(Player * player_ptr, f32 dt)
+void player_update_projectiles(Player * player_ptr, f32 p_dt)
 {
     if (!player_ptr)
         return;
@@ -655,8 +656,8 @@ void player_update_projectiles(Player * player_ptr, f32 dt)
     {
         Projectile& p = player_ptr->projectiles[i];
 
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
+        p.x += p.vx * p_dt;
+        p.y += p.vy * p_dt;
 
         // --- PARTICLE SPAWNING ---
         // Every frame, create a "trail" particle
@@ -726,8 +727,6 @@ void player_render_fireball_count(Player * player_ptr)
         return;
 
     std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
-
-    // render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
 }
 /**************************************************************************/
 /*!
@@ -751,10 +750,8 @@ void player_handle_melee(Player* player_ptr)
     AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
 
     f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
-    f32 halfHeight = (f32)AEGfxGetWindowHeight() / 2.0f;
 
     f32 mouseWorldX = (f32)mouseScreenX - halfWidth + Camera::cam.pos.x;
-    f32 mouseWorldY = halfHeight - (f32)mouseScreenY + Camera::cam.pos.y;
 
     // Determine left or right of player
     float dx = mouseWorldX - player_ptr->char1.x;
@@ -772,14 +769,14 @@ void player_handle_melee(Player* player_ptr)
 	- Ahmad's part
 */
 /**************************************************************************/
-void player_update_swing(Player* player_ptr, f32 dt)
+void player_update_swing(Player* player_ptr, f32 p_dt)
 {
     if (!player_ptr) return;
 
     SwingArc& sw = player_ptr->swing;
     if (!sw.active) return;
 
-    sw.progress += dt / sw.duration;
+    sw.progress += p_dt / sw.duration;
 
     // only check for hits once per swing, not every frame
     if (!sw.has_hit)
@@ -1027,7 +1024,7 @@ bool player_is_dead(Player *player_ptr)
   - Claire's part
 */
 /**************************************************************************/
-void spawn_player_from_map(Player *player_ptr, f32 tile_size)
+void spawn_player_from_map(Player *player_ptr)
 {
 	for (int r = 0; r < TILE_ROWS; r++)
 	{

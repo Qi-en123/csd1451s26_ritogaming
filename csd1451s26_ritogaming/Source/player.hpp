@@ -311,10 +311,9 @@ bool player_is_dead(Player* player_ptr);
 // Converts tile coordinates into world positions.
 //
 // player_ptr - player to initialize positions for
-// tile_size  - size of each tile (unused in current implementation)
 //
 // ------------------------------------------------------------------------
-void spawn_player_from_map(Player* player_ptr, f32 tile_size);
+void spawn_player_from_map(Player* player_ptr);
 
 // ------------------------------------------------------------------------
 //

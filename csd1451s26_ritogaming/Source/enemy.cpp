@@ -182,22 +182,45 @@ int BossProjectileManager::get_active_count() const
 }
 
 //------------------------------- Pathfinding --------------------------------
-void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size, f32 target_x, f32 target_y, f32 dt)
+bool g_enemy_debug_draw = false;
+static bool path_is_clear(f32 x, f32 y, f32 tx, f32 ty, f32 half)
+{
+    for (int i = 1; i <= 10; ++i)
+    {
+        f32 t = i / 10.f;
+        if (check_player_collision(x + (tx - x) * t,
+            y + (ty - y) * t, half))
+            return false;
+    }
+    return true;
+}
+
+void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
+    f32 target_x, f32 target_y, f32 dt)
 {
     f32 dx = target_x - x;
     f32 dy = target_y - y;
     f32 dist = sqrtf(dx * dx + dy * dy);
-    if (dist <= 1.0f)
-        return;
+    if (dist <= 1.0f) return;
 
     dx /= dist;
     dy /= dist;
-    f32 nx = x + dx * speed * dt;
-    f32 ny = y + dy * speed * dt;
-    if (!check_player_collision(nx, y, size / 2.0f))
-        x = nx;
-    if (!check_player_collision(x, ny, size / 2.0f))
-        y = ny;
+
+    const f32 half = size * 0.5f;
+    const f32 step = speed * dt;
+
+    bool blocked_x = false;
+    bool blocked_y = false;
+
+    f32 probe_x = x + (dx > 0 ? half : -half); 
+    f32 probe_y = y + (dy > 0 ? half : -half); 
+
+    if (check_player_collision(probe_x + dx * step, y, 2.f)) blocked_x = true;
+
+    if (check_player_collision(x, probe_y + dy * step, 2.f)) blocked_y = true;
+
+    if (!blocked_x) x += dx * step;
+    if (!blocked_y) y += dy * step;
 }
 
 void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size, f32 from_x, f32 from_y, f32 dt)

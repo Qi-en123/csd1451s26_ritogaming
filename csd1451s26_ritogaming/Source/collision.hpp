@@ -1,18 +1,25 @@
-/*!************************************************************************
-\file:          collision.hpp
-\author:        Ahmad Qusyairi
-\par DP email:  ahmadqusyairi.b@digipen.edu
-\brief:         This file consist of declarations of functions
-                GenerateWallsFromMap, AABBvsAABB and CheckPlayerCollision
-**************************************************************************/
 #pragma once
+
+/*!************************************************************************
+\file:                          collision.hpp
+\author:                        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:                  ahmadqusyairi.b@digipen.edu
+
+\brief:                         This file consists of declarations of functions
+                                for map-based wall generation and various
+                                collision detection algorithms (AABB, Circle).
+**************************************************************************/
 
 #include "player.hpp"
 #include "map.hpp"
 #include <vector>
 
-
-// Simple axis-aligned rectangle (AABB) for walls
+// ----------------------------------------------------------------------------
+//
+// Struct: Wall
+// Simple axis-aligned rectangle (AABB) for walls.
+//
+// ---------------------------------------------------------------------------- 
 struct Wall
 {
     f32 x;      // center x
@@ -24,35 +31,86 @@ struct Wall
 // Global walls vector
 extern std::vector<Wall> g_walls;
 extern bool door_triggered;
-// Generate walls from actual dungeon map
+
+// ----------------------------------------------------------------------------
+//
+// Function: generate_walls_from_map
+// Generate walls from actual dungeon map.
+//
+// ---------------------------------------------------------------------------- 
 void generate_walls_from_map(s32 map[TILE_ROWS][TILE_COLS], f32 tile_size);
 
-// Check AABB vs AABB collision
+// ----------------------------------------------------------------------------
+//
+// Function: ss_collision
+// Check AABB vs AABB collision.
+//
+// ---------------------------------------------------------------------------- 
 bool ss_collision(
     f32 ax, f32 ay, f32 ahw, f32 ahh,
     f32 bx, f32 by, f32 bhw, f32 bhh
 );
 
-// Check circle vs circle collision
+// ----------------------------------------------------------------------------
+//
+// Function: cc_collision
+// Check circle vs circle collision.
+//
+// ---------------------------------------------------------------------------- 
 bool cc_collision(f32 x1, f32 y1, f32 r1, f32 x2, f32 y2, f32 r2);
 
-// Check circle vs rectangle collision
+// ----------------------------------------------------------------------------
+//
+// Function: cr_collision
+// Check circle vs rectangle collision.
+//
+// ---------------------------------------------------------------------------- 
 bool cr_collision(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh);
 
-//Check puzzle collision against walls
+// ----------------------------------------------------------------------------
+//
+// Function: puzzle_to_wall_collision
+// Check puzzle collision against walls.
+//
+// ---------------------------------------------------------------------------- 
 bool puzzle_to_wall_collision(f32 newX, f32 newY);
 
-//Check puzzle collision against inactive player
+// ----------------------------------------------------------------------------
+//
+// Function: puzzle_to_inactive_collision
+// Check puzzle collision against inactive player.
+//
+// ---------------------------------------------------------------------------- 
 bool puzzle_to_inactive_collision(f32 newX, f32 newY);
 
-// Check collision for a player position
+// ----------------------------------------------------------------------------
+//
+// Function: check_player_collision
+// Check collision for a player position.
+//
+// ---------------------------------------------------------------------------- 
 bool check_player_collision(f32 newX, f32 newY, f32 playerHalfSize);
 
-// Check collision for projectiles
+// ----------------------------------------------------------------------------
+//
+// Function: check_projectile_collision
+// Check collision for projectiles.
+//
+// ---------------------------------------------------------------------------- 
 bool check_projectile_collision(f32 projX, f32 projY, f32 projRadius);
 
-// Circle to rectangle collision (alternative implementation)
+// ----------------------------------------------------------------------------
+//
+// Function: circle_to_rectangle
+// Circle to rectangle collision (alternative implementation).
+//
+// ---------------------------------------------------------------------------- 
 bool circle_to_rectangle(f32 cx, f32 cy, f32 cr, f32 rx, f32 ry, f32 rw, f32 rh);
 
-// Check if player is on a door and handle door opening
+// ----------------------------------------------------------------------------
+//
+// Function: check_and_open_doors
+// Check if player is on a door and handle door opening.
+//
+// ---------------------------------------------------------------------------- 
 void check_and_open_doors(Player* player);

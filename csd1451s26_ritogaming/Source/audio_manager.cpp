@@ -159,6 +159,12 @@ void play_sfx(AEAudio audio, float volume, float pitch, int loop)
     AEAudioPlay(audio, g_audio.sfx_group, volume, pitch, loop);
 }
 
+// ----------------------------------------------------------------------------
+//
+// Function: stop_sfx
+// Immediately stops all audio currently playing in the SFX group.
+//
+// ----------------------------------------------------------------------------
 void stop_sfx()
 {
     AEAudioStopGroup(g_audio.sfx_group);

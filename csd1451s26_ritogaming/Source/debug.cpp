@@ -1,7 +1,10 @@
 /*!************************************************************************
-\file:          debug.cpp
-\brief:         Implementation of debug drawing utilities.
-                Moved from collision.cpp.
+\file:                          debug.cpp
+\author:                        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:                  ahmadqusyairi.b@digipen.edu
+
+\brief:                         Implementation of debug drawing utilities.
+                                Moved from collision.cpp.
 **************************************************************************/
 
 #include <cmath>
@@ -14,10 +17,13 @@
 #include "enemy_manager.hpp"
 
 namespace DEBUG {
-    /*!************************************************************************
-    \brief Debug draw for all walls.
-    Shows all wall positions as red rectangles.
-    **************************************************************************/
+
+    // ----------------------------------------------------------------------------
+    //
+    // Function: draw_all_walls
+    // Debug draw for all walls. Shows all wall positions as red rectangles.
+    //
+    // ---------------------------------------------------------------------------- 
     void draw_all_walls()
     {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -29,16 +35,19 @@ namespace DEBUG {
             draw_square(wall.x, wall.y, wall.halfW * 2.0f, wall.halfH * 2.0f);
     }
 
-    /*!************************************************************************
-    \brief Debug draw for player and door tile positions.
-    Draws char1 (blue), char2 (green), and the door tile (yellow).
-    **************************************************************************/
+    // ----------------------------------------------------------------------------
+    //
+    // Function: draw_player_tile
+    // Debug draw for player and door tile positions.
+    // Draws char1 (blue), char2 (green), and the door tile (yellow).
+    //
+    // ---------------------------------------------------------------------------- 
     void draw_player_tile()
     {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetTransparency(1.0f);
-        
+
         f32 coll = player_instance.stats.character_size;
 
         AEGfxSetColorToMultiply(0.0f, 0.0f, 1.0f, 0.5f);
@@ -57,22 +66,18 @@ namespace DEBUG {
         draw_square(door_x, door_y, tile_size, tile_size);
     }
 
-    /*!************************************************************************
-    \brief Debug draw for all puzzle blocks, colored by type.
-        PUSHABLE    = orange
-        BUTTON_UP   = yellow
-        BUTTON_DOWN = bright green (pressed)
-        PIT         = dark blue
-        PIT_FILLED  = grey
-        SPIKE       = red
-    **************************************************************************/
+    // ----------------------------------------------------------------------------
+    //
+    // Function: draw_puzzle_blocks
+    // Debug draw for all puzzle blocks, colored by type.
+    // PUSHABLE = orange, BUTTON_UP = yellow, BUTTON_DOWN = green, etc.
+    //
+    // ---------------------------------------------------------------------------- 
     void draw_puzzle_blocks()
     {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetTransparency(1.0f);
-
-        //f32 coll_size = (tile_size / 2.0f - 2.0f) * 2.0f;
 
         for (Puzzle::puzzle& p : Puzzle::puzzle_blocks)
         {
@@ -93,10 +98,13 @@ namespace DEBUG {
         }
     }
 
-    /*!************************************************************************
-    \brief Debug draw grab range around all active pushable puzzles.
-    Shows the range within which the player can grab and drag them.
-    **************************************************************************/
+    // ----------------------------------------------------------------------------
+    //
+    // Function: draw_puzzle_grab_range
+    // Debug draw grab range around all active pushable puzzles.
+    // Shows the range within which the player can grab and drag them.
+    //
+    // ---------------------------------------------------------------------------- 
     void draw_puzzle_grab_range()
     {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -117,9 +125,12 @@ namespace DEBUG {
         }
     }
 
-    /*!************************************************************************
-    \brief Debug draw markers on buttons (yellow) and their paired spikes (red).
-    **************************************************************************/
+    // ----------------------------------------------------------------------------
+    //
+    // Function: draw_button_spike_links
+    // Debug draw markers on buttons (yellow) and their paired spikes (red).
+    //
+    // ---------------------------------------------------------------------------- 
     void draw_button_spike_links()
     {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -154,18 +165,13 @@ namespace DEBUG {
         }
     }
 
-    /*!************************************************************************
-    \brief Debug draw for all active enemies.
-    Collision radius = red circle approximation (square)
-    Sight range      = yellow outer square
-    Health bar       = green/red bar above enemy
-    State is color coded on the collision box:
-        idle      = white
-        chasing   = orange
-        fleeing   = cyan
-        attacking = red
-        dead      = grey
-    **************************************************************************/
+    // ----------------------------------------------------------------------------
+    //
+    // Function: draw_enemies
+    // Debug draw for all active enemies. State is color coded:
+    // chasing = orange, fleeing = white, attacking = red.
+    //
+    // ---------------------------------------------------------------------------- 
     void draw_enemies()
     {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -180,12 +186,11 @@ namespace DEBUG {
             f32 y = e->get_y();
             f32 size = e->get_size();
 
-            // collision box colored by state
             switch (e->get_state())
             {
-            case chasing:   AEGfxSetColorToMultiply(1.0f, 0.5f, 0.0f, 0.5f); break; // orange
-            case fleeing:   AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); break; // white
-            case attacking: AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 0.5f); break; // red
+            case chasing:   AEGfxSetColorToMultiply(1.0f, 0.5f, 0.0f, 0.5f); break;
+            case fleeing:   AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); break;
+            case attacking: AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 0.5f); break;
             default: break;
             }
             draw_square(x, y, size, size);

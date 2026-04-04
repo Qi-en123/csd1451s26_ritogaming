@@ -112,5 +112,10 @@ void resume_bgm();
 // ---------------------------------------------------------------------------- 
 void play_sfx(AEAudio audio, float volume = 0.1f, float pitch = 1.0f, int loop = 0);
 
-
+// ----------------------------------------------------------------------------
+//
+// Function: stop_sfx
+// Immediately stops all audio currently playing in the SFX group.
+//
+// ----------------------------------------------------------------------------
 void stop_sfx();

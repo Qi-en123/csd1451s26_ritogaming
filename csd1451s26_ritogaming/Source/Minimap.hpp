@@ -1,32 +1,63 @@
 #pragma once
 
+/*!************************************************************************
+\file:                          minimap.hpp
+\author:                        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:                  ahmadqusyairi.b@digipen.edu
+
+\brief:                         Declarations for the HUD minimap system.
+                                Handles coordinate transformation from world
+                                space to UI space and renders a scaled
+                                representation of the dungeon and entities.
+**************************************************************************/
+
 #include "renderer.hpp"
 #include "map.hpp"
 #include "AEEngine.h"
 
-constexpr f32 minimap_zoom = 2.0f; //change name, to like minimap_zoom or smth and change to constexpr
+// Minimap configuration constants
+constexpr f32 minimap_zoom = 2.0f;
 
 extern f32 totalWorldW;
 extern f32 totalWorldH;
 
-//fak u whr the GIT format
-/**
-* @brief Sets the internal world bounds and the desired size of the UI.
-* @param worldW Total width of your game map (e.g., TILE_COLS * tile_size).
-* @param worldH Total height of your game map (e.g., TILE_ROWS * tile_size).
-* @param mapSize The pixel size of the square minimap (e.g., 200.0f).
-*/
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_init
+// Sets the internal world bounds and the desired size of the UI.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_init(f32 worldW, f32 worldH);
 
-/**
-* @brief Draws the entire minimap HUD, including the background and player.
-* @param playerX The current world X-coordinate of the player.
-* @param playerY The current world Y-coordinate of the player.
-*/
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_draw
+// Draws the entire minimap HUD, including the background and player.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTexture* tiles[]);
 
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_draw_overlay
+// Renders the static UI frame or border overlay for the minimap.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_draw_overlay(f32 centerX, f32 centerY);
 
+// ----------------------------------------------------------------------------
+//
+// Function: draw_sprite_on_map
+// Translates a world-space coordinate into a minimap-space coordinate 
+// and renders a sprite at that location.
+//
+// ---------------------------------------------------------------------------- 
 void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* pTex);
 
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_unload
+// Cleans up minimap resources and textures before state transitions.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_unload();

@@ -1,7 +1,10 @@
 /*!************************************************************************
-\file:          Minimap.cpp
-\author:        Ahmad Qusyairi
-\brief:         Minimap rendering system for the dungeon
+\file:                          Minimap.cpp
+\author:                        Ahmad Qusyairi Bin Mohammad Jinna
+\par DP email:                  ahmadqusyairi.b@digipen.edu
+\brief:                         Implementation of the minimap rendering system.
+                                Handles scrolling map logic, world-to-UI
+                                coordinate conversion, and tile-based culling.
 **************************************************************************/
 
 #include "Minimap.hpp"
@@ -29,20 +32,36 @@ namespace
 
     AEGfxTexture* pMapParts[4] = { nullptr, nullptr, nullptr, nullptr };
 
-    // ---------------------------------------------------------------------
-
+    // ----------------------------------------------------------------------------
+    //
+    // Function: get_world_start
+    // Calculates the top-left starting world coordinates based on dimensions.
+    //
+    // ---------------------------------------------------------------------------- 
     void get_world_start(f32& x, f32& y)
     {
         x = -(WORLD_WIDTH / HALF);
         y = (WORLD_HEIGHT / HALF);
     }
 
+    // ----------------------------------------------------------------------------
+    //
+    // Function: get_map_center
+    // Determines the screen-space center position for the minimap UI element.
+    //
+    // ---------------------------------------------------------------------------- 
     void get_map_center(f32& outX, f32& outY, f32 mapSize)
     {
         outX = (AEGfxGetWindowWidth() / HALF) - (mapSize / HALF) - MINIMAP_PADDING + MINIMAP_OFFSET_X;
         outY = (AEGfxGetWindowHeight() / HALF) - (mapSize / HALF) - MINIMAP_PADDING + MINIMAP_OFFSET_Y;
     }
 
+    // ----------------------------------------------------------------------------
+    //
+    // Function: tile_to_world_center
+    // Converts a 2D map array index (row/col) into world-space coordinates.
+    //
+    // ---------------------------------------------------------------------------- 
     void tile_to_world_center(int r, int c, f32& x, f32& y)
     {
         f32 startX, startY;
@@ -63,6 +82,12 @@ f32 mapSize;
 
 // =========================================================================
 
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_init
+// Initializes minimap dimensions and loads the quad-split frame textures.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_init(f32 w, f32 h)
 {
     totalWorldW = w;
@@ -78,8 +103,12 @@ void minimap_init(f32 w, f32 h)
     }
 }
 
-// =========================================================================
-
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_draw_overlay
+// Renders the decorative frame over the minimap using 4 separate texture parts.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_draw_overlay(f32 centerX, f32 centerY)
 {
     f32 partSize = mapSize / OVERLAY_SCALE;
@@ -92,8 +121,13 @@ void minimap_draw_overlay(f32 centerX, f32 centerY)
     render_ui_sprite(square_mesh, centerX + offset, centerY - offset, partSize, partSize, pMapParts[3], white);
 }
 
-// =========================================================================
-
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_draw
+// Main rendering loop for the minimap. Handles background, scrolling logic 
+// based on player position, tile culling, and player icon rendering.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTexture* tiles[])
 {
     if (!pPlayer) return;
@@ -117,7 +151,7 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     f32 radius = mapSize / HALF;
     f32 cullPadding = miniTileSize / HALF;
 
-    // Bounds
+    // Bounds calculation for clamping
     f32 mapMinX = FLT_MAX, mapMaxX = -FLT_MAX;
     f32 mapMinY = -FLT_MAX, mapMaxY = FLT_MAX;
 
@@ -148,7 +182,7 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     if (clampedY > mapMinY - viewRadius) clampedY = mapMinY - viewRadius;
     if (clampedY < mapMaxY + viewRadius) clampedY = mapMaxY + viewRadius;
 
-    // Draw tiles
+    // Draw tiles with distance-based culling
     for (int r = 0; r < TILE_ROWS; ++r)
     {
         for (int c = 0; c < TILE_COLS; ++c)
@@ -181,7 +215,7 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
         }
     }
 
-    // Player
+    // Render Player relative to the clamped map view
     f32 playerX = (pPlayer->current_player->x - clampedX) * MINIMAP_ZOOM;
     f32 playerY = (pPlayer->current_player->y - clampedY) * MINIMAP_ZOOM;
 
@@ -198,8 +232,12 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     minimap_draw_overlay(mapCenterX, mapCenterY);
 }
 
-// =========================================================================
-
+// ----------------------------------------------------------------------------
+//
+// Function: draw_sprite_on_map
+// Helper to draw custom sprites (icons, markers) onto the minimap UI.
+//
+// ---------------------------------------------------------------------------- 
 void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* pTex)
 {
     if (!pTex) return;
@@ -218,8 +256,12 @@ void draw_sprite_on_map(f32 worldX, f32 worldY, f32 spriteScale, AEGfxTexture* p
     render_ui_sprite(square_mesh, finalX, finalY, spriteScale, spriteScale, pTex, white);
 }
 
-// =========================================================================
-
+// ----------------------------------------------------------------------------
+//
+// Function: minimap_unload
+// Unloads the frame overlay textures and resets pointers.
+//
+// ---------------------------------------------------------------------------- 
 void minimap_unload()
 {
     for (int i = 0; i < 4; ++i)

@@ -419,25 +419,25 @@ static void player_handle_movement(Player *player_ptr)
     // Movement input
     if (AEInputCheckCurr(AEVK_W))
     {
-        nextY += is_dragging ? 1.0f : move_speed;
+        nextY += is_dragging ? move_speed / 5.0f : move_speed;
         player_ptr->last_dir_x = 0.0f;
         player_ptr->last_dir_y = 1.0f;
     }
     if (AEInputCheckCurr(AEVK_S))
     {
-        nextY -= is_dragging ? 1.0f : move_speed;
+        nextY -= is_dragging ? move_speed / 5.0f : move_speed;
         player_ptr->last_dir_x = 0.0f;
         player_ptr->last_dir_y = -1.0f;
     }
     if (AEInputCheckCurr(AEVK_A))
     {
-        nextX -= is_dragging ? 1.0f : move_speed;
+        nextX -= is_dragging ? move_speed / 5.0f : move_speed;
         player_ptr->last_dir_x = -1.0f;
         player_ptr->last_dir_y = 0.0f;
     }
     if (AEInputCheckCurr(AEVK_D))
     {
-        nextX += is_dragging ? 1.0f : move_speed;
+        nextX += is_dragging ? move_speed / 5.0f : move_speed;
         player_ptr->last_dir_x = 1.0f;
         player_ptr->last_dir_y = 0.0f;
     }
@@ -583,7 +583,7 @@ void player_handle_shooting(Player * player_ptr, f32 dt)
 
         player_ptr->projectiles.push_back(new_fire);
         player_ptr->fireball_count--;
-        play_sfx(g_audio.sfx_fireball, 0.1f);
+        play_sfx(g_audio.sfx_fireball, 0.08f, 0.45f);
     }
 }
 void player_update_particles(Player * player_ptr, f32 dt)
@@ -731,7 +731,7 @@ void player_handle_melee(Player* player_ptr)
     player_ptr->swing.progress = 0.0f;
     player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f;  // +1 right, -1 left
 
-    play_sfx(g_audio.sfx_sword_atk, 0.1f);
+    play_sfx(g_audio.sfx_sword_atk, 0.1f, 1.1f);
 }
 void player_update_swing(Player* player_ptr, f32 dt)
 {

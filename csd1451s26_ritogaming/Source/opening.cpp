@@ -121,12 +121,8 @@ void opening_init()
     elapsed = 0.f;  // Reset total elapsed time for this scene
     alpha = 0.f;    // Start fully transparent (for fade-in effect)
 
-    //Camera::cam.pos.x = 0.f; // Reset camera horizontal position to center (no offset on X axis)
-    //Camera::cam.pos.y = 0.f; // Reset camera vertical position to center (no offset on Y axis)
-    //zoom = 1.0f; // Set camera zoom to normal scale (1.0 = no zoom in/out)
-
     g_bgm_current_track = &g_audio.bgm_op_n_mainmenu;
-    play_bgm(g_audio.bgm_op_n_mainmenu, 0.3f);
+    play_bgm(g_audio.bgm_op_n_mainmenu, 1.0f);
 }
 
 // ----------------------------------------------------------------------------

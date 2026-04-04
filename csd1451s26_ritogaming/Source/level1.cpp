@@ -53,9 +53,11 @@ namespace
 
 		// UI & Camera
 		const f32 DEFAULT_ZOOM = 1.1f;
-		const f32 PLAYER_SIZE_OFFSET = 8.0f;
-		const f32 BGM_VOLUME = 0.1f;
+		const f32 PLAYER_SIZE_OFFSET = 8.0f;		
 		const f32 OVERLAY_ALPHA_HALF = 0.5f;
+
+		// BGM
+		const f32 BGM_VOLUME = 0.09f;
 
 		// Font Sizes
 		const int FONT_SIZE_LARGE = 60;
@@ -226,7 +228,7 @@ void level1_init()
 	enemy_manager_instance.initialize_tutorial_area();
 
 	g_bgm_current_track = &g_audio.bgm_maingame;
-	//play_bgm(g_audio.bgm_maingame, Constants::BGM_VOLUME);
+	play_bgm(g_audio.bgm_maingame, Constants::BGM_VOLUME);
 }
 
 // ----------------------------------------------------------------------------

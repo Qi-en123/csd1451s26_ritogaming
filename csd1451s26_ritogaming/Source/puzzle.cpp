@@ -316,7 +316,7 @@ namespace Puzzle {
 
 		if (!ofs.is_open())
 		{
-			std::cerr << "Failed to open puzzle map file for overwrite: " << filename << "\n";
+			//std::cerr << "Failed to open puzzle map file for overwrite: " << filename << "\n";
 			return false;
 		}
 
@@ -357,7 +357,7 @@ namespace Puzzle {
 		std::ofstream ofs{ filename };
 		if (!ofs)
 		{
-			std::cerr << "Failed to open puzzle map file for writing: " << filename << "\n";
+			//std::cerr << "Failed to open puzzle map file for writing: " << filename << "\n";
 			return false;
 		}
 
@@ -374,7 +374,7 @@ namespace Puzzle {
 
 		std::ifstream ifs{ filename };
 		if (!ifs.is_open()) {
-			printf("Failed to open: %s\n", filename);
+			//printf("Failed to open: %s\n", filename);
 			//terminate
 			return false;
 		}
@@ -497,8 +497,8 @@ namespace Puzzle {
 			puzzle_block_textures[i] = AEGfxTextureLoad(filename);
 
 			if (!puzzle_block_textures[i]) {
-
-				printf("Failed to load: %s\n", filename);
+				return;
+				//printf("Failed to load: %s\n", filename);
 			}
 		}
 	}
@@ -516,7 +516,7 @@ namespace Puzzle {
 
 		std::ifstream ifs{ filename };
 		if (!ifs.is_open()) {
-			printf("Failed to open: %s\n", filename);
+			//printf("Failed to open: %s\n", filename);
 			//terminate
 		}
 

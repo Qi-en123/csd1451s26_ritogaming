@@ -182,6 +182,9 @@ void guide_init() {
 	//Initialize & spawn enemies
 	enemy_manager_instance.initialize_tutorial_area();
 
+	g_bgm_current_track = &g_audio.bgm_maingame;
+	play_bgm(g_audio.bgm_maingame, 0.1f);
+
 	cleared_guide = false;
 }
 

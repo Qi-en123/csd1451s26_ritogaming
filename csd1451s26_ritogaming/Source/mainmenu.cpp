@@ -270,12 +270,11 @@ void mainmenu_init()
     for (s32 i = 0; i < MAX_TRAIL; ++i) ghoul_trail[i].active = false;
     trail_spawn_timer = 0.0f;
 
-    if (g_bgm_current_track != &g_audio.bgm_op_n_mainmenu)
-    {
-        g_bgm_current_track = &g_audio.bgm_op_n_mainmenu;
-        play_bgm(g_audio.bgm_op_n_mainmenu, 1.0f);
-    }
-
+	if (g_bgm_current_track != &g_audio.bgm_op_n_mainmenu)
+	{
+		g_bgm_current_track = &g_audio.bgm_op_n_mainmenu;
+		play_bgm(g_audio.bgm_op_n_mainmenu, 1.0f);
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -597,6 +596,7 @@ void mainmenu_free()
 {
     free_mesh(); // release vertex list memory created in init_mesh
     stop_bgm();
+    g_bgm_current_track = nullptr;
 }
 
 // ----------------------------------------------------------------------------

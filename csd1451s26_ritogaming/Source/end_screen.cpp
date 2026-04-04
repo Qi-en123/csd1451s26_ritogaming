@@ -188,11 +188,11 @@ void end_screen_init()
 
     if (is_win) {
         // Replace with your actual win SFX variable from audio_manager
-        play_sfx(g_audio.sfx_win, 1.0f);
+        play_sfx(g_audio.sfx_win, 0.5f);
     }
     else {
         // Replace with your actual lose SFX variable
-        play_sfx(g_audio.sfx_lose, 1.0f);
+        play_sfx(g_audio.sfx_lose, 0.5f, 0.9f);
     }
 }
 

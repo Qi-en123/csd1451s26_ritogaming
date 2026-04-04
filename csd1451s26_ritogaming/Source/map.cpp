@@ -43,7 +43,7 @@ bool load_tile_textures(const char* folderPath)
         TileTextures[i] = AEGfxTextureLoad(filename);
         if (!TileTextures[i])
         {
-            std::cerr << "Failed to load tile texture: " << filename << std::endl;
+            //std::cerr << "Failed to load tile texture: " << filename << std::endl;
             return false;
         }
     }
@@ -63,7 +63,7 @@ bool save_map_to_file_overwrite(s32** map, const std::string& filename)
 
     if (!file.is_open())
     {
-        std::cerr << "Failed to open map file for overwrite: " << filename << "\n";
+        //std::cerr << "Failed to open map file for overwrite: " << filename << "\n";
         return false;
     }
 
@@ -79,7 +79,7 @@ bool save_map_to_file_overwrite(s32** map, const std::string& filename)
     }
 
     file.close();
-    std::cout << "Overwritten: " << filename << "\n";
+    //std::cout << "Overwritten: " << filename << "\n";
     return true;
 }
 
@@ -174,7 +174,7 @@ bool load_map_from_file(const char* filename, s32 map[][TILE_COLS])
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Failed to open map file: " << filename << "\n";
+        //std::cerr << "Failed to open map file: " << filename << "\n";
         return false;
     }
 
@@ -248,7 +248,7 @@ bool save_map_to_file(s32** map, std::string& out_filename)
 
     if (!file.is_open())
     {
-        std::cerr << "Failed to open map file for writing: " << filename << "\n";
+        //std::cerr << "Failed to open map file for writing: " << filename << "\n";
         return false;
     }
 
@@ -265,7 +265,7 @@ bool save_map_to_file(s32** map, std::string& out_filename)
     }
 
     file.close();
-    std::cout << "Saved to: " << filename << "\n";
+    //std::cout << "Saved to: " << filename << "\n";
     return true;
 }
 

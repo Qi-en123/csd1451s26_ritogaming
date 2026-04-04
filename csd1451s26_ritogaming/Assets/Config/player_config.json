@@ -23,7 +23,7 @@
         "char2_start_x": 1000.0,
         "char2_start_y": -950.0,
         "char1_move_speed": 6.5,
-        "char2_move_speed": 13.0
+        "char2_move_speed": 9.0
     },
     "fireball_count": 5
 }

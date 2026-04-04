@@ -45,6 +45,7 @@ struct AudioManager
     AEAudio sfx_footsteps{};
     AEAudio sfx_lose{};
     AEAudio sfx_win{};
+	AEAudio sfx_warning{}; 
 
 };
 

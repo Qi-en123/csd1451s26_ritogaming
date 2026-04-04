@@ -23,13 +23,53 @@ update game logic, render, free resources
 #include "end_screen.hpp"
 #include "mainmenu.hpp"
 #include "debug.hpp"
-
 #include "levels.hpp"
 
 static AEGfxTexture* skeleton_texture = nullptr;
 
 namespace
 {
+	// --- CONSTANTS (Refactored Hardcoded Values) ---
+	namespace Constants {
+		// Asset Paths
+		const char* PATH_TILE_SPRITES = "Assets/Sprites/Tiles";
+		const char* PATH_DEAD_SKELETON = "Assets/Sprites/Tiles/dead_last_location.png";
+		const char* PATH_MAIN_FONT = "Assets/Fonts/Kenney Mini Square.ttf";
+		const char* PATH_PLAYER_CONFIG = "Assets/Config/player_config.json";
+		const char* PATH_DEFAULT_MAP = "Assets/Levels/default.txt";
+		const char* PATH_DEFAULT_PUZZLE = "Assets/Levels/puzzle.txt";
+		const char* PATH_DEFAULT_ENEMY = "Assets/Levels/enemy.txt";
+
+		// Timing & Speeds
+		const f32 TRANSITION_SPEED = 2.0f;
+		const f32 TEXT_FADE_IN_SPEED = 3.0f;
+		const f32 TEXT_HOLD_DUR = 1.0f;
+		const f32 TEXT_FADE_OUT_SPEED = 1.5f;
+		const f32 BOSS_WARNING_DUR = 3.0f;
+		const f32 BOSS_FLASH_SPEED = 6.0f;
+
+		// UI & Camera
+		const f32 DEFAULT_ZOOM = 1.1f;
+		const f32 PLAYER_SIZE_OFFSET = 8.0f;
+		const f32 BGM_VOLUME = 0.1f;
+		const f32 OVERLAY_ALPHA_HALF = 0.5f;
+
+		// Font Sizes
+		const int FONT_SIZE_LARGE = 60;
+		const int FONT_SIZE_SMALL = 28;
+
+		// Text Positions/Scales
+		const f32 LVL_TEXT_SCALE = 2.0f;
+		const f32 LVL_TEXT_Y_OFFSET = 0.05f;
+		const f32 DANGER_TEXT_SCALE = 1.5f;
+		const f32 DANGER_Y_TOP = 0.15f;
+		const f32 DANGER_Y_BOTTOM = -0.15f;
+
+		// Boss Warning SFX
+		const f32 BOSS_WARNING_SFX_VOLUME = 0.5f;
+		const f32 BOSS_WARNING_SFX_PITCH = 1.0f;
+	}
+
 	s32 mouse_x, mouse_y;
 	bool cursor_active = false;
 	s8 tooltip_font = -1;
@@ -38,7 +78,6 @@ namespace
 	enum TransitionState { NONE, FADE_OUT, FADE_IN };
 	TransitionState transition_state = NONE;
 	f32 transition_alpha = 0.f;
-	const f32 TRANSITION_SPEED = 2.0f;
 	int pending_next_state = -1;
 	std::string current_level_name = "";
 
@@ -46,24 +85,16 @@ namespace
 	enum TextState { TEXT_NONE, TEXT_FADE_IN, TEXT_HOLD, TEXT_FADE_OUT };
 	TextState level_text_state = TEXT_NONE;
 	f32 level_text_alpha = 0.f;
-	const f32 TEXT_FADE_IN_SPEED = 3.0f;  // faster fade in
-	const f32 TEXT_HOLD_DUR = 1.0f;  // hold for 1 second
-	const f32 TEXT_FADE_OUT_SPEED = 1.5f;  // faster fade out
 	f32 text_hold_timer = 0.f;
-
 
 	// Boss warning
 	bool show_boss_warning = false;
 	f32 boss_warning_timer = 0.f;
-	const f32 BOSS_WARNING_DUR = 3.f;
 	s8 warning_font = -1;
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: is_transitioning
-// Returns whether the level is currently in a fade-in or fade-out state.
-//
 // ---------------------------------------------------------------------------- 
 bool is_transitioning()
 {
@@ -71,10 +102,7 @@ bool is_transitioning()
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: trigger_level_transition
-// Starts the fade-out process and stores the next state to switch to.
-//
 // ---------------------------------------------------------------------------- 
 void trigger_level_transition(int target_state)
 {
@@ -85,37 +113,35 @@ void trigger_level_transition(int target_state)
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: trigger_boss_warning
-// Activates the danger UI warning before transitioning to the boss room.
-//
 // ---------------------------------------------------------------------------- 
 void trigger_boss_warning()
 {
 	stop_sfx();
 	stop_bgm();
 	show_boss_warning = true;
-	boss_warning_timer = BOSS_WARNING_DUR;
+	boss_warning_timer = Constants::BOSS_WARNING_DUR;
+
+	play_sfx(g_audio.sfx_warning, Constants::BOSS_WARNING_SFX_VOLUME, Constants::BOSS_WARNING_SFX_PITCH, -1);
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: level1_load
-// Loads textures, fonts, and UI elements needed for Level 1.
-//
 // ---------------------------------------------------------------------------- 
 void level1_load()
 {
 	end_screen_load();
-	if (!load_tile_textures("Assets/Sprites/Tiles"))
-		next = GS_QUIT; // If tile textures fail to load, quit the game
+	if (!load_tile_textures(Constants::PATH_TILE_SPRITES))
+		next = GS_QUIT;
+
 	enemy_manager_instance.load_textures();
 	Puzzle::load_puzzle_textures();
 	load_ui_textures(&ui_manager);
-	skeleton_texture = AEGfxTextureLoad("Assets/Sprites/Tiles/dead_last_location.png");
-	warning_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 60);
-	tooltip_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 28);
-	printf("Font value: %d\n", tooltip_font);
+
+	skeleton_texture = AEGfxTextureLoad(Constants::PATH_DEAD_SKELETON);
+	warning_font = AEGfxCreateFont(Constants::PATH_MAIN_FONT, Constants::FONT_SIZE_LARGE);
+	tooltip_font = AEGfxCreateFont(Constants::PATH_MAIN_FONT, Constants::FONT_SIZE_SMALL);
+
 	if (tooltip_font == -1)
 	{
 		return;
@@ -123,10 +149,7 @@ void level1_load()
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: level1_init
-// Initializes level variables, spawns the player/enemies, and sets up the camera.
-//
 // ---------------------------------------------------------------------------- 
 void level1_init()
 {
@@ -142,19 +165,18 @@ void level1_init()
 	show_boss_warning = false;
 	boss_warning_timer = 0.f;
 
-
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-	Camera::zoom = 1.1f;
-	ensure_level_paths_loaded(); // for both puzzles and map tile data
+	Camera::zoom = Constants::DEFAULT_ZOOM;
+	ensure_level_paths_loaded();
 
 	if (selected_level_path.empty() || selected_level_puzzle_path.empty())
 	{
-		selected_level_path = "Assets/Levels/default.txt";
-		selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
+		selected_level_path = Constants::PATH_DEFAULT_MAP;
+		selected_level_puzzle_path = Constants::PATH_DEFAULT_PUZZLE;
 	}
 
-	// Set display name
-	if (selected_level_path == "Assets/Levels/default.txt")
+	// Set display name logic
+	if (selected_level_path == Constants::PATH_DEFAULT_MAP)
 		current_level_name = "Level 1";
 	else
 	{
@@ -167,22 +189,16 @@ void level1_init()
 			}
 		}
 	}
+
 	load_map_from_file(selected_level_path.c_str(), map);
 	Puzzle::load_puzzle_data(selected_level_puzzle_path.c_str());
-
 	generate_walls_from_map(map, tile_size);
 
-	for (int r = 0; r < TILE_ROWS; ++r)
-		for (int c = 0; c < TILE_COLS; ++c)
-			if (map[r][c] == DOOR || map[r][c] == OPENED_DOOR)
-				printf("door at row:%d col:%d\n", r, c);
-
-	player_load_config(&player_instance, "Assets/Config/player_config.json");
+	player_load_config(&player_instance, Constants::PATH_PLAYER_CONFIG);
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
 	spawn_player_from_map(&player_instance, tile_size);
 
-	player_instance.stats.character_size = tile_size - 8.0f;
-	// Camera follows the active character via the pointer
+	player_instance.stats.character_size = tile_size - Constants::PLAYER_SIZE_OFFSET;
 	Camera::cam = Camera::init_cam(&player_instance.current_player->x, &player_instance.current_player->y);
 	init_mesh();
 
@@ -190,11 +206,11 @@ void level1_init()
 	totalWorldH = ((f32)TILE_ROWS * tile_size) / minimap_zoom;
 	minimap_init(totalWorldW, totalWorldH);
 
-	// for enemies
+	// Enemy Spawn logic
 	std::string spawn_path;
-	if (selected_level_path == "Assets/Levels/default.txt")
+	if (selected_level_path == Constants::PATH_DEFAULT_MAP)
 	{
-		spawn_path = "Assets/Levels/enemy.txt";
+		spawn_path = Constants::PATH_DEFAULT_ENEMY;
 	}
 	else
 	{
@@ -202,36 +218,31 @@ void level1_init()
 		spawn_path = selected_level_path.substr(0, last_dot) + "_enemy_spawns.txt";
 	}
 
-	printf("Loading Spawn File: %s\n", spawn_path.c_str());
-
 	enemy_manager_instance.clear_all();
 	enemy_manager_instance.load_spawn_positions(spawn_path.c_str());
 	enemy_manager_instance.initialize_tutorial_area();
 
 	g_bgm_current_track = &g_audio.bgm_maingame;
-	play_bgm(g_audio.bgm_maingame, 0.1f);
+	play_bgm(g_audio.bgm_maingame, Constants::BGM_VOLUME);
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: level1_update
-// Updates level logic, including camera, player systems, and enemy AI.
-//
 // ---------------------------------------------------------------------------- 
 void level1_update()
 {
 	AEInputGetCursorPosition(&mouse_x, &mouse_y);
 	dt = (f32)AEFrameRateControllerGetFrameTime();
 
-	// Text fade in -> hold -> fade out logic
+	// Text State Machine Logic
 	if (level_text_state == TEXT_FADE_IN)
 	{
-		level_text_alpha += dt * TEXT_FADE_IN_SPEED;
+		level_text_alpha += dt * Constants::TEXT_FADE_IN_SPEED;
 		if (level_text_alpha >= 1.f)
 		{
 			level_text_alpha = 1.f;
 			level_text_state = TEXT_HOLD;
-			text_hold_timer = TEXT_HOLD_DUR;
+			text_hold_timer = Constants::TEXT_HOLD_DUR;
 		}
 	}
 	else if (level_text_state == TEXT_HOLD)
@@ -242,7 +253,7 @@ void level1_update()
 	}
 	else if (level_text_state == TEXT_FADE_OUT)
 	{
-		level_text_alpha -= dt * TEXT_FADE_OUT_SPEED;
+		level_text_alpha -= dt * Constants::TEXT_FADE_OUT_SPEED;
 		if (level_text_alpha <= 0.f)
 		{
 			level_text_alpha = 0.f;
@@ -251,13 +262,12 @@ void level1_update()
 	}
 
 	pause_update();
-	if (is_paused)
-		return;
+	if (is_paused) return;
 
-	// Handle screen fade out transition
+	// Transitions
 	if (transition_state == FADE_OUT)
 	{
-		transition_alpha += dt * TRANSITION_SPEED;
+		transition_alpha += dt * Constants::TRANSITION_SPEED;
 		if (transition_alpha >= 1.f)
 		{
 			transition_alpha = 1.f;
@@ -266,10 +276,9 @@ void level1_update()
 		return;
 	}
 
-	// Handle screen fade in transition
 	if (transition_state == FADE_IN)
 	{
-		transition_alpha -= dt * TRANSITION_SPEED;
+		transition_alpha -= dt * Constants::TRANSITION_SPEED;
 		if (transition_alpha <= 0.f)
 		{
 			transition_alpha = 0.f;
@@ -277,13 +286,13 @@ void level1_update()
 		}
 	}
 
-	// Handle boss warning timing
 	if (show_boss_warning)
 	{
 		boss_warning_timer -= dt;
 		if (boss_warning_timer <= 0.f)
 		{
 			show_boss_warning = false;
+			stop_sfx(); // stop the warning sound effect if it's still playing
 			trigger_level_transition(GS_BOSS_ROOM);
 		}
 		return;
@@ -292,21 +301,14 @@ void level1_update()
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 	get_zoom(dt);
 
-	Camera::simulate_camera(&Camera::cam,
-		&player_instance.current_player->x,
-		&player_instance.current_player->y);
-
+	Camera::simulate_camera(&Camera::cam, &player_instance.current_player->x, &player_instance.current_player->y);
 	player_system_update(&player_instance);
 	entity_system_update(&player_instance, &enemy_manager_instance);
-
 	Puzzle::puzzle_button_manager();
 	Puzzle::puzzle_audio_update();
-
 	check_and_open_doors(&player_instance);
-
 	enemy_manager_instance.update(dt, &player_instance, &Camera::cam);
 
-	// Check for death/lose condition
 	if (player_is_dead(&player_instance))
 	{
 		is_win = false;
@@ -318,12 +320,8 @@ void level1_update()
 	if (AEInputCheckTriggered(AEVK_F1)) {
 		DEBUG::DEBUGGING ^= 1;
 		int val = DEBUG::DEBUGGING;
-		DEBUG::DRAW_WALLS = val;
-		DEBUG::DRAW_PLAYER_TILE = val;
-		DEBUG::DRAW_PUZZLE_GRAB_RANGE = val;
-		DEBUG::DRAW_PUZZLE_BLOCKS = val;
-		DEBUG::DRAW_BUTTON_SPIKE_LINKS = val;
-		DEBUG::DRAW_ENEMIES = val;
+		DEBUG::DRAW_WALLS = DEBUG::DRAW_PLAYER_TILE = DEBUG::DRAW_PUZZLE_GRAB_RANGE =
+			DEBUG::DRAW_PUZZLE_BLOCKS = DEBUG::DRAW_BUTTON_SPIKE_LINKS = DEBUG::DRAW_ENEMIES = val;
 	}
 
 	if (DEBUG::DEBUGGING) {
@@ -337,10 +335,7 @@ void level1_update()
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: level1_draw
-// Renders all level elements, UI, transitions, and warnings.
-//
 // ---------------------------------------------------------------------------- 
 void level1_draw()
 {
@@ -350,86 +345,67 @@ void level1_draw()
 	if (DEBUG::DEBUGGING) {
 		if (DEBUG::DRAW_WALLS)              DEBUG::draw_all_walls();
 		if (DEBUG::DRAW_PLAYER_TILE)        DEBUG::draw_player_tile();
-		if (DEBUG::DRAW_PUZZLE_GRAB_RANGE) DEBUG::draw_puzzle_grab_range();
+		if (DEBUG::DRAW_PUZZLE_GRAB_RANGE)  DEBUG::draw_puzzle_grab_range();
 		if (DEBUG::DRAW_PUZZLE_BLOCKS)      DEBUG::draw_puzzle_blocks();
-		if (DEBUG::DRAW_BUTTON_SPIKE_LINKS)DEBUG::draw_button_spike_links();
+		if (DEBUG::DRAW_BUTTON_SPIKE_LINKS) DEBUG::draw_button_spike_links();
 		if (DEBUG::DRAW_ENEMIES)            DEBUG::draw_enemies();
 	}
 
 	enemy_manager_instance.render();
 	render_enemy_hp(&ui_manager, &enemy_manager_instance);
-
 	Puzzle::render_puzzle_blocks();
 	player_system_render(&player_instance);
 	minimap_draw(&player_instance, map, TileTextures);
-
 	render_player_hud(&ui_manager, &player_instance);
 	render_character_ui(&ui_manager, &player_instance);
 	render_tooltip(tooltip_font);
-
 	pause_draw();
 
-	// Render black overlay for screen transitions
 	if (transition_state != NONE && transition_alpha > 0.f)
 		draw_black_overlay(transition_alpha);
 
-	// Render level title text
 	if (level_text_alpha > 0.f && warning_font != -1)
 	{
 		f32 tw, th;
 		const char* lvl = current_level_name.c_str();
-		AEGfxGetPrintSize(warning_font, lvl, 2.0f, &tw, &th);
-		AEGfxPrint(warning_font, lvl,
-			-tw * 0.5f, 0.05f,
-			2.0f, 1.f, 1.f, 1.f, level_text_alpha);
+		AEGfxGetPrintSize(warning_font, lvl, Constants::LVL_TEXT_SCALE, &tw, &th);
+		AEGfxPrint(warning_font, lvl, -tw * 0.5f, Constants::LVL_TEXT_Y_OFFSET,
+			Constants::LVL_TEXT_SCALE, 1.f, 1.f, 1.f, level_text_alpha);
 	}
 
-	// Render boss warning graphics
 	if (show_boss_warning)
 	{
-		draw_black_overlay(0.5f);
-
-		f32 flash = (sinf(boss_warning_timer * 10.f) + 1.f) * 0.5f;
+		draw_black_overlay(Constants::OVERLAY_ALPHA_HALF);
+		f32 flash = (sinf(boss_warning_timer * Constants::BOSS_FLASH_SPEED) + 1.f) * 0.5f;
 		f32 tw, th;
-		AEGfxGetPrintSize(warning_font, "! DANGER !", 1.5f, &tw, &th);
-		AEGfxPrint(warning_font, "! DANGER !",
-			-tw * 0.5f, 0.15f,
-			1.5f, 1.f, 0.f, 0.f, flash);
+		AEGfxGetPrintSize(warning_font, "! DANGER !", Constants::DANGER_TEXT_SCALE, &tw, &th);
+		AEGfxPrint(warning_font, "! DANGER !", -tw * 0.5f, Constants::DANGER_Y_TOP,
+			Constants::DANGER_TEXT_SCALE, 1.f, 0.f, 0.f, flash);
 
-		f32 tw2, th2;
-		AEGfxGetPrintSize(warning_font, "! ABOUT TO ENTER BOSS ROOM !", 1.5f, &tw2, &th2);
-		AEGfxPrint(warning_font, "! ABOUT TO ENTER BOSS ROOM !",
-			-tw2 * 0.5f, -0.15f,
-			1.5f, 1.f, 0.f, 0.f, flash);
+		AEGfxGetPrintSize(warning_font, "! ABOUT TO ENTER BOSS ROOM !", Constants::DANGER_TEXT_SCALE, &tw, &th);
+		AEGfxPrint(warning_font, "! ABOUT TO ENTER BOSS ROOM !", -tw * 0.5f, Constants::DANGER_Y_BOTTOM,
+			Constants::DANGER_TEXT_SCALE, 1.f, 0.f, 0.f, flash);
 	}
 
 	render_cursor(&ui_manager, &player_instance, mouse_x, mouse_y, cursor_active);
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: level1_free
-// Frees temporary resources and clears enemy/player instances.
-//
 // ---------------------------------------------------------------------------- 
 void level1_free()
 {
 	player_system_free(&player_instance);
 	enemy_manager_instance.clear_all();
-
 	free_mesh();
 	free_ui_textures(&ui_manager);
-
 	stop_bgm();
 	stop_sfx();
 	g_bgm_current_track = nullptr;
 }
 
 // ----------------------------------------------------------------------------
-//
 // Function: level1_unload
-// Unloads textures and fonts from memory when switching levels or quitting.
-//
 // ---------------------------------------------------------------------------- 
 void level1_unload()
 {
@@ -437,7 +413,6 @@ void level1_unload()
 	free_tile_textures();
 	minimap_unload();
 	Puzzle::unload_puzzle_textures();
-
 	player_system_free(&player_instance);
 
 	if (skeleton_texture)

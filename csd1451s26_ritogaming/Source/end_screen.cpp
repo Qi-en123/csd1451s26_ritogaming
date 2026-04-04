@@ -84,7 +84,7 @@ namespace
     ConfirmTarget confirm_target = CONFIRM_NONE;
     ConfirmTarget pause_confirm_target = CONFIRM_NONE;
 
-    void draw_confirmation() {
+    void draw_confirmation(ConfirmTarget confirm) {
         draw_black_overlay(0.6f);
         render_editor_ui(c_panel,
             c_panel_w, c_panel_h,
@@ -102,7 +102,7 @@ namespace
 
         if (end_font != -1)
         {
-            const char* msg = (pause_confirm_target == CONFIRM_RESTART)
+            const char* msg = (confirm == CONFIRM_RESTART)
                 ? "Restart level?" : "Return to Main Menu?";
 
             render_text_center(msg, end_font,
@@ -228,8 +228,8 @@ void end_screen_update()
                 play_sfx(g_audio.sfx_button_click, 1.0f);
                 if (confirm_target == CONFIRM_RESTART)
                 {
-                    selected_level_path = "Assets/Levels/default.txt";
-                    selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
+                    //selected_level_path = "Assets/Levels/default.txt";
+                    //selected_level_puzzle_path = "Assets/Levels/puzzle.txt";
                     next = restart_level_state;
                 }
                 else
@@ -301,7 +301,7 @@ void end_screen_draw()
 
     if (confirm_target != CONFIRM_NONE)
     {
-        draw_confirmation();
+        draw_confirmation(confirm_target);
     }
 
     // Custom cursor
@@ -446,6 +446,6 @@ void pause_draw()
 
     if (pause_confirm_target != CONFIRM_NONE)
     {
-        draw_confirmation();
+        draw_confirmation(pause_confirm_target);
     }
 }

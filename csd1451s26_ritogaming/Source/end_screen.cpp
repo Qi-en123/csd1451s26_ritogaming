@@ -200,22 +200,23 @@ void end_screen_update()
     audio_update();
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
-    // Hover SFX   fires once per newly-entered button
-    int current_hovered = -1;
-    if (IsButtonHovered(BTN_X, BTN_Y0, BTN_W, BTN_H)) current_hovered = 0;
-    else if (IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H)) current_hovered = 1;
-
-    if (current_hovered != last_hovered && current_hovered != -1)
-        play_sfx(g_audio.sfx_button_hover);
-    last_hovered = current_hovered;
-
     if (confirm_target != CONFIRM_NONE)
     {
+        int cur_conf = -1;
+        if (IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 0;      // Yes
+        else if (IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 1; // No
+
+        if (cur_conf != confirm_last_hovered && cur_conf != -1)
+        {
+            play_sfx(g_audio.sfx_button_hover);
+        }
+        confirm_last_hovered = cur_conf;
+
         if (AEInputCheckTriggered(AEVK_LBUTTON))
         {
-            if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
+            if (IsButtonClicked(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)) // Yes
             {
-                play_sfx(g_audio.sfx_button_click, 0.1f);
+                play_sfx(g_audio.sfx_button_click, 1.0f);
                 if (confirm_target == CONFIRM_RESTART)
                 {
                     selected_level_path = "Assets/Levels/default.txt";
@@ -226,19 +227,36 @@ void end_screen_update()
                     next = MAINMENU;
                 confirm_target = CONFIRM_NONE;
             }
-            else if (IsButtonClicked(150.f, -50.f, 200.f, 80.f)) // No
+            else if (IsButtonClicked(c_btn_x, c_btn_y, c_btn_w, c_btn_h)) // No
             {
+                play_sfx(g_audio.sfx_button_click, 1.0f);
                 confirm_target = CONFIRM_NONE;
             }
+            confirm_last_hovered = -1;
         }
         return; // block all other input while popup is open
     }
 
+    // Hover SFX   fires once per newly-entered button
+    int current_hovered = -1;
+    if (IsButtonHovered(BTN_X, BTN_Y0, BTN_W, BTN_H)) current_hovered = 0;
+    else if (IsButtonHovered(BTN_X, BTN_Y1, BTN_W, BTN_H)) current_hovered = 1;
+
+    if (current_hovered != last_hovered && current_hovered != -1)
+        play_sfx(g_audio.sfx_button_hover);
+    last_hovered = current_hovered;
+
     if (IsButtonClicked(BTN_X, BTN_Y0, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_R))
+    {
+        play_sfx(g_audio.sfx_button_click, 1.0f);
         confirm_target = CONFIRM_RESTART;
+    }
 
     if (IsButtonClicked(BTN_X, BTN_Y1, BTN_W, BTN_H) || AEInputCheckTriggered(AEVK_M))
+    {
+        play_sfx(g_audio.sfx_button_click, 1.0f);
         confirm_target = CONFIRM_MAINMENU;
+    }
 }
 
 // -------------------------------------------------------------------------
@@ -321,7 +339,7 @@ void pause_update()
 
         if (AEInputCheckTriggered(AEVK_LBUTTON))
         {
-            if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
+            if (IsButtonClicked(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)) // Yes
             {
                 play_sfx(g_audio.sfx_button_click, 0.1f);
                 if (pause_confirm_target == CONFIRM_RESTART)
@@ -334,7 +352,7 @@ void pause_update()
                 is_paused = false;
                 pause_confirm_target = CONFIRM_NONE;
             }
-            else if (IsButtonClicked(150.f, -50.f, 200.f, 80.f)) // No
+            else if (IsButtonClicked(c_btn_x, c_btn_y, c_btn_w, c_btn_h)) // No
             {
                 play_sfx(g_audio.sfx_button_click, 0.1f);
                 pause_confirm_target = CONFIRM_NONE;

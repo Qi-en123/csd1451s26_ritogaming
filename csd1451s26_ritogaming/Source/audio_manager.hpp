@@ -43,6 +43,8 @@ struct AudioManager
     AEAudio sfx_button_puzzle{};
     AEAudio sfx_drag_pull{};
     AEAudio sfx_footsteps{};
+    AEAudio sfx_lose{};
+    AEAudio sfx_win{};
 
 };
 

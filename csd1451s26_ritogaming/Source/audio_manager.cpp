@@ -50,6 +50,9 @@ void audio_init()
     g_audio.sfx_drag_pull = AEAudioLoadSound("Assets/Audio/drag_pull.mp3");
     g_audio.sfx_footsteps = AEAudioLoadSound("Assets/Audio/footsteps.mp3");
 
+    g_audio.sfx_lose = AEAudioLoadSound("Assets/Audio/lose.mp3");
+    g_audio.sfx_win = AEAudioLoadSound("Assets/Audio/win.mp3");
+
 }
 
 // ----------------------------------------------------------------------------
@@ -93,6 +96,8 @@ void audio_free()
     AEAudioUnloadAudio(g_audio.sfx_knight_hurt);
     AEAudioUnloadAudio(g_audio.sfx_mage_hurt);
     AEAudioUnloadAudio(g_audio.sfx_sword_atk);
+    AEAudioUnloadAudio(g_audio.sfx_lose);
+    AEAudioUnloadAudio(g_audio.sfx_win);
 
     // Unload groups
     AEAudioUnloadAudioGroup(g_audio.bgm_group);

@@ -20,6 +20,12 @@
 #include "AEEngine.h"
 #include "puzzle.hpp"
 
+// ------------------------------------------------------------------------
+//
+// Represents a projectile (fireball) shot by the player.
+// Stores position, velocity, size, and active state.
+//
+// ------------------------------------------------------------------------
 struct Projectile
 {
     f32 x, y;
@@ -28,6 +34,12 @@ struct Projectile
     bool active;
 };
 
+// ------------------------------------------------------------------------
+//
+// Represents a melee swing arc for the knight.
+// Handles swing progress, direction, hit detection, and duration.
+//
+// ------------------------------------------------------------------------
 struct SwingArc {
     bool active = false;
     bool has_hit = false;
@@ -37,6 +49,12 @@ struct SwingArc {
     f32 duration = 0.10f;
 };
 
+// ------------------------------------------------------------------------
+//
+// Represents a particle used for visual effects (e.g. fire trails).
+// Contains movement, lifetime, and size data.
+//
+// ------------------------------------------------------------------------
 struct Particle {
     f32 x, y;
     f32 vx, vy;
@@ -46,6 +64,12 @@ struct Particle {
     bool active;
 };
 
+// ------------------------------------------------------------------------
+//
+// Stores all configurable player stats such as size, position,
+// movement speed, and health values for both characters.
+//
+// ------------------------------------------------------------------------
 struct PlayerStats
 {
     // Size settings
@@ -71,7 +95,12 @@ struct PlayerStats
     int char2_curr_health;
 };
 
-// Individual character structure
+// ------------------------------------------------------------------------
+//
+// Represents an individual player character.
+// Stores position, movement, rendering data, and state.
+//
+// ------------------------------------------------------------------------
 struct Character
 {
     f32 x{}, y{}; // Position
@@ -88,7 +117,13 @@ struct Character
 	f32 hit_flash_timer = 0.f; // Timer for damage flash effect
 };
 
-// Player system structure
+// ------------------------------------------------------------------------
+//
+// Main player system container.
+// Holds both characters, shared resources, projectiles,
+// particles, and gameplay-related state.
+//
+// ------------------------------------------------------------------------
 struct Player
 {
     PlayerStats stats{};
@@ -270,8 +305,34 @@ void player_take_damage(Player* player_ptr, int damage);
 **************************************************************************/
 bool player_is_dead(Player* player_ptr);
 
+// ------------------------------------------------------------------------
+//
+// Spawns player characters based on map tile data.
+// Converts tile coordinates into world positions.
+//
+// player_ptr - player to initialize positions for
+// tile_size  - size of each tile (unused in current implementation)
+//
+// ------------------------------------------------------------------------
 void spawn_player_from_map(Player* player_ptr, f32 tile_size);
 
-void player_handle_melee(Player* player_ptr);
+// ------------------------------------------------------------------------
+//
+// Handles melee attack input for character 1 (knight).
+//
+// ------------------------------------------------------------------------
+void player_handle_melee(Player* player_ptr); 
+
+// ------------------------------------------------------------------------
+//
+// Updates melee swing animation and hit detection.
+//
+// ------------------------------------------------------------------------
 void player_update_swing(Player* player_ptr, f32 dt);
+
+// ------------------------------------------------------------------------
+//
+// Renders melee swing visual effect.
+//
+// ------------------------------------------------------------------------
 void player_render_swing(Player* player_ptr);

@@ -11,17 +11,20 @@
 
 #pragma once
 
+// Core engine and third-party libraries
 #include "AEEngine.h"
 #include "json.hpp"
 
+// Core game systems
 #include "map.hpp"
 #include "collision.hpp"
 #include "renderer.hpp"
 #include "camera.hpp"
 #include "puzzle.hpp"
 
-// Claire's files
+// Gameplay systems (grouped here to reduce compile times across files)
 #include "enemy.hpp"
+#include "enemy_config.hpp"
 #include "enemy_manager.hpp"
 #include "player.hpp"
 #include "ui_manager.hpp"

@@ -253,6 +253,15 @@ void footstep_audio_update()
     }
     footstep_was_active = false;
 }
+
+/**************************************************************************/
+/*!
+    Plays looping footstep sound effect.
+    Restarts if pitch changes (e.g. dragging vs walking).
+    pitch - playback pitch modifier
+	- Ahmad's part
+*/
+/**************************************************************************/
 void play_footstep(float pitch = 1.0f)
 {
     static float last_pitch = 1.0f;
@@ -586,6 +595,13 @@ void player_handle_shooting(Player * player_ptr, f32 dt)
         play_sfx(g_audio.sfx_fireball, 0.1f);
     }
 }
+/**************************************************************************/
+/*!
+    Updates particle system (movement + lifetime).
+    Removes particles when their life reaches 0.
+	- Ahmad's part
+*/
+/**************************************************************************/
 void player_update_particles(Player * player_ptr, f32 dt)
 {
     for (size_t i = 0; i < player_ptr->particles.size(); ++i)
@@ -603,6 +619,13 @@ void player_update_particles(Player * player_ptr, f32 dt)
         }
     }
 }
+/**************************************************************************/
+/*!
+    Renders all active particles (fire trail effect).
+    Alpha fades based on remaining lifetime.
+	- Ahmad's part
+*/
+/**************************************************************************/
 void player_render_particles(Player *player_ptr)
 {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -706,6 +729,15 @@ void player_render_fireball_count(Player * player_ptr)
 
     // render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
 }
+/**************************************************************************/
+/*!
+    Handles melee attack input for Character 1 (knight).
+    Determines swing direction based on mouse position.
+    Checks for enemy hits along the swing arc and applies damage.
+	 Plays sword attack sound effect.
+     - Ahmad's part
+*/
+/**************************************************************************/
 void player_handle_melee(Player* player_ptr)
 {
     if (!player_ptr) return;
@@ -733,6 +765,13 @@ void player_handle_melee(Player* player_ptr)
 
     play_sfx(g_audio.sfx_sword_atk, 0.1f);
 }
+/**************************************************************************/
+/*!
+    Updates melee swing animation and hit detection.
+    Ensures enemies are hit only once per swing.
+	- Ahmad's part
+*/
+/**************************************************************************/
 void player_update_swing(Player* player_ptr, f32 dt)
 {
     if (!player_ptr) return;
@@ -776,6 +815,12 @@ void player_update_swing(Player* player_ptr, f32 dt)
         sw.has_hit = false; // reset for next swing
     }
 }
+/**************************************************************************/
+/*!
+    Renders melee swing arc using particle-like trail.
+	- Ahmad's part  
+*/
+/**************************************************************************/
 void player_render_swing(Player* player_ptr)
 {
     if (!player_ptr) return;

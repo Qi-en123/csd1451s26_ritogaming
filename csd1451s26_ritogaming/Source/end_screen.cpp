@@ -77,6 +77,7 @@ namespace
     s32 mouse_x = 0, mouse_y = 0;
     int last_hovered = -1;
     int pause_last_hovered = -1;
+    static int confirm_last_hovered = -1;
 
     // confirm popup
     enum ConfirmTarget { CONFIRM_NONE, CONFIRM_RESTART, CONFIRM_MAINMENU };
@@ -307,6 +308,17 @@ void pause_update()
     // --- Confirm popup blocks everything ---
     if (pause_confirm_target != CONFIRM_NONE)
     {
+        //--- Hover in confirmation---
+        int cur_conf = -1;
+        if (IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 0;      // Yes
+        else if (IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h)) cur_conf = 1; // No
+
+        if (cur_conf != confirm_last_hovered && cur_conf != -1)
+        {
+            play_sfx(g_audio.sfx_button_hover);
+        }
+        confirm_last_hovered = cur_conf;
+
         if (AEInputCheckTriggered(AEVK_LBUTTON))
         {
             if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes
@@ -323,7 +335,11 @@ void pause_update()
                 pause_confirm_target = CONFIRM_NONE;
             }
             else if (IsButtonClicked(150.f, -50.f, 200.f, 80.f)) // No
+            {
+                play_sfx(g_audio.sfx_button_click, 0.1f);
                 pause_confirm_target = CONFIRM_NONE;
+            }
+            confirm_last_hovered = -1;
         }
         return;
     }
@@ -347,11 +363,17 @@ void pause_update()
 
     // Restart — show confirm instead
     if (IsButtonClicked(P_BTN_X, P_BTN_Y1, P_BTN_W, P_BTN_H) || AEInputCheckTriggered(AEVK_R))
+    {
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         pause_confirm_target = CONFIRM_RESTART;
+    }
 
     // Main Menu — show confirm instead
     if (IsButtonClicked(P_BTN_X, P_BTN_Y2, P_BTN_W, P_BTN_H) || AEInputCheckTriggered(AEVK_M))
+    {
+        play_sfx(g_audio.sfx_button_click, 0.1f);
         pause_confirm_target = CONFIRM_MAINMENU;
+    }
 }
 
 // -------------------------------------------------------------------------

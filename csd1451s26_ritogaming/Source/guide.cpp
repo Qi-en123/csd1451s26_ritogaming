@@ -23,6 +23,7 @@
 #include "game_state_manager.hpp"
 #include "ui_manager.hpp"
 #include "debug.hpp"
+#include "audio_manager.hpp"
 
 namespace
 {
@@ -287,6 +288,10 @@ void guide_free() {
 
 	//Free additional UI assets
 	free_ui_textures(&ui_manager);
+
+	// stop music
+	stop_bgm();
+	g_bgm_current_track = nullptr;
 }
 
 void guide_unload() {

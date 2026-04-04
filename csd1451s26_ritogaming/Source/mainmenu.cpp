@@ -133,7 +133,6 @@ static void load_mainmenu_config()
     std::ifstream file("Assets/Mainmenu/mainmenu.txt");
     if (!file.is_open())
     {
-        printf("Warning: could not open Assets/Mainmenu/mainmenu.txt, using defaults\n");
         return;
     }
 
@@ -236,7 +235,6 @@ void mainmenu_load()
 
     // Load font for button labels and title text
     font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40);
-    printf("Font value: %d\n", font);
     if (font == -1)
         return;
 }
@@ -277,7 +275,6 @@ void mainmenu_init()
         play_bgm(g_audio.bgm_op_n_mainmenu, 1.0f);
     }
 
-    printf("Supposed to ply udio");
 }
 
 // ----------------------------------------------------------------------------

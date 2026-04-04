@@ -115,26 +115,20 @@ namespace
 void guide_load() {
 	end_screen_load();
 	if (!load_tile_textures("Assets/Sprites/Tiles"))
-		next = GS_QUIT; // If tile textures fail to load, quit the game
+		next = GS_QUIT;
 	enemy_manager_instance.load_textures();
 	Puzzle::load_puzzle_textures();
-	load_ui_textures(&ui_manager); //removing param since ui_manager is from same file as definition
+	load_ui_textures(&ui_manager);
 	skeleton_texture = AEGfxTextureLoad("Assets/Sprites/Tiles/dead_last_location.png");
 
-	// Load font from Assets folder
+	// Load player stats and combat config from JSON before any player init
+	player_load_config(&player_instance, "Assets/Config/player_config.json");
+
 	guide_text_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36);
-	printf("Font value: %d\n", guide_text_font);
-	if (guide_text_font == -1)
-	{
-		return;
-	}
+	if (guide_text_font == -1) return;
 
 	tooltip_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 28);
-	printf("Font value: %d\n", tooltip_font);
-	if (tooltip_font == -1)
-	{
-		return;
-	}
+	if (tooltip_font == -1) return;
 }
 
 void guide_init() {

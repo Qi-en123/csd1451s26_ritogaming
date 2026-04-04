@@ -38,7 +38,6 @@ void EnemyManager::load_spawn_positions(const char* filename)
     std::ifstream file(filename);
     if (!file.is_open())
     {
-        printf("[EnemyManager] ERROR: Could not open %s\n", filename);
         return;
     }
 

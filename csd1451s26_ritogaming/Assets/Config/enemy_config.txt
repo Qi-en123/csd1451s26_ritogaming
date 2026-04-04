@@ -19,6 +19,47 @@ dragon_tex_attack       Assets/Sprites/Enemy/Boss/dragon_lord_attack_arms_90x70.
 dragon_tex_hurt         Assets/Sprites/Enemy/Boss/dragon_lord_hurt_basic_130x130.png
 dragon_tex_death        Assets/Sprites/Enemy/Boss/dragon_lord_death_160x160.png
 
+# --- Dragon Animation Config ---
+dragon_idle_frames      4
+dragon_idle_frame_w     74
+dragon_idle_frame_h     74
+dragon_idle_sheet_w     296
+dragon_idle_sheet_h     74
+dragon_idle_fps         6.0
+dragon_idle_loop        1
+
+dragon_walk_frames      8
+dragon_walk_frame_w     74
+dragon_walk_frame_h     74
+dragon_walk_sheet_w     592
+dragon_walk_sheet_h     74
+dragon_walk_fps         10.0
+dragon_walk_loop        1
+
+dragon_attack_frames    16
+dragon_attack_frame_w   90
+dragon_attack_frame_h   70
+dragon_attack_sheet_w   1440
+dragon_attack_sheet_h   70
+dragon_attack_fps       14.0
+dragon_attack_loop      0
+
+dragon_hurt_frames      5
+dragon_hurt_frame_w     130
+dragon_hurt_frame_h     130
+dragon_hurt_sheet_w     650
+dragon_hurt_sheet_h     130
+dragon_hurt_fps         10.0
+dragon_hurt_loop        0
+
+dragon_death_frames     20
+dragon_death_frame_w    10
+dragon_death_frame_h    50
+dragon_death_sheet_w    360
+dragon_death_sheet_h    50
+dragon_death_fps        12.0
+dragon_death_loop       0
+
 # --- Ghost stats ---
 ghost_speed             80.0
 ghost_max_health        2

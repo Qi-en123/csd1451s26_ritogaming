@@ -19,14 +19,12 @@ extern s32 map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
 
-// ============================================================================
-// GLOBAL VARIABLE DEFINITIONS
 // ----------------------------------------------------------------------------
-// Declared extern in enemy.hpp.
-// All assigned inside dave_Data() — do not assign anywhere else.
-// ============================================================================
+// Global variable definitions — declared extern in enemy.hpp.
+// All assigned inside save_Data(); do not modify elsewhere.
+// ----------------------------------------------------------------------------
 
-// --- Texture filepaths ---
+// Texture filepaths
 std::string e_ghost_tex;
 std::string e_bat_tex;
 std::string e_ghost_food_tex;
@@ -40,81 +38,115 @@ std::string e_dragon_tex_attack;
 std::string e_dragon_tex_hurt;
 std::string e_dragon_tex_death;
 
-// --- Ghost stats ---
-float e_ghost_speed = 80.f;
-int   e_ghost_max_health = 2;
-float e_ghost_size = 50.f;
-float e_ghost_sight_range = 400.f;
-
-// --- Bat stats ---
-float e_bat_speed = 80.f;
-int   e_bat_max_health = 4;
-float e_bat_size = 70.f;
-float e_bat_sight_range = 350.f;
-float e_bat_attack_cooldown = 1.f;
-int   e_bat_attack_damage = 3;
-
-// --- Dragon stats ---
-float e_dragon_speed = 40.f;
-int   e_dragon_max_health = 10;
-float e_dragon_size = 300.f;
-float e_dragon_attack_cooldown = 1.f;
-int   e_dragon_attack_damage = 1;
-
-// --- Boss projectile ---
-float e_bp_ring_radius = 10.f;
-float e_bp_ring_thickness = 3.f;
-float e_bp_base_speed = 220.f;
-float e_bp_wave_amplitude = 80.f;
-float e_bp_wave_frequency = 10.f;
-float e_bp_max_lifetime = 5.f;
-int   e_bp_positions_wave_a = 5;
-int   e_bp_positions_wave_b = 4;
-float e_bp_angle_spread_deg = 120.f;
-float e_bp_wave_interval = 3.f;
-int   e_bp_projectile_damage = 1;
-int   e_bp_pool_size = 128;
-
-// --- Manager / world ---
-float e_spawn_check_interval = 3.f;
-float e_respawn_delay = 5.f;
-float e_food_lifetime = 9.f;
-float e_food_size = 50.f;
-float e_map_start_x = -800.f;
-float e_map_start_y = 450.f;
-float e_tile_size = 64.f;
-
-// --- Respawn particles ---
-int   e_rp_burst_count = 20;
-float e_rp_speed_min = 30.f;
-float e_rp_speed_max = 110.f;
-float e_rp_life_min = 0.4f;
-float e_rp_life_max = 0.8f;
-float e_rp_size_min = 4.f;
-float e_rp_size_max = 10.f;
-float e_rp_gravity = 120.f;
-float e_rp_rise_boost = 40.f;
-
-
-// ============================================================================
-// dave_Data
 // ----------------------------------------------------------------------------
-// Reads enemy_data.txt line by line.
-// Each line: <token>  <value>
+// Dragon animation config — frame counts, dimensions, and playback rates
+// for each of the five dragon clips. All values assigned by save_Data().
+// ----------------------------------------------------------------------------
+int   e_dragon_idle_frames;
+float e_dragon_idle_frame_w;
+float e_dragon_idle_frame_h;
+float e_dragon_idle_sheet_w;
+float e_dragon_idle_sheet_h;
+float e_dragon_idle_fps;
+int   e_dragon_idle_loop;
+
+int   e_dragon_walk_frames;
+float e_dragon_walk_frame_w;
+float e_dragon_walk_frame_h;
+float e_dragon_walk_sheet_w;
+float e_dragon_walk_sheet_h;
+float e_dragon_walk_fps;
+int   e_dragon_walk_loop;
+
+int   e_dragon_attack_frames;
+float e_dragon_attack_frame_w;
+float e_dragon_attack_frame_h;
+float e_dragon_attack_sheet_w;
+float e_dragon_attack_sheet_h;
+float e_dragon_attack_fps;
+int   e_dragon_attack_loop;
+
+int   e_dragon_hurt_frames;
+float e_dragon_hurt_frame_w;
+float e_dragon_hurt_frame_h;
+float e_dragon_hurt_sheet_w;
+float e_dragon_hurt_sheet_h;
+float e_dragon_hurt_fps;
+int   e_dragon_hurt_loop;
+
+int   e_dragon_death_frames;
+float e_dragon_death_frame_w;
+float e_dragon_death_frame_h;
+float e_dragon_death_sheet_w;
+float e_dragon_death_sheet_h;
+float e_dragon_death_fps;
+int   e_dragon_death_loop;
+
+// Ghost stats
+float e_ghost_speed;
+int   e_ghost_max_health;
+float e_ghost_size;
+float e_ghost_sight_range;
+
+// Bat stats
+float e_bat_speed;
+int   e_bat_max_health;
+float e_bat_size;
+float e_bat_sight_range;
+float e_bat_attack_cooldown;
+int   e_bat_attack_damage;
+
+// Dragon stats
+float e_dragon_speed;
+int   e_dragon_max_health;
+float e_dragon_size;
+float e_dragon_attack_cooldown;
+int   e_dragon_attack_damage;
+
+// Boss projectile config
+float e_bp_ring_radius;
+float e_bp_ring_thickness;
+float e_bp_base_speed;
+float e_bp_wave_amplitude;
+float e_bp_wave_frequency;
+float e_bp_max_lifetime;
+int   e_bp_positions_wave_a;
+int   e_bp_positions_wave_b;
+float e_bp_angle_spread_deg;
+float e_bp_wave_interval;
+int   e_bp_projectile_damage;
+int   e_bp_pool_size;
+
+// Manager / world config
+float e_spawn_check_interval;
+float e_respawn_delay;
+float e_food_lifetime;
+float e_food_size;
+float e_map_start_x;
+float e_map_start_y;
+float e_tile_size;
+
+// Respawn particle config
+int   e_rp_burst_count;
+float e_rp_speed_min;
+float e_rp_speed_max;
+float e_rp_life_min;
+float e_rp_life_max;
+float e_rp_size_min;
+float e_rp_size_max;
+float e_rp_gravity;
+float e_rp_rise_boost;
+
+
+// ----------------------------------------------------------------------------
+// save_Data()
+// Reads the config file line by line. Each line is "<token> <value>".
 // Lines starting with '#' or empty lines are skipped.
-// ============================================================================
-
-/**************************************************************************
-    \brief
-    Reads enemy_data.txt and assigns every token to its matching global
-    variable. Uses ifstream + getline + istringstream for tokenization.
-    Call once at startup before any enemy or EnemyManager is constructed.
-
-    \param filepath  Path to the data file
-                     (e.g. "Assets/Config/enemy_data.txt").
-    \return True if the file was opened and fully parsed,
-            false if the file could not be opened.
-**************************************************************************/
+// Unknown tokens print a warning to stderr.
+//
+// \param filepath  Path to the config file
+// \return          true on success, false if the file could not be opened
+// ----------------------------------------------------------------------------
 bool save_Data(const std::string& filepath = "Assets/Config/enemy_config.txt")
 {
     std::ifstream file(filepath);
@@ -134,7 +166,7 @@ bool save_Data(const std::string& filepath = "Assets/Config/enemy_config.txt")
         std::string token;
         if (!(iss >> token)) continue;
 
-        // --- Texture filepaths ---
+        // Texture filepaths
         if (token == "ghost_tex")          iss >> e_ghost_tex;
         else if (token == "bat_tex")            iss >> e_bat_tex;
         else if (token == "ghost_food_tex")     iss >> e_ghost_food_tex;
@@ -148,13 +180,54 @@ bool save_Data(const std::string& filepath = "Assets/Config/enemy_config.txt")
         else if (token == "dragon_tex_hurt")    iss >> e_dragon_tex_hurt;
         else if (token == "dragon_tex_death")   iss >> e_dragon_tex_death;
 
-        // --- Ghost stats ---
+        // Dragon animation config
+        else if (token == "dragon_idle_frames")     iss >> e_dragon_idle_frames;
+        else if (token == "dragon_idle_frame_w")    iss >> e_dragon_idle_frame_w;
+        else if (token == "dragon_idle_frame_h")    iss >> e_dragon_idle_frame_h;
+        else if (token == "dragon_idle_sheet_w")    iss >> e_dragon_idle_sheet_w;
+        else if (token == "dragon_idle_sheet_h")    iss >> e_dragon_idle_sheet_h;
+        else if (token == "dragon_idle_fps")        iss >> e_dragon_idle_fps;
+        else if (token == "dragon_idle_loop")       iss >> e_dragon_idle_loop;
+
+        else if (token == "dragon_walk_frames")     iss >> e_dragon_walk_frames;
+        else if (token == "dragon_walk_frame_w")    iss >> e_dragon_walk_frame_w;
+        else if (token == "dragon_walk_frame_h")    iss >> e_dragon_walk_frame_h;
+        else if (token == "dragon_walk_sheet_w")    iss >> e_dragon_walk_sheet_w;
+        else if (token == "dragon_walk_sheet_h")    iss >> e_dragon_walk_sheet_h;
+        else if (token == "dragon_walk_fps")        iss >> e_dragon_walk_fps;
+        else if (token == "dragon_walk_loop")       iss >> e_dragon_walk_loop;
+
+        else if (token == "dragon_attack_frames")   iss >> e_dragon_attack_frames;
+        else if (token == "dragon_attack_frame_w")  iss >> e_dragon_attack_frame_w;
+        else if (token == "dragon_attack_frame_h")  iss >> e_dragon_attack_frame_h;
+        else if (token == "dragon_attack_sheet_w")  iss >> e_dragon_attack_sheet_w;
+        else if (token == "dragon_attack_sheet_h")  iss >> e_dragon_attack_sheet_h;
+        else if (token == "dragon_attack_fps")      iss >> e_dragon_attack_fps;
+        else if (token == "dragon_attack_loop")     iss >> e_dragon_attack_loop;
+
+        else if (token == "dragon_hurt_frames")     iss >> e_dragon_hurt_frames;
+        else if (token == "dragon_hurt_frame_w")    iss >> e_dragon_hurt_frame_w;
+        else if (token == "dragon_hurt_frame_h")    iss >> e_dragon_hurt_frame_h;
+        else if (token == "dragon_hurt_sheet_w")    iss >> e_dragon_hurt_sheet_w;
+        else if (token == "dragon_hurt_sheet_h")    iss >> e_dragon_hurt_sheet_h;
+        else if (token == "dragon_hurt_fps")        iss >> e_dragon_hurt_fps;
+        else if (token == "dragon_hurt_loop")       iss >> e_dragon_hurt_loop;
+
+        else if (token == "dragon_death_frames")    iss >> e_dragon_death_frames;
+        else if (token == "dragon_death_frame_w")   iss >> e_dragon_death_frame_w;
+        else if (token == "dragon_death_frame_h")   iss >> e_dragon_death_frame_h;
+        else if (token == "dragon_death_sheet_w")   iss >> e_dragon_death_sheet_w;
+        else if (token == "dragon_death_sheet_h")   iss >> e_dragon_death_sheet_h;
+        else if (token == "dragon_death_fps")       iss >> e_dragon_death_fps;
+        else if (token == "dragon_death_loop")      iss >> e_dragon_death_loop;
+
+        // Ghost stats
         else if (token == "ghost_speed")        iss >> e_ghost_speed;
         else if (token == "ghost_max_health")   iss >> e_ghost_max_health;
         else if (token == "ghost_size")         iss >> e_ghost_size;
         else if (token == "ghost_sight_range")  iss >> e_ghost_sight_range;
 
-        // --- Bat stats ---
+        // Bat stats
         else if (token == "bat_speed")          iss >> e_bat_speed;
         else if (token == "bat_max_health")     iss >> e_bat_max_health;
         else if (token == "bat_size")           iss >> e_bat_size;
@@ -162,14 +235,14 @@ bool save_Data(const std::string& filepath = "Assets/Config/enemy_config.txt")
         else if (token == "bat_attack_cooldown")iss >> e_bat_attack_cooldown;
         else if (token == "bat_attack_damage")  iss >> e_bat_attack_damage;
 
-        // --- Dragon stats ---
+        // Dragon stats
         else if (token == "dragon_speed")           iss >> e_dragon_speed;
         else if (token == "dragon_max_health")      iss >> e_dragon_max_health;
         else if (token == "dragon_size")            iss >> e_dragon_size;
         else if (token == "dragon_attack_cooldown") iss >> e_dragon_attack_cooldown;
         else if (token == "dragon_attack_damage")   iss >> e_dragon_attack_damage;
 
-        // --- Boss projectile ---
+        // Boss projectile config
         else if (token == "bp_ring_radius")       iss >> e_bp_ring_radius;
         else if (token == "bp_ring_thickness")    iss >> e_bp_ring_thickness;
         else if (token == "bp_base_speed")        iss >> e_bp_base_speed;
@@ -183,7 +256,7 @@ bool save_Data(const std::string& filepath = "Assets/Config/enemy_config.txt")
         else if (token == "bp_projectile_damage") iss >> e_bp_projectile_damage;
         else if (token == "bp_pool_size")         iss >> e_bp_pool_size;
 
-        // --- Manager / world ---
+        // Manager / world config
         else if (token == "spawn_check_interval") iss >> e_spawn_check_interval;
         else if (token == "respawn_delay")        iss >> e_respawn_delay;
         else if (token == "food_lifetime")        iss >> e_food_lifetime;
@@ -192,7 +265,7 @@ bool save_Data(const std::string& filepath = "Assets/Config/enemy_config.txt")
         else if (token == "map_start_y")          iss >> e_map_start_y;
         else if (token == "tile_size")            iss >> e_tile_size;
 
-        // --- Respawn particles ---
+        // Respawn particle config
         else if (token == "rp_burst_count")  iss >> e_rp_burst_count;
         else if (token == "rp_speed_min")    iss >> e_rp_speed_min;
         else if (token == "rp_speed_max")    iss >> e_rp_speed_max;
@@ -219,6 +292,9 @@ BossProjectileManager boss_proj_manager;
 
 static constexpr float BP_DEG2RAD = 3.14159265f / 180.0f;
 
+// ----------------------------------------------------------------------------
+// bp_rotate_vec() — rotates vector (x, y) by angle_rad, writes to out_x/out_y
+// ----------------------------------------------------------------------------
 static void bp_rotate_vec(float x, float y, float angle_rad,
     float& out_x, float& out_y)
 {
@@ -230,6 +306,7 @@ static void bp_rotate_vec(float x, float y, float angle_rad,
 
 BossProjectileManager::BossProjectileManager() {}
 
+// Allocates the pool; uses e_bp_pool_size if pool_size is 0
 void BossProjectileManager::init(int pool_size)
 {
     int actual = (pool_size > 0) ? pool_size : e_bp_pool_size;
@@ -238,11 +315,16 @@ void BossProjectileManager::init(int pool_size)
     m_wave_toggle = false;
 }
 
+// Marks every slot inactive without freeing memory
 void BossProjectileManager::clear()
 {
     for (auto& p : m_pool) p.in_use = false;
 }
 
+// ----------------------------------------------------------------------------
+// update() — advances all active projectiles, applying base velocity and
+// sinusoidal wave offset. Culls expired or off-screen projectiles.
+// ----------------------------------------------------------------------------
 void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
 {
     if (!p_cam) return;
@@ -258,12 +340,14 @@ void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
         p.age += dt;
         p.lifetime -= dt;
 
+        // Sinusoidal perpendicular offset for wave motion
         const float sine_val = sinf(p.age * e_bp_wave_frequency + p.phase)
             * e_bp_wave_amplitude;
 
         p.x += (p.vx + p.perp_x * sine_val) * dt;
         p.y += (p.vy + p.perp_y * sine_val) * dt;
 
+        // Cull if expired or outside the camera margin
         const bool expired = (p.lifetime <= 0.0f);
         const bool off_screen = (p.x < p_cam->pos.x - hw - margin) ||
             (p.x > p_cam->pos.x + hw + margin) ||
@@ -273,6 +357,10 @@ void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
     }
 }
 
+// ----------------------------------------------------------------------------
+// check_player_collision() — tests all active projectiles against the player.
+// Deactivates any that connect and applies damage. Returns total hits.
+// ----------------------------------------------------------------------------
 int BossProjectileManager::check_player_collision(Player* player)
 {
     if (!player || !player->current_player) return 0;
@@ -295,9 +383,14 @@ int BossProjectileManager::check_player_collision(Player* player)
     return hits;
 }
 
+// ----------------------------------------------------------------------------
+// trigger_wave() — fires a spread of projectiles aimed at the target.
+// Alternates between wave pattern A (even slots) and B (odd slots) each call.
+// ----------------------------------------------------------------------------
 void BossProjectileManager::trigger_wave(float boss_x, float boss_y,
     float target_x, float target_y)
 {
+    // Normalise the fire direction
     float dx = target_x - boss_x;
     float dy = target_y - boss_y;
     const float dist = sqrtf(dx * dx + dy * dy);
@@ -307,6 +400,7 @@ void BossProjectileManager::trigger_wave(float boss_x, float boss_y,
     const float perp_x = -dy;
     const float perp_y = dx;
 
+    // Distribute projectiles across the angular spread
     const int   total_slots = e_bp_positions_wave_a + e_bp_positions_wave_b;
     const float spread_rad = e_bp_angle_spread_deg * BP_DEG2RAD;
     const float slot_step = spread_rad / static_cast<float>(total_slots - 1);
@@ -316,6 +410,7 @@ void BossProjectileManager::trigger_wave(float boss_x, float boss_y,
 
     for (int i = 0; i < count; ++i)
     {
+        // Wave B uses odd slots so the two patterns interleave
         const int   slot = is_wave_b ? (i * 2 + 1) : (i * 2);
         const float angle_offset = -spread_rad * 0.5f + static_cast<float>(slot) * slot_step;
 
@@ -323,6 +418,7 @@ void BossProjectileManager::trigger_wave(float boss_x, float boss_y,
         bp_rotate_vec(dx, dy, angle_offset, shot_dx, shot_dy);
         bp_rotate_vec(perp_x, perp_y, angle_offset, shot_px, shot_py);
 
+        // Stagger wave phases so projectiles oscillate out of sync
         const float base_phase = static_cast<float>(slot)
             * (2.0f * 3.14159265f / static_cast<float>(total_slots));
         const float wave_phase_offset = is_wave_b
@@ -336,6 +432,7 @@ void BossProjectileManager::trigger_wave(float boss_x, float boss_y,
     m_wave_toggle = !m_wave_toggle;
 }
 
+// Returns the first inactive pool slot; grows the pool if completely full
 BossProjectile* BossProjectileManager::acquire_slot()
 {
     for (auto& p : m_pool)
@@ -344,6 +441,7 @@ BossProjectile* BossProjectileManager::acquire_slot()
     return &m_pool.back();
 }
 
+// Initialises one projectile slot with the given direction, perp axis, and phase
 void BossProjectileManager::spawn_one(float bx, float by,
     float dir_x, float dir_y,
     float perp_x, float perp_y,
@@ -362,6 +460,7 @@ void BossProjectileManager::spawn_one(float bx, float by,
     p->in_use = true;
 }
 
+// Returns the number of currently active projectiles in the pool
 int BossProjectileManager::get_active_count() const
 {
     int n = 0;
@@ -376,6 +475,10 @@ int BossProjectileManager::get_active_count() const
 
 bool g_enemy_debug_draw = false;
 
+// ----------------------------------------------------------------------------
+// path_is_clear() — samples 10 points along the line from (x,y) to (tx,ty).
+// Returns false if any sample point collides with a wall.
+// ----------------------------------------------------------------------------
 static bool path_is_clear(f32 x, f32 y, f32 tx, f32 ty, f32 half)
 {
     for (int i = 1; i <= 10; ++i)
@@ -387,6 +490,10 @@ static bool path_is_clear(f32 x, f32 y, f32 tx, f32 ty, f32 half)
     return true;
 }
 
+// ----------------------------------------------------------------------------
+// enemy_move_towards() — steps toward (target_x, target_y) this frame.
+// Applies X and Y movement independently so the enemy slides along walls.
+// ----------------------------------------------------------------------------
 void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
     f32 target_x, f32 target_y, f32 dt)
 {
@@ -398,6 +505,7 @@ void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
     const f32 half = size * 0.5f;
     const f32 step = speed * dt;
 
+    // Probe at the leading edge; skip axis if it would enter a wall
     f32 probe_x = x + (dx > 0 ? half : -half);
     f32 probe_y = y + (dy > 0 ? half : -half);
 
@@ -405,6 +513,10 @@ void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
     if (!check_player_collision(x, probe_y + dy * step, 2.f)) y += dy * step;
 }
 
+// ----------------------------------------------------------------------------
+// enemy_move_away_from() — steps directly away from (from_x, from_y).
+// Applies X and Y independently to allow wall sliding while fleeing.
+// ----------------------------------------------------------------------------
 void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
     f32 from_x, f32 from_y, f32 dt)
 {
@@ -418,6 +530,10 @@ void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
     if (!check_player_collision(x, ny, size / 2.0f)) y = ny;
 }
 
+// ----------------------------------------------------------------------------
+// enemy_flee_to_wall() — computes a flee destination in the direction
+// opposite the player. Caller applies wall-collision checks as needed.
+// ----------------------------------------------------------------------------
 void enemy_flee_to_wall(f32 x, f32 y, f32 speed,
     f32 player_x, f32 player_y, f32 dt,
     f32& next_x, f32& next_y)
@@ -435,6 +551,7 @@ void enemy_flee_to_wall(f32 x, f32 y, f32 speed,
 // BASE ENEMY
 // ============================================================================
 
+// Sets common member defaults; subclasses override speed/size/health after this
 base_enemy::base_enemy(f32 start_x, f32 start_y)
     : x(start_x), y(start_y), spawn_x(start_x), spawn_y(start_y),
     velocity_x(0), velocity_y(0), speed(50.f), size(25.f),
@@ -445,6 +562,7 @@ base_enemy::base_enemy(f32 start_x, f32 start_y)
 {
 }
 
+// Applies damage, triggers hit flash, and sets dead state at 0 HP
 void base_enemy::take_damage(int amount)
 {
     if (!active) return;
@@ -458,6 +576,7 @@ void base_enemy::take_damage(int amount)
     }
 }
 
+// Returns true if the enemy's bounding box overlaps the camera viewport
 bool base_enemy::is_in_camera_view(Camera::camera* p_cam) const
 {
     if (!p_cam) return false;
@@ -467,6 +586,7 @@ bool base_enemy::is_in_camera_view(Camera::camera* p_cam) const
         y > p_cam->pos.y - hh - size && y < p_cam->pos.y + hh + size);
 }
 
+// Returns true if the enemy's collision radius overlaps the player's
 bool base_enemy::collides_with_player(Player* player) const
 {
     if (!player || !player->current_player) return false;
@@ -475,6 +595,7 @@ bool base_enemy::collides_with_player(Player* player) const
     return sqrtf(dx * dx + dy * dy) < (collision_radius + player->stats.character_size / 2.f);
 }
 
+// Returns straight-line distance to the player; 10000 if player is null
 f32 base_enemy::distance_to_player(Player* player) const
 {
     if (!player || !player->current_player) return 10000.f;
@@ -488,6 +609,7 @@ f32 base_enemy::distance_to_player(Player* player) const
 // GHOST
 // ============================================================================
 
+// Initialises ghost stats from config globals
 ghost::ghost(f32 start_x, f32 start_y)
     : base_enemy(start_x, start_y), hits_from_player(0)
 {
@@ -498,6 +620,7 @@ ghost::ghost(f32 start_x, f32 start_y)
     sight_range = e_ghost_sight_range;
 }
 
+// Increments hit counter before delegating to base damage logic
 void ghost::take_damage(int amount)
 {
     if (!active) return;
@@ -505,6 +628,10 @@ void ghost::take_damage(int amount)
     base_enemy::take_damage(amount);
 }
 
+// ----------------------------------------------------------------------------
+// Ghost AI: flees toward the nearest wall while the player is in camera view;
+// returns to idle when off-screen. Dies if it walks into a wall during flee.
+// ----------------------------------------------------------------------------
 void ghost::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
@@ -519,6 +646,7 @@ void ghost::update(f32 dt, Player* player, Camera::camera* p_cam)
             player->current_player->x, player->current_player->y,
             dt, next_x, next_y);
 
+        // Kill ghost if it collides with a wall while fleeing
         if (!check_player_collision(next_x, y, size / 2.0f)) x = next_x;
         else { state = enemy_state::dead; active = false; }
 
@@ -533,6 +661,7 @@ void ghost::update(f32 dt, Player* player, Camera::camera* p_cam)
 // BAT
 // ============================================================================
 
+// Initialises bat stats from config globals
 bat::bat(f32 start_x, f32 start_y)
     : base_enemy(start_x, start_y)
 {
@@ -544,6 +673,10 @@ bat::bat(f32 start_x, f32 start_y)
     attack_cooldown = e_bat_attack_cooldown;
 }
 
+// ----------------------------------------------------------------------------
+// Bat AI: chases the player when in camera view; deals damage on contact
+// using the attack cooldown timer to pace repeated hits.
+// ----------------------------------------------------------------------------
 void bat::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
@@ -575,6 +708,7 @@ void bat::update(f32 dt, Player* player, Camera::camera* p_cam)
 // DRAGON
 // ============================================================================
 
+// Initialises boss stats and stores the room boundary for movement clamping
 dragon::dragon(f32 start_x, f32 start_y,
     f32 r_left, f32 r_right, f32 r_top, f32 r_bottom)
     : base_enemy(start_x, start_y),
@@ -588,6 +722,7 @@ dragon::dragon(f32 start_x, f32 start_y,
     attack_cooldown = e_dragon_attack_cooldown;
 }
 
+// Loads all five animation sheets from config paths and starts the idle clip
 void dragon::load_anim_textures()
 {
     tex_idle = AEGfxTextureLoad(e_dragon_tex_idle.c_str());
@@ -596,9 +731,15 @@ void dragon::load_anim_textures()
     tex_hurt = AEGfxTextureLoad(e_dragon_tex_hurt.c_str());
     tex_death = AEGfxTextureLoad(e_dragon_tex_death.c_str());
 
-    anim.set(tex_idle, 4, 74, 74, 296, 74, 6.f, true);
+    anim.set(tex_idle,
+        e_dragon_idle_frames,
+        e_dragon_idle_frame_w, e_dragon_idle_frame_h,
+        e_dragon_idle_sheet_w, e_dragon_idle_sheet_h,
+        e_dragon_idle_fps,
+        e_dragon_idle_loop != 0);
 }
 
+// Counts down m_wave_timer and fires a projectile wave when it expires
 void dragon::tick_attack_pattern(float dt, float tgt_x, float tgt_y)
 {
     m_wave_timer -= dt;
@@ -609,11 +750,17 @@ void dragon::tick_attack_pattern(float dt, float tgt_x, float tgt_y)
     }
 }
 
+// ----------------------------------------------------------------------------
+// Dragon AI: chases the player within the room boundary, fires projectile
+// waves on a timer, deals melee damage on contact, and manages animation
+// transitions between IDLE, WALK, ATTACK, HURT, and DEATH clips.
+// ----------------------------------------------------------------------------
 void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
     if (hit_flash_timer > 0.f) hit_flash_timer -= dt;
 
+    // Let the death animation finish before deactivating
     if (state == dead) {
         if (anim.update(dt)) active = false;
         return;
@@ -625,6 +772,8 @@ void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
     if (visible_to_player)
     {
         state = enemy_state::chasing;
+
+        // Clamp the target so the dragon stays within the boss room
         f32 target_x = AEClamp(player->current_player->x, room_left, room_right);
         f32 target_y = AEClamp(player->current_player->y, room_bottom, room_top);
 
@@ -652,40 +801,80 @@ void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
     }
     else state = enemy_state::idle;
 
-    if (current_anim == DragonAnim::HURT) { if (anim.update(dt)) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE); }
-    else if (current_anim == DragonAnim::ATTACK) { if (anim.update(dt)) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE); }
-    else {
+    // Animation priority: let HURT/ATTACK finish before switching clips
+    if (current_anim == DragonAnim::HURT)
+    {
+        if (anim.update(dt)) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE);
+    }
+    else if (current_anim == DragonAnim::ATTACK)
+    {
+        if (anim.update(dt)) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE);
+    }
+    else
+    {
         anim.update(dt);
-        if (hitting) switch_anim(DragonAnim::ATTACK);
-        else if (moving)  switch_anim(DragonAnim::WALK);
-        else              switch_anim(DragonAnim::IDLE);
+        if (hitting)     switch_anim(DragonAnim::ATTACK);
+        else if (moving) switch_anim(DragonAnim::WALK);
+        else             switch_anim(DragonAnim::IDLE);
     }
 }
 
+// Reconfigures the Animator for the requested clip; no-op if already playing it
 void dragon::switch_anim(DragonAnim next_anim)
 {
     if (current_anim == next_anim) return;
     current_anim = next_anim;
+
     switch (next_anim) {
-    case DragonAnim::IDLE:   anim.set(tex_idle, 4, 74, 74, 296, 74, 6.f, true);  break;
-    case DragonAnim::WALK:   anim.set(tex_walk, 8, 74, 74, 592, 74, 10.f, true);  break;
-    case DragonAnim::ATTACK: anim.set(tex_attack, 16, 90, 70, 1440, 70, 14.f, false);  break;
-    case DragonAnim::HURT:   anim.set(tex_hurt, 5, 130, 130, 650, 130, 10.f, false);  break;
-    case DragonAnim::DEATH:  anim.set(tex_death, 20, 10, 50, 360, 50, 12.f, false);  break;
+    case DragonAnim::IDLE:
+        anim.set(tex_idle, e_dragon_idle_frames,
+            e_dragon_idle_frame_w, e_dragon_idle_frame_h,
+            e_dragon_idle_sheet_w, e_dragon_idle_sheet_h,
+            e_dragon_idle_fps, e_dragon_idle_loop != 0);
+        break;
+    case DragonAnim::WALK:
+        anim.set(tex_walk, e_dragon_walk_frames,
+            e_dragon_walk_frame_w, e_dragon_walk_frame_h,
+            e_dragon_walk_sheet_w, e_dragon_walk_sheet_h,
+            e_dragon_walk_fps, e_dragon_walk_loop != 0);
+        break;
+    case DragonAnim::ATTACK:
+        anim.set(tex_attack, e_dragon_attack_frames,
+            e_dragon_attack_frame_w, e_dragon_attack_frame_h,
+            e_dragon_attack_sheet_w, e_dragon_attack_sheet_h,
+            e_dragon_attack_fps, e_dragon_attack_loop != 0);
+        break;
+    case DragonAnim::HURT:
+        anim.set(tex_hurt, e_dragon_hurt_frames,
+            e_dragon_hurt_frame_w, e_dragon_hurt_frame_h,
+            e_dragon_hurt_sheet_w, e_dragon_hurt_sheet_h,
+            e_dragon_hurt_fps, e_dragon_hurt_loop != 0);
+        break;
+    case DragonAnim::DEATH:
+        anim.set(tex_death, e_dragon_death_frames,
+            e_dragon_death_frame_w, e_dragon_death_frame_h,
+            e_dragon_death_sheet_w, e_dragon_death_sheet_h,
+            e_dragon_death_fps, e_dragon_death_loop != 0);
+        break;
     }
 }
 
+// Draws the dragon sprite at the correct aspect ratio for the current clip
 void dragon::render_animated(f32 draw_size)
 {
     f32 w, h;
     switch (current_anim) {
-    case DragonAnim::ATTACK: w = draw_size * (90.f / 70.f); h = draw_size; break;
-    case DragonAnim::DEATH:  w = draw_size * (160.f / 55.f); h = draw_size; break;
+    case DragonAnim::ATTACK: w = draw_size * (e_dragon_attack_frame_w / e_dragon_attack_frame_h); h = draw_size; break;
+    case DragonAnim::DEATH:  w = draw_size * (e_dragon_death_sheet_w / e_dragon_death_frame_h);  h = draw_size; break;
     default:                 w = draw_size; h = draw_size; break;
     }
     render_anim_sprite(x, y, w, h, anim);
 }
 
+// ----------------------------------------------------------------------------
+// dragon::take_damage() — applies damage and switches to HURT or DEATH clip.
+// Does not use base_enemy::take_damage so the dragon controls its own anim.
+// ----------------------------------------------------------------------------
 void dragon::take_damage(int amount)
 {
     if (!active) return;

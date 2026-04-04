@@ -241,5 +241,3 @@ void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim);
 
 class BossProjectileManager;
 void render_boss_projectiles(const BossProjectileManager& manager);
-
-

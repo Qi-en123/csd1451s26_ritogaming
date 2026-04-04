@@ -714,8 +714,7 @@ namespace Puzzle {
 	// ------------------------------------------------------------------------
 	void puzzle_audio_update() {
 		if (!drag_was_active && is_drag_playing) {
-			// Neither move nor drag fired this frame — stop the sound
-			AEAudioStopGroup(g_audio.sfx_group);
+			stop_sfx_loop();
 			is_drag_playing = false;
 		}
 		// Reset for next frame
@@ -761,7 +760,7 @@ namespace Puzzle {
 			curr.posy += dy;
 
 			if (!is_drag_playing) {
-				play_sfx(g_audio.sfx_drag_pull, 0.03f, 1.0f, -1);
+				play_sfx_loop(g_audio.sfx_drag_pull, 7.0f, 1.0f);
 				is_drag_playing = true;
 			}
 			drag_was_active = true;
@@ -806,16 +805,20 @@ namespace Puzzle {
 				newY = (puzzle.posy > player_pos_y) ?
 					player_pos_y + min_dist : player_pos_y - min_dist;
 			}
+			const f32 move_dist_sq = (newX - puzzle.posx) * (newX - puzzle.posx) +
+				(newY - puzzle.posy) * (newY - puzzle.posy);
 
 			if (!puzzle_to_wall_collision(newX, newY) &&
 				!puzzle_collide_puzzles(index, newX, newY)) {
 				puzzle.posx = newX;
 				puzzle.posy = newY;
-				if (!is_drag_playing) {
-					play_sfx(g_audio.sfx_drag_pull, 0.03f, 1.0f, -1);
+				if (!is_drag_playing && move_dist_sq > 0.01f) {
+					play_sfx_loop(g_audio.sfx_drag_pull, 7.0f, 1.0f);
 					is_drag_playing = true;
 				}
-				drag_was_active = true;
+				if (move_dist_sq > 0.01f) {
+					drag_was_active = true;
+				}
 			}
 		}
 		else {

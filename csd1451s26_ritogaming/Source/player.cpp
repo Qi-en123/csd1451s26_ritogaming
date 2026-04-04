@@ -266,7 +266,7 @@ void play_footstep(float pitch = 1.0f)
 
     if (!is_footstep_playing)
     {
-        play_sfx(g_audio.sfx_footsteps, 0.03f, pitch, -1);
+        play_sfx(g_audio.sfx_footsteps, 3.f, pitch, 1);
         is_footstep_playing = true;
         last_pitch = pitch;
     }

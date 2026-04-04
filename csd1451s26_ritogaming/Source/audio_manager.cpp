@@ -27,6 +27,7 @@ void audio_init()
     // Create groups
     g_audio.bgm_group = AEAudioCreateGroup();
     g_audio.sfx_group = AEAudioCreateGroup();
+    g_audio.sfx_loop_group = AEAudioCreateGroup();
 
     // Load BGM (loops)
     g_audio.bgm_op_n_mainmenu = AEAudioLoadMusic("Assets/Audio/opening_n_mainmenu_bg.mp3");
@@ -47,8 +48,8 @@ void audio_init()
     g_audio.sfx_button_click = AEAudioLoadSound("Assets/Audio/button_click.mp3");
     g_audio.sfx_button_hover = AEAudioLoadSound("Assets/Audio/button_hover.mp3");
     g_audio.sfx_button_puzzle = AEAudioLoadSound("Assets/Audio/button_puzzle.mp3");
-    g_audio.sfx_drag_pull = AEAudioLoadSound("Assets/Audio/drag_pull.mp3");
-    g_audio.sfx_footsteps = AEAudioLoadSound("Assets/Audio/footsteps.mp3");
+    g_audio.sfx_drag_pull = AEAudioLoadSound("Assets/Audio/dragging.mp3");
+    g_audio.sfx_footsteps = AEAudioLoadSound("Assets/Audio/walking.mp3");
 
     g_audio.sfx_lose = AEAudioLoadSound("Assets/Audio/lose.mp3");
     g_audio.sfx_win = AEAudioLoadSound("Assets/Audio/win.mp3");
@@ -82,6 +83,7 @@ void audio_free()
     // Stop all audio first
     AEAudioStopGroup(g_audio.bgm_group);
     AEAudioStopGroup(g_audio.sfx_group);
+    AEAudioStopGroup(g_audio.sfx_loop_group);
 
     //// Unload BGM
     AEAudioUnloadAudio(g_audio.bgm_op_n_mainmenu);
@@ -106,6 +108,7 @@ void audio_free()
     // Unload groups
     AEAudioUnloadAudioGroup(g_audio.bgm_group);
     AEAudioUnloadAudioGroup(g_audio.sfx_group);
+    AEAudioUnloadAudioGroup(g_audio.sfx_loop_group);
 
     AEAudioExit();
 }
@@ -177,4 +180,14 @@ void play_sfx(AEAudio audio, float volume, float pitch, int loop)
 void stop_sfx()
 {
     AEAudioStopGroup(g_audio.sfx_group);
+}
+
+void play_sfx_loop(AEAudio audio, float volume, float pitch)
+{
+    AEAudioPlay(audio, g_audio.sfx_loop_group, volume, pitch, -1);
+}
+
+void stop_sfx_loop() 
+{ 
+    AEAudioStopGroup(g_audio.sfx_loop_group); 
 }

@@ -26,6 +26,7 @@ struct AudioManager
     // Groups
     AEAudioGroup bgm_group{};
     AEAudioGroup sfx_group{};
+    AEAudioGroup sfx_loop_group{};
 
     // BGM
     AEAudio bgm_op_n_mainmenu{};
@@ -122,3 +123,19 @@ void play_sfx(AEAudio audio, float volume = 0.1f, float pitch = 1.0f, int loop =
 //
 // ----------------------------------------------------------------------------
 void stop_sfx();
+
+// ----------------------------------------------------------------------------
+//
+// Function: play_sfx_loop
+// Plays a sound effect specifically on the loop group (e.g. for dragging).
+//
+// ----------------------------------------------------------------------------
+void play_sfx_loop(AEAudio audio, float volume = 0.1f, float pitch = 1.0f);
+
+// ----------------------------------------------------------------------------
+//
+// Function: stop_sfx_loop
+// Stops all audio currently playing in the looping SFX group.
+//
+// ----------------------------------------------------------------------------
+void stop_sfx_loop();

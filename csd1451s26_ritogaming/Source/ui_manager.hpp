@@ -24,7 +24,6 @@ struct UIManager
 	 AEGfxTexture* hp_full_texture;
 	 AEGfxTexture* primary_bg_texture;
 	 AEGfxTexture* primary_counter_texture;
-	 AEGfxTexture* primary_ability_texture;
 	 AEGfxTexture* cursor_knight;        
 	 AEGfxTexture* cursor_wizard;        
 	 AEGfxTexture* cursor_wizard_active; 

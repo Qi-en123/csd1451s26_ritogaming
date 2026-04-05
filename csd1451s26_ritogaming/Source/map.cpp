@@ -57,7 +57,7 @@ bool load_tile_textures(const char* folderPath)
 // Saves the current state of a dynamic map to an existing file, overwriting data.
 //
 // ---------------------------------------------------------------------------- 
-bool save_map_to_file_overwrite(s32** map, const std::string& filename)
+bool save_map_to_file_overwrite(s32** tile_grid, const std::string& filename)
 {
     std::ofstream file{ filename };
 
@@ -71,7 +71,7 @@ bool save_map_to_file_overwrite(s32** map, const std::string& filename)
     {
         for (int col = 0; col < TILE_COLS; ++col)
         {
-            file << map[row][col];
+            file << tile_grid[row][col];
             if (col < TILE_COLS - 1)
                 file << " ";
         }
@@ -170,7 +170,7 @@ bool load_map_to_editor(const char* filename, s32** editor_map)
 // Loads a map file into the standard 2D array used by the game engine.
 //
 // ---------------------------------------------------------------------------- 
-bool load_map_from_file(const char* filename, s32 map[][TILE_COLS])
+bool load_map_from_file(const char* filename, s32 tile_grid[][TILE_COLS])
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -189,14 +189,14 @@ bool load_map_from_file(const char* filename, s32 map[][TILE_COLS])
 
         while (ss >> tileType && col < TILE_COLS)
         {
-            map[row][col] = tileType;
+            tile_grid[row][col] = tileType;
             ++col;
         }
 
         // Fill remaining columns with EMPTY if line is shorter than TILE_COLS
         while (col < TILE_COLS)
         {
-            map[row][col] = EMPTY;
+            tile_grid[row][col] = EMPTY;
             ++col;
         }
 
@@ -207,7 +207,7 @@ bool load_map_from_file(const char* filename, s32 map[][TILE_COLS])
     while (row < TILE_ROWS)
     {
         for (int c = 0; c < TILE_COLS; ++c)
-            map[row][c] = EMPTY;
+            tile_grid[row][c] = EMPTY;
         ++row;
     }
 
@@ -221,7 +221,7 @@ bool load_map_from_file(const char* filename, s32 map[][TILE_COLS])
 // Searches existing level files to create a new unique level filename (e.g., lvl5.txt).
 //
 // ---------------------------------------------------------------------------- 
-bool save_map_to_file(s32** map, std::string& out_filename)
+bool save_map_to_file(s32** tile_grid, std::string& out_filename)
 {
     s32 highest = 0;
     WIN32_FIND_DATAA find_data;
@@ -256,7 +256,7 @@ bool save_map_to_file(s32** map, std::string& out_filename)
     {
         for (int col = 0; col < TILE_COLS; ++col)
         {
-            file << map[row][col];
+            file << tile_grid[row][col];
 
             if (col < TILE_COLS - 1)
                 file << " ";
@@ -275,7 +275,7 @@ bool save_map_to_file(s32** map, std::string& out_filename)
 // Renders the entire tile map centered on the screen.
 //
 // ---------------------------------------------------------------------------- 
-void draw_map(f32 tile_size)
+void draw_map()
 {
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);

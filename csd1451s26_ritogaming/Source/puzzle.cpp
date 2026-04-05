@@ -457,6 +457,7 @@ namespace Puzzle {
 		}
 
 		ifs.close();
+		return true;
 	}
 
 	// ------------------------------------------------------------------------
@@ -470,6 +471,8 @@ namespace Puzzle {
 			return WATER;
 		case NO_ELEMENT:
 			return FIRE;
+		default:
+			return WATER;
 		}
 	}
 	Element next_element(Element elem) {
@@ -479,6 +482,8 @@ namespace Puzzle {
 		case FIRE:
 			return NO_ELEMENT;
 		case NO_ELEMENT:
+			return WATER;
+		default:
 			return WATER;
 		}
 	}
@@ -666,7 +671,7 @@ namespace Puzzle {
 				}
 				// Debug: print tile coordinates
 				//printf("Colliding with puzzle at (%.2f, %.2f)\n", e_block.position.x, e_block.position.y);
-				puzzle_index = i;
+				puzzle_index = (s32)i;
 				return true; // collision detected
 			}
 		}

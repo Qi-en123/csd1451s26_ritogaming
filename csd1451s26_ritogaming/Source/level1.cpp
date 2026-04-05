@@ -346,7 +346,7 @@ void level1_draw()
 {
 	AEGfxReset();
 
-	draw_map(tile_size);
+	draw_map();
 	if (DEBUG::DEBUGGING) {
 		if (DEBUG::DRAW_WALLS)              DEBUG::draw_all_walls();
 		if (DEBUG::DRAW_PLAYER_TILE)        DEBUG::draw_player_tile();

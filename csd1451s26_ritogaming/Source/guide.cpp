@@ -83,6 +83,9 @@ namespace
 		//LMB to attack
 		render_guide_text(9, 48, "Left click to attack", yellow);
 
+		//Food heals
+		render_guide_text(7, 48, "Food drop heals you", yellow);
+
 		//Enter door to go next floor
 		render_guide_text(0, 48, "Enter door to advance", yellow);
 	}
@@ -257,7 +260,7 @@ void guide_draw() {
 	AEGfxReset();
 
 	//Renders map tiles
-	draw_map(tile_size);
+	draw_map();
 	if (DEBUG::DEBUGGING) {
 		if (DEBUG::DRAW_WALLS)              DEBUG::draw_all_walls();
 		if (DEBUG::DRAW_PLAYER_TILE)        DEBUG::draw_player_tile();

@@ -38,6 +38,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ LPWSTR lpCmdLine,
     _In_ int nCmdShow)
 {
+    UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(hPrevInstance);
     // ------------------------------------------------------------------------
     // 1. Debugging & Memory Leak Detection Setup
     // ------------------------------------------------------------------------

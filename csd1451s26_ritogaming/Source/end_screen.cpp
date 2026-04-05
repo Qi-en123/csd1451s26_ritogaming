@@ -175,6 +175,7 @@ void end_screen_unload()
 void end_screen_free()
 {
     free_mesh();
+    stop_sfx();
 }
 
 void end_screen_init()

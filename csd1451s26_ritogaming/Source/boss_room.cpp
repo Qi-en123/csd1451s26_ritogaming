@@ -195,7 +195,7 @@ void boss_room_draw()
 {
     AEGfxReset();
     //draw_boss_map(tile_size);
-    draw_map(tile_size);
+    draw_map();
 
     if (DEBUG::DEBUGGING) {
         // Debug: draw all walls as semi-transparent red
@@ -256,6 +256,7 @@ void boss_room_unload()
         AEGfxTextureUnload(skeleton_texture);
         skeleton_texture = nullptr;
     }
+
     end_screen_unload();
     minimap_unload();
 }

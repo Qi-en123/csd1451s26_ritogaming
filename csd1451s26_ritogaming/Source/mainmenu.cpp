@@ -446,7 +446,7 @@ void mainmenu_update()
 void mainmenu_draw()
 {
     // Draw full-screen background image
-    render_editor_ui(bg, AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), 1, 0, 0);
+    render_editor_ui(bg, (f32)AEGfxGetWindowWidth(), (f32)AEGfxGetWindowHeight(), 1, 0, 0);
 
     // --- Draw dust particles using the ground tile as a puff sprite ---
     for (s32 i = 0; i < MAX_DUST; ++i)

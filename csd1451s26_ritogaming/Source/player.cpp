@@ -380,7 +380,7 @@ static void player_handle_character_switch(Player *player_ptr)
     {
         if (player_ptr->current_character != 1)
         {
-            play_sfx(g_audio.sfx_swapping, 1.0f);
+            play_sfx(g_audio.sfx_swapping, 0.55f);
             player_ptr->current_player = &player_ptr->char1;
             player_ptr->current_character = 1;
         }
@@ -389,7 +389,7 @@ static void player_handle_character_switch(Player *player_ptr)
     {
         if (player_ptr->current_character != 2)
         {
-            play_sfx(g_audio.sfx_swapping, 1.0f);
+            play_sfx(g_audio.sfx_swapping, 0.55f);
             player_ptr->current_player = &player_ptr->char2;
             player_ptr->current_character = 2;
         }

@@ -52,7 +52,7 @@ extern s32 map[TILE_ROWS][TILE_COLS];              // The primary 2D game map ar
 // Renders the entire tile map centered based on the tile_size provided.
 //
 // ---------------------------------------------------------------------------- 
-void draw_map(f32 tile_size);
+void draw_map();
 
 // ----------------------------------------------------------------------------
 //
@@ -60,7 +60,7 @@ void draw_map(f32 tile_size);
 // Saves a dynamically allocated map to a new unique level file (e.g. lvl5.txt).
 //
 // ---------------------------------------------------------------------------- 
-bool save_map_to_file(s32** map, std::string& out_filename);
+bool save_map_to_file(s32** tile_grid, std::string& out_filename);
 
 // ----------------------------------------------------------------------------
 //
@@ -68,7 +68,7 @@ bool save_map_to_file(s32** map, std::string& out_filename);
 // Reads map data from a file into the fixed-size game map array.
 //
 // ---------------------------------------------------------------------------- 
-bool load_map_from_file(const char* filename, s32 map[][TILE_COLS]);
+bool load_map_from_file(const char* filename, s32 tile_grid[][TILE_COLS]);
 
 // ----------------------------------------------------------------------------
 //
@@ -108,7 +108,7 @@ bool load_map_to_editor(const char* filename, s32** editor_map);
 // Overwrites an existing level file with new map data.
 //
 // ---------------------------------------------------------------------------- 
-bool save_map_to_file_overwrite(s32** map, const std::string& filename);
+bool save_map_to_file_overwrite(s32** tile_grid, const std::string& filename);
 
 // ----------------------------------------------------------------------------
 //

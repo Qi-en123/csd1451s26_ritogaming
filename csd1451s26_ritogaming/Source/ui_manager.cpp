@@ -89,16 +89,16 @@ void render_character_ui(UIManager* p_ui_manager, Player* player)
 }
 
 
-void render_cursor(UIManager* ui_manager, Player* player, s32 mouse_x, s32 mouse_y, bool cursor_active)
+void render_cursor(UIManager* um, Player* player, s32 mouse_x, s32 mouse_y, bool cursor_active)
 {
 	f32 world_x = (f32)mouse_x - 800.f;
 	f32 world_y = -(f32)mouse_y + 450.f;
 
 	AEGfxTexture* current_cursor = nullptr;
 	if (player->current_player == &player->char1)
-		current_cursor = ui_manager->cursor_knight;
+		current_cursor = um->cursor_knight;
 	else
-		current_cursor = cursor_active ? ui_manager->cursor_wizard_active : ui_manager->cursor_wizard;
+		current_cursor = cursor_active ? um->cursor_wizard_active : um->cursor_wizard;
 
 	if (current_cursor)
 		render_editor_ui(current_cursor, 50.f, 50.f, 1.0f, world_x, world_y);

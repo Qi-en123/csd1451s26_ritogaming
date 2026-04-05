@@ -49,23 +49,23 @@ namespace
 // relative to the configured fade-in, hold, and fade-out durations.
 //
 // ----------------------------------------------------------------------------
-static f32 compute_fade_alpha(f32 elapsed, const OpeningConfig& cfg)
+static f32 compute_fade_alpha(f32 elpsed, const OpeningConfig& cfg)
 {
     const f32 fade_in_end = cfg.fade_in_duration;
     const f32 hold_end = fade_in_end + cfg.hold_duration;
     const f32 sequence_end = hold_end + cfg.fade_out_duration;
 
     // Fade-in Phase
-    if (elapsed < fade_in_end)
-        return elapsed / cfg.fade_in_duration;
+    if (elpsed < fade_in_end)
+        return elpsed / cfg.fade_in_duration;
 
     // Hold Phase
-    if (elapsed < hold_end)
+    if (elpsed < hold_end)
         return 1.f;
 
     // Fade-out Phase
-    if (elapsed < sequence_end)
-        return 1.f - ((elapsed - hold_end) / cfg.fade_out_duration);
+    if (elpsed < sequence_end)
+        return 1.f - ((elpsed - hold_end) / cfg.fade_out_duration);
 
     return 0.f;
 }

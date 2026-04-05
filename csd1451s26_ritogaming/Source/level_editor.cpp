@@ -716,6 +716,8 @@ void level_editor_init()
         for (s32 c = 0; c < TILE_COLS; ++c)
             puzzle_editor_map[r][c] = Puzzle::PUZZLE_TYPE_COUNT;
 
+    puzzles.clear();
+    button_triggers.clear();
     puzzles.reserve(100);
 
     // Borders (derived from tile_draw_size and multipliers)

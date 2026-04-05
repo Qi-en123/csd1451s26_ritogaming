@@ -4,7 +4,8 @@
 \par DP email:  c.cheong@digipen.edu
 \
 \co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
-\               Ahmad (10% - projectile for character 1 & 2, audio management for footsteps
+\               Ahmad (10% - projectile for character 1 & 2, audio management for footsteps)
+\                     (^ separated out projectile by Claire into different functions)
 \
 \brief:         Implements the player system including character switching,
 \               movement with collision detection, puzzle interaction,
@@ -21,7 +22,7 @@
 using json = nlohmann::json;
 static const char* player_config_data = "Assets/Config/player_config.json";
 
-extern int map[TILE_ROWS][TILE_COLS];
+extern s32 map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
 
@@ -244,7 +245,7 @@ bool player_load_config(Player* player, const std::string& filepath)
 	- Ahmad's part
 * /
 /**************************************************************************/
-void footstep_audio_update()
+static void footstep_audio_update()
 {
     if (!footstep_was_active && is_footstep_playing)
     {
@@ -253,9 +254,18 @@ void footstep_audio_update()
     }
     footstep_was_active = false;
 }
-void play_footstep(float pitch = 1.0f)
+
+/**************************************************************************/
+/*!
+    Plays looping footstep sound effect.
+    Restarts if pitch changes (e.g. dragging vs walking).
+    pitch - playback pitch modifier
+	- Ahmad's part
+*/
+/**************************************************************************/
+static void play_footstep(f32 pitch = 1.0f)
 {
-    static float last_pitch = 1.0f;
+    static f32 last_pitch = 1.0f;
 
     // Restart if pitch changed (e.g. started or stopped dragging)
     if (is_footstep_playing && pitch != last_pitch)
@@ -414,9 +424,9 @@ static void player_handle_movement(Player *player_ptr)
     f32* move_y = &player_ptr->current_player->y;
     Puzzle::Element curr_elem = player_ptr->current_player->element;
 
-    float nextX = *move_x;
-    float nextY = *move_y;
-    float halfSize = player_ptr->stats.character_size / 2.0f;
+    f32 nextX = *move_x;
+    f32 nextY = *move_y;
+    f32 halfSize = player_ptr->stats.character_size / 2.0f;
 
     // Track if player is dragging a puzzle block
     static bool is_dragging = false;
@@ -459,7 +469,7 @@ static void player_handle_movement(Player *player_ptr)
     else
     {
         // Slide along wall
-        float direction = (nextX > *move_x) ? 1.0f : -1.0f;
+        f32 direction = (nextX > *move_x) ? 1.0f : -1.0f;
         if (!check_player_collision(*move_x + direction, *move_y, halfSize) &&
             !Puzzle::player_collide_puzzles(*move_x + direction, *move_y, halfSize, puzzle_index))
         {
@@ -482,7 +492,7 @@ static void player_handle_movement(Player *player_ptr)
     else
     {
         // Slide along wall
-        float direction = (nextY > *move_y) ? 1.0f : -1.0f;
+        f32 direction = (nextY > *move_y) ? 1.0f : -1.0f;
         if (!check_player_collision(*move_x, *move_y + direction, halfSize) &&
             !Puzzle::player_collide_puzzles(*move_x, *move_y + direction, halfSize, puzzle_index))
         {
@@ -534,7 +544,7 @@ void player_system_handle_input(Player *player_ptr)
   Handles shooting logic (CHARACTER 2 ONLY). - Ahmad's part
 */
 /**************************************************************************/
-void player_handle_shooting(Player * player_ptr, f32 dt)
+void player_handle_shooting(Player * player_ptr)
 {
     if (!player_ptr)
         return;
@@ -577,7 +587,7 @@ void player_handle_shooting(Player * player_ptr, f32 dt)
         player_ptr->last_dir_y = dirY;
 
         // --- Spawn projectile ---
-        Projectile new_fire;
+        Projectile new_fire{};
         new_fire.active = true;
         new_fire.radius = 8.0f;
 
@@ -594,7 +604,14 @@ void player_handle_shooting(Player * player_ptr, f32 dt)
         play_sfx(g_audio.sfx_fireball, 0.08f, 0.45f);
     }
 }
-void player_update_particles(Player * player_ptr, f32 dt)
+/**************************************************************************/
+/*!
+    Updates particle system (movement + lifetime).
+    Removes particles when their life reaches 0.
+	- Ahmad's part
+*/
+/**************************************************************************/
+static void player_update_particles(Player * player_ptr)
 {
     for (size_t i = 0; i < player_ptr->particles.size(); ++i)
     {
@@ -611,14 +628,21 @@ void player_update_particles(Player * player_ptr, f32 dt)
         }
     }
 }
-void player_render_particles(Player *player_ptr)
+/**************************************************************************/
+/*!
+    Renders all active particles (fire trail effect).
+    Alpha fades based on remaining lifetime.
+	- Ahmad's part
+*/
+/**************************************************************************/
+static void player_render_particles(Player *player_ptr)
 {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     for (const auto& p : player_ptr->particles)
     {
         // Fade the alpha based on remaining life
-        float alpha = p.life / p.maxLife;
+        f32 alpha = p.life / p.maxLife;
         AEGfxSetColorToMultiply(1.0f, 0.3f, 0.0f, alpha); // Red-Orange fire
 
         // Use your existing draw_circle or draw_rect helper
@@ -631,7 +655,7 @@ void player_render_particles(Player *player_ptr)
   Updates projectile positions and handles collisions. - Ahmad's part
 */
 /**************************************************************************/
-void player_update_projectiles(Player * player_ptr, f32 dt)
+void player_update_projectiles(Player * player_ptr)
 {
     if (!player_ptr)
         return;
@@ -645,7 +669,7 @@ void player_update_projectiles(Player * player_ptr, f32 dt)
 
         // --- PARTICLE SPAWNING ---
         // Every frame, create a "trail" particle
-        Particle trail;
+        Particle trail{};
         trail.x = p.x;
         trail.y = p.y;
         // Give it a tiny bit of random drift
@@ -705,15 +729,22 @@ void player_render_projectiles(Player * player_ptr)
   Renders all active projectile counts. - Ahmad's part   
 */
 /**************************************************************************/
-void player_render_fireball_count(Player * player_ptr)
+static void player_render_fireball_count(Player * player_ptr)
 {
     if (!player_ptr)
         return;
 
     std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
-
-    // render_text_corner(text.c_str(), 1, -0.95f, -0.85f, 1.0f, white);
 }
+/**************************************************************************/
+/*!
+    Handles melee attack input for Character 1 (knight).
+    Determines swing direction based on mouse position.
+    Checks for enemy hits along the swing arc and applies damage.
+	 Plays sword attack sound effect.
+     - Ahmad's part
+*/
+/**************************************************************************/
 void player_handle_melee(Player* player_ptr)
 {
     if (!player_ptr) return;
@@ -727,13 +758,11 @@ void player_handle_melee(Player* player_ptr)
     AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
 
     f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
-    f32 halfHeight = (f32)AEGfxGetWindowHeight() / 2.0f;
 
     f32 mouseWorldX = (f32)mouseScreenX - halfWidth + Camera::cam.pos.x;
-    f32 mouseWorldY = halfHeight - (f32)mouseScreenY + Camera::cam.pos.y;
 
     // Determine left or right of player
-    float dx = mouseWorldX - player_ptr->char1.x;
+    f32 dx = mouseWorldX - player_ptr->char1.x;
 
     player_ptr->swing.active = true;
     player_ptr->swing.progress = 0.0f;
@@ -741,7 +770,14 @@ void player_handle_melee(Player* player_ptr)
 
     play_sfx(g_audio.sfx_sword_atk, 0.1f, 1.1f);
 }
-void player_update_swing(Player* player_ptr, f32 dt)
+/**************************************************************************/
+/*!
+    Updates melee swing animation and hit detection.
+    Ensures enemies are hit only once per swing.
+	- Ahmad's part
+*/
+/**************************************************************************/
+void player_update_swing(Player* player_ptr)
 {
     if (!player_ptr) return;
 
@@ -753,21 +789,21 @@ void player_update_swing(Player* player_ptr, f32 dt)
     // only check for hits once per swing, not every frame
     if (!sw.has_hit)
     {
-        float cx = player_ptr->char1.x;
-        float cy = player_ptr->char1.y;
+        f32 cx = player_ptr->char1.x;
+        f32 cy = player_ptr->char1.y;
 
-        float startAngle = PI * 0.5f;
-        float endAngle = -PI * 0.5f;
-        float currEnd = startAngle + (endAngle - startAngle) * sw.progress;
+        f32 startAngle = PI * 0.5f;
+        f32 endAngle = -PI * 0.5f;
+        f32 currEnd = startAngle + (endAngle - startAngle) * sw.progress;
 
-        int segments = 20;
-        for (int i = 0; i <= segments; i++)
+        s32 segments = 20;
+        for (s32 i = 0; i <= segments; i++)
         {
-            float t = (float)i / segments;
-            float angle = startAngle + (currEnd - startAngle) * t;
+            f32 t = (float)i / segments;
+            f32 angle = startAngle + (currEnd - startAngle) * t;
 
-            float px = cx + cosf(angle) * sw.radius * sw.dir;
-            float py = cy + sinf(angle) * sw.radius;
+            f32 px = cx + cosf(angle) * sw.radius * sw.dir;
+            f32 py = cy + sinf(angle) * sw.radius;
 
             if (enemy_manager_instance.check_projectile_hit(px, py, 6.0f, MELEE_DAMAGE))
             {
@@ -784,6 +820,12 @@ void player_update_swing(Player* player_ptr, f32 dt)
         sw.has_hit = false; // reset for next swing
     }
 }
+/**************************************************************************/
+/*!
+    Renders melee swing arc using particle-like trail.
+	- Ahmad's part  
+*/
+/**************************************************************************/
 void player_render_swing(Player* player_ptr)
 {
     if (!player_ptr) return;
@@ -791,30 +833,30 @@ void player_render_swing(Player* player_ptr)
     SwingArc& sw = player_ptr->swing;
     if (!sw.active) return;
 
-    float cx = player_ptr->char1.x;
-    float cy = player_ptr->char1.y;
+    f32 cx = player_ptr->char1.x;
+    f32 cy = player_ptr->char1.y;
 
-    float startAngle = PI * 0.5f;    // top
-    float endAngle = -PI * 0.5f;   // bottom
-    float currEnd = startAngle + (endAngle - startAngle) * sw.progress;
+    f32 startAngle = PI * 0.5f;    // top
+    f32 endAngle = -PI * 0.5f;   // bottom
+    f32 currEnd = startAngle + (endAngle - startAngle) * sw.progress;
 
-    int   segments = 20;
-    float fade = 1.0f - sw.progress * 0.5f;
+    s32   segments = 20;
+    f32 fade = 1.0f - sw.progress * 0.5f;
 
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetColorToMultiply(0.8f, 0.9f, 1.0f, fade);
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
 
-    for (int i = 0; i <= segments; i++)
+    for (s32 i = 0; i <= segments; i++)
     {
-        float t = (float)i / segments;
-        float angle = startAngle + (currEnd - startAngle) * t;
+        f32 t = (float)i / segments;
+        f32 angle = startAngle + (currEnd - startAngle) * t;
 
-        float px = cx + cosf(angle) * sw.radius * sw.dir;
-        float py = cy + sinf(angle) * sw.radius;
+        f32 px = cx + cosf(angle) * sw.radius * sw.dir;
+        f32 py = cy + sinf(angle) * sw.radius;
 
         // dot size shrinks toward the tip for a trail effect
-        float dot_size = 10.0f * (1.0f - t * 0.5f);
+        f32 dot_size = 10.0f * (1.0f - t * 0.5f);
 
         draw_circle(px, py, dot_size, dot_size, true);
     }
@@ -888,12 +930,12 @@ void player_system_update(Player * player_ptr)
         player_ptr->char2.hit_flash_timer -= dt;
 
     player_system_handle_input(player_ptr);
-    player_handle_shooting(player_ptr, dt);
-    player_update_projectiles(player_ptr, dt);
+    player_handle_shooting(player_ptr);
+    player_update_projectiles(player_ptr);
     player_system_update_transforms(player_ptr);
-    player_update_particles(player_ptr, dt);
+    player_update_particles(player_ptr);
     player_handle_melee(player_ptr);
-    player_update_swing(player_ptr, dt);
+    player_update_swing(player_ptr);
 }
 
 /**************************************************************************/
@@ -922,7 +964,7 @@ void player_system_free(Player * player_ptr)
   - Claire's part
 */     
 /**************************************************************************/
-void player_take_damage(Player *player_ptr, int damage)
+void player_take_damage(Player *player_ptr, s32 damage)
 {
     if (!player_ptr)
         return;
@@ -990,11 +1032,11 @@ bool player_is_dead(Player *player_ptr)
   - Claire's part
 */
 /**************************************************************************/
-void spawn_player_from_map(Player *player_ptr, f32 tile_size)
+void spawn_player_from_map(Player *player_ptr)
 {
-	for (int r = 0; r < TILE_ROWS; r++)
+	for (s32 r = 0; r < TILE_ROWS; r++)
 	{
-		for (int c = 0; c < TILE_COLS; c++)
+		for (s32 c = 0; c < TILE_COLS; c++)
 		{
 			// Assign positions
 			if (map[r][c] == KNIGHT)

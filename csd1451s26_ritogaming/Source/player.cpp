@@ -466,6 +466,9 @@ static void player_handle_movement(Player* player_ptr)
         }
     }
 
+    *move_x = AEClamp(*move_x, world_left + halfSize, world_left + (tile_size * TILE_COLS) - halfSize);
+    *move_y = AEClamp(*move_y, world_top - (tile_size * TILE_ROWS) + halfSize, world_top - halfSize);
+
     // Handle puzzle dragging
     if (AEInputCheckCurr(AEVK_SPACE))
     {

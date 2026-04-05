@@ -1,0 +1,1054 @@
+/*!************************************************************************
+\file:          player.cpp
+\author:        Claire
+\par DP email:  c.cheong@digipen.edu
+\
+\co-authors:    Jerod (10% - player puzzle collision ; found in player movement function)
+\               Ahmad (10% - projectile for character 1 & 2, audio management for footsteps)
+\                     (^ separated out projectile by Claire into different functions)
+\
+\brief:         Implements the player system including character switching,
+\               movement with collision detection, puzzle interaction,
+\               projectile shooting for character 2, and particle effects.
+\               Manages two playable characters with different elements
+\               (WATER and FIRE) and their health systems.
+**************************************************************************/
+
+#include "utils.hpp"
+#include "audio_manager.hpp"
+#include <fstream>
+#include <iostream>
+#include <string>
+#include "renderer.hpp"
+#include "collision.hpp"
+#include "enemy_manager.hpp"
+
+static const char* player_config_data = "Assets/Config/player_config.txt";
+
+extern s32 map[TILE_ROWS][TILE_COLS];
+extern std::vector<Wall> g_walls;
+
+static bool is_footstep_playing = false;
+static bool footstep_was_active = false;
+
+// Global player instance definition
+Player player_instance;
+f32 WIZARD_DAMAGE = 2;
+f32 MELEE_DAMAGE = 1;
+
+/**************************************************************************/
+/*!
+   saves player state (positions, health, active character) to a txt file.
+   - Claire's part
+*/
+/**************************************************************************/
+bool player_save(const Player* player, const std::string& filepath)
+{
+    if (!player) return false;
+
+    std::ofstream file(filepath);
+    if (!file.is_open())
+    {
+        std::cerr << "[PlayerSave] Failed to open: " << filepath << "\n";
+        return false;
+    }
+
+    file << "char1_x " << player->char1.x << "\n";
+    file << "char1_y " << player->char1.y << "\n";
+    file << "char1_is_dead " << player->char1.is_dead << "\n";
+    file << "char2_x " << player->char2.x << "\n";
+    file << "char2_y " << player->char2.y << "\n";
+    file << "char2_is_dead " << player->char2.is_dead << "\n";
+    file << "current_character " << player->current_character << "\n";
+    file << "char1_curr_health " << player->stats.char1_curr_health << "\n";
+    file << "char2_curr_health " << player->stats.char2_curr_health << "\n";
+    file << "char1_max_health " << player->stats.char1_max_health << "\n";
+    file << "char2_max_health " << player->stats.char2_max_health << "\n";
+    file << "character_size " << player->stats.character_size << "\n";
+    file << "triangle_size " << player->stats.triangle_size << "\n";
+    file << "triangle_offset " << player->stats.triangle_offset << "\n";
+    file << "char1_start_x " << player->stats.char1_start_x << "\n";
+    file << "char1_start_y " << player->stats.char1_start_y << "\n";
+    file << "char2_start_x " << player->stats.char2_start_x << "\n";
+    file << "char2_start_y " << player->stats.char2_start_y << "\n";
+    file << "char1_move_speed " << player->stats.char1_move_speed << "\n";
+    file << "char2_move_speed " << player->stats.char2_move_speed << "\n";
+    file << "fireball_count " << player->fireball_count << "\n";
+
+    return true;
+}
+
+/**************************************************************************/
+/*!
+   loads player state (positions, health, active character) from a txt file.
+   - Claire's part
+*/
+/**************************************************************************/
+bool player_load(Player* player, const std::string& filepath)
+{
+    if (!player) return false;
+
+    std::ifstream file(filepath);
+    if (!file.is_open())
+    {
+        std::cerr << "[PlayerLoad] File not found: " << filepath << "\n";
+        return false;
+    }
+
+    std::string key;
+    while (file >> key)
+    {
+        if (key == "char1_x")           file >> player->char1.x;
+        else if (key == "char1_y")           file >> player->char1.y;
+        else if (key == "char1_is_dead") { int v; file >> v; player->char1.is_dead = v; }
+        else if (key == "char2_x")           file >> player->char2.x;
+        else if (key == "char2_y")           file >> player->char2.y;
+        else if (key == "char2_is_dead") { int v; file >> v; player->char2.is_dead = v; }
+        else if (key == "current_character") file >> player->current_character;
+        else if (key == "char1_curr_health") file >> player->stats.char1_curr_health;
+        else if (key == "char2_curr_health") file >> player->stats.char2_curr_health;
+        else if (key == "char1_max_health")  file >> player->stats.char1_max_health;
+        else if (key == "char2_max_health")  file >> player->stats.char2_max_health;
+        else if (key == "character_size")    file >> player->stats.character_size;
+        else if (key == "triangle_size")     file >> player->stats.triangle_size;
+        else if (key == "triangle_offset")   file >> player->stats.triangle_offset;
+        else if (key == "char1_start_x")     file >> player->stats.char1_start_x;
+        else if (key == "char1_start_y")     file >> player->stats.char1_start_y;
+        else if (key == "char2_start_x")     file >> player->stats.char2_start_x;
+        else if (key == "char2_start_y")     file >> player->stats.char2_start_y;
+        else if (key == "char1_move_speed")  file >> player->stats.char1_move_speed;
+        else if (key == "char2_move_speed")  file >> player->stats.char2_move_speed;
+        else if (key == "fireball_count")    file >> player->fireball_count;
+    }
+
+    // Fix up the current_player pointer after loading
+    player->current_player = (player->current_character == 1)
+        ? &player->char1 : &player->char2;
+
+    return true;
+}
+
+/**************************************************************************/
+/*!
+   saves current player configuration (default stats) to a txt file.
+   - Claire's part
+*/
+/**************************************************************************/
+bool player_save_config(const Player* player, const std::string& filepath)
+{
+    if (!player) return false;
+
+    std::ofstream file(filepath);
+    if (!file.is_open())
+    {
+        std::cerr << "[PlayerSaveConfig] Failed to open: " << filepath << "\n";
+        return false;
+    }
+
+    file << "character_size " << player->stats.character_size << "\n";
+    file << "triangle_size " << player->stats.triangle_size << "\n";
+    file << "triangle_offset " << player->stats.triangle_offset << "\n";
+    file << "char1_start_x " << player->stats.char1_start_x << "\n";
+    file << "char1_start_y " << player->stats.char1_start_y << "\n";
+    file << "char2_start_x " << player->stats.char2_start_x << "\n";
+    file << "char2_start_y " << player->stats.char2_start_y << "\n";
+    file << "char1_move_speed " << player->stats.char1_move_speed << "\n";
+    file << "char2_move_speed " << player->stats.char2_move_speed << "\n";
+    file << "char1_max_health " << player->stats.char1_max_health << "\n";
+    file << "char2_max_health " << player->stats.char2_max_health << "\n";
+
+    return true;
+}
+
+/**************************************************************************/
+/*!
+   loads player configuration (default stats) from a txt file.
+   - Claire's part
+*/
+/**************************************************************************/
+bool player_load_config(Player* player, const std::string& filepath)
+{
+    if (!player) return false;
+
+    std::ifstream file(filepath);
+    if (!file.is_open())
+    {
+        std::cerr << "[PlayerLoadConfig] File not found: " << filepath << "\n";
+        return false;
+    }
+
+    std::string key;
+    while (file >> key)
+    {
+        if (key == "character_size")   file >> player->stats.character_size;
+        else if (key == "triangle_size")    file >> player->stats.triangle_size;
+        else if (key == "triangle_offset")  file >> player->stats.triangle_offset;
+        else if (key == "char1_start_x")    file >> player->stats.char1_start_x;
+        else if (key == "char1_start_y")    file >> player->stats.char1_start_y;
+        else if (key == "char2_start_x")    file >> player->stats.char2_start_x;
+        else if (key == "char2_start_y")    file >> player->stats.char2_start_y;
+        else if (key == "char1_move_speed") file >> player->stats.char1_move_speed;
+        else if (key == "char2_move_speed") file >> player->stats.char2_move_speed;
+        else if (key == "char1_max_health") file >> player->stats.char1_max_health;
+        else if (key == "char2_max_health") file >> player->stats.char2_max_health;
+    }
+
+    return true;
+}
+
+/**************************************************************************/
+/*!
+    audio update function to be called each frame.
+    Manages footstep sound effects
+    - Ahmad's part
+*/
+/**************************************************************************/
+static void footstep_audio_update()
+{
+    if (!footstep_was_active && is_footstep_playing)
+    {
+        AEAudioStopGroup(g_audio.sfx_group);
+        is_footstep_playing = false;
+    }
+    footstep_was_active = false;
+}
+
+/**************************************************************************/
+/*!
+    Plays looping footstep sound effect.
+    Restarts if pitch changes (e.g. dragging vs walking).
+    pitch - playback pitch modifier
+    - Ahmad's part
+*/
+/**************************************************************************/
+static void play_footstep(f32 pitch = 1.0f)
+{
+    static f32 last_pitch = 1.0f;
+
+    // Restart if pitch changed (e.g. started or stopped dragging)
+    if (is_footstep_playing && pitch != last_pitch)
+    {
+        AEAudioStopGroup(g_audio.sfx_group);
+        is_footstep_playing = false;
+    }
+
+    if (!is_footstep_playing)
+    {
+        play_sfx(g_audio.sfx_footsteps, 3.2f, pitch, 1);
+        is_footstep_playing = true;
+        last_pitch = pitch;
+    }
+    footstep_was_active = true;
+}
+
+/**************************************************************************/
+/*!
+    Player system function to update transformation matrices for characters and
+    the triangle indicator each frame. Should be called after handling input and
+    before rendering. - Claire's part
+*/
+/**************************************************************************/
+static void player_system_update_transforms(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    // --- Character 1 transform ---
+    AEMtx33 translate1;
+    AEMtx33Trans(&translate1, player_ptr->char1.x, player_ptr->char1.y);
+    AEMtx33Concat(&player_ptr->char1.transform, &player_ptr->rotate, &player_ptr->character_scale);
+    AEMtx33Concat(&player_ptr->char1.transform, &translate1, &player_ptr->char1.transform);
+
+    // --- Character 2 transform ---
+    AEMtx33 translate2;
+    AEMtx33Trans(&translate2, player_ptr->char2.x, player_ptr->char2.y);
+    AEMtx33Concat(&player_ptr->char2.transform, &player_ptr->rotate, &player_ptr->character_scale);
+    AEMtx33Concat(&player_ptr->char2.transform, &translate2, &player_ptr->char2.transform);
+
+    // --- Active player indicator (triangle) ---
+    AEMtx33 triangle_translate;
+    AEMtx33Trans(&triangle_translate,
+        player_ptr->current_player->x,
+        player_ptr->current_player->y + player_ptr->stats.triangle_offset);
+
+    AEMtx33Concat(&player_ptr->triangle_transform, &player_ptr->rotate, &player_ptr->triangle_scale);
+    AEMtx33Concat(&player_ptr->triangle_transform, &triangle_translate, &player_ptr->triangle_transform);
+}
+
+/**************************************************************************/
+/*!
+    player system initialization function to set up character positions, textures,
+    health, and transformation matrices.
+     - Claire's part
+
+     element - jerod's part
+*/
+/**************************************************************************/
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture,
+    AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture)
+{
+    if (!player_ptr)
+        return;
+
+    // --- Character 1 setup ---
+    player_ptr->char1.x = player_ptr->stats.char1_start_x;
+    player_ptr->char1.y = player_ptr->stats.char1_start_y;
+    player_ptr->char1.speed = player_ptr->stats.char1_move_speed;
+    player_ptr->char1.character_id = 1;
+    player_ptr->char1.element = Puzzle::WATER;
+    player_ptr->char1.texture = char_1_texture;
+
+    // --- Character 2 setup ---
+    player_ptr->char2.x = player_ptr->stats.char2_start_x;
+    player_ptr->char2.y = player_ptr->stats.char2_start_y;
+    player_ptr->char2.speed = player_ptr->stats.char2_move_speed;
+    player_ptr->char2.character_id = 2;
+    player_ptr->char2.element = Puzzle::FIRE;
+    player_ptr->char2.texture = char_2_texture;
+
+    // Default to controlling Character 1
+    player_ptr->current_player = &player_ptr->char1;
+    player_ptr->current_character = 1;
+
+    player_ptr->char1.dead_texture = dead_texture;
+    player_ptr->char2.dead_texture = dead_texture;
+    player_ptr->char1.is_dead = false;
+    player_ptr->char2.is_dead = false;
+
+    player_ptr->stats.char1_curr_health = player_ptr->stats.char1_max_health;
+    player_ptr->stats.char2_curr_health = player_ptr->stats.char2_max_health;
+    player_ptr->fireball_count = 5;
+    player_ptr->shoot_cooldown = 0.0f;
+
+    // Precompute scale and rotation matrices
+    AEMtx33Scale(&player_ptr->character_scale, player_ptr->stats.character_size, player_ptr->stats.character_size);
+    AEMtx33Scale(&player_ptr->triangle_scale, player_ptr->stats.triangle_size, player_ptr->stats.triangle_size);
+    AEMtx33Rot(&player_ptr->rotate, 0);
+
+    // Initialize last direction for shooting
+    player_ptr->last_dir_x = 1.0f;
+    player_ptr->last_dir_y = 0.0f;
+
+    // Initialize all transforms
+    player_system_update_transforms(player_ptr);
+}
+
+/**************************************************************************/
+/*!
+    player handle switching between 2 chara.
+    1 - knight & 2 - mage
+    - Claire's part
+*/
+/**************************************************************************/
+static void player_handle_character_switch(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    if (AEInputCheckTriggered(AEVK_1) && !player_ptr->char1.is_dead)
+    {
+        if (player_ptr->current_character != 1)
+        {
+            play_sfx(g_audio.sfx_swapping, 0.55f);
+            player_ptr->current_player = &player_ptr->char1;
+            player_ptr->current_character = 1;
+        }
+    }
+    if (AEInputCheckTriggered(AEVK_2) && !player_ptr->char2.is_dead)
+    {
+        if (player_ptr->current_character != 2)
+        {
+            play_sfx(g_audio.sfx_swapping, 0.55f);
+            player_ptr->current_player = &player_ptr->char2;
+            player_ptr->current_character = 2;
+        }
+    }
+}
+
+/**************************************************************************/
+/*!
+    player movement handling                      - Claire's part
+    collision detection against walls and puzzles - jerod's part
+*/
+/**************************************************************************/
+static void player_handle_movement(Player* player_ptr)
+{
+    if (!player_ptr || !player_ptr->current_player)
+        return;
+    if (player_ptr->current_player->is_dead)
+        return;
+
+    bool is_pushing = false;
+
+    f32* move_x = &player_ptr->current_player->x;
+    f32* move_y = &player_ptr->current_player->y;
+    Puzzle::Element curr_elem = player_ptr->current_player->element;
+
+    f32 nextX = *move_x;
+    f32 nextY = *move_y;
+    f32 halfSize = player_ptr->stats.character_size / 2.0f;
+
+    // Track if player is dragging a puzzle block
+    static bool is_dragging = false;
+    static s32 puzzle_index;
+
+    f32 move_speed = player_ptr->current_player->speed;
+
+    // Movement input
+    if (AEInputCheckCurr(AEVK_W))
+    {
+        nextY += is_dragging ? move_speed / 5.0f : move_speed;
+        player_ptr->last_dir_x = 0.0f;
+        player_ptr->last_dir_y = 1.0f;
+    }
+    if (AEInputCheckCurr(AEVK_S))
+    {
+        nextY -= is_dragging ? move_speed / 5.0f : move_speed;
+        player_ptr->last_dir_x = 0.0f;
+        player_ptr->last_dir_y = -1.0f;
+    }
+    if (AEInputCheckCurr(AEVK_A))
+    {
+        nextX -= is_dragging ? move_speed / 5.0f : move_speed;
+        player_ptr->last_dir_x = -1.0f;
+        player_ptr->last_dir_y = 0.0f;
+    }
+    if (AEInputCheckCurr(AEVK_D))
+    {
+        nextX += is_dragging ? move_speed / 5.0f : move_speed;
+        player_ptr->last_dir_x = 1.0f;
+        player_ptr->last_dir_y = 0.0f;
+    }
+
+    // Horizontal movement with collision
+    if (!check_player_collision(nextX, *move_y, halfSize) &&
+        !Puzzle::player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
+    {
+        *move_x = nextX;
+    }
+    else
+    {
+        // Slide along wall
+        f32 direction = (nextX > *move_x) ? 1.0f : -1.0f;
+        if (!check_player_collision(*move_x + direction, *move_y, halfSize) &&
+            !Puzzle::player_collide_puzzles(*move_x + direction, *move_y, halfSize, puzzle_index))
+        {
+            *move_x += direction;
+        }
+        // Handle puzzle pushing
+        if (Puzzle::player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
+        {
+            move_puzzle(puzzle_index, (direction > 0.0f) ? Puzzle::RIGHT : Puzzle::LEFT, curr_elem);
+            is_pushing = true;
+        }
+    }
+
+    // Vertical movement with collision
+    if (!check_player_collision(*move_x, nextY, halfSize) &&
+        !Puzzle::player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
+    {
+        *move_y = nextY;
+    }
+    else
+    {
+        // Slide along wall
+        f32 direction = (nextY > *move_y) ? 1.0f : -1.0f;
+        if (!check_player_collision(*move_x, *move_y + direction, halfSize) &&
+            !Puzzle::player_collide_puzzles(*move_x, *move_y + direction, halfSize, puzzle_index))
+        {
+            *move_y += direction;
+        }
+        // Handle puzzle pushing
+        if (Puzzle::player_collide_puzzles(*move_x, nextY, halfSize, puzzle_index))
+        {
+            move_puzzle(puzzle_index, (direction > 0.0f) ? Puzzle::DOWN : Puzzle::UP, curr_elem);
+            is_pushing = true;
+        }
+    }
+
+    *move_x = AEClamp(*move_x, world_left + halfSize, world_left + (tile_size * TILE_COLS) - halfSize);
+    *move_y = AEClamp(*move_y, world_top - (tile_size * TILE_ROWS) + halfSize, world_top - halfSize);
+
+    // Handle puzzle dragging
+    if (AEInputCheckCurr(AEVK_SPACE))
+    {
+        drag_puzzle(*move_x, *move_y, halfSize, is_dragging, puzzle_index, curr_elem);
+    }
+    else
+    {
+        is_dragging = false;
+    }
+
+    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_A) ||
+        AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_D))
+    {
+        play_footstep((is_dragging || is_pushing) ? 0.5f : 1.0f);
+    }
+    footstep_audio_update();
+}
+// ------------------------------------- End of Jerod's part -------------------------------------
+
+/**************************************************************************/
+/*!
+  Main player system function to be called each frame. Handles input
+  and updates transforms. - Claire's part
+*/
+/**************************************************************************/
+void player_system_handle_input(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    player_handle_character_switch(player_ptr);
+    player_handle_movement(player_ptr);
+}
+
+/**************************************************************************/
+/*!
+  Handles shooting logic (CHARACTER 2 ONLY). - Ahmad's part
+*/
+/**************************************************************************/
+void player_handle_shooting(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    // Recharge one fireball every 1 second (up to max 5)
+    player_ptr->shoot_cooldown += dt;
+    if (player_ptr->shoot_cooldown >= 1.0f && player_ptr->fireball_count < 5)
+    {
+        player_ptr->fireball_count++;
+        player_ptr->shoot_cooldown = 0.0f; // reset timer for next recharge
+    }
+
+    // Only character 2 can shoot
+    if (player_ptr->current_character == 2 && !player_ptr->char2.is_dead &&
+        AEInputCheckTriggered(AEVK_LBUTTON) && player_ptr->fireball_count > 0)
+    {
+        // --- Get mouse position in world space ---
+        s32 mouseScreenX, mouseScreenY;
+        AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
+
+        f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
+        f32 halfHeight = (f32)AEGfxGetWindowHeight() / 2.0f;
+
+        f32 mouseWorldX = (f32)mouseScreenX - halfWidth + Camera::cam.pos.x;
+        f32 mouseWorldY = halfHeight - (f32)mouseScreenY + Camera::cam.pos.y;
+
+        // --- Calculate direction from player to mouse ---
+        f32 dx = mouseWorldX - player_ptr->char2.x;
+        f32 dy = mouseWorldY - player_ptr->char2.y;
+
+        // Normalize the direction vector
+        f32 length = sqrtf(dx * dx + dy * dy);
+        if (length < 0.0001f)
+            return; // safety check: don't shoot if cursor is on player
+
+        f32 dirX = dx / length;
+        f32 dirY = dy / length;
+
+        // --- Update last direction (so movement-facing still works) ---
+        player_ptr->last_dir_x = dirX;
+        player_ptr->last_dir_y = dirY;
+
+        // --- Spawn projectile ---
+        Projectile new_fire{};
+        new_fire.active = true;
+        new_fire.radius = 8.0f;
+
+        f32 spawn_offset = 30.0f;
+        new_fire.x = player_ptr->char2.x + (dirX * spawn_offset);
+        new_fire.y = player_ptr->char2.y + (dirY * spawn_offset);
+
+        f32 shotSpeed = 600.0f;
+        new_fire.vx = dirX * shotSpeed;
+        new_fire.vy = dirY * shotSpeed;
+
+        player_ptr->projectiles.push_back(new_fire);
+        player_ptr->fireball_count--;
+        play_sfx(g_audio.sfx_fireball, 0.08f, 0.45f);
+    }
+}
+
+/**************************************************************************/
+/*!
+    Updates particle system (movement + lifetime).
+    Removes particles when their life reaches 0.
+    - Ahmad's part
+*/
+/**************************************************************************/
+static void player_update_particles(Player* player_ptr)
+{
+    for (size_t i = 0; i < player_ptr->particles.size(); ++i)
+    {
+        Particle& p = player_ptr->particles[i];
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+
+        if (p.life <= 0)
+        {
+            player_ptr->particles.erase(player_ptr->particles.begin() + i);
+            i--;
+        }
+    }
+}
+
+/**************************************************************************/
+/*!
+    Renders all active particles (fire trail effect).
+    Alpha fades based on remaining lifetime.
+    - Ahmad's part
+*/
+/**************************************************************************/
+static void player_render_particles(Player* player_ptr)
+{
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+
+    for (const auto& p : player_ptr->particles)
+    {
+        // Fade the alpha based on remaining life
+        f32 alpha = p.life / p.maxLife;
+        AEGfxSetColorToMultiply(1.0f, 0.3f, 0.0f, alpha); // Red-Orange fire
+
+        // Use your existing draw_circle or draw_rect helper
+        draw_circle(p.x, p.y, p.size * alpha, p.size * alpha);
+    }
+}
+
+/**************************************************************************/
+/*!
+  Updates projectile positions and handles collisions. - Ahmad's part
+*/
+/**************************************************************************/
+void player_update_projectiles(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    for (size_t i = 0; i < player_ptr->projectiles.size(); ++i)
+    {
+        Projectile& p = player_ptr->projectiles[i];
+
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+
+        // --- PARTICLE SPAWNING ---
+        // Every frame, create a "trail" particle
+        Particle trail{};
+        trail.x = p.x;
+        trail.y = p.y;
+        // Give it a tiny bit of random drift
+        trail.vx = ((float)rand() / RAND_MAX - 0.5f) * 20.0f;
+        trail.vy = ((float)rand() / RAND_MAX - 0.5f) * 20.0f;
+        trail.maxLife = 0.5f; // Particles last half a second
+        trail.life = trail.maxLife;
+        trail.size = 10.0f;
+        trail.active = true;
+
+        player_ptr->particles.push_back(trail);
+
+        // Check if fireball hits wall
+        if (check_projectile_collision(p.x, p.y, p.radius))
+        {
+            p.active = false;
+        }
+
+        if (p.active && enemy_manager_instance.check_projectile_hit(p.x, p.y, p.radius, WIZARD_DAMAGE))
+        {
+            p.active = false; // Destroy fireball on hit
+        }
+
+        // Clean up inactive projectiles
+        if (!p.active)
+        {
+            player_ptr->projectiles.erase(player_ptr->projectiles.begin() + i);
+            i--;
+        }
+    }
+}
+
+/**************************************************************************/
+/*!
+  Renders all active projectiles. - Ahmad's part
+*/
+/**************************************************************************/
+void player_render_projectiles(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetColorToMultiply(1.0f, 0.5f, 0.0f, 1.0f); // Bright Orange
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (const auto& p : player_ptr->projectiles)
+    {
+        if (p.active)
+        {
+            draw_circle(p.x, p.y, p.radius * 2.0f, p.radius * 2.0f);
+        }
+    }
+}
+
+/**************************************************************************/
+/*!
+  Renders all active projectile counts. - Ahmad's part
+*/
+/**************************************************************************/
+static void player_render_fireball_count(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
+}
+
+/**************************************************************************/
+/*!
+    Handles melee attack input for Character 1 (knight).
+    Determines swing direction based on mouse position.
+    Checks for enemy hits along the swing arc and applies damage.
+    Plays sword attack sound effect.
+    - Ahmad's part
+*/
+/**************************************************************************/
+void player_handle_melee(Player* player_ptr)
+{
+    if (!player_ptr) return;
+
+    // --- RECHARGE LOGIC (Similar to Wizard's fireball recharge) ---
+    // Recharge one swing every 1.5 seconds if under the max of 5
+    if (player_ptr->swing_count < 1)
+    {
+        player_ptr->swing_recharge_timer += dt;
+        if (player_ptr->swing_recharge_timer >= 0.3f)
+        {
+            player_ptr->swing_count++;
+            player_ptr->swing_recharge_timer = 0.0f;
+        }
+    }
+
+    // Always decrement the individual swing cooldown
+    if (player_ptr->melee_cooldown > 0.0f)
+    {
+        player_ptr->melee_cooldown -= dt;
+    }
+
+    // Only character 1 (Knight) swings
+    if (player_ptr->current_character != 1) return;
+
+    // Check if "Tired" (No swings left) or on individual cooldown
+    if (player_ptr->swing_count <= 0 || player_ptr->melee_cooldown > 0.0f)
+        return;
+
+    if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+
+    // --- EXECUTE SWING ---
+    s32 mouseScreenX, mouseScreenY;
+    AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
+
+    f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
+    f32 mouseWorldX = (f32)mouseScreenX - halfWidth + Camera::cam.pos.x;
+    f32 dx = mouseWorldX - player_ptr->char1.x;
+
+    player_ptr->swing.active = true;
+    player_ptr->swing.progress = 0.0f;
+    player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f;
+
+    // Set individual cooldown (e.g., 0.4s)
+    player_ptr->melee_cooldown = player_ptr->swing.duration;
+
+    // SPEND A SWING (The "Tired" mechanic)
+    player_ptr->swing_count--;
+
+    play_sfx(g_audio.sfx_sword_atk, 0.1f, 1.1f);
+}
+
+/**************************************************************************/
+/*!
+    Updates melee swing animation and hit detection.
+    Ensures enemies are hit only once per swing.
+    - Ahmad's part
+*/
+/**************************************************************************/
+void player_update_swing(Player* player_ptr)
+{
+    if (!player_ptr) return;
+
+    SwingArc& sw = player_ptr->swing;
+    if (!sw.active) return;
+
+    sw.progress += dt / sw.duration;
+
+    // Only check for hits once per swing, not every frame
+    if (!sw.has_hit)
+    {
+        f32 cx = player_ptr->char1.x;
+        f32 cy = player_ptr->char1.y;
+
+        f32 startAngle = PI * 0.5f;
+        f32 endAngle = -PI * 0.5f;
+        f32 currEnd = startAngle + (endAngle - startAngle) * sw.progress;
+
+        s32 segments = 20;
+        for (s32 i = 0; i <= segments; i++)
+        {
+            f32 t = (float)i / segments;
+            f32 angle = startAngle + (currEnd - startAngle) * t;
+
+            f32 px = cx + cosf(angle) * sw.radius * sw.dir;
+            f32 py = cy + sinf(angle) * sw.radius;
+
+            if (enemy_manager_instance.check_projectile_hit(px, py, 6.0f, MELEE_DAMAGE))
+            {
+                sw.has_hit = true; // stop checking once an enemy is hit
+                break;
+            }
+        }
+    }
+
+    if (sw.progress >= 1.0f)
+    {
+        sw.progress = 0.0f;
+        sw.active = false;
+        sw.has_hit = false; // reset for next swing
+    }
+}
+
+/**************************************************************************/
+/*!
+    Renders melee swing arc using particle-like trail.
+    - Ahmad's part
+*/
+/**************************************************************************/
+void player_render_swing(Player* player_ptr)
+{
+    if (!player_ptr) return;
+
+    SwingArc& sw = player_ptr->swing;
+    if (!sw.active) return;
+
+    f32 cx = player_ptr->char1.x;
+    f32 cy = player_ptr->char1.y;
+
+    f32 startAngle = PI * 0.5f;   // top
+    f32 endAngle = -PI * 0.5f;  // bottom
+    f32 currEnd = startAngle + (endAngle - startAngle) * sw.progress;
+
+    s32 segments = 20;
+    f32 fade = 1.0f - sw.progress * 0.5f;
+
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetColorToMultiply(0.8f, 0.9f, 1.0f, fade);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (s32 i = 0; i <= segments; i++)
+    {
+        f32 t = (float)i / segments;
+        f32 angle = startAngle + (currEnd - startAngle) * t;
+
+        f32 px = cx + cosf(angle) * sw.radius * sw.dir;
+        f32 py = cy + sinf(angle) * sw.radius;
+
+        // dot size shrinks toward the tip for a trail effect
+        f32 dot_size = 10.0f * (1.0f - t * 0.5f);
+
+        draw_circle(px, py, dot_size, dot_size, true);
+    }
+}
+
+/**************************************************************************/
+/*!
+  Renders the player characters and active character indicator. - Claire's part
+*/
+/**************************************************************************/
+void player_system_render(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    player_render_particles(player_ptr);
+    player_render_swing(player_ptr);
+    player_render_fireball_count(player_ptr);
+
+    // Determine flash amount based on hit timer
+    f32 flash1 = player_ptr->char1.hit_flash_timer > 0.f ? 1.f : 0.f;
+    f32 flash2 = player_ptr->char2.hit_flash_timer > 0.f ? 1.f : 0.f;
+
+    // Draw Character 1
+    AEGfxTexture* tex1 = player_ptr->char1.is_dead ? player_ptr->char1.dead_texture
+        : player_ptr->char1.texture;
+    render_sprite_flash(square_mesh, player_ptr->char1.x, player_ptr->char1.y,
+        player_ptr->stats.character_size,
+        player_ptr->stats.character_size, tex1, flash1);
+
+    // Draw Character 2
+    AEGfxTexture* tex2 = player_ptr->char2.is_dead ? player_ptr->char2.dead_texture
+        : player_ptr->char2.texture;
+    render_sprite_flash(square_mesh, player_ptr->char2.x, player_ptr->char2.y,
+        player_ptr->stats.character_size,
+        player_ptr->stats.character_size, tex2, flash2);
+
+    // Render projectiles
+    player_render_projectiles(player_ptr);
+
+    // Position the indicator triangle above the active player
+    f32 tri_x = player_ptr->current_player->x;
+    f32 tri_y = player_ptr->current_player->y + player_ptr->stats.triangle_offset;
+
+    // Green triangle marks the currently controlled character
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetColorToMultiply(0.0f, 1.0f, 0.0f, 1.0f);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+    draw_triangle(tri_x, tri_y,
+        player_ptr->stats.triangle_size,
+        player_ptr->stats.triangle_size);
+}
+
+/**************************************************************************/
+/*!
+  Updates the player system each frame.
+  Base : Movement, character switching, and general system updates - Claire
+
+  puzzle interaction - Jerod
+  Shooting and projectiles - Ahmad
+*/
+/**************************************************************************/
+void player_system_update(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    // Tick down hit flash timer
+    if (player_ptr->char1.hit_flash_timer > 0.f)
+        player_ptr->char1.hit_flash_timer -= dt;
+    if (player_ptr->char2.hit_flash_timer > 0.f)
+        player_ptr->char2.hit_flash_timer -= dt;
+
+    player_system_handle_input(player_ptr);
+    player_handle_shooting(player_ptr);
+    player_update_projectiles(player_ptr);
+    player_system_update_transforms(player_ptr);
+    player_update_particles(player_ptr);
+    player_handle_melee(player_ptr);
+    player_update_swing(player_ptr);
+}
+
+/**************************************************************************/
+/*!
+  Frees resources used by the player system.
+  Note: Textures are managed by the main game and should not be freed here.
+   - Claire
+*/
+/**************************************************************************/
+void player_system_free(Player* player_ptr)
+{
+    if (!player_ptr)
+        return;
+
+    player_ptr->char1.texture = nullptr;
+    player_ptr->char2.texture = nullptr;
+
+    player_ptr->projectiles.clear(); // Clean up projectiles
+    player_ptr->particles.clear();
+
+    // Clear active player reference
+    player_ptr->current_player = nullptr;
+}
+
+/**************************************************************************/
+/*!
+  Applies damage to the currently active character and handles death logic.
+  - Claire's part
+*/
+/**************************************************************************/
+void player_take_damage(Player* player_ptr, s32 damage)
+{
+    if (!player_ptr)
+        return;
+
+    // Start hit flash effect on the currently active character
+    if (player_ptr->current_character == 1)
+        player_ptr->char1.hit_flash_timer = 0.15f;
+    else
+        player_ptr->char2.hit_flash_timer = 0.15f;
+
+    // Play different hurt sound depending on active character
+    if (player_ptr->current_character == 1)
+        play_sfx(g_audio.sfx_knight_hurt); // Knight hurt sound
+    else
+        play_sfx(g_audio.sfx_mage_hurt);   // Mage hurt sound
+
+    int* curr_hp = (player_ptr->current_character == 1)
+        ? &player_ptr->stats.char1_curr_health
+        : &player_ptr->stats.char2_curr_health;
+
+    *curr_hp -= damage;
+    if (*curr_hp < 0)
+        *curr_hp = 0;
+
+    // If selected character is dead, switch to the other one if they're alive
+    if (*curr_hp <= 0)
+    {
+        if (player_ptr->current_character == 1)
+            player_ptr->char1.is_dead = true;
+        else
+            player_ptr->char2.is_dead = true;
+
+        // Auto-switch to the other character if not dead
+        if (player_ptr->current_character == 1 && player_ptr->stats.char2_curr_health > 0)
+        {
+            player_ptr->current_character = 2;
+            player_ptr->current_player = &player_ptr->char2;
+        }
+        else if (player_ptr->current_character == 2 && player_ptr->stats.char1_curr_health > 0)
+        {
+            player_ptr->current_character = 1;
+            player_ptr->current_player = &player_ptr->char1;
+        }
+    }
+}
+
+/**************************************************************************/
+/*!
+  Checks if both characters are dead. Returns true if the player has lost.
+  - Claire's part
+*/
+/**************************************************************************/
+bool player_is_dead(Player* player_ptr)
+{
+    if (!player_ptr)
+        return false;
+    return (player_ptr->stats.char1_curr_health <= 0 &&
+        player_ptr->stats.char2_curr_health <= 0);
+}
+
+/**************************************************************************/
+/*!
+  Spawns player characters based on their positions in the map array.
+  Converts tile coordinates to world coordinates and assigns them to the player struct.
+  - Claire's part
+*/
+/**************************************************************************/
+void spawn_player_from_map(Player* player_ptr)
+{
+    for (s32 r = 0; r < TILE_ROWS; r++)
+    {
+        for (s32 c = 0; c < TILE_COLS; c++)
+        {
+            // Assign positions
+            if (map[r][c] == KNIGHT)
+            {
+                player_ptr->char2.x = col_to_world(c);
+                player_ptr->char2.y = row_to_world(r);
+            }
+            else if (map[r][c] == WIZARD)
+            {
+                player_ptr->char1.x = col_to_world(c);
+                player_ptr->char1.y = row_to_world(r);
+            }
+        }
+    }
+}

@@ -1,0 +1,6 @@
+logo_path        Assets/Sprites/Admin/DigiPen_BLACK.png
+logo_width       1200.0
+logo_height      700.0
+fade_in_duration 2.0
+hold_duration    2.0
+fade_out_duration 2.0

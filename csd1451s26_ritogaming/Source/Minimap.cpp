@@ -191,7 +191,7 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
             int tileID = dungeonMap[r][c];
 
             // Only draw floor tile (tileID == 2) in this pass
-            if (tileID != 2) continue;
+            if (tileID != 2 ) continue;
 
             if (tiles[tileID])
             {
@@ -219,12 +219,13 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
         for (int c = 0; c < TILE_COLS; ++c)
         {
             int tileID = dungeonMap[r][c];
+           
 
             // Skip floor — already drawn in pass 1
             if (tileID == 2) continue;
             // Skip empty
             if (tileID <= 0) continue;
-
+            if (tileID == 3 || tileID == 4) tileID=2;
             f32 tileX, tileY;
             tile_to_world_center(r, c, tileX, tileY);
 
@@ -266,29 +267,36 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
         }
     }
 
-    // Render Player relative to the clamped map view
-    f32 playerX = (pPlayer->current_player->x - clampedX) * MINIMAP_ZOOM;
-    f32 playerY = (pPlayer->current_player->y - clampedY) * MINIMAP_ZOOM;
-    
-    // ---  clamp player dot inside the circular minimap border ---
-    f32 dotRadius = radius - PLAYER_DOT_SIZE / 2.0f; // keep dot fully inside circle
-    f32 dotDist = sqrtf(playerX * playerX + playerY * playerY);
-    if (dotDist > dotRadius)
-    {
-        f32 scale = dotRadius / dotDist;
-        playerX *= scale;
-        playerY *= scale;
-    }
+    // Render both characters on minimap
+    f32 dotRadius = radius - PLAYER_DOT_SIZE / 2.0f;
 
-    render_ui_sprite(
-        square_mesh,
-        mapCenterX + playerX,
-        mapCenterY + playerY,
-        PLAYER_DOT_SIZE,
-        PLAYER_DOT_SIZE,
-        pPlayer->current_player->texture,
-        white
-    );
+    auto render_char_dot = [&](Character& ch)
+        {
+            if (ch.is_dead) return;
+
+            f32 px = (ch.x - clampedX) * MINIMAP_ZOOM;
+            f32 py = (ch.y - clampedY) * MINIMAP_ZOOM;
+
+            // Clamp dot inside circular border
+            f32 dotDist = sqrtf(px * px + py * py);
+            if (dotDist > dotRadius)
+            {
+                f32 scale = dotRadius / dotDist;
+                px *= scale;
+                py *= scale;
+            }
+
+            render_ui_sprite(square_mesh,
+                mapCenterX + px,
+                mapCenterY + py,
+                PLAYER_DOT_SIZE,
+                PLAYER_DOT_SIZE,
+                ch.texture,
+                white);
+        };
+
+    render_char_dot(pPlayer->char1);
+    render_char_dot(pPlayer->char2);
 
     minimap_draw_overlay(mapCenterX, mapCenterY);
 }

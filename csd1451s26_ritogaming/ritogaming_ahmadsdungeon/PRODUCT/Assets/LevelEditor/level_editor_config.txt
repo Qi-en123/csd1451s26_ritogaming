@@ -1,0 +1,139 @@
+# ============================================================
+# Level Editor Configuration
+# All assets, positions, sizes, speeds and constants here
+# ============================================================
+
+# --- Cursor ---
+cursor_path                     Assets/Sprites/Admin/cursorSword_silver.png
+cursor_w                        50.0
+cursor_h                        50.0
+cursor_offset_x                 25.0
+cursor_offset_y                 25.0
+
+# --- Textures ---
+tomb_path                       Assets/Sprites/Enemy_spawn_location/tile_0064.png
+ghost_spawn_path                Assets/Sprites/Enemy_spawn_location/tile_0066.png
+bat_spawn_path                  Assets/Sprites/Enemy_spawn_location/tile_0126.png
+erase_tile_path                 Assets/Sprites/Tiles/tile_0010.png
+edit_panel_path                 Assets/Sprites/Admin/edit_interface_panel.png
+edit_panel_save_path            Assets/Sprites/Admin/edit_interface_save.png
+edit_panel_exit_path            Assets/Sprites/Admin/edit_interface_exit.png
+edit_panel_button_left_path     Assets/Sprites/Admin/ep_button_left.png
+edit_panel_button_right_path    Assets/Sprites/Admin/ep_button_right.png
+confirm_panel_path              Assets/Sprites/Admin/end_screen_panel.png
+confirm_btn_yes_path            Assets/Sprites/Admin/main_menu_button3.png
+confirm_btn_no_path             Assets/Sprites/Admin/main_menu_button4.png
+tile_textures_folder            Assets/Sprites/Tiles
+
+# --- Font ---
+font_path                       Assets/Fonts/Kenney Mini Square.ttf
+font_size                       22
+
+# --- Palette UI ---
+panel_x                         650.0
+palette_top_y                   300.0
+palette_w                       200.0
+palette_h                       55.0
+palette_gap                     68.0
+
+# --- Edit Panel ---
+edit_panel_w                    350.0
+edit_panel_h                    175.0
+
+# --- Camera ---
+cam_speed                       300.0
+zoom_min                        1.0
+zoom_max                        1.8
+
+# --- Grid ---
+tile_draw_size                  20.0
+grid_start_x                    -750.0
+grid_start_y                    350.0
+
+# --- Borders ---
+top_border_tile_mult            5.0
+bottom_border_tile_mult         4.0
+left_border_tile_mult           2.5
+right_border_tile_mult          13.5
+
+# --- Save Message ---
+save_msg_duration               2.0
+
+# --- Spawn Error Message ---
+spawn_error_duration            2.0
+
+# --- Background Color ---
+bg_color_r                      0.08
+bg_color_g                      0.09
+bg_color_b                      0.12
+
+# --- Hover highlight on grid ---
+hover_alpha                     0.3
+ghost_preview_alpha             0.5
+
+# --- Palette icon sizing ---
+palette_icon_padding            8.0
+
+# --- Text rendering ---
+text_scale_edit_panel           1.15
+tiles_header_label              |   TILES   || PUZZLES |
+tiles_header_color_r            0.7
+tiles_header_color_g            0.6
+tiles_header_color_b            0.3
+
+# --- Hint bar ---
+hint_bar_norm_y                 -420.0
+hint_bar_color_r                0.55
+hint_bar_color_g                0.55
+hint_bar_color_b                0.55
+hint_tiles                      LMB : Paint        RMB : Erase        F : Fill        C : Clear        S : Save        ESC : Exit        SCROLL : Zoom        Arrows : Pan
+hint_puzzles                    LMB : Paint        RMB : Edit        C : Clear        S : Save        ESC : Exit        SCROLL : Zoom        Arrows : Pan
+
+# --- Palette label colors ---
+label_selected_r                1.0
+label_selected_g                0.9
+label_selected_b                0.2
+label_normal_r                  0.85
+label_normal_g                  0.85
+label_normal_b                  0.85
+label_locked_r                  0.4
+label_locked_g                  0.4
+label_locked_b                  0.4
+label_hotkey_r                  0.45
+label_hotkey_g                  0.45
+label_hotkey_b                  0.45
+label_locked_count_r            0.3
+label_locked_count_g            1.0
+label_locked_count_b            0.3
+
+# --- Confirm popup ---
+confirm_label                   ARE YOU SURE YOU WANT TO QUIT?
+confirm_text_scale              1.8
+confirm_yes_x                   -100.0
+confirm_yes_y                   -50.0
+confirm_yes_w                   200.0
+confirm_yes_h                   80.0
+confirm_no_x                    150.0
+confirm_no_y                    -50.0
+confirm_no_w                    200.0
+confirm_no_h                    80.0
+
+# --- Status message ---
+status_msg_norm_y               0.8
+status_msg_scale                1.5
+status_success_r                0.3
+status_success_g                1.0
+status_success_b                0.3
+status_error_r                  1.0
+status_error_g                  0.3
+status_error_b                  0.3
+
+# --- Grid clamp for hover / rendering ---
+grid_screen_left                -800.0
+grid_screen_right               560.0
+grid_screen_top                 450.0
+grid_screen_bottom              -450.0
+
+# --- World conversion offsets ---
+world_x_offset                  800.0
+world_y_offset                  450.0

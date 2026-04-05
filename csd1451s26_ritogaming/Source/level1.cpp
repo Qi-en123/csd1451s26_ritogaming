@@ -201,7 +201,7 @@ void level1_init()
 
 	player_load_config(&player_instance, Constants::PATH_PLAYER_CONFIG);
 	player_system_init(&player_instance, TileTextures[4], TileTextures[3], skeleton_texture);
-	spawn_player_from_map(&player_instance, tile_size);
+	spawn_player_from_map(&player_instance);
 
 	player_instance.stats.character_size = tile_size - Constants::PLAYER_SIZE_OFFSET;
 	Camera::cam = Camera::init_cam(&player_instance.current_player->x, &player_instance.current_player->y);

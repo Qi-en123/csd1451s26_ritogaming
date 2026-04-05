@@ -8,49 +8,78 @@
 #include "enemy.hpp"
 #include "player.hpp"
 
-// Logic Constants
-static constexpr f32 SPAWN_CHECK_INTERVAL = 3.f;
-static constexpr f32 RESPAWN_DELAY = 5.f;
-static constexpr f32 FOOD_LIFTIME = 9.f;
+// ============================================================================
+// LOGIC CONSTANTS
+// ----------------------------------------------------------------------------
+// Timing and gameplay constants for spawning, respawning, and food lifetime.
+// ============================================================================
+static constexpr f32 SPAWN_CHECK_INTERVAL = 3.f;   // Interval to check for respawns
+static constexpr f32 RESPAWN_DELAY = 5.f;   // Time before a defeated enemy can respawn
+static constexpr f32 FOOD_LIFTIME = 9.f;   // Duration food remains active in the world
 
+// ============================================================================
+// GAME ZONES
+// ----------------------------------------------------------------------------
+// Used to identify the current gameplay area and control enemy behavior.
+// ============================================================================
 enum game_zone { tutorial_area, combat_area, boss_room };
 
+// ============================================================================
+// STRUCTS
+// ----------------------------------------------------------------------------
+// Represents a single food drop in the game world.
+// ============================================================================
 struct food_drop {
-    f32 x, y, size, lifetime;
-    bool active;
-    AEGfxTexture* texture;
+    f32 x, y;       // World position
+    f32 size;       // Render size
+    f32 lifetime;   // Remaining lifetime
+    bool active;    // Is the food currently available?
+    AEGfxTexture* texture; // Associated texture
 };
 
+// Represents an enemy slot for managing respawn logic.
 struct enemy_slot {
-    base_enemy* enemy;
-    f32 respawn_timer;
+    base_enemy* enemy;    // Pointer to the enemy occupying this slot
+    f32 respawn_timer;    // Timer until the enemy respawns
 };
 
+// ============================================================================
+// ENEMY MANAGER CLASS
+// ----------------------------------------------------------------------------
+// Handles enemy creation, updating, rendering, respawning, food drops, and
+// VFX like respawn particles. Supports multiple enemy types and zones.
+// ============================================================================
 class EnemyManager {
 private:
-    // Core Data Structures
-    std::vector<std::unique_ptr<base_enemy>> enemies;
+    // ---------------------------- Core Data -----------------------------
+    std::vector<std::unique_ptr<base_enemy>> enemies;  // Active enemy instances
     std::vector<food_drop>                   food_drops;
     std::vector<Particle>                    respawn_particles;
 
-    // Dynamic Arrays (Manual Memory Management)
+    // ------------------------ Dynamic Arrays ---------------------------
     enemy_slot* ghost_slots;
     enemy_slot* bat_slots;
     AEVec2* ghost_spawn_positions;
     AEVec2* bat_spawn_positions;
     AEVec2* cross_positions;
 
-    // Dynamic Counts
+    // ------------------------ Dynamic Counts ---------------------------
     int ghost_count;
     int bat_count;
     int cross_count;
 
-    // Textures
-    AEGfxTexture* cross_tex{ nullptr }, * ghost_marker_tex{ nullptr }, * bat_marker_tex{ nullptr };
-    AEGfxTexture* ghost_tex{ nullptr }, * bat_tex{ nullptr }, * dragon_tex{ nullptr };
-    AEGfxTexture* ghost_food_tex{ nullptr }, * bat_food_tex{ nullptr }, * dragon_food_tex{ nullptr };
+    // ---------------------------- Textures -----------------------------
+    AEGfxTexture* cross_tex{ nullptr };
+    AEGfxTexture* ghost_marker_tex{ nullptr };
+    AEGfxTexture* bat_marker_tex{ nullptr };
+    AEGfxTexture* ghost_tex{ nullptr };
+    AEGfxTexture* bat_tex{ nullptr };
+    AEGfxTexture* dragon_tex{ nullptr };
+    AEGfxTexture* ghost_food_tex{ nullptr };
+    AEGfxTexture* bat_food_tex{ nullptr };
+    AEGfxTexture* dragon_food_tex{ nullptr };
 
-    // State Variables
+    // -------------------------- State Variables ------------------------
     bool      spawn_positions_loaded{ false };
     f32       spawn_check_timer{ 0.0f };
     game_zone current_zone{ tutorial_area };
@@ -58,39 +87,39 @@ private:
     int       enemies_defeated{ 0 };
 
 public:
+    // ------------------------- Lifecycle --------------------------------
     EnemyManager();
     ~EnemyManager();
 
-    // Lifecycle
-    void load_textures();
-    void unload_textures();
-    void update(f32 dt, Player* player, Camera::camera* cam);
-    void render();
+    void load_textures();                               // Load textures for enemies and markers
+    void unload_textures();                             // Release all loaded textures
+    void update(f32 dt, Player* player, Camera::camera* cam); // Update all enemies, food, and particles
+    void render();                                      // Render enemies, food, and particles
 
-    // Setup
+    // -------------------------- Setup ----------------------------------
     void set_zone(game_zone zone) { current_zone = zone; }
-    void initialize_tutorial_area();
-    void initialize_combat_area();
-    void load_spawn_positions(const char* filename);
-    void clear_all();
+    void initialize_tutorial_area();                    // Spawn enemies for tutorial
+    void initialize_combat_area();                      // Spawn enemies for combat
+    void load_spawn_positions(const char* filename);   // Load enemy spawn positions from file
+    void clear_all();                                   // Clear all enemies, food, and particles
 
-    // Spawning
+    // ------------------------ Spawning ---------------------------------
     void spawn_ghost_at_slot(int idx);
     void spawn_bat_at_slot(int idx);
     void spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
-    void maintain_ghost_population();
-    void maintain_bat_population();
+    void maintain_ghost_population();                  // Respawn ghosts as needed
+    void maintain_bat_population();                    // Respawn bats as needed
 
-    // VFX & Feedback
+    // -------------------- VFX & Feedback -------------------------------
     void spawn_respawn_particles(f32 x, f32 y);
     void spawn_food(f32 x, f32 y, AEGfxTexture* texture);
 
-    // Combat
+    // -------------------------- Combat ---------------------------------
     void check_player_attacks(Player* player, f32 range, f32 damage);
     bool check_projectile_hit(f32 px, f32 py, f32 radius, f32 damage);
     void cleanup_dead_enemies();
 
-    // Getters
+    // --------------------------- Getters --------------------------------
     size_t get_active_enemy_count() const;
     size_t get_ghost_count() const;
     size_t get_bat_count() const;
@@ -100,13 +129,16 @@ public:
     std::vector<std::unique_ptr<base_enemy>> const& get_enemies() const { return enemies; }
 
 private:
-    void update_food(f32 dt, Player* player);
-    void render_food();
-    void render_enemy(base_enemy* enemy);
-    void render_spawn_markers();
-    void update_respawn_particles(f32 dt);
-    void render_respawn_particles();
+    void update_food(f32 dt, Player* player);          // Update food timers and collisions
+    void render_food();                                // Draw active food drops
+    void render_enemy(base_enemy* enemy);             // Draw individual enemy
+    void render_spawn_markers();                       // Draw markers for spawn positions
+    void update_respawn_particles(f32 dt);            // Update respawn particle positions
+    void render_respawn_particles();                  // Draw respawn particles
 };
 
+// Global instance
 extern EnemyManager enemy_manager_instance;
+
+// Helper to update projectiles system
 void entity_system_update(Player* player_ptr, EnemyManager* enem);

@@ -291,6 +291,11 @@ void init_mesh() {
 	const s32   SEGS = 32;
 	const f32 step = 2.f * PI / static_cast<float>(SEGS);
 
+	// const float outer_r = e_bp_ring_radius + e_bp_ring_thickness * 0.5f;
+	// const float inner_r = e_bp_ring_radius - e_bp_ring_thickness * 0.5f;
+	// const int   SEGS = 32;
+	// const float step = 2.f * PI/ static_cast<float>(SEGS);
+
 	AEGfxMeshStart();
 	for (s32 i = 0; i < SEGS; ++i)
 	{

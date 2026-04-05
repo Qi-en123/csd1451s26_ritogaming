@@ -150,20 +150,24 @@ struct Player
     std::vector<Projectile> projectiles;
     std::vector<Particle>   particles;
 
-    s32 fireball_count{ 5 };
+    s32 fireball_count{ 3 };
     f32 shoot_cooldown{ 0.0f };
+
+    f32 melee_cooldown{ 0.0f };
+    s32 swing_count{ 1 };
+    f32 swing_recharge_timer{ 0.0f };
 
     // Last movement direction for shooting
     f32 last_dir_x{}, last_dir_y{};
 
     // Damage flash timer for player hit feedback
     static constexpr f32 HIT_FLASH_DUR = 0.15f;
-
-    f32 melee_cooldown = 0.f;
 };
 
 // Global player instance
 extern Player player_instance;
+extern f32 WIZARD_DAMAGE; // change this for fireball damage
+extern f32 MELEE_DAMAGE;  // knight swing damage
 
 /**************************************************************************
     \brief

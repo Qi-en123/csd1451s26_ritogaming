@@ -59,20 +59,6 @@ namespace Camera {
 			AEVec2Lerp(&c->pos, &c->pos, &curr_player_pos,
 				rel_speed / max_speed / 7.0f);
 		}
-
-		//Bounds/Clamps for camera position derived from tile grid
-		f32 left_bound = world_left;
-		f32 right_bound = world_left + TILE_COLS * tile_size;
-		f32 top_bound = world_top;
-		f32 bottom_bound = world_top - TILE_ROWS * tile_size;
-
-		//Compute viewport half width & height (shrinks with zoom)
-		f32 half_w = (AEGfxGetWindowWidth() / 2.0f) / zoom;
-		f32 half_h = (AEGfxGetWindowHeight() / 2.0f) / zoom;
-
-		//Clamps cam pos
-		c->pos.x = AEClamp(c->pos.x, left_bound + half_w, right_bound - half_w);
-		c->pos.y = AEClamp(c->pos.y, bottom_bound + half_h, top_bound - half_h);
 	}
 }
 

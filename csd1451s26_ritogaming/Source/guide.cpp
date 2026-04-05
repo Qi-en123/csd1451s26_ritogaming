@@ -18,7 +18,7 @@
 #include "end_screen.hpp"
 #include "enemy.hpp"
 #include "camera.hpp"
-#include "Minimap.hpp"
+#include "minimap.hpp"
 #include "enemy_manager.hpp"
 #include "game_state_list.hpp"
 #include "game_state_manager.hpp"

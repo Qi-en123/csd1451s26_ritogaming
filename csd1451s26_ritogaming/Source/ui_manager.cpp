@@ -114,8 +114,30 @@ void render_character_ui(UIManager* p_ui_manager, Player* player)
 		float x = AEGfxGetWinMinX() + paddingX + icon_size / 2.f;
 		float y = AEGfxGetWinMinY() + paddingY + icon_size / 2.f;
 
+		// Background + Knight Icon
 		render_ui_sprite(square_mesh, x, y, icon_size, icon_size, p_ui_manager->primary_bg_texture);
 		render_ui_sprite(square_mesh, x, y, icon_size / 2.f, icon_size / 2.f, p_ui_manager->cursor_knight);
+
+		// --- Added Stamina/Swing Counter ---
+
+		// Position for the counter box (using same spacing as Wizard)
+		float counter_x = x + (paddingX * 10.f);
+		render_ui_sprite(square_mesh, counter_x, y, icon_size / 1.5f, icon_size / 1.5f, p_ui_manager->primary_counter_texture);
+
+		// Convert swing count to string
+		char swing_text[8];
+		sprintf_s(swing_text, "%d", player->swing_count);
+
+		// Get text size for centering
+		float text_w = 0.f, text_h = 0.f;
+		AEGfxGetPrintSize(p_ui_manager->font, swing_text, 1.f, &text_w, &text_h);
+
+		// Convert to normalized screen space for AEGfxPrint
+		float norm_x = (counter_x / AEGfxGetWinMaxX()) - text_w / 2.f;
+		float norm_y = (y / AEGfxGetWinMaxY()) - text_h / 2.f;
+
+		// Render the swing count text
+		AEGfxPrint(p_ui_manager->font, swing_text, norm_x, norm_y, 1.f, 1.f, 1.f, 1.f, 1.f);
 	}
 }
 

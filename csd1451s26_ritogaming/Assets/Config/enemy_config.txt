@@ -75,24 +75,24 @@ bat_attack_cooldown     1.0
 bat_attack_damage       3
 
 # --- Dragon stats ---
-dragon_speed            40.0
-dragon_max_health       10
-dragon_size             300.0
-dragon_attack_cooldown  1.0
-dragon_attack_damage    1
+dragon_speed            180.0
+dragon_max_health       34
+dragon_size             240.0
+dragon_attack_cooldown  1.1
+dragon_attack_damage    2
 
 # --- Boss projectile ---
 bp_ring_radius          10.0
 bp_ring_thickness       3.0
-bp_base_speed           220.0
+bp_base_speed           310.0
 bp_wave_amplitude       80.0
-bp_wave_frequency       10.0
+bp_wave_frequency       100.0
 bp_max_lifetime         5.0
-bp_positions_wave_a     5
+bp_positions_wave_a     6
 bp_positions_wave_b     4
 bp_angle_spread_deg     120.0
-bp_wave_interval        3.0
-bp_projectile_damage    1
+bp_wave_interval        2.1
+bp_projectile_damage    2
 bp_pool_size            128
 
 # --- Manager / world ---

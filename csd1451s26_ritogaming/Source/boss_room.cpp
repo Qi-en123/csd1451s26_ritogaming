@@ -78,6 +78,7 @@ void boss_room_init()
     
     //Initialize & spawn player/characters
     player_instance.stats.character_size = tile_size - 8.0f;
+    
     player_system_init(&player_instance,
         TileTextures[4], TileTextures[3],
         skeleton_texture);    

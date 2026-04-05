@@ -28,15 +28,13 @@ static const char* player_config_data = "Assets/Config/player_config.txt";
 extern s32 map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
 
-
-constexpr s32 WIZARD_DAMAGE = 2; // change this for fireball damage
-constexpr s32 MELEE_DAMAGE = 1;  // knight swing damage
-
 static bool is_footstep_playing = false;
 static bool footstep_was_active = false;
 
 // Global player instance definition
 Player player_instance;
+f32 WIZARD_DAMAGE = 2;
+f32 MELEE_DAMAGE = 1;
 
 /**************************************************************************/
 /*!
@@ -717,32 +715,50 @@ void player_handle_melee(Player* player_ptr)
 {
     if (!player_ptr) return;
 
-    // Only character 1 (knight) swings
-    if (player_ptr->current_character != 1) return;
+    // --- RECHARGE LOGIC (Similar to Wizard's fireball recharge) ---
+    // Recharge one swing every 1.5 seconds if under the max of 5
+    if (player_ptr->swing_count < 1)
+    {
+        player_ptr->swing_recharge_timer += dt;
+        if (player_ptr->swing_recharge_timer >= 0.3f)
+        {
+            player_ptr->swing_count++;
+            player_ptr->swing_recharge_timer = 0.0f;
+        }
+    }
 
-    if (player_ptr->melee_cooldown > 0.f)
+    // Always decrement the individual swing cooldown
+    if (player_ptr->melee_cooldown > 0.0f)
     {
         player_ptr->melee_cooldown -= dt;
-        return; // block swinging while on cooldown
     }
+
+    // Only character 1 (Knight) swings
+    if (player_ptr->current_character != 1) return;
+
+    // Check if "Tired" (No swings left) or on individual cooldown
+    if (player_ptr->swing_count <= 0 || player_ptr->melee_cooldown > 0.0f)
+        return;
 
     if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
-    // Get mouse world position (same math you already have)
+    // --- EXECUTE SWING ---
     s32 mouseScreenX, mouseScreenY;
     AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
 
     f32 halfWidth = (f32)AEGfxGetWindowWidth() / 2.0f;
-
     f32 mouseWorldX = (f32)mouseScreenX - halfWidth + Camera::cam.pos.x;
-
-    // Determine left or right of player
     f32 dx = mouseWorldX - player_ptr->char1.x;
 
     player_ptr->swing.active = true;
     player_ptr->swing.progress = 0.0f;
-    player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f; // +1 right, -1 left
+    player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f;
+
+    // Set individual cooldown (e.g., 0.4s)
     player_ptr->melee_cooldown = player_ptr->swing.duration;
+
+    // SPEND A SWING (The "Tired" mechanic)
+    player_ptr->swing_count--;
 
     play_sfx(g_audio.sfx_sword_atk, 0.1f, 1.1f);
 }

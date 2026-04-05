@@ -10,7 +10,7 @@
 
 #pragma once
 #include "AEEngine.h"
-#include "Minimap.hpp"
+#include "minimap.hpp"
 #include "enemy_manager.hpp"
 
 // ------------------------------------------------------------------------

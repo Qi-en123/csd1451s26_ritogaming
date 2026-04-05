@@ -110,12 +110,12 @@ f32 e_bp_base_speed;
 f32 e_bp_wave_amplitude;
 f32 e_bp_wave_frequency;
 f32 e_bp_max_lifetime;
-s32   e_bp_positions_wave_a;
-s32   e_bp_positions_wave_b;
+s32 e_bp_positions_wave_a;
+s32 e_bp_positions_wave_b;
 f32 e_bp_angle_spread_deg;
 f32 e_bp_wave_interval;
-s32   e_bp_projectile_damage;
-s32   e_bp_pool_size;
+s32 e_bp_projectile_damage;
+s32 e_bp_pool_size;
 
 // Manager / world config
 f32 e_spawn_check_interval;
@@ -420,9 +420,9 @@ void BossProjectileManager::trigger_wave(f32 boss_x, f32 boss_y,
 
         // Stagger wave phases so projectiles oscillate out of sync
         const f32 base_phase = static_cast<float>(slot)
-            * (2.0f * 3.14159265f / static_cast<float>(total_slots));
+            * (2.0f * PI / static_cast<float>(total_slots));
         const f32 wave_phase_offset = is_wave_b
-            ? (3.14159265f / static_cast<float>(total_slots))
+            ? (PI / static_cast<float>(total_slots))
             : 0.0f;
 
         spawn_one(boss_x, boss_y, shot_dx, shot_dy, shot_px, shot_py,

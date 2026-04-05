@@ -8,7 +8,7 @@
                 coordinate conversion, and tile-based culling.
 **************************************************************************/
 
-#include "Minimap.hpp"
+#include "minimap.hpp"
 #include "AEEngine.h"
 #include "map.hpp"      // for map tiles
 #include "renderer.hpp" // for render_ui_sprite

@@ -40,6 +40,8 @@ void free_ui_textures(UIManager* p_ui_manager)
 		AEGfxTextureUnload(p_ui_manager->primary_bg_texture);
 	if (p_ui_manager->primary_counter_texture)
 		AEGfxTextureUnload(p_ui_manager->primary_counter_texture);
+	if (p_ui_manager->primary_ability_texture)
+		AEGfxTextureUnload(p_ui_manager->primary_ability_texture);
 	if (p_ui_manager->cursor_knight)
 		AEGfxTextureUnload(p_ui_manager->cursor_knight);
 	if (p_ui_manager->cursor_wizard)

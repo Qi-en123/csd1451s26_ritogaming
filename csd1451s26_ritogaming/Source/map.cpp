@@ -301,7 +301,6 @@ void draw_map(f32 tile_size)
             // Handle special entities that occupy a floor tile
             if (tileType == KNIGHT || tileType == WIZARD || tileType == TOMB || tileType == TREE) {
                 render_sprite(square_mesh, x, y, tile_size, tile_size, TileTextures[2]);
-                map[row][col] = FLOOR; // Reset to floor for internal map logic
                 continue;
             }
 

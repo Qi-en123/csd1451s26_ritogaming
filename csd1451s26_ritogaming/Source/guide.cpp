@@ -129,7 +129,7 @@ void guide_load() {
 	skeleton_texture = AEGfxTextureLoad("Assets/Sprites/Tiles/dead_last_location.png");
 
 	// Load player stats and combat config from JSON before any player init
-	player_load_config(&player_instance, "Assets/Config/player_config.json");
+	player_load_config(&player_instance, "Assets/Config/player_config.txt");
 
 	SILENT_CALL(guide_text_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36));
 	if (guide_text_font == -1) return;
@@ -335,7 +335,6 @@ void guide_unload() {
 	minimap_unload();
 	Puzzle::unload_puzzle_textures();
 
-	player_system_free(&player_instance);
 
 	if (skeleton_texture)
 	{

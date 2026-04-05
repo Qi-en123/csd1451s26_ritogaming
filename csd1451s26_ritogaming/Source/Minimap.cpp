@@ -183,17 +183,17 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     if (clampedY > mapMinY - viewRadius) clampedY = mapMinY - viewRadius;
     if (clampedY < mapMaxY + viewRadius) clampedY = mapMaxY + viewRadius;
 
-    // Draw tiles with distance-based culling
+    // ---  Draw floor tiles first (so trees/tombs have a floor beneath) ---
     for (int r = 0; r < TILE_ROWS; ++r)
     {
         for (int c = 0; c < TILE_COLS; ++c)
         {
             int tileID = dungeonMap[r][c];
 
-            if (tileID == 3 || tileID == 4)
-                tileID = 2;
+            // Only draw floor tile (tileID == 2) in this pass
+            if (tileID != 2) continue;
 
-            if (tileID > 0 && tileID < NUM_TILE_TYPES && tiles[tileID])
+            if (tiles[tileID])
             {
                 f32 tileX, tileY;
                 tile_to_world_center(r, c, tileX, tileY);
@@ -202,19 +202,66 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
                 f32 relY = (tileY - clampedY) * MINIMAP_ZOOM;
 
                 f32 distSq = relX * relX + relY * relY;
-
                 if (distSq < (radius + cullPadding) * (radius + cullPadding))
                 {
-                    render_ui_sprite(
-                        square_mesh,
-                        mapCenterX + relX,
-                        mapCenterY + relY,
-                        miniTileSize,
-                        miniTileSize,
-                        tiles[tileID],
-                        white
-                    );
+                    render_ui_sprite(square_mesh,
+                        mapCenterX + relX, mapCenterY + relY,
+                        miniTileSize, miniTileSize,
+                        tiles[tileID], white);
                 }
+            }
+        }
+    }
+
+    // ---  Draw everything else on top (tombs, trees, walls, doors, etc.) ---
+    for (int r = 0; r < TILE_ROWS; ++r)
+    {
+        for (int c = 0; c < TILE_COLS; ++c)
+        {
+            int tileID = dungeonMap[r][c];
+
+            // Skip floor — already drawn in pass 1
+            if (tileID == 2) continue;
+            // Skip empty
+            if (tileID <= 0) continue;
+
+            f32 tileX, tileY;
+            tile_to_world_center(r, c, tileX, tileY);
+
+            f32 relX = (tileX - clampedX) * MINIMAP_ZOOM;
+            f32 relY = (tileY - clampedY) * MINIMAP_ZOOM;
+
+            f32 distSq = relX * relX + relY * relY;
+            if (distSq >= (radius + cullPadding) * (radius + cullPadding))
+                continue;
+
+            f32 drawX = mapCenterX + relX;
+            f32 drawY = mapCenterY + relY;
+
+            if (tileID == 5)
+            {
+                // Draw floor under ghost spawn, then tomb on top (matches level editor)
+                if (tiles[2])
+                    render_ui_sprite(square_mesh, drawX, drawY, miniTileSize, miniTileSize, tiles[2], white);
+                if (tiles[5])
+                    render_ui_sprite(square_mesh, drawX, drawY, miniTileSize, miniTileSize, tiles[5], white);
+                if (tiles[8])
+                    render_ui_sprite(square_mesh, drawX, drawY - miniTileSize, miniTileSize, miniTileSize, tiles[8], white);
+            }
+            else if (tileID == 6)
+            {
+                // Draw floor under bat spawn, then bat on top (matches level editor)
+                if (tiles[2])
+                    render_ui_sprite(square_mesh, drawX, drawY, miniTileSize, miniTileSize, tiles[2], white);
+                if (tiles[6])
+                    render_ui_sprite(square_mesh, drawX, drawY, miniTileSize, miniTileSize, tiles[6], white);
+            }
+            else if (tileID < NUM_TILE_TYPES && tiles[tileID])
+            {
+                // Draw floor underneath non-floor tiles (tombs, walls, etc.)
+                if (tiles[2])
+                    render_ui_sprite(square_mesh, drawX, drawY, miniTileSize, miniTileSize, tiles[2], white);
+                render_ui_sprite(square_mesh, drawX, drawY, miniTileSize, miniTileSize, tiles[tileID], white);
             }
         }
     }
@@ -222,6 +269,16 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
     // Render Player relative to the clamped map view
     f32 playerX = (pPlayer->current_player->x - clampedX) * MINIMAP_ZOOM;
     f32 playerY = (pPlayer->current_player->y - clampedY) * MINIMAP_ZOOM;
+    
+    // ---  clamp player dot inside the circular minimap border ---
+    f32 dotRadius = radius - PLAYER_DOT_SIZE / 2.0f; // keep dot fully inside circle
+    f32 dotDist = sqrtf(playerX * playerX + playerY * playerY);
+    if (dotDist > dotRadius)
+    {
+        f32 scale = dotRadius / dotDist;
+        playerX *= scale;
+        playerY *= scale;
+    }
 
     render_ui_sprite(
         square_mesh,

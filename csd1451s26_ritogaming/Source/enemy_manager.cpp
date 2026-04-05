@@ -27,8 +27,8 @@ EnemyManager enemy_manager_instance;
 static AEVec2 tile_spot(s32 row, s32 col)
 {
     AEVec2 p;
-    p.x = world_left + col * tile_size + tile_size * 0.5;
-    p.y = world_top - row * tile_size - tile_size * 0.5;
+    p.x = world_left + col * tile_size + tile_size * 0.5f;
+    p.y = world_top - row * tile_size - tile_size * 0.5f;
     return p;
 }
 

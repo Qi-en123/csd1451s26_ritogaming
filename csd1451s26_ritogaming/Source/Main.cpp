@@ -41,7 +41,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // ------------------------------------------------------------------------
     // 1. Debugging & Memory Leak Detection Setup
     // ------------------------------------------------------------------------
-    int oldFlag = _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
     // ------------------------------------------------------------------------
@@ -145,11 +144,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // ------------------------------------------------------------------------
     // 5. Final Shutdown & Cleanup
     // ------------------------------------------------------------------------
-    enemy_manager_instance.~EnemyManager();
-    _CrtSetDbgFlag(oldFlag & ~_CRTDBG_LEAK_CHECK_DF);
 
     audio_free();
     AESysExit();
+
+
 
     return 0;
 }

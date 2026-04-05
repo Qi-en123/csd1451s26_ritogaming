@@ -418,12 +418,22 @@ void level1_unload()
 	free_tile_textures();
 	minimap_unload();
 	Puzzle::unload_puzzle_textures();
-	player_system_free(&player_instance);
 
 	if (skeleton_texture)
 	{
 		AEGfxTextureUnload(skeleton_texture);
 		skeleton_texture = nullptr;
 	}
-	AEGfxDestroyFont(tooltip_font);
+
+	if (warning_font != -1)
+	{
+		AEGfxDestroyFont(warning_font);
+		warning_font = -1;
+	}
+
+	if (tooltip_font != -1)
+	{
+		AEGfxDestroyFont(tooltip_font);
+		tooltip_font = -1;
+	}
 }

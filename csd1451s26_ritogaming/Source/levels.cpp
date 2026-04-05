@@ -131,8 +131,8 @@ namespace
     s32 preview_idx = -1;
 
     // screen 
-    s32 half_screen_w;
-    s32 half_screen_h;
+    f32 half_screen_w;
+    f32 half_screen_h;
 
 } // namespace
 
@@ -148,7 +148,6 @@ static void load_config()
     std::ifstream file("Assets/Config/levels_config.txt");
     if (!file.is_open())
     {
-        AE_ASSERT_MESG(false, "levels_config.txt not found!");
         return;
     }
 

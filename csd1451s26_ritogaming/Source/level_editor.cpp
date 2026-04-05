@@ -774,7 +774,7 @@ void level_editor_update()
         can_paint = true;
 
     dt = (f32)AEFrameRateControllerGetFrameTime();
-    get_zoom(dt, editor_zoom_min, editor_zoom_max);
+    get_zoom(editor_zoom_min, editor_zoom_max);
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
     // --- Button hover sound ---

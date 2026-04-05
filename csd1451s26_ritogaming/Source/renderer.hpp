@@ -111,7 +111,7 @@ void free_mesh();
 // Updates zoom level. Should be called every frame.
 //
 // ---------------------------------------------------------------------------- 
-void get_zoom(f32 dt, f32 zoom_min = ZOOM_MIN, f32 zoom_max = ZOOM_MAX);
+void get_zoom(f32 zoom_min = ZOOM_MIN, f32 zoom_max = ZOOM_MAX);
 
 // ----------------------------------------------------------------------------
 //

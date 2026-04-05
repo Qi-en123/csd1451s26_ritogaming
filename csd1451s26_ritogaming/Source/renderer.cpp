@@ -519,7 +519,7 @@ void render_anim_sprite(f32 x, f32 y, f32 w, f32 h, Animator& anim)
 // Updates the global camera zoom factor based on mouse wheel input.
 //
 // ---------------------------------------------------------------------------- 
-void get_zoom(f32 dt, f32 zoom_min, f32 zoom_max) {
+void get_zoom(f32 zoom_min, f32 zoom_max) {
 	s32 p_delta;
 	AEInputMouseWheelDelta(&p_delta);
 	if (p_delta > 0) {

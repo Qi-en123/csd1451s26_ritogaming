@@ -10,14 +10,14 @@
                 BossProjectileManager, base_enemy, ghost, bat, and dragon.
 **************************************************************************/
 
-#include "pch.hpp"
+#include "AEEngine.h"
+#include "enemy.hpp"
+#include "enemy_manager.hpp"
+#include "collision.hpp"
+#include "renderer.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>
-
-extern s32 map[TILE_ROWS][TILE_COLS];
-extern std::vector<Wall> g_walls;
-
 
 // ----------------------------------------------------------------------------
 // Global variable definitions — declared extern in enemy.hpp.
@@ -325,7 +325,7 @@ void BossProjectileManager::clear()
 // update() — advances all active projectiles, applying base velocity and
 // sinusoidal wave offset. Culls expired or off-screen projectiles.
 // ----------------------------------------------------------------------------
-void BossProjectileManager::update(f32 dt, const Camera::camera* p_cam)
+void BossProjectileManager::update(const Camera::camera* p_cam)
 {
     if (!p_cam) return;
 
@@ -480,7 +480,7 @@ bool g_enemy_debug_draw = false;
 // Applies X and Y movement independently so the enemy slides along walls.
 // ----------------------------------------------------------------------------
 void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
-    f32 target_x, f32 target_y, f32 dt)
+    f32 target_x, f32 target_y)
 {
     f32 dx = target_x - x, dy = target_y - y;
     f32 dist = sqrtf(dx * dx + dy * dy);
@@ -503,7 +503,7 @@ void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
 // Applies X and Y independently to allow wall sliding while fleeing.
 // ----------------------------------------------------------------------------
 void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
-    f32 from_x, f32 from_y, f32 dt)
+    f32 from_x, f32 from_y)
 {
     f32 dx = x - from_x, dy = y - from_y;
     f32 dist = sqrtf(dx * dx + dy * dy);
@@ -520,7 +520,7 @@ void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
 // opposite the player. Caller applies wall-collision checks as needed.
 // ----------------------------------------------------------------------------
 void enemy_flee_to_wall(f32 x, f32 y, f32 speed,
-    f32 player_x, f32 player_y, f32 dt,
+    f32 player_x, f32 player_y,
     f32& next_x, f32& next_y)
 {
     f32 dx = x - player_x, dy = y - player_y;
@@ -617,7 +617,7 @@ void ghost::take_damage(s32 amount)
 // Ghost AI: flees toward the nearest wall while the player is in camera view;
 // returns to idle when off-screen. Dies if it walks into a wall during flee.
 // ----------------------------------------------------------------------------
-void ghost::update(f32 dt, Player* player, Camera::camera* p_cam)
+void ghost::update(Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
     if (hit_flash_timer > 0.f) hit_flash_timer -= dt;
@@ -629,7 +629,7 @@ void ghost::update(f32 dt, Player* player, Camera::camera* p_cam)
         f32 next_x{}, next_y{};
         enemy_flee_to_wall(x, y, speed,
             player->current_player->x, player->current_player->y,
-            dt, next_x, next_y);
+            next_x, next_y);
 
         // Kill ghost if it collides with a wall while fleeing
         if (!check_player_collision(next_x, y, size / 2.0f)) x = next_x;
@@ -662,7 +662,7 @@ bat::bat(f32 start_x, f32 start_y)
 // Bat AI: chases the player when in camera view; deals damage on contact
 // using the attack cooldown timer to pace repeated hits.
 // ----------------------------------------------------------------------------
-void bat::update(f32 dt, Player* player, Camera::camera* p_cam)
+void bat::update(Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
     if (hit_flash_timer > 0.f) hit_flash_timer -= dt;
@@ -672,7 +672,7 @@ void bat::update(f32 dt, Player* player, Camera::camera* p_cam)
     {
         state = enemy_state::chasing;
         enemy_move_towards(x, y, speed, size,
-            player->current_player->x, player->current_player->y, dt);
+            player->current_player->x, player->current_player->y);
 
         if (collides_with_player(player))
         {
@@ -725,7 +725,7 @@ void dragon::load_anim_textures()
 }
 
 // Counts down m_wave_timer and fires a projectile wave when it expires
-void dragon::tick_attack_pattern(f32 dt, f32 tgt_x, f32 tgt_y)
+void dragon::tick_attack_pattern(f32 tgt_x, f32 tgt_y)
 {
     m_wave_timer -= dt;
     if (m_wave_timer <= 1.f)
@@ -740,14 +740,14 @@ void dragon::tick_attack_pattern(f32 dt, f32 tgt_x, f32 tgt_y)
 // waves on a timer, deals melee damage on contact, and manages animation
 // transitions between IDLE, WALK, ATTACK, HURT, and DEATH clips.
 // ----------------------------------------------------------------------------
-void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
+void dragon::update(Player* player, Camera::camera* p_cam)
 {
     if (!active) return;
     if (hit_flash_timer > 0.f) hit_flash_timer -= dt;
 
     // Let the death animation finish before deactivating
     if (state == dead) {
-        if (anim.update(dt)) active = false;
+        if (anim.update()) active = false;
         return;
     }
 
@@ -765,11 +765,11 @@ void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
         f32 dx = target_x - x, dy = target_y - y;
         moving = (sqrtf(dx * dx + dy * dy) > 4.f);
 
-        enemy_move_towards(x, y, speed, size, target_x, target_y, dt);
+        enemy_move_towards(x, y, speed, size, target_x, target_y);
         x = AEClamp(x, room_left, room_right);
         y = AEClamp(y, room_bottom, room_top);
 
-        tick_attack_pattern(dt, player->current_player->x, player->current_player->y);
+        tick_attack_pattern(player->current_player->x, player->current_player->y);
 
         if (collides_with_player(player))
         {
@@ -789,15 +789,15 @@ void dragon::update(f32 dt, Player* player, Camera::camera* p_cam)
     // Animation priority: let HURT/ATTACK finish before switching clips
     if (current_anim == DragonAnim::HURT)
     {
-        if (anim.update(dt)) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE);
+        if (anim.update()) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE);
     }
     else if (current_anim == DragonAnim::ATTACK)
     {
-        if (anim.update(dt)) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE);
+        if (anim.update()) switch_anim(moving ? DragonAnim::WALK : DragonAnim::IDLE);
     }
     else
     {
-        anim.update(dt);
+        anim.update();
         if (hitting)     switch_anim(DragonAnim::ATTACK);
         else if (moving) switch_anim(DragonAnim::WALK);
         else             switch_anim(DragonAnim::IDLE);

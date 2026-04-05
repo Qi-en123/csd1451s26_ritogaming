@@ -57,7 +57,6 @@
     <ClInclude Include="..\Source\map.hpp" />
     <ClInclude Include="..\Source\minimap.hpp" />
     <ClInclude Include="..\Source\opening.hpp" />
-    <ClInclude Include="..\Source\pch.hpp" />
     <ClInclude Include="..\Source\player.hpp" />
     <ClInclude Include="..\Source\puzzle.hpp" />
     <ClInclude Include="..\Source\renderer.hpp" />

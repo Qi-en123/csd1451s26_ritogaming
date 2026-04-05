@@ -10,7 +10,7 @@
                 once at startup by dave_Data().
 **************************************************************************/
 
-#include "pch.hpp"
+#include "enemy_manager.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <cmath>
@@ -19,6 +19,8 @@
 #include <vector>
 #include <algorithm>
 #include "map.hpp"
+#include "collision.hpp"
+#include "renderer.hpp"
 
 EnemyManager enemy_manager_instance;
 
@@ -158,16 +160,16 @@ void EnemyManager::initialize_combat_area()
 // UPDATE
 // ============================================================================
 
-void EnemyManager::update(f32 dt, Player* player, Camera::camera* p_cam)
+void EnemyManager::update(Player* player, Camera::camera* p_cam)
 {
     for (auto& enemy : enemies) {
         if (!enemy) continue;
         if (enemy->is_active() || enemy->get_state() == dead)
-            enemy->update(dt, player, p_cam);
+            enemy->update(player, p_cam);
     }
 
-    update_food(dt, player);
-    update_respawn_particles(dt);
+    update_food(player);
+    update_respawn_particles();
 
     if (current_zone == tutorial_area || current_zone == combat_area)
     {
@@ -307,7 +309,7 @@ void EnemyManager::spawn_respawn_particles(f32 x, f32 y)
     }
 }
 
-void EnemyManager::update_respawn_particles(f32 dt)
+void EnemyManager::update_respawn_particles()
 {
     for (size_t i = 0; i < respawn_particles.size(); ++i)
     {
@@ -347,7 +349,7 @@ void EnemyManager::spawn_food(f32 x, f32 y, AEGfxTexture* texture)
     food_drops.push_back(food);
 }
 
-void EnemyManager::update_food(f32 dt, Player* player)
+void EnemyManager::update_food(Player* player)
 {
     for (auto& food : food_drops)
     {

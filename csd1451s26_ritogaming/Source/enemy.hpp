@@ -27,6 +27,7 @@
 #include <cstring>
 #include "AEEngine.h"
 #include "camera.hpp"
+#include "utils.hpp"
 
 
 // ----------------------------------------------------------------------------
@@ -55,69 +56,69 @@ extern std::string e_dragon_tex_death;  // Dragon death animation sheet
 // ----------------------------------------------------------------------------
 // Ghost stats — tuning values for the ghost enemy type
 // ----------------------------------------------------------------------------
-extern float e_ghost_speed;       // Movement speed (units/sec)
-extern int   e_ghost_max_health;  // Maximum hit points
-extern float e_ghost_size;        // Render / collision radius (world units)
-extern float e_ghost_sight_range; // Detection radius; ghost aggros within this
+extern f32 e_ghost_speed;       // Movement speed (units/sec)
+extern s32   e_ghost_max_health;  // Maximum hit points
+extern f32 e_ghost_size;        // Render / collision radius (world units)
+extern f32 e_ghost_sight_range; // Detection radius; ghost aggros within this
 
 // ----------------------------------------------------------------------------
 // Bat stats — tuning values for the bat enemy type
 // ----------------------------------------------------------------------------
-extern float e_bat_speed;           // Movement speed (units/sec)
-extern int   e_bat_max_health;      // Maximum hit points
-extern float e_bat_size;            // Render / collision radius (world units)
-extern float e_bat_sight_range;     // Detection radius; bat aggros within this
-extern float e_bat_attack_cooldown; // Seconds between consecutive bat attacks
-extern int   e_bat_attack_damage;   // Damage dealt per bat attack hit
+extern f32 e_bat_speed;           // Movement speed (units/sec)
+extern s32   e_bat_max_health;      // Maximum hit points
+extern f32 e_bat_size;            // Render / collision radius (world units)
+extern f32 e_bat_sight_range;     // Detection radius; bat aggros within this
+extern f32 e_bat_attack_cooldown; // Seconds between consecutive bat attacks
+extern s32   e_bat_attack_damage;   // Damage dealt per bat attack hit
 
 // ----------------------------------------------------------------------------
 // Dragon stats — tuning values for the dragon boss
 // ----------------------------------------------------------------------------
-extern float e_dragon_speed;           // Movement speed (units/sec)
-extern int   e_dragon_max_health;      // Maximum hit points
-extern float e_dragon_size;            // Render / collision radius (world units)
-extern float e_dragon_attack_cooldown; // Seconds between consecutive boss attacks
-extern int   e_dragon_attack_damage;   // Damage dealt per boss melee hit
+extern f32 e_dragon_speed;           // Movement speed (units/sec)
+extern s32   e_dragon_max_health;      // Maximum hit points
+extern f32 e_dragon_size;            // Render / collision radius (world units)
+extern f32 e_dragon_attack_cooldown; // Seconds between consecutive boss attacks
+extern s32   e_dragon_attack_damage;   // Damage dealt per boss melee hit
 
 // ----------------------------------------------------------------------------
 // Boss projectile config — controls the wave-fire pattern of the dragon's shots
 // ----------------------------------------------------------------------------
-extern float e_bp_ring_radius;      // Visual ring radius drawn around projectile
-extern float e_bp_ring_thickness;   // Thickness of the visual ring
-extern float e_bp_base_speed;       // Base travel speed of each projectile
-extern float e_bp_wave_amplitude;   // Side-to-side wave amplitude (world units)
-extern float e_bp_wave_frequency;   // Oscillation frequency of the wave motion
-extern float e_bp_max_lifetime;     // Seconds before a projectile auto-expires
-extern int   e_bp_positions_wave_a; // Number of projectiles in wave pattern A
-extern int   e_bp_positions_wave_b; // Number of projectiles in wave pattern B
-extern float e_bp_angle_spread_deg; // Total arc (degrees) over which shots spread
-extern float e_bp_wave_interval;    // Seconds between consecutive wave triggers
-extern int   e_bp_projectile_damage;// Damage dealt to player on projectile hit
-extern int   e_bp_pool_size;        // Max simultaneous projectiles in the pool
+extern f32 e_bp_ring_radius;      // Visual ring radius drawn around projectile
+extern f32 e_bp_ring_thickness;   // Thickness of the visual ring
+extern f32 e_bp_base_speed;       // Base travel speed of each projectile
+extern f32 e_bp_wave_amplitude;   // Side-to-side wave amplitude (world units)
+extern f32 e_bp_wave_frequency;   // Oscillation frequency of the wave motion
+extern f32 e_bp_max_lifetime;     // Seconds before a projectile auto-expires
+extern s32   e_bp_positions_wave_a; // Number of projectiles in wave pattern A
+extern s32   e_bp_positions_wave_b; // Number of projectiles in wave pattern B
+extern f32 e_bp_angle_spread_deg; // Total arc (degrees) over which shots spread
+extern f32 e_bp_wave_interval;    // Seconds between consecutive wave triggers
+extern s32   e_bp_projectile_damage;// Damage dealt to player on projectile hit
+extern s32   e_bp_pool_size;        // Max simultaneous projectiles in the pool
 
 // ----------------------------------------------------------------------------
 // Manager / world config — global values used by the enemy manager and map
 // ----------------------------------------------------------------------------
-extern float e_spawn_check_interval; // How often (sec) the manager checks spawns
-extern float e_respawn_delay;        // Delay (sec) before a dead enemy respawns
-extern float e_food_lifetime;        // Seconds a food drop persists before fading
-extern float e_food_size;            // Render size of food drops (world units)
-extern float e_map_start_x;         // World-space X origin of the tile map
-extern float e_map_start_y;         // World-space Y origin of the tile map
-extern float e_tile_size;           // Width/height of a single tile (world units)
+extern f32 e_spawn_check_interval; // How often (sec) the manager checks spawns
+extern f32 e_respawn_delay;        // Delay (sec) before a dead enemy respawns
+extern f32 e_food_lifetime;        // Seconds a food drop persists before fading
+extern f32 e_food_size;            // Render size of food drops (world units)
+extern f32 e_map_start_x;         // World-space X origin of the tile map
+extern f32 e_map_start_y;         // World-space Y origin of the tile map
+extern f32 e_tile_size;           // Width/height of a single tile (world units)
 
 // ----------------------------------------------------------------------------
 // Respawn particles — controls the burst effect when an enemy reappears
 // ----------------------------------------------------------------------------
-extern int   e_rp_burst_count; // Number of particles spawned per respawn burst
-extern float e_rp_speed_min;   // Minimum launch speed of a particle
-extern float e_rp_speed_max;   // Maximum launch speed of a particle
-extern float e_rp_life_min;    // Minimum particle lifetime (seconds)
-extern float e_rp_life_max;    // Maximum particle lifetime (seconds)
-extern float e_rp_size_min;    // Minimum particle render size
-extern float e_rp_size_max;    // Maximum particle render size
-extern float e_rp_gravity;     // Downward gravity applied to each particle
-extern float e_rp_rise_boost;  // Initial upward impulse added on spawn
+extern s32   e_rp_burst_count; // Number of particles spawned per respawn burst
+extern f32 e_rp_speed_min;   // Minimum launch speed of a particle
+extern f32 e_rp_speed_max;   // Maximum launch speed of a particle
+extern f32 e_rp_life_min;    // Minimum particle lifetime (seconds)
+extern f32 e_rp_life_max;    // Maximum particle lifetime (seconds)
+extern f32 e_rp_size_min;    // Minimum particle render size
+extern f32 e_rp_size_max;    // Maximum particle render size
+extern f32 e_rp_gravity;     // Downward gravity applied to each particle
+extern f32 e_rp_rise_boost;  // Initial upward impulse added on spawn
 
 // ----------------------------------------------------------------------------
 // save_Data()
@@ -144,12 +145,12 @@ bool save_Data(const std::string& filepath);
 // ----------------------------------------------------------------------------
 struct BossProjectile
 {
-    float x{}, y{};           // Current world-space position
-    float vx{}, vy{};         // Base velocity along the fire direction
-    float perp_x{}, perp_y{}; // Perpendicular axis used for wave oscillation
-    float phase{};            // Phase offset so each projectile waves differently
-    float age{};              // Seconds since this projectile was spawned
-    float lifetime{};         // Seconds until auto-expiry (copied from e_bp_max_lifetime)
+    f32 x{}, y{};           // Current world-space position
+    f32 vx{}, vy{};         // Base velocity along the fire direction
+    f32 perp_x{}, perp_y{}; // Perpendicular axis used for wave oscillation
+    f32 phase{};            // Phase offset so each projectile waves differently
+    f32 age{};              // Seconds since this projectile was spawned
+    f32 lifetime{};         // Seconds until auto-expiry (copied from e_bp_max_lifetime)
     bool  in_use{ false };    // True while this slot is active in the pool
 };
 
@@ -172,7 +173,7 @@ public:
     // \param pool_size  Number of slots to reserve.
     //                   Pass 0 to use e_bp_pool_size from the data file.
     // ------------------------------------------------------------------------
-    void init(int pool_size = 0);
+    void init(s32 pool_size = 0);
 
     // ------------------------------------------------------------------------
     // clear()
@@ -185,10 +186,9 @@ public:
     // Advances all active projectiles by dt seconds: applies base velocity,
     // adds sinusoidal wave motion, and culls expired or off-screen shots.
     //
-    // \param dt   Delta time in seconds for this frame
     // \param cam  Active camera used for off-screen culling
     // ------------------------------------------------------------------------
-    void update(float dt, const Camera::camera* cam);
+    void update(const Camera::camera* cam);
 
     // ------------------------------------------------------------------------
     // check_player_collision()
@@ -198,7 +198,7 @@ public:
     // \param player  Pointer to the player object to test against
     // \return        Total damage dealt this frame (hits * e_bp_projectile_damage)
     // ------------------------------------------------------------------------
-    int  check_player_collision(Player* player);
+    s32  check_player_collision(Player* player);
 
     // ------------------------------------------------------------------------
     // trigger_wave()
@@ -210,8 +210,8 @@ public:
     // \param target_x  World-space X position to aim at (usually the player)
     // \param target_y  World-space Y position to aim at (usually the player)
     // ------------------------------------------------------------------------
-    void trigger_wave(float boss_x, float boss_y,
-        float target_x, float target_y);
+    void trigger_wave(f32 boss_x, f32 boss_y,
+        f32 target_x, f32 target_y);
 
     // ------------------------------------------------------------------------
     // get_projectiles()
@@ -225,7 +225,7 @@ public:
     // Returns the number of pool slots currently marked in_use.
     // Useful for debug overlays or performance monitoring.
     // ------------------------------------------------------------------------
-    int  get_active_count() const;
+    s32  get_active_count() const;
 
 private:
     // ------------------------------------------------------------------------
@@ -247,10 +247,10 @@ private:
     // \param perp_y  Normalised Y component perpendicular to fire direction
     // \param phase   Wave phase offset for this specific projectile
     // ------------------------------------------------------------------------
-    void spawn_one(float bx, float by,
-        float dir_x, float dir_y,
-        float perp_x, float perp_y,
-        float phase);
+    void spawn_one(f32 bx, f32 by,
+        f32 dir_x, f32 dir_y,
+        f32 perp_x, f32 perp_y,
+        f32 phase);
 
     std::vector<BossProjectile> m_pool;    // Fixed-capacity projectile pool
     bool m_wave_toggle{ false };           // Tracks which wave pattern fires next
@@ -269,7 +269,7 @@ extern BossProjectileManager boss_proj_manager;
 // ----------------------------------------------------------------------------
 // Damage dealt to the player (in HP) on direct enemy body contact
 // ----------------------------------------------------------------------------
-constexpr int player_heart_damage{ 50 };
+constexpr s32 player_heart_damage{ 50 };
 
 // ----------------------------------------------------------------------------
 // Fraction of the enemy's max HP that a food drop restores to the player
@@ -297,10 +297,9 @@ constexpr f32 food_lifetime{ 10.f };
 // \param size     Collision radius used for wall sliding / separation
 // \param target_x World-space X of the position to approach
 // \param target_y World-space Y of the position to approach
-// \param dt       Delta time in seconds
 // ----------------------------------------------------------------------------
 void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
-    f32 target_x, f32 target_y, f32 dt);
+    f32 target_x, f32 target_y);
 
 // ----------------------------------------------------------------------------
 // enemy_move_away_from()
@@ -313,10 +312,9 @@ void enemy_move_towards(f32& x, f32& y, f32 speed, f32 size,
 // \param size    Collision radius used for wall sliding / separation
 // \param from_x  World-space X of the position to flee from (usually player)
 // \param from_y  World-space Y of the position to flee from (usually player)
-// \param dt      Delta time in seconds
 // ----------------------------------------------------------------------------
 void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
-    f32 from_x, f32 from_y, f32 dt);
+    f32 from_x, f32 from_y);
 
 // ----------------------------------------------------------------------------
 // enemy_flee_to_wall()
@@ -328,12 +326,11 @@ void enemy_move_away_from(f32& x, f32& y, f32 speed, f32 size,
 // \param speed    Movement speed in world units per second
 // \param player_x Player world-space X (used to pick opposite wall)
 // \param player_y Player world-space Y (used to pick opposite wall)
-// \param dt       Delta time in seconds
 // \param next_x   Output: computed destination X for this frame
 // \param next_y   Output: computed destination Y for this frame
 // ----------------------------------------------------------------------------
 void enemy_flee_to_wall(f32 x, f32 y, f32 speed,
-    f32 player_x, f32 player_y, f32 dt,
+    f32 player_x, f32 player_y,
     f32& next_x, f32& next_y);
 
 
@@ -368,17 +365,17 @@ public:
     // ------------------------------------------------------------------------
     // Fallback stat constants used if the data file is missing entries
     // ------------------------------------------------------------------------
-    static constexpr int enemy_max_hp{ 100 };         // Default maximum HP
-    static constexpr int enemy_damage_per_hit{ 50 };  // Default damage per hit
+    static constexpr s32 enemy_max_hp{ 100 };         // Default maximum HP
+    static constexpr s32 enemy_damage_per_hit{ 50 };  // Default damage per hit
 
 protected:
     f32 x, y;                   // Current world-space position
-    f32 spawn_x, spawn_y;       // Original spawn point used for respawning
+    f32 spawn_x, spawn_y;       // Original spawn pos32 used for respawning
     f32 velocity_x, velocity_y; // Current frame velocity (set by movement helpers)
     f32 speed;                  // Base movement speed (units/sec)
     f32 size;                   // Render and collision radius (world units)
-    int current_health;         // Hit points remaining
-    int max_health;             // Maximum hit points for this instance
+    s32 current_health;         // Hit points remaining
+    s32 max_health;             // Maximum hit points for this instance
     f32 attack_cooldown;        // Seconds required between attacks
     f32 attack_timer;           // Counts down to 0 before the next attack fires
     enemy_state state;          // Current behavioral state
@@ -409,11 +406,10 @@ public:
     // Drives the enemy AI and animation for one frame.
     // Each subclass defines its own state transitions and movement logic.
     //
-    // \param dt      Delta time in seconds
     // \param player  Pointer to the player object for targeting and collision
     // \param cam     Active camera for frustum/visibility checks
     // ------------------------------------------------------------------------
-    virtual void update(f32 dt, struct Player* player, Camera::camera* cam) = 0;
+    virtual void update(struct Player* player, Camera::camera* cam) = 0;
 
     // ------------------------------------------------------------------------
     // take_damage()
@@ -422,7 +418,7 @@ public:
     //
     // \param amount  Positive integer amount of damage to apply
     // ------------------------------------------------------------------------
-    virtual void take_damage(int amount);
+    virtual void take_damage(s32 amount);
 
     // ------------------------------------------------------------------------
     // is_ghost() — returns true only for ghost instances (used for type checks)
@@ -432,7 +428,7 @@ public:
     // ------------------------------------------------------------------------
     // get_max_health() — returns the max HP configured for this enemy instance
     // ------------------------------------------------------------------------
-    virtual int  get_max_health() const { return max_health; }
+    virtual s32  get_max_health() const { return max_health; }
 
     // ------------------------------------------------------------------------
     // is_in_camera_view()
@@ -470,7 +466,7 @@ public:
     f32           get_x()              const { return x; }
     f32           get_y()              const { return y; }
     f32           get_size()           const { return size; }
-    int           get_current_health() const { return current_health; }
+    s32           get_current_health() const { return current_health; }
     enemy_state   get_state()          const { return state; }
     bool          is_active()          const { return active; }
     f32           get_hit_flash_timer()const { return hit_flash_timer; }
@@ -498,7 +494,7 @@ public:
 // ----------------------------------------------------------------------------
 class ghost : public base_enemy
 {
-    int hits_from_player; // Running count of hits received; used to trigger flee
+    s32 hits_from_player; // Running count of hits received; used to trigger flee
 public:
     // ------------------------------------------------------------------------
     // ghost()
@@ -516,11 +512,10 @@ public:
     // Runs ghost AI: idle -> chasing -> fleeing state transitions,
     // movement toward / away from the player, and hit flash decay.
     //
-    // \param dt      Delta time in seconds
     // \param player  Player reference for position and collision queries
     // \param cam     Camera reference for visibility culling
     // ------------------------------------------------------------------------
-    void update(f32 dt, struct Player* player, Camera::camera* cam) override;
+    void update(struct Player* player, Camera::camera* cam) override;
 
     // ------------------------------------------------------------------------
     // take_damage()
@@ -529,7 +524,7 @@ public:
     //
     // \param amount  Positive damage amount to apply
     // ------------------------------------------------------------------------
-    void take_damage(int amount) override;
+    void take_damage(s32 amount) override;
 
     // ------------------------------------------------------------------------
     // is_ghost() — always true for ghost instances
@@ -539,7 +534,7 @@ public:
     // ------------------------------------------------------------------------
     // get_hits_from_player() — returns the accumulated hit count
     // ------------------------------------------------------------------------
-    int  get_hits_from_player() const { return hits_from_player; }
+    s32  get_hits_from_player() const { return hits_from_player; }
 };
 
 
@@ -571,11 +566,10 @@ public:
     // Runs bat AI: chases the player when in sight range, applies attack
     // damage on contact respecting the cooldown timer.
     //
-    // \param dt      Delta time in seconds
     // \param player  Player reference for position and collision queries
     // \param cam     Camera reference for visibility culling
     // ------------------------------------------------------------------------
-    void update(f32 dt, struct Player* player, Camera::camera* cam) override;
+    void update(struct Player* player, Camera::camera* cam) override;
 };
 
 
@@ -592,13 +586,13 @@ public:
 struct Animator {
     AEGfxTexture* sheet = nullptr; // Source sprite sheet texture
     AEGfxVertexList* cached_mesh = nullptr; // Cached mesh for the current frame
-    int  last_built_frame = -1;             // Frame index the cached mesh was built for
-    int  frame_count = 1;             // Total number of frames in the strip
-    int  current_frame = 0;             // Index of the frame currently displayed
-    float frame_w = 1.f, frame_h = 1.f; // Pixel dimensions of a single frame
-    float sheet_w = 1.f, sheet_h = 1.f; // Pixel dimensions of the full sheet
-    float fps = 8.f;                  // Playback speed in frames per second
-    float timer = 0.f;                  // Accumulates dt; advances frame when >= 1/fps
+    s32  last_built_frame = -1;             // Frame index the cached mesh was built for
+    s32  frame_count = 1;             // Total number of frames in the strip
+    s32  current_frame = 0;             // Index of the frame currently displayed
+    f32 frame_w = 1.f, frame_h = 1.f; // Pixel dimensions of a single frame
+    f32 sheet_w = 1.f, sheet_h = 1.f; // Pixel dimensions of the full sheet
+    f32 fps = 8.f;                  // Playback speed in frames per second
+    f32 timer = 0.f;                  // Accumulates dt; advances frame when >= 1/fps
     bool  looping = true;                 // If true, wraps back to frame 0 at the end
     bool  finished = false;                // Set true on the last frame of a non-looping clip
 
@@ -619,10 +613,9 @@ struct Animator {
     // the frame duration elapses.
     // For non-looping clips, clamps to the last frame and sets finished=true.
     //
-    // \param dt    Delta time in seconds for this frame
     // \return      true on the exact frame a non-looping clip reaches its end
     // ------------------------------------------------------------------------
-    bool update(float dt)
+    bool update()
     {
         if (finished) return false;
         timer += dt;
@@ -650,9 +643,9 @@ struct Animator {
     // \param playback_fps  Desired playback rate in frames per second
     // \param loop          True to loop continuously; false to play once and stop
     // ------------------------------------------------------------------------
-    void set(AEGfxTexture* tex, int frames,
-        float fw, float fh, float sw, float sh,
-        float playback_fps, bool loop)
+    void set(AEGfxTexture* tex, s32 frames,
+        f32 fw, f32 fh, f32 sw, f32 sh,
+        f32 playback_fps, bool loop)
     {
         sheet = tex; frame_count = frames;
         frame_w = fw; frame_h = fh; sheet_w = sw; sheet_h = sh;
@@ -664,10 +657,10 @@ struct Animator {
     // UV helpers — compute normalised texture coordinates for current_frame.
     // Use u0/u1 for horizontal extent and v0/v1 for vertical extent.
     // ------------------------------------------------------------------------
-    float u0() const { return (current_frame * frame_w) / sheet_w; }
-    float u1() const { return u0() + frame_w / sheet_w; }
-    float v0() const { return 0.f; }
-    float v1() const { return frame_h / sheet_h; }
+    f32 u0() const { return (current_frame * frame_w) / sheet_w; }
+    f32 u1() const { return u0() + frame_w / sheet_w; }
+    f32 v0() const { return 0.f; }
+    f32 v1() const { return frame_h / sheet_h; }
 };
 
 
@@ -709,7 +702,7 @@ private:
     enum class DragonAnim { IDLE, WALK, ATTACK, HURT, DEATH };
     DragonAnim current_anim = DragonAnim::IDLE;
 
-    float m_wave_timer{ 3.f }; // Countdown (sec) to the next projectile wave
+    f32 m_wave_timer{ 3.f }; // Countdown (sec) to the next projectile wave
 
     // ------------------------------------------------------------------------
     // switch_anim()
@@ -725,11 +718,10 @@ private:
     // Decrements m_wave_timer and fires a projectile wave via
     // boss_proj_manager.trigger_wave() when the timer expires.
     //
-    // \param dt       Delta time in seconds
     // \param tgt_x   Target world-space X to aim the wave at (player X)
     // \param tgt_y   Target world-space Y to aim the wave at (player Y)
     // ------------------------------------------------------------------------
-    void tick_attack_pattern(float dt, float tgt_x, float tgt_y);
+    void tick_attack_pattern(f32 tgt_x, f32 tgt_y);
 
 public:
     // ------------------------------------------------------------------------
@@ -754,11 +746,10 @@ public:
     // Runs dragon AI: moves within the room, ticks the wave timer,
     // switches animation clips, and handles hit flash decay.
     //
-    // \param dt      Delta time in seconds
     // \param player  Player reference for targeting and collision
     // \param cam     Camera reference for visibility culling
     // ------------------------------------------------------------------------
-    void update(f32 dt, struct Player* player, Camera::camera* cam) override;
+    void update(struct Player* player, Camera::camera* cam) override;
 
     // ------------------------------------------------------------------------
     // take_damage()
@@ -767,7 +758,7 @@ public:
     //
     // \param amount  Positive damage amount to apply
     // ------------------------------------------------------------------------
-    void take_damage(int amount) override;
+    void take_damage(s32 amount) override;
 
     // ------------------------------------------------------------------------
     // has_dropped_sister()

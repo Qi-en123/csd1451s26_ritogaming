@@ -13,11 +13,15 @@
 \               Manages two playable characters with different elements
 \               (WATER and FIRE) and their health systems.
 **************************************************************************/
-#include "pch.hpp"
+
+#include "json.hpp"
 #include "utils.hpp"
 #include "audio_manager.hpp"
 #include <fstream>
 #include <iostream>
+#include "renderer.hpp"
+#include "collision.hpp"
+#include "enemy_manager.hpp"
 
 using json = nlohmann::json;
 static const char* player_config_data = "Assets/Config/player_config.json";

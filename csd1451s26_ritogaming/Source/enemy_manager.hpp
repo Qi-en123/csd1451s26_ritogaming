@@ -1,4 +1,16 @@
-﻿#pragma once
+﻿/*!************************************************************************
+\file:          enemy_manager.hpp
+\author:        Claire
+\par DP email:  c.cheong@digipen.edu
+
+\brief:         EnemyManager implementation. All previously hardcoded
+                magic numbers (filepaths, timings, sizes, particle params)
+                are now read directly from the e_ globals defined in
+                enemy.cpp and declared extern in enemy.hpp, populated
+                once at startup by dave_Data().
+**************************************************************************/
+
+#pragma once
 
 #include <vector>
 #include <memory>
@@ -7,6 +19,7 @@
 #include "AEEngine.h"
 #include "enemy.hpp"
 #include "player.hpp"
+#include "utils.hpp"
 
 // ============================================================================
 // LOGIC CONSTANTS
@@ -93,7 +106,7 @@ public:
 
     void load_textures();                               // Load textures for enemies and markers
     void unload_textures();                             // Release all loaded textures
-    void update(f32 dt, Player* player, Camera::camera* cam); // Update all enemies, food, and particles
+    void update(Player* player, Camera::camera* cam); // Update all enemies, food, and particles
     void render();                                      // Render enemies, food, and particles
 
     // -------------------------- Setup ----------------------------------
@@ -104,8 +117,8 @@ public:
     void clear_all();                                   // Clear all enemies, food, and particles
 
     // ------------------------ Spawning ---------------------------------
-    void spawn_ghost_at_slot(int idx);
-    void spawn_bat_at_slot(int idx);
+    void spawn_ghost_at_slot(s32 idx);
+    void spawn_bat_at_slot(s32 idx);
     void spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
     void maintain_ghost_population();                  // Respawn ghosts as needed
     void maintain_bat_population();                    // Respawn bats as needed
@@ -121,19 +134,17 @@ public:
 
     // --------------------------- Getters --------------------------------
     size_t get_active_enemy_count() const;
-    size_t get_ghost_count() const;
-    size_t get_bat_count() const;
     bool   save_spawn_positions_from_map(s32** map_data, const std::string& filename);
     int get_ghost_count_dynamic() const { return ghost_count; }
     int get_bat_count_dynamic() const { return bat_count; }
     std::vector<std::unique_ptr<base_enemy>> const& get_enemies() const { return enemies; }
 
 private:
-    void update_food(f32 dt, Player* player);          // Update food timers and collisions
+    void update_food(Player* player);          // Update food timers and collisions
     void render_food();                                // Draw active food drops
     void render_enemy(base_enemy* enemy);             // Draw individual enemy
     void render_spawn_markers();                       // Draw markers for spawn positions
-    void update_respawn_particles(f32 dt);            // Update respawn particle positions
+    void update_respawn_particles();            // Update respawn particle positions
     void render_respawn_particles();                  // Draw respawn particles
 };
 

@@ -16,6 +16,7 @@
 #include "audio_manager.hpp"
 #include "renderer.hpp" 
 #include "level1.hpp"
+#include "utils.hpp"
 
 // ----------------------------------------------------------------------------
 // Global Transition Variables
@@ -78,7 +79,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         while (next == current)
         {
             AESysFrameStart();
-            f32 dt = (float)AEFrameRateControllerGetFrameTime();
+            dt = (float)AEFrameRateControllerGetFrameTime();
 
             if (!AESysDoesWindowExist())
                 next = GS_QUIT;

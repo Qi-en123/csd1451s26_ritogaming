@@ -210,7 +210,7 @@ void guide_update() {
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 
 	//Update zoom levels
-	get_zoom(dt);
+	get_zoom();
 
 	// Camera follows current_player - automatically updates when you switch characters!
 	Camera::simulate_camera(&Camera::cam,
@@ -225,7 +225,7 @@ void guide_update() {
 
 	check_cleared_guide(&player_instance);
 
-	enemy_manager_instance.update(dt, &player_instance, &Camera::cam);
+	enemy_manager_instance.update(&player_instance, &Camera::cam);
 
 	// Lose condition
 	if (player_is_dead(&player_instance))

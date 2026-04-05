@@ -133,7 +133,7 @@ void boss_room_update()
     cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
 
     //Update zoom levels
-    get_zoom(dt);
+    get_zoom();
 
     // Bounds for boss room
     Camera::simulate_camera(&Camera::cam,
@@ -145,8 +145,8 @@ void boss_room_update()
 
 
     // Update enemy manager (for the dragon)
-    enemy_manager_instance.update(dt, &player_instance, &Camera::cam);
-    boss_proj_manager.update(dt, &Camera::cam);
+    enemy_manager_instance.update(&player_instance, &Camera::cam);
+    boss_proj_manager.update(&Camera::cam);
     boss_proj_manager.check_player_collision(&player_instance);
 
     if (enemy_manager_instance.get_active_enemy_count() > 0)

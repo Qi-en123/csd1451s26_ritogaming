@@ -304,7 +304,7 @@ void level1_update()
 	}
 
 	cursor_active = AEInputCheckCurr(AEVK_LBUTTON);
-	get_zoom(dt);
+	get_zoom();
 
 	Camera::simulate_camera(&Camera::cam, &player_instance.current_player->x, &player_instance.current_player->y);
 	player_system_update(&player_instance);
@@ -312,7 +312,7 @@ void level1_update()
 	Puzzle::puzzle_button_manager();
 	Puzzle::puzzle_audio_update();
 	check_and_open_doors(&player_instance);
-	enemy_manager_instance.update(dt, &player_instance, &Camera::cam);
+	enemy_manager_instance.update(&player_instance, &Camera::cam);
 
 	if (player_is_dead(&player_instance))
 	{

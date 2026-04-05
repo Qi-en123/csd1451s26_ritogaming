@@ -231,7 +231,6 @@ void boss_room_draw()
 void boss_room_free()
 {
     // Cleanup enemies
-    free_ui_textures(&ui_manager);
     boss_proj_manager.clear();
     enemy_manager_instance.clear_all();
     player_system_free(&player_instance);
@@ -250,8 +249,7 @@ void boss_room_free()
 void boss_room_unload()
 {
     free_tile_textures();
-    //free_mesh();
-    player_system_free(&player_instance);
+    free_ui_textures(&ui_manager);
 
     if (skeleton_texture)
     {

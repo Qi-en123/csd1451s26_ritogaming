@@ -21,7 +21,6 @@ void load_ui_textures(UIManager* p_ui_manager)
 	p_ui_manager->hp_full_texture = AEGfxTextureLoad("Assets/Sprites/UI/hp_full.png");
 	p_ui_manager->primary_bg_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/tile_0078.png");
 	p_ui_manager->primary_counter_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/tile_0079.png");
-	p_ui_manager->primary_ability_texture = AEGfxTextureLoad("Assets/Sprites/Projectile/fireball1.png");
 	p_ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
 	p_ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_nonactive1.png");
 	p_ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_active1.png");
@@ -40,8 +39,6 @@ void free_ui_textures(UIManager* p_ui_manager)
 		AEGfxTextureUnload(p_ui_manager->primary_bg_texture);
 	if (p_ui_manager->primary_counter_texture)
 		AEGfxTextureUnload(p_ui_manager->primary_counter_texture);
-	if (p_ui_manager->primary_ability_texture)
-		AEGfxTextureUnload(p_ui_manager->primary_ability_texture);
 	if (p_ui_manager->cursor_knight)
 		AEGfxTextureUnload(p_ui_manager->cursor_knight);
 	if (p_ui_manager->cursor_wizard)

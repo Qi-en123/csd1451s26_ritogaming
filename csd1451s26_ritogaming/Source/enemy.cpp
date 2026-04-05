@@ -567,3 +567,24 @@ void dragon::take_damage(int amount)
     }
     else switch_anim(DragonAnim::HURT);
 }
+
+
+// ----------------------------------------------------------------------------
+//
+// Destructor: ~dragon
+// Safely releases all texture resources associated with the dragon object.
+// Utilizes a local lambda to ensure textures are unloaded from the graphics
+// engine and their pointers are nullified to prevent dangling references.
+//
+// ----------------------------------------------------------------------------
+dragon::~dragon()
+{
+    auto safe_unload = [](AEGfxTexture*& tex) {
+        if (tex) { AEGfxTextureUnload(tex); tex = nullptr; }
+        };
+    safe_unload(tex_idle);
+    safe_unload(tex_walk);
+    safe_unload(tex_attack);
+    safe_unload(tex_hurt);
+    safe_unload(tex_death);
+}

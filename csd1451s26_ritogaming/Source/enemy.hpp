@@ -421,7 +421,7 @@ private:
 
 public:
     dragon(f32 start_x, f32 start_y, f32 r_left, f32 r_right, f32 r_top, f32 r_bottom);
-    ~dragon() override = default;
+    ~dragon() override;
 
     void update(f32 dt, struct Player* player, Camera::camera* cam) override;
     void take_damage(int amount) override;

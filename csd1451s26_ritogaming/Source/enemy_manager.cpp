@@ -28,7 +28,7 @@ EnemyManager enemy_manager_instance;
 
 static AEVec2 tile_spot(s32 row, s32 col)
 {
-    AEVec2 p;
+    AEVec2 p{};
     p.x = world_left + col * tile_size + tile_size * 0.5f;
     p.y = world_top - row * tile_size - tile_size * 0.5f;
     return p;
@@ -92,7 +92,7 @@ void EnemyManager::load_spawn_positions(const char* filename)
     }
 
     std::string type;
-    int r, c;
+    s32 r, c;
 
     while (file >> type >> r >> c)
     {
@@ -116,19 +116,19 @@ void EnemyManager::load_spawn_positions(const char* filename)
         cross_positions = new AEVec2[cross_count];
     }
 
-    int gc = 0, bc = 0, cc = 0;
+    s32 gc = 0, bc = 0, cc = 0;
     while (file >> type >> r >> c)
     {
         AEVec2 pos = tile_spot(r, c);
-        if (type == "GHOST") {
+        if (type == "GHOST" && gc < ghost_count) {
             ghost_spawn_positions[gc] = pos;
             ghost_slots[gc++] = { nullptr, 0.0f };
         }
-        else if (type == "BAT") {
+        else if (type == "BAT" && bc < bat_count) {
             bat_spawn_positions[bc] = pos;
             bat_slots[bc++] = { nullptr, 0.0f };
         }
-        else if (type == "CROSS") {
+        else if (type == "CROSS" && cc < cross_count) {
             cross_positions[cc++] = pos;
         }
     }
@@ -144,14 +144,14 @@ void EnemyManager::load_spawn_positions(const char* filename)
 void EnemyManager::initialize_tutorial_area()
 {
     load_textures();
-    for (int i = 0; i < ghost_count; ++i) { ghost_slots[i] = { nullptr, 0.0f }; spawn_ghost_at_slot(i); }
-    for (int i = 0; i < bat_count; ++i) { bat_slots[i] = { nullptr, 0.0f }; spawn_bat_at_slot(i); }
+    for (s32 i = 0; i < ghost_count; ++i) { ghost_slots[i] = { nullptr, 0.0f }; spawn_ghost_at_slot(i); }
+    for (s32 i = 0; i < bat_count; ++i) { bat_slots[i] = { nullptr, 0.0f }; spawn_bat_at_slot(i); }
 }
 
 void EnemyManager::initialize_combat_area()
 {
     load_textures();
-    for (int i = 0; i < bat_count; ++i) { bat_slots[i] = { nullptr, 0.0f }; spawn_bat_at_slot(i); }
+    for (s32 i = 0; i < bat_count; ++i) { bat_slots[i] = { nullptr, 0.0f }; spawn_bat_at_slot(i); }
 }
 
 // ============================================================================
@@ -171,11 +171,11 @@ void EnemyManager::update(f32 dt, Player* player, Camera::camera* p_cam)
 
     if (current_zone == tutorial_area || current_zone == combat_area)
     {
-        for (int i = 0; i < ghost_count; ++i)
+        for (s32 i = 0; i < ghost_count; ++i)
             if (ghost_slots[i].enemy == nullptr && ghost_slots[i].respawn_timer > 0.0f)
                 ghost_slots[i].respawn_timer -= dt;
 
-        for (int i = 0; i < bat_count; ++i)
+        for (s32 i = 0; i < bat_count; ++i)
             if (bat_slots[i].enemy == nullptr && bat_slots[i].respawn_timer > 0.0f)
                 bat_slots[i].respawn_timer -= dt;
 
@@ -211,17 +211,17 @@ void EnemyManager::render_spawn_markers()
     if (!spawn_positions_loaded)   return;
 
     if (ghost_marker_tex && ghost_spawn_positions)
-        for (int i = 0; i < ghost_count; ++i)
+        for (s32 i = 0; i < ghost_count; ++i)
             render_sprite(square_mesh, ghost_spawn_positions[i].x, ghost_spawn_positions[i].y,
                 e_tile_size, e_tile_size, ghost_marker_tex);
 
     if (bat_marker_tex && bat_spawn_positions)
-        for (int i = 0; i < bat_count; ++i)
+        for (s32 i = 0; i < bat_count; ++i)
             render_sprite(square_mesh, bat_spawn_positions[i].x, bat_spawn_positions[i].y,
                 e_tile_size, e_tile_size, bat_marker_tex);
 
     if (cross_tex && cross_positions)
-        for (int i = 0; i < cross_count; ++i)
+        for (s32 i = 0; i < cross_count; ++i)
             render_sprite(square_mesh, cross_positions[i].x, cross_positions[i].y,
                 e_tile_size, e_tile_size, cross_tex);
 }
@@ -238,7 +238,7 @@ void EnemyManager::render_enemy(base_enemy* other_enemy)
         return;
     }
 
-    if (other_enemy->get_texture())
+    if (other_enemy && other_enemy->get_texture())
         render_sprite(square_mesh,
             other_enemy->get_x(), other_enemy->get_y(),
             other_enemy->get_size(), other_enemy->get_size(),
@@ -251,7 +251,7 @@ void EnemyManager::render_enemy(base_enemy* other_enemy)
 // SPAWNING
 // ============================================================================
 
-void EnemyManager::spawn_ghost_at_slot(int idx)
+void EnemyManager::spawn_ghost_at_slot(s32 idx)
 {
     if (ghost_slots[idx].enemy != nullptr) return;
     AEVec2 pos = ghost_spawn_positions[idx];
@@ -262,7 +262,7 @@ void EnemyManager::spawn_ghost_at_slot(int idx)
     enemies.push_back(std::move(g));
 }
 
-void EnemyManager::spawn_bat_at_slot(int idx)
+void EnemyManager::spawn_bat_at_slot(s32 idx)
 {
     if (bat_slots[idx].enemy != nullptr) return;
     AEVec2 pos = bat_spawn_positions[idx];
@@ -291,9 +291,9 @@ void EnemyManager::spawn_dragon(f32 x, f32 y, f32 r_left, f32 r_right, f32 r_top
 
 void EnemyManager::spawn_respawn_particles(f32 x, f32 y)
 {
-    for (int i = 0; i < e_rp_burst_count; ++i)
+    for (s32 i = 0; i < e_rp_burst_count; ++i)
     {
-        Particle p;
+        Particle p{};
         p.x = x; p.y = y;
         f32 angle = AERandFloat() * 2.0f * 3.14159f;
         f32 speed = e_rp_speed_min + AERandFloat() * (e_rp_speed_max - e_rp_speed_min);
@@ -437,7 +437,7 @@ void EnemyManager::cleanup_dead_enemies()
 
         if (enemy->is_ghost())
         {
-            for (int i = 0; i < ghost_count; ++i)
+            for (s32 i = 0; i < ghost_count; ++i)
                 if (ghost_slots[i].enemy == enemy.get()) {
                     ghost_slots[i].enemy = nullptr;
                     ghost_slots[i].respawn_timer = e_respawn_delay;
@@ -446,7 +446,7 @@ void EnemyManager::cleanup_dead_enemies()
         }
         else if (dynamic_cast<bat*>(enemy.get()))
         {
-            for (int i = 0; i < bat_count; ++i)
+            for (s32 i = 0; i < bat_count; ++i)
                 if (bat_slots[i].enemy == enemy.get()) {
                     bat_slots[i].enemy = nullptr;
                     bat_slots[i].respawn_timer = e_respawn_delay;
@@ -467,7 +467,7 @@ void EnemyManager::cleanup_dead_enemies()
 
 void EnemyManager::maintain_ghost_population()
 {
-    for (int i = 0; i < ghost_count; ++i)
+    for (s32 i = 0; i < ghost_count; ++i)
         if (ghost_slots[i].enemy == nullptr && ghost_slots[i].respawn_timer <= 0.f) {
             spawn_respawn_particles(ghost_spawn_positions[i].x, ghost_spawn_positions[i].y);
             spawn_ghost_at_slot(i);
@@ -477,7 +477,7 @@ void EnemyManager::maintain_ghost_population()
 
 void EnemyManager::maintain_bat_population()
 {
-    for (int i = 0; i < bat_count; ++i)
+    for (s32 i = 0; i < bat_count; ++i)
         if (bat_slots[i].enemy == nullptr && bat_slots[i].respawn_timer <= 0.f) {
             spawn_respawn_particles(bat_spawn_positions[i].x, bat_spawn_positions[i].y);
             spawn_bat_at_slot(i);
@@ -517,8 +517,8 @@ bool EnemyManager::save_spawn_positions_from_map(s32** map_data, const std::stri
     std::ofstream file(filename);
     if (!file.is_open()) return false;
 
-    for (int r = 0; r < TILE_ROWS; ++r)
-        for (int c = 0; c < TILE_COLS; ++c)
+    for (s32 r = 0; r < TILE_ROWS; ++r)
+        for (s32 c = 0; c < TILE_COLS; ++c)
         {
             if (map_data[r][c] == 5) {
                 file << "GHOST  " << r + 1 << " " << c << "\n";
@@ -536,6 +536,5 @@ void entity_system_update(Player* player_ptr, EnemyManager* enem)
 {
     if (!player_ptr) return;
     (void)enem;
-    f32 dt = (f32)AEFrameRateControllerGetFrameTime();
-    player_update_projectiles(player_ptr, dt);
+    player_update_projectiles(player_ptr);
 }

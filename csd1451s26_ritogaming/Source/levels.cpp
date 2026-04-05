@@ -831,14 +831,6 @@ void levels_draw()
 
                 draw_map_preview(preview_map, px, py, cfg.preview_w, cfg.preview_h);
 
-                if (font != -1)
-                {
-                    f32 label_tw = 0.f, label_th = 0.f;
-                    AEGfxGetPrintSize(font, levels[idx].name.c_str(), 0.8f, &label_tw, &label_th);
-                    AEGfxPrint(font, levels[idx].name.c_str(),
-                        (px / half_screen_w) - label_tw * 0.5f, (py + cfg.preview_h * 0.5f + 25.f) / half_screen_h,
-                        0.8f, 1.f, 1.f, 1.f, 1.f);
-                }
                 break;
             }
         }

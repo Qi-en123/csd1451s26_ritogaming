@@ -89,10 +89,10 @@ struct PlayerStats
     //f32 move_speed = 4.f; // Player movement speed (4.f) makes it look more in sync with audio.
 
     // HP settings
-    int char1_max_health;
-    int char1_curr_health;
-    int char2_max_health;
-    int char2_curr_health;
+    s32 char1_max_health;
+    s32 char1_curr_health;
+    s32 char2_max_health;
+    s32 char2_curr_health;
 };
 
 // ------------------------------------------------------------------------
@@ -151,7 +151,7 @@ struct Player
     std::vector<Projectile> projectiles;
     std::vector<Particle> particles;
 
-    int fireball_count{ 5 };
+    s32 fireball_count{ 5 };
     f32 shoot_cooldown{ 0.0f };
 
     // Last movement direction for shooting
@@ -271,7 +271,7 @@ void player_system_free(Player* player_ptr);
     \param player_ptr Pointer to the player structure.
     \param dt Delta time for frame-independent movement.
 **************************************************************************/
-void player_update_projectiles(Player* player_ptr, f32 dt);
+void player_update_projectiles(Player* player_ptr);
 
 /**************************************************************************
     \brief
@@ -279,7 +279,7 @@ void player_update_projectiles(Player* player_ptr, f32 dt);
 
     \param player_ptr Pointer to the player structure.
 **************************************************************************/
-void player_handle_shooting(Player* player_ptr, f32 dt);
+void player_handle_shooting(Player* player_ptr);
 
 /**************************************************************************
     \brief
@@ -297,7 +297,7 @@ void player_render_projectiles(Player* player_ptr);
     \param player_ptr Pointer to the player structure.
     \param damage     Amount of damage (1 = half a heart).
 **************************************************************************/
-void player_take_damage(Player* player_ptr, int damage);
+void player_take_damage(Player* player_ptr, s32 damage);
 
 /**************************************************************************
     \brief
@@ -327,7 +327,7 @@ void player_handle_melee(Player* player_ptr);
 // Updates melee swing animation and hit detection.
 //
 // ------------------------------------------------------------------------
-void player_update_swing(Player* player_ptr, f32 dt);
+void player_update_swing(Player* player_ptr);
 
 // ------------------------------------------------------------------------
 //

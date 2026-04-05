@@ -42,107 +42,107 @@ std::string e_dragon_tex_death;
 // Dragon animation config — frame counts, dimensions, and playback rates
 // for each of the five dragon clips. All values assigned by save_Data().
 // ----------------------------------------------------------------------------
-int   e_dragon_idle_frames;
-float e_dragon_idle_frame_w;
-float e_dragon_idle_frame_h;
-float e_dragon_idle_sheet_w;
-float e_dragon_idle_sheet_h;
-float e_dragon_idle_fps;
-int   e_dragon_idle_loop;
+s32   e_dragon_idle_frames;
+f32 e_dragon_idle_frame_w;
+f32 e_dragon_idle_frame_h;
+f32 e_dragon_idle_sheet_w;
+f32 e_dragon_idle_sheet_h;
+f32 e_dragon_idle_fps;
+s32   e_dragon_idle_loop;
 
-int   e_dragon_walk_frames;
-float e_dragon_walk_frame_w;
-float e_dragon_walk_frame_h;
-float e_dragon_walk_sheet_w;
-float e_dragon_walk_sheet_h;
-float e_dragon_walk_fps;
-int   e_dragon_walk_loop;
+s32   e_dragon_walk_frames;
+f32 e_dragon_walk_frame_w;
+f32 e_dragon_walk_frame_h;
+f32 e_dragon_walk_sheet_w;
+f32 e_dragon_walk_sheet_h;
+f32 e_dragon_walk_fps;
+s32   e_dragon_walk_loop;
 
-int   e_dragon_attack_frames;
-float e_dragon_attack_frame_w;
-float e_dragon_attack_frame_h;
-float e_dragon_attack_sheet_w;
-float e_dragon_attack_sheet_h;
-float e_dragon_attack_fps;
-int   e_dragon_attack_loop;
+s32   e_dragon_attack_frames;
+f32 e_dragon_attack_frame_w;
+f32 e_dragon_attack_frame_h;
+f32 e_dragon_attack_sheet_w;
+f32 e_dragon_attack_sheet_h;
+f32 e_dragon_attack_fps;
+s32   e_dragon_attack_loop;
 
-int   e_dragon_hurt_frames;
-float e_dragon_hurt_frame_w;
-float e_dragon_hurt_frame_h;
-float e_dragon_hurt_sheet_w;
-float e_dragon_hurt_sheet_h;
-float e_dragon_hurt_fps;
-int   e_dragon_hurt_loop;
+s32   e_dragon_hurt_frames;
+f32 e_dragon_hurt_frame_w;
+f32 e_dragon_hurt_frame_h;
+f32 e_dragon_hurt_sheet_w;
+f32 e_dragon_hurt_sheet_h;
+f32 e_dragon_hurt_fps;
+s32   e_dragon_hurt_loop;
 
-int   e_dragon_death_frames;
-float e_dragon_death_frame_w;
-float e_dragon_death_frame_h;
-float e_dragon_death_sheet_w;
-float e_dragon_death_sheet_h;
-float e_dragon_death_fps;
-int   e_dragon_death_loop;
+s32   e_dragon_death_frames;
+f32 e_dragon_death_frame_w;
+f32 e_dragon_death_frame_h;
+f32 e_dragon_death_sheet_w;
+f32 e_dragon_death_sheet_h;
+f32 e_dragon_death_fps;
+s32   e_dragon_death_loop;
 
 // Ghost stats
-float e_ghost_speed;
-int   e_ghost_max_health;
-float e_ghost_size;
-float e_ghost_sight_range;
+f32 e_ghost_speed;
+s32   e_ghost_max_health;
+f32 e_ghost_size;
+f32 e_ghost_sight_range;
 
 // Bat stats
-float e_bat_speed;
-int   e_bat_max_health;
-float e_bat_size;
-float e_bat_sight_range;
-float e_bat_attack_cooldown;
-int   e_bat_attack_damage;
+f32 e_bat_speed;
+s32   e_bat_max_health;
+f32 e_bat_size;
+f32 e_bat_sight_range;
+f32 e_bat_attack_cooldown;
+s32   e_bat_attack_damage;
 
 // Dragon stats
-float e_dragon_speed;
-int   e_dragon_max_health;
-float e_dragon_size;
-float e_dragon_attack_cooldown;
-int   e_dragon_attack_damage;
+f32 e_dragon_speed;
+s32   e_dragon_max_health;
+f32 e_dragon_size;
+f32 e_dragon_attack_cooldown;
+s32   e_dragon_attack_damage;
 
 // Boss projectile config
-float e_bp_ring_radius;
-float e_bp_ring_thickness;
-float e_bp_base_speed;
-float e_bp_wave_amplitude;
-float e_bp_wave_frequency;
-float e_bp_max_lifetime;
-int   e_bp_positions_wave_a;
-int   e_bp_positions_wave_b;
-float e_bp_angle_spread_deg;
-float e_bp_wave_interval;
-int   e_bp_projectile_damage;
-int   e_bp_pool_size;
+f32 e_bp_ring_radius;
+f32 e_bp_ring_thickness;
+f32 e_bp_base_speed;
+f32 e_bp_wave_amplitude;
+f32 e_bp_wave_frequency;
+f32 e_bp_max_lifetime;
+s32   e_bp_positions_wave_a;
+s32   e_bp_positions_wave_b;
+f32 e_bp_angle_spread_deg;
+f32 e_bp_wave_interval;
+s32   e_bp_projectile_damage;
+s32   e_bp_pool_size;
 
 // Manager / world config
-float e_spawn_check_interval;
-float e_respawn_delay;
-float e_food_lifetime;
-float e_food_size;
-float e_map_start_x;
-float e_map_start_y;
-float e_tile_size;
+f32 e_spawn_check_interval;
+f32 e_respawn_delay;
+f32 e_food_lifetime;
+f32 e_food_size;
+f32 e_map_start_x;
+f32 e_map_start_y;
+f32 e_tile_size;
 
 // Respawn particle config
-int   e_rp_burst_count;
-float e_rp_speed_min;
-float e_rp_speed_max;
-float e_rp_life_min;
-float e_rp_life_max;
-float e_rp_size_min;
-float e_rp_size_max;
-float e_rp_gravity;
-float e_rp_rise_boost;
+s32   e_rp_burst_count;
+f32 e_rp_speed_min;
+f32 e_rp_speed_max;
+f32 e_rp_life_min;
+f32 e_rp_life_max;
+f32 e_rp_size_min;
+f32 e_rp_size_max;
+f32 e_rp_gravity;
+f32 e_rp_rise_boost;
 
 
 // ----------------------------------------------------------------------------
 // save_Data()
 // Reads the config file line by line. Each line is "<token> <value>".
 // Lines starting with '#' or empty lines are skipped.
-// Unknown tokens print a warning to stderr.
+// Unknown tokens prs32 a warning to stderr.
 //
 // \param filepath  Path to the config file
 // \return          true on success, false if the file could not be opened
@@ -290,16 +290,16 @@ bool save_Data(const std::string& filepath = "Assets/Config/enemy_config.txt")
 
 BossProjectileManager boss_proj_manager;
 
-static constexpr float BP_DEG2RAD = 3.14159265f / 180.0f;
+static constexpr f32 BP_DEG2RAD = 3.14159265f / 180.0f;
 
 // ----------------------------------------------------------------------------
 // bp_rotate_vec() — rotates vector (x, y) by angle_rad, writes to out_x/out_y
 // ----------------------------------------------------------------------------
-static void bp_rotate_vec(float x, float y, float angle_rad,
+static void bp_rotate_vec(f32 x, f32 y, f32 angle_rad,
     float& out_x, float& out_y)
 {
-    float c = cosf(angle_rad);
-    float s = sinf(angle_rad);
+    f32 c = cosf(angle_rad);
+    f32 s = sinf(angle_rad);
     out_x = x * c - y * s;
     out_y = x * s + y * c;
 }
@@ -307,9 +307,9 @@ static void bp_rotate_vec(float x, float y, float angle_rad,
 BossProjectileManager::BossProjectileManager() {}
 
 // Allocates the pool; uses e_bp_pool_size if pool_size is 0
-void BossProjectileManager::init(int pool_size)
+void BossProjectileManager::init(s32 pool_size)
 {
-    int actual = (pool_size > 0) ? pool_size : e_bp_pool_size;
+    s32 actual = (pool_size > 0) ? pool_size : e_bp_pool_size;
     m_pool.clear();
     m_pool.resize(static_cast<size_t>(actual));
     m_wave_toggle = false;
@@ -325,13 +325,13 @@ void BossProjectileManager::clear()
 // update() — advances all active projectiles, applying base velocity and
 // sinusoidal wave offset. Culls expired or off-screen projectiles.
 // ----------------------------------------------------------------------------
-void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
+void BossProjectileManager::update(f32 dt, const Camera::camera* p_cam)
 {
     if (!p_cam) return;
 
-    const float hw = (AEGfxGetWindowWidth() * 0.5f) / Camera::zoom;
-    const float hh = (AEGfxGetWindowHeight() * 0.5f) / Camera::zoom;
-    const float margin = e_bp_ring_radius * 4.0f;
+    const f32 hw = (AEGfxGetWindowWidth() * 0.5f) / Camera::zoom;
+    const f32 hh = (AEGfxGetWindowHeight() * 0.5f) / Camera::zoom;
+    const f32 margin = e_bp_ring_radius * 4.0f;
 
     for (auto& p : m_pool)
     {
@@ -341,7 +341,7 @@ void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
         p.lifetime -= dt;
 
         // Sinusoidal perpendicular offset for wave motion
-        const float sine_val = sinf(p.age * e_bp_wave_frequency + p.phase)
+        const f32 sine_val = sinf(p.age * e_bp_wave_frequency + p.phase)
             * e_bp_wave_amplitude;
 
         p.x += (p.vx + p.perp_x * sine_val) * dt;
@@ -361,15 +361,15 @@ void BossProjectileManager::update(float dt, const Camera::camera* p_cam)
 // check_player_collision() — tests all active projectiles against the player.
 // Deactivates any that connect and applies damage. Returns total hits.
 // ----------------------------------------------------------------------------
-int BossProjectileManager::check_player_collision(Player* player)
+s32 BossProjectileManager::check_player_collision(Player* player)
 {
     if (!player || !player->current_player) return 0;
 
-    const float px = player->current_player->x;
-    const float py = player->current_player->y;
-    const float p_rad = player->stats.character_size * 0.5f;
+    const f32 px = player->current_player->x;
+    const f32 py = player->current_player->y;
+    const f32 p_rad = player->stats.character_size * 0.5f;
 
-    int hits = 0;
+    s32 hits = 0;
     for (auto& proj : m_pool)
     {
         if (!proj.in_use) continue;
@@ -387,41 +387,41 @@ int BossProjectileManager::check_player_collision(Player* player)
 // trigger_wave() — fires a spread of projectiles aimed at the target.
 // Alternates between wave pattern A (even slots) and B (odd slots) each call.
 // ----------------------------------------------------------------------------
-void BossProjectileManager::trigger_wave(float boss_x, float boss_y,
-    float target_x, float target_y)
+void BossProjectileManager::trigger_wave(f32 boss_x, f32 boss_y,
+    f32 target_x, f32 target_y)
 {
     // Normalise the fire direction
-    float dx = target_x - boss_x;
-    float dy = target_y - boss_y;
-    const float dist = sqrtf(dx * dx + dy * dy);
+    f32 dx = target_x - boss_x;
+    f32 dy = target_y - boss_y;
+    const f32 dist = sqrtf(dx * dx + dy * dy);
     if (dist < 1.0f) { dx = 1.0f; dy = 0.0f; }
     else { dx /= dist; dy /= dist; }
 
-    const float perp_x = -dy;
-    const float perp_y = dx;
+    const f32 perp_x = -dy;
+    const f32 perp_y = dx;
 
     // Distribute projectiles across the angular spread
-    const int   total_slots = e_bp_positions_wave_a + e_bp_positions_wave_b;
-    const float spread_rad = e_bp_angle_spread_deg * BP_DEG2RAD;
-    const float slot_step = spread_rad / static_cast<float>(total_slots - 1);
+    const s32   total_slots = e_bp_positions_wave_a + e_bp_positions_wave_b;
+    const f32 spread_rad = e_bp_angle_spread_deg * BP_DEG2RAD;
+    const f32 slot_step = spread_rad / static_cast<float>(total_slots - 1);
 
     const bool is_wave_b = m_wave_toggle;
-    const int  count = is_wave_b ? e_bp_positions_wave_b : e_bp_positions_wave_a;
+    const s32  count = is_wave_b ? e_bp_positions_wave_b : e_bp_positions_wave_a;
 
-    for (int i = 0; i < count; ++i)
+    for (s32 i = 0; i < count; ++i)
     {
         // Wave B uses odd slots so the two patterns interleave
-        const int   slot = is_wave_b ? (i * 2 + 1) : (i * 2);
-        const float angle_offset = -spread_rad * 0.5f + static_cast<float>(slot) * slot_step;
+        const s32   slot = is_wave_b ? (i * 2 + 1) : (i * 2);
+        const f32 angle_offset = -spread_rad * 0.5f + static_cast<float>(slot) * slot_step;
 
-        float shot_dx, shot_dy, shot_px, shot_py;
+        f32 shot_dx, shot_dy, shot_px, shot_py;
         bp_rotate_vec(dx, dy, angle_offset, shot_dx, shot_dy);
         bp_rotate_vec(perp_x, perp_y, angle_offset, shot_px, shot_py);
 
         // Stagger wave phases so projectiles oscillate out of sync
-        const float base_phase = static_cast<float>(slot)
+        const f32 base_phase = static_cast<float>(slot)
             * (2.0f * 3.14159265f / static_cast<float>(total_slots));
-        const float wave_phase_offset = is_wave_b
+        const f32 wave_phase_offset = is_wave_b
             ? (3.14159265f / static_cast<float>(total_slots))
             : 0.0f;
 
@@ -442,10 +442,10 @@ BossProjectile* BossProjectileManager::acquire_slot()
 }
 
 // Initialises one projectile slot with the given direction, perp axis, and phase
-void BossProjectileManager::spawn_one(float bx, float by,
-    float dir_x, float dir_y,
-    float perp_x, float perp_y,
-    float phase)
+void BossProjectileManager::spawn_one(f32 bx, f32 by,
+    f32 dir_x, f32 dir_y,
+    f32 perp_x, f32 perp_y,
+    f32 phase)
 {
     BossProjectile* p = acquire_slot();
     *p = BossProjectile{};
@@ -461,9 +461,9 @@ void BossProjectileManager::spawn_one(float bx, float by,
 }
 
 // Returns the number of currently active projectiles in the pool
-int BossProjectileManager::get_active_count() const
+s32 BossProjectileManager::get_active_count() const
 {
-    int n = 0;
+    s32 n = 0;
     for (const auto& p : m_pool) if (p.in_use) ++n;
     return n;
 }
@@ -548,7 +548,7 @@ base_enemy::base_enemy(f32 start_x, f32 start_y)
 }
 
 // Applies damage, triggers hit flash, and sets dead state at 0 HP
-void base_enemy::take_damage(int amount)
+void base_enemy::take_damage(s32 amount)
 {
     if (!active) return;
     current_health -= amount;
@@ -606,7 +606,7 @@ ghost::ghost(f32 start_x, f32 start_y)
 }
 
 // Increments hit counter before delegating to base damage logic
-void ghost::take_damage(int amount)
+void ghost::take_damage(s32 amount)
 {
     if (!active) return;
     hits_from_player++;
@@ -698,7 +698,7 @@ dragon::dragon(f32 start_x, f32 start_y,
     f32 r_left, f32 r_right, f32 r_top, f32 r_bottom)
     : base_enemy(start_x, start_y),
     room_left(r_left), room_right(r_right), room_top(r_top), room_bottom(r_bottom),
-    hits_received(0), is_boss(true)
+    hits_received(0), hits_until_attack(0), is_boss(true)
 {
     speed = e_dragon_speed;
     current_health = e_dragon_max_health;
@@ -725,7 +725,7 @@ void dragon::load_anim_textures()
 }
 
 // Counts down m_wave_timer and fires a projectile wave when it expires
-void dragon::tick_attack_pattern(float dt, float tgt_x, float tgt_y)
+void dragon::tick_attack_pattern(f32 dt, f32 tgt_x, f32 tgt_y)
 {
     m_wave_timer -= dt;
     if (m_wave_timer <= 1.f)
@@ -860,7 +860,7 @@ void dragon::render_animated(f32 draw_size)
 // dragon::take_damage() — applies damage and switches to HURT or DEATH clip.
 // Does not use base_enemy::take_damage so the dragon controls its own anim.
 // ----------------------------------------------------------------------------
-void dragon::take_damage(int amount)
+void dragon::take_damage(s32 amount)
 {
     if (!active) return;
     hits_received++;

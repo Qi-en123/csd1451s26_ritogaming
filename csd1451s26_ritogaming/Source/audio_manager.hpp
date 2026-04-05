@@ -44,7 +44,7 @@ struct AudioManager
     AEAudio sfx_lose{};
     AEAudio sfx_win{};
 	AEAudio sfx_warning{}; 
-
+    AEAudio sfx_swapping{};
 };
 
 extern AudioManager g_audio;

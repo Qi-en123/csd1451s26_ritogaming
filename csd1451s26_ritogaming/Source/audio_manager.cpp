@@ -57,6 +57,9 @@ void audio_init()
 	// pre warning before entering boss room
     g_audio.sfx_warning = AEAudioLoadSound("Assets/Audio/warning.mp3");
 
+    // player swap
+    g_audio.sfx_swapping = AEAudioLoadSound("Assets/Audio/swapping.mp3");
+
 }
 
 // ----------------------------------------------------------------------------
@@ -104,6 +107,7 @@ void audio_free()
     AEAudioUnloadAudio(g_audio.sfx_lose);
     AEAudioUnloadAudio(g_audio.sfx_win);
     AEAudioUnloadAudio(g_audio.sfx_warning);
+    AEAudioUnloadAudio(g_audio.sfx_swapping);
 
     // Unload groups
     AEAudioUnloadAudioGroup(g_audio.bgm_group);

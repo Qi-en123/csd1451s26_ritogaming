@@ -378,13 +378,21 @@ static void player_handle_character_switch(Player *player_ptr)
 
     if (AEInputCheckTriggered(AEVK_1) && !player_ptr->char1.is_dead)
     {
-        player_ptr->current_player = &player_ptr->char1;
-        player_ptr->current_character = 1;
+        if (player_ptr->current_character != 1)
+        {
+            play_sfx(g_audio.sfx_swapping, 1.0f);
+            player_ptr->current_player = &player_ptr->char1;
+            player_ptr->current_character = 1;
+        }
     }
     if (AEInputCheckTriggered(AEVK_2) && !player_ptr->char2.is_dead)
     {
-        player_ptr->current_player = &player_ptr->char2;
-        player_ptr->current_character = 2;
+        if (player_ptr->current_character != 2)
+        {
+            play_sfx(g_audio.sfx_swapping, 1.0f);
+            player_ptr->current_player = &player_ptr->char2;
+            player_ptr->current_character = 2;
+        }
     }
 }
 /**************************************************************************/

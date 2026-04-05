@@ -38,7 +38,7 @@ namespace
 		const char* PATH_TILE_SPRITES = "Assets/Sprites/Tiles";
 		const char* PATH_DEAD_SKELETON = "Assets/Sprites/Tiles/dead_last_location.png";
 		const char* PATH_MAIN_FONT = "Assets/Fonts/Kenney Mini Square.ttf";
-		const char* PATH_PLAYER_CONFIG = "Assets/Config/player_config.json";
+		const char* PATH_PLAYER_CONFIG = "Assets/Config/player_config.txt";
 		const char* PATH_DEFAULT_MAP = "Assets/Levels/default.txt";
 		const char* PATH_DEFAULT_PUZZLE = "Assets/Levels/puzzle.txt";
 		const char* PATH_DEFAULT_ENEMY = "Assets/Levels/enemy.txt";

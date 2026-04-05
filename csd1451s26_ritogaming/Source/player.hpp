@@ -43,7 +43,7 @@ struct Projectile
 struct SwingArc {
     bool active = false;
     bool has_hit = false;
-    f32 progress =   0.0f;
+    f32 progress = 0.0f;
     f32 dir = 1.0f;
     f32 radius = 45.0f;
     f32 duration = 0.10f;
@@ -86,7 +86,6 @@ struct PlayerStats
     // Movement settings
     f32 char1_move_speed = 10.f;  // knight - slightly slower
     f32 char2_move_speed = 13.f;  // mage   - faster
-    //f32 move_speed = 4.f; // Player movement speed (4.f) makes it look more in sync with audio.
 
     // HP settings
     s32 char1_max_health;
@@ -107,14 +106,14 @@ struct Character
     f32 speed{};  // Movement speed
 
     AEGfxTexture* texture{};      // Character texture
-	AEGfxTexture* dead_texture{}; // Texture to show when character is "dead" (0 health)
+    AEGfxTexture* dead_texture{}; // Texture to show when character is "dead" (0 health)
     AEMtx33 transform{};          // Transform matrix
 
-    s32 character_id{}; // 1 or 2 for identification
-    Puzzle::Element element{};  // Character's element (WATER, FIRE, etc.)
-	bool is_dead{};     // Flag to indicate if character is dead
+    s32 character_id{};        // 1 or 2 for identification
+    Puzzle::Element element{}; // Character's element (WATER, FIRE, etc.)
+    bool is_dead{};            // Flag to indicate if character is dead
 
-	f32 hit_flash_timer = 0.f; // Timer for damage flash effect
+    f32 hit_flash_timer = 0.f; // Timer for damage flash effect
 };
 
 // ------------------------------------------------------------------------
@@ -149,7 +148,7 @@ struct Player
 
     // Projectile system
     std::vector<Projectile> projectiles;
-    std::vector<Particle> particles;
+    std::vector<Particle>   particles;
 
     s32 fireball_count{ 5 };
     f32 shoot_cooldown{ 0.0f };
@@ -157,7 +156,7 @@ struct Player
     // Last movement direction for shooting
     f32 last_dir_x{}, last_dir_y{};
 
-	// Damage flash timer for player hit feedback
+    // Damage flash timer for player hit feedback
     static constexpr f32 HIT_FLASH_DUR = 0.15f;
 
     f32 melee_cooldown = 0.f;
@@ -168,41 +167,40 @@ extern Player player_instance;
 
 /**************************************************************************
     \brief
-    Saves player configuration (default stats) to a JSON file.
+    Saves player state (positions, health, active character) to a txt file.
 
-    \param player_ptr Pointer to the player structure.
-    \param filepath Path to the JSON file.
+    \param player   Pointer to the player structure.
+    \param filepath Path to the txt file.
     \return True if successful, false otherwise.
 **************************************************************************/
 bool player_save(const Player* player, const std::string& filepath);
 
 /**************************************************************************
     \brief
-    Loads player configuration (default stats) from a JSON file.
+    Loads player state (positions, health, active character) from a txt file.
 
-    \param player_ptr Pointer to the player structure.
-    \param filepath Path to the JSON file.
+    \param player   Pointer to the player structure.
+    \param filepath Path to the txt file.
     \return True if successful, false otherwise.
 **************************************************************************/
 bool player_load(Player* player, const std::string& filepath);
 
 /**************************************************************************
     \brief
-    Saves current player state (positions, health, active character) 
-    to a JSON file.
+    Saves current player configuration (default stats) to a txt file.
 
-    \param player_ptr Pointer to the player structure.
-    \param filepath Path to the JSON file.
-	\return True if successful, false otherwise.    
+    \param player   Pointer to the player structure.
+    \param filepath Path to the txt file.
+    \return True if successful, false otherwise.
 **************************************************************************/
 bool player_save_config(const Player* player, const std::string& filepath);
 
 /**************************************************************************
     \brief
-    Loads player state (positions, health, active character) from a JSON file.
+    Loads player configuration (default stats) from a txt file.
 
-    \param player_ptr Pointer to the player structure.
-    \param filepath Path to the JSON file.
+    \param player   Pointer to the player structure.
+    \param filepath Path to the txt file.
     \return True if successful, false otherwise.
 **************************************************************************/
 bool player_load_config(Player* player, const std::string& filepath);
@@ -215,11 +213,13 @@ bool player_load_config(Player* player, const std::string& filepath);
     textures, initializes transformation matrices, and sets the current
     player pointer to character 1.
 
-    \param player_ptr Pointer to the player structure to initialize.
-    \param config Optional configuration override (uses defaults if nullptr).
+    \param player_ptr       Pointer to the player structure to initialize.
+    \param char_1_texture   Texture for character 1.
+    \param char_2_texture   Texture for character 2.
+    \param dead_texture     Texture shown when a character is dead.
 **************************************************************************/
-void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture, 
-                        AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture);
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture,
+    AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture);
 
 /**************************************************************************
     \brief
@@ -271,7 +271,6 @@ void player_system_free(Player* player_ptr);
     Updates projectile positions and handles collisions.
 
     \param player_ptr Pointer to the player structure.
-    \param dt Delta time for frame-independent movement.
 **************************************************************************/
 void player_update_projectiles(Player* player_ptr);
 
@@ -304,6 +303,8 @@ void player_take_damage(Player* player_ptr, s32 damage);
 /**************************************************************************
     \brief
     Returns true if both characters have no health remaining.
+
+    \param player_ptr Pointer to the player structure.
 **************************************************************************/
 bool player_is_dead(Player* player_ptr);
 
@@ -322,7 +323,7 @@ void spawn_player_from_map(Player* player_ptr);
 // Handles melee attack input for character 1 (knight).
 //
 // ------------------------------------------------------------------------
-void player_handle_melee(Player* player_ptr); 
+void player_handle_melee(Player* player_ptr);
 
 // ------------------------------------------------------------------------
 //

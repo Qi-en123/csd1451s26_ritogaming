@@ -14,17 +14,16 @@
 \               (WATER and FIRE) and their health systems.
 **************************************************************************/
 
-#include "json.hpp"
 #include "utils.hpp"
 #include "audio_manager.hpp"
 #include <fstream>
 #include <iostream>
+#include <string>
 #include "renderer.hpp"
 #include "collision.hpp"
 #include "enemy_manager.hpp"
 
-using json = nlohmann::json;
-static const char* player_config_data = "Assets/Config/player_config.json";
+static const char* player_config_data = "Assets/Config/player_config.txt";
 
 extern s32 map[TILE_ROWS][TILE_COLS];
 extern std::vector<Wall> g_walls;
@@ -41,41 +40,13 @@ Player player_instance;
 
 /**************************************************************************/
 /*!
-   saves player state (positions, health, active character) to a JSON file.
+   saves player state (positions, health, active character) to a txt file.
    - Claire's part
 */
 /**************************************************************************/
 bool player_save(const Player* player, const std::string& filepath)
 {
     if (!player) return false;
-
-    json data;
-
-    data["char1"]["x"] = player->char1.x;
-    data["char1"]["y"] = player->char1.y;
-    data["char1"]["is_dead"] = player->char1.is_dead;
-
-    data["char2"]["x"] = player->char2.x;
-    data["char2"]["y"] = player->char2.y;
-    data["char2"]["is_dead"] = player->char2.is_dead;
-
-    data["current_character"] = player->current_character;
-
-    data["stats"]["char1_curr_health"] = player->stats.char1_curr_health;
-    data["stats"]["char2_curr_health"] = player->stats.char2_curr_health;
-    data["stats"]["char1_max_health"] = player->stats.char1_max_health;
-    data["stats"]["char2_max_health"] = player->stats.char2_max_health;
-    data["stats"]["character_size"] = player->stats.character_size;
-    data["stats"]["triangle_size"] = player->stats.triangle_size;
-    data["stats"]["triangle_offset"] = player->stats.triangle_offset;
-    data["stats"]["char1_start_x"] = player->stats.char1_start_x;
-    data["stats"]["char1_start_y"] = player->stats.char1_start_y;
-    data["stats"]["char2_start_x"] = player->stats.char2_start_x;
-    data["stats"]["char2_start_y"] = player->stats.char2_start_y;
-    data["stats"]["char1_move_speed"] = player->stats.char1_move_speed;
-    data["stats"]["char2_move_speed"] = player->stats.char2_move_speed;
-
-    data["fireball_count"] = player->fireball_count;
 
     std::ofstream file(filepath);
     if (!file.is_open())
@@ -84,12 +55,34 @@ bool player_save(const Player* player, const std::string& filepath)
         return false;
     }
 
-    file << data.dump(2);
+    file << "char1_x " << player->char1.x << "\n";
+    file << "char1_y " << player->char1.y << "\n";
+    file << "char1_is_dead " << player->char1.is_dead << "\n";
+    file << "char2_x " << player->char2.x << "\n";
+    file << "char2_y " << player->char2.y << "\n";
+    file << "char2_is_dead " << player->char2.is_dead << "\n";
+    file << "current_character " << player->current_character << "\n";
+    file << "char1_curr_health " << player->stats.char1_curr_health << "\n";
+    file << "char2_curr_health " << player->stats.char2_curr_health << "\n";
+    file << "char1_max_health " << player->stats.char1_max_health << "\n";
+    file << "char2_max_health " << player->stats.char2_max_health << "\n";
+    file << "character_size " << player->stats.character_size << "\n";
+    file << "triangle_size " << player->stats.triangle_size << "\n";
+    file << "triangle_offset " << player->stats.triangle_offset << "\n";
+    file << "char1_start_x " << player->stats.char1_start_x << "\n";
+    file << "char1_start_y " << player->stats.char1_start_y << "\n";
+    file << "char2_start_x " << player->stats.char2_start_x << "\n";
+    file << "char2_start_y " << player->stats.char2_start_y << "\n";
+    file << "char1_move_speed " << player->stats.char1_move_speed << "\n";
+    file << "char2_move_speed " << player->stats.char2_move_speed << "\n";
+    file << "fireball_count " << player->fireball_count << "\n";
+
     return true;
 }
+
 /**************************************************************************/
 /*!
-   loads player state (positions, health, active character) from a JSON file.
+   loads player state (positions, health, active character) from a txt file.
    - Claire's part
 */
 /**************************************************************************/
@@ -104,81 +97,48 @@ bool player_load(Player* player, const std::string& filepath)
         return false;
     }
 
-    json data;
-    try { file >> data; }
-    catch (const json::parse_error& e)
+    std::string key;
+    while (file >> key)
     {
-        std::cerr << "[PlayerLoad] Parse error: " << e.what() << "\n";
-        return false;
+        if (key == "char1_x")           file >> player->char1.x;
+        else if (key == "char1_y")           file >> player->char1.y;
+        else if (key == "char1_is_dead") { int v; file >> v; player->char1.is_dead = v; }
+        else if (key == "char2_x")           file >> player->char2.x;
+        else if (key == "char2_y")           file >> player->char2.y;
+        else if (key == "char2_is_dead") { int v; file >> v; player->char2.is_dead = v; }
+        else if (key == "current_character") file >> player->current_character;
+        else if (key == "char1_curr_health") file >> player->stats.char1_curr_health;
+        else if (key == "char2_curr_health") file >> player->stats.char2_curr_health;
+        else if (key == "char1_max_health")  file >> player->stats.char1_max_health;
+        else if (key == "char2_max_health")  file >> player->stats.char2_max_health;
+        else if (key == "character_size")    file >> player->stats.character_size;
+        else if (key == "triangle_size")     file >> player->stats.triangle_size;
+        else if (key == "triangle_offset")   file >> player->stats.triangle_offset;
+        else if (key == "char1_start_x")     file >> player->stats.char1_start_x;
+        else if (key == "char1_start_y")     file >> player->stats.char1_start_y;
+        else if (key == "char2_start_x")     file >> player->stats.char2_start_x;
+        else if (key == "char2_start_y")     file >> player->stats.char2_start_y;
+        else if (key == "char1_move_speed")  file >> player->stats.char1_move_speed;
+        else if (key == "char2_move_speed")  file >> player->stats.char2_move_speed;
+        else if (key == "fireball_count")    file >> player->fireball_count;
     }
 
-    try {
-        // Load positions and death state
-        player->char1.x = data["char1"]["x"];
-        player->char1.y = data["char1"]["y"];
-        player->char1.is_dead = data["char1"]["is_dead"];
-
-        player->char2.x = data["char2"]["x"];
-        player->char2.y = data["char2"]["y"];
-        player->char2.is_dead = data["char2"]["is_dead"];
-
-        // Load current character
-        player->current_character = data["current_character"];
-        player->current_player = (player->current_character == 1)
-            ? &player->char1 : &player->char2;
-
-        // Load health and stats from nested stats object
-        player->stats.char1_curr_health = data["stats"]["char1_curr_health"];
-        player->stats.char2_curr_health = data["stats"]["char2_curr_health"];
-        player->stats.char1_max_health = data["stats"]["char1_max_health"];
-        player->stats.char2_max_health = data["stats"]["char2_max_health"];
-        player->stats.character_size = data["stats"]["character_size"];
-        player->stats.triangle_size = data["stats"]["triangle_size"];
-        player->stats.triangle_offset = data["stats"]["triangle_offset"];
-        player->stats.char1_start_x = data["stats"]["char1_start_x"];
-        player->stats.char1_start_y = data["stats"]["char1_start_y"];
-        player->stats.char2_start_x = data["stats"]["char2_start_x"];
-        player->stats.char2_start_y = data["stats"]["char2_start_y"];
-        player->stats.char1_move_speed = data["stats"]["char1_move_speed"];
-        player->stats.char2_move_speed = data["stats"]["char2_move_speed"];
-
-        // Load fireball count
-        player->fireball_count = data["fireball_count"];
-    }
-    catch (const json::type_error& e)
-    {
-        std::cerr << "[PlayerLoad] Type error: " << e.what() << "\n";
-        return false;
-    }
+    // Fix up the current_player pointer after loading
+    player->current_player = (player->current_character == 1)
+        ? &player->char1 : &player->char2;
 
     return true;
 }
+
 /**************************************************************************/
 /*!
-   saves current player state (positions, health, active character) to a JSON file.
+   saves current player configuration (default stats) to a txt file.
    - Claire's part
 */
 /**************************************************************************/
 bool player_save_config(const Player* player, const std::string& filepath)
 {
     if (!player) return false;
-
-    json data;
-
-    data["character_size"] = player->stats.character_size;
-    data["triangle_size"] = player->stats.triangle_size;
-    data["triangle_offset"] = player->stats.triangle_offset;
-
-    data["char1_start_x"] = player->stats.char1_start_x;
-    data["char1_start_y"] = player->stats.char1_start_y;
-    data["char2_start_x"] = player->stats.char2_start_x;
-    data["char2_start_y"] = player->stats.char2_start_y;
-
-    data["char1_move_speed"] = player->stats.char1_move_speed;
-    data["char2_move_speed"] = player->stats.char2_move_speed;
-
-    data["char1_max_health"] = player->stats.char1_max_health;
-    data["char2_max_health"] = player->stats.char2_max_health;
 
     std::ofstream file(filepath);
     if (!file.is_open())
@@ -187,13 +147,24 @@ bool player_save_config(const Player* player, const std::string& filepath)
         return false;
     }
 
-    file << data.dump(2);
+    file << "character_size " << player->stats.character_size << "\n";
+    file << "triangle_size " << player->stats.triangle_size << "\n";
+    file << "triangle_offset " << player->stats.triangle_offset << "\n";
+    file << "char1_start_x " << player->stats.char1_start_x << "\n";
+    file << "char1_start_y " << player->stats.char1_start_y << "\n";
+    file << "char2_start_x " << player->stats.char2_start_x << "\n";
+    file << "char2_start_y " << player->stats.char2_start_y << "\n";
+    file << "char1_move_speed " << player->stats.char1_move_speed << "\n";
+    file << "char2_move_speed " << player->stats.char2_move_speed << "\n";
+    file << "char1_max_health " << player->stats.char1_max_health << "\n";
+    file << "char2_max_health " << player->stats.char2_max_health << "\n";
+
     return true;
 }
 
 /**************************************************************************/
 /*!
-   loads player configuration (default stats) from a JSON file.
+   loads player configuration (default stats) from a txt file.
    - Claire's part
 */
 /**************************************************************************/
@@ -208,35 +179,20 @@ bool player_load_config(Player* player, const std::string& filepath)
         return false;
     }
 
-    json data;
-    try { file >> data; }
-    catch (const json::parse_error& e)
+    std::string key;
+    while (file >> key)
     {
-        std::cerr << "[PlayerLoadConfig] Parse error: " << e.what() << "\n";
-        return false;
-    }
-
-    try {
-        // Read from the nested "stats" object
-        player->stats.character_size = data["stats"]["character_size"];
-        player->stats.triangle_size = data["stats"]["triangle_size"];
-        player->stats.triangle_offset = data["stats"]["triangle_offset"];
-
-        player->stats.char1_start_x = data["stats"]["char1_start_x"];
-        player->stats.char1_start_y = data["stats"]["char1_start_y"];
-        player->stats.char2_start_x = data["stats"]["char2_start_x"];
-        player->stats.char2_start_y = data["stats"]["char2_start_y"];
-
-        player->stats.char1_move_speed = data["stats"]["char1_move_speed"];
-        player->stats.char2_move_speed = data["stats"]["char2_move_speed"];
-
-        player->stats.char1_max_health = data["stats"]["char1_max_health"];
-        player->stats.char2_max_health = data["stats"]["char2_max_health"];
-    }
-    catch (const json::type_error& e)
-    {
-        std::cerr << "[PlayerLoadConfig] Type error: " << e.what() << "\n";
-        return false;
+        if (key == "character_size")   file >> player->stats.character_size;
+        else if (key == "triangle_size")    file >> player->stats.triangle_size;
+        else if (key == "triangle_offset")  file >> player->stats.triangle_offset;
+        else if (key == "char1_start_x")    file >> player->stats.char1_start_x;
+        else if (key == "char1_start_y")    file >> player->stats.char1_start_y;
+        else if (key == "char2_start_x")    file >> player->stats.char2_start_x;
+        else if (key == "char2_start_y")    file >> player->stats.char2_start_y;
+        else if (key == "char1_move_speed") file >> player->stats.char1_move_speed;
+        else if (key == "char2_move_speed") file >> player->stats.char2_move_speed;
+        else if (key == "char1_max_health") file >> player->stats.char1_max_health;
+        else if (key == "char2_max_health") file >> player->stats.char2_max_health;
     }
 
     return true;
@@ -244,10 +200,10 @@ bool player_load_config(Player* player, const std::string& filepath)
 
 /**************************************************************************/
 /*!
-	audio update function to be called each frame. 
-    Manages footstep sound effects 
-	- Ahmad's part
-* /
+    audio update function to be called each frame.
+    Manages footstep sound effects
+    - Ahmad's part
+*/
 /**************************************************************************/
 static void footstep_audio_update()
 {
@@ -264,7 +220,7 @@ static void footstep_audio_update()
     Plays looping footstep sound effect.
     Restarts if pitch changes (e.g. dragging vs walking).
     pitch - playback pitch modifier
-	- Ahmad's part
+    - Ahmad's part
 */
 /**************************************************************************/
 static void play_footstep(f32 pitch = 1.0f)
@@ -289,12 +245,12 @@ static void play_footstep(f32 pitch = 1.0f)
 
 /**************************************************************************/
 /*!
-	Player system function to update transformation matrices for characters and
-	the triangle indicator each frame. Should be called after handling input and
-	before rendering. - Claire's part
-* /
+    Player system function to update transformation matrices for characters and
+    the triangle indicator each frame. Should be called after handling input and
+    before rendering. - Claire's part
+*/
 /**************************************************************************/
-static void player_system_update_transforms(Player *player_ptr)
+static void player_system_update_transforms(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -320,17 +276,18 @@ static void player_system_update_transforms(Player *player_ptr)
     AEMtx33Concat(&player_ptr->triangle_transform, &player_ptr->rotate, &player_ptr->triangle_scale);
     AEMtx33Concat(&player_ptr->triangle_transform, &triangle_translate, &player_ptr->triangle_transform);
 }
+
 /**************************************************************************/
 /*!
-	player system initialization function to set up character positions, textures,
+    player system initialization function to set up character positions, textures,
     health, and transformation matrices.
-	 - Claire's part
+     - Claire's part
 
      element - jerod's part
-* /
+*/
 /**************************************************************************/
-void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
-                        AEGfxTexture *char_2_texture, AEGfxTexture *dead_texture)
+void player_system_init(Player* player_ptr, AEGfxTexture* char_1_texture,
+    AEGfxTexture* char_2_texture, AEGfxTexture* dead_texture)
 {
     if (!player_ptr)
         return;
@@ -355,7 +312,6 @@ void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
     player_ptr->current_player = &player_ptr->char1;
     player_ptr->current_character = 1;
 
-    //
     player_ptr->char1.dead_texture = dead_texture;
     player_ptr->char2.dead_texture = dead_texture;
     player_ptr->char1.is_dead = false;
@@ -378,14 +334,15 @@ void player_system_init(Player *player_ptr, AEGfxTexture *char_1_texture,
     // Initialize all transforms
     player_system_update_transforms(player_ptr);
 }
+
 /**************************************************************************/
 /*!
-    player handle switching between 2 chara. 
+    player handle switching between 2 chara.
     1 - knight & 2 - mage
     - Claire's part
-* /
+*/
 /**************************************************************************/
-static void player_handle_character_switch(Player *player_ptr)
+static void player_handle_character_switch(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -409,13 +366,14 @@ static void player_handle_character_switch(Player *player_ptr)
         }
     }
 }
+
 /**************************************************************************/
 /*!
-	player movement handling                      - Claire's part
-	collision detection against walls and puzzles - jerod's part
-* /
+    player movement handling                      - Claire's part
+    collision detection against walls and puzzles - jerod's part
+*/
 /**************************************************************************/
-static void player_handle_movement(Player *player_ptr)
+static void player_handle_movement(Player* player_ptr)
 {
     if (!player_ptr || !player_ptr->current_player)
         return;
@@ -464,7 +422,7 @@ static void player_handle_movement(Player *player_ptr)
         player_ptr->last_dir_y = 0.0f;
     }
 
-    // Horizontal Movement with collision
+    // Horizontal movement with collision
     if (!check_player_collision(nextX, *move_y, halfSize) &&
         !Puzzle::player_collide_puzzles(nextX, *move_y, halfSize, puzzle_index))
     {
@@ -519,6 +477,7 @@ static void player_handle_movement(Player *player_ptr)
     {
         is_dragging = false;
     }
+
     if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_A) ||
         AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_D))
     {
@@ -530,11 +489,11 @@ static void player_handle_movement(Player *player_ptr)
 
 /**************************************************************************/
 /*!
-  Main player system function to be called each frame. Handles input 
+  Main player system function to be called each frame. Handles input
   and updates transforms. - Claire's part
-* /
+*/
 /**************************************************************************/
-void player_system_handle_input(Player *player_ptr)
+void player_system_handle_input(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -548,10 +507,11 @@ void player_system_handle_input(Player *player_ptr)
   Handles shooting logic (CHARACTER 2 ONLY). - Ahmad's part
 */
 /**************************************************************************/
-void player_handle_shooting(Player * player_ptr)
+void player_handle_shooting(Player* player_ptr)
 {
     if (!player_ptr)
         return;
+
     // Recharge one fireball every 1 second (up to max 5)
     player_ptr->shoot_cooldown += dt;
     if (player_ptr->shoot_cooldown >= 1.0f && player_ptr->fireball_count < 5)
@@ -561,9 +521,9 @@ void player_handle_shooting(Player * player_ptr)
     }
 
     // Only character 2 can shoot
-    if (player_ptr->current_character == 2 && !player_ptr->char2.is_dead && AEInputCheckTriggered(AEVK_LBUTTON) && player_ptr->fireball_count > 0)
+    if (player_ptr->current_character == 2 && !player_ptr->char2.is_dead &&
+        AEInputCheckTriggered(AEVK_LBUTTON) && player_ptr->fireball_count > 0)
     {
-
         // --- Get mouse position in world space ---
         s32 mouseScreenX, mouseScreenY;
         AEInputGetCursorPosition(&mouseScreenX, &mouseScreenY);
@@ -608,14 +568,15 @@ void player_handle_shooting(Player * player_ptr)
         play_sfx(g_audio.sfx_fireball, 0.08f, 0.45f);
     }
 }
+
 /**************************************************************************/
 /*!
     Updates particle system (movement + lifetime).
     Removes particles when their life reaches 0.
-	- Ahmad's part
+    - Ahmad's part
 */
 /**************************************************************************/
-static void player_update_particles(Player * player_ptr)
+static void player_update_particles(Player* player_ptr)
 {
     for (size_t i = 0; i < player_ptr->particles.size(); ++i)
     {
@@ -632,14 +593,15 @@ static void player_update_particles(Player * player_ptr)
         }
     }
 }
+
 /**************************************************************************/
 /*!
     Renders all active particles (fire trail effect).
     Alpha fades based on remaining lifetime.
-	- Ahmad's part
+    - Ahmad's part
 */
 /**************************************************************************/
-static void player_render_particles(Player *player_ptr)
+static void player_render_particles(Player* player_ptr)
 {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
@@ -659,7 +621,7 @@ static void player_render_particles(Player *player_ptr)
   Updates projectile positions and handles collisions. - Ahmad's part
 */
 /**************************************************************************/
-void player_update_projectiles(Player * player_ptr)
+void player_update_projectiles(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -711,7 +673,7 @@ void player_update_projectiles(Player * player_ptr)
   Renders all active projectiles. - Ahmad's part
 */
 /**************************************************************************/
-void player_render_projectiles(Player * player_ptr)
+void player_render_projectiles(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -728,25 +690,27 @@ void player_render_projectiles(Player * player_ptr)
         }
     }
 }
+
 /**************************************************************************/
 /*!
-  Renders all active projectile counts. - Ahmad's part   
+  Renders all active projectile counts. - Ahmad's part
 */
 /**************************************************************************/
-static void player_render_fireball_count(Player * player_ptr)
+static void player_render_fireball_count(Player* player_ptr)
 {
     if (!player_ptr)
         return;
 
     std::string text = "Fireballs: " + std::to_string(player_ptr->fireball_count) + " / 5";
 }
+
 /**************************************************************************/
 /*!
     Handles melee attack input for Character 1 (knight).
     Determines swing direction based on mouse position.
     Checks for enemy hits along the swing arc and applies damage.
-	 Plays sword attack sound effect.
-     - Ahmad's part
+    Plays sword attack sound effect.
+    - Ahmad's part
 */
 /**************************************************************************/
 void player_handle_melee(Player* player_ptr)
@@ -777,16 +741,17 @@ void player_handle_melee(Player* player_ptr)
 
     player_ptr->swing.active = true;
     player_ptr->swing.progress = 0.0f;
-    player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f;  // +1 right, -1 left
+    player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f; // +1 right, -1 left
     player_ptr->melee_cooldown = player_ptr->swing.duration;
 
     play_sfx(g_audio.sfx_sword_atk, 0.1f, 1.1f);
 }
+
 /**************************************************************************/
 /*!
     Updates melee swing animation and hit detection.
     Ensures enemies are hit only once per swing.
-	- Ahmad's part
+    - Ahmad's part
 */
 /**************************************************************************/
 void player_update_swing(Player* player_ptr)
@@ -798,7 +763,7 @@ void player_update_swing(Player* player_ptr)
 
     sw.progress += dt / sw.duration;
 
-    // only check for hits once per swing, not every frame
+    // Only check for hits once per swing, not every frame
     if (!sw.has_hit)
     {
         f32 cx = player_ptr->char1.x;
@@ -832,10 +797,11 @@ void player_update_swing(Player* player_ptr)
         sw.has_hit = false; // reset for next swing
     }
 }
+
 /**************************************************************************/
 /*!
     Renders melee swing arc using particle-like trail.
-	- Ahmad's part  
+    - Ahmad's part
 */
 /**************************************************************************/
 void player_render_swing(Player* player_ptr)
@@ -848,11 +814,11 @@ void player_render_swing(Player* player_ptr)
     f32 cx = player_ptr->char1.x;
     f32 cy = player_ptr->char1.y;
 
-    f32 startAngle = PI * 0.5f;    // top
-    f32 endAngle = -PI * 0.5f;   // bottom
+    f32 startAngle = PI * 0.5f;   // top
+    f32 endAngle = -PI * 0.5f;  // bottom
     f32 currEnd = startAngle + (endAngle - startAngle) * sw.progress;
 
-    s32   segments = 20;
+    s32 segments = 20;
     f32 fade = 1.0f - sw.progress * 0.5f;
 
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -883,6 +849,7 @@ void player_system_render(Player* player_ptr)
 {
     if (!player_ptr)
         return;
+
     player_render_particles(player_ptr);
     player_render_swing(player_ptr);
     player_render_fireball_count(player_ptr);
@@ -923,14 +890,14 @@ void player_system_render(Player* player_ptr)
 
 /**************************************************************************/
 /*!
-  Updates the player system each frame. 
+  Updates the player system each frame.
   Base : Movement, character switching, and general system updates - Claire
 
   puzzle interaction - Jerod
   Shooting and projectiles - Ahmad
 */
 /**************************************************************************/
-void player_system_update(Player * player_ptr)
+void player_system_update(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -952,12 +919,12 @@ void player_system_update(Player * player_ptr)
 
 /**************************************************************************/
 /*!
-  Frees resources used by the player system. 
+  Frees resources used by the player system.
   Note: Textures are managed by the main game and should not be freed here.
    - Claire
 */
 /**************************************************************************/
-void player_system_free(Player * player_ptr)
+void player_system_free(Player* player_ptr)
 {
     if (!player_ptr)
         return;
@@ -967,21 +934,23 @@ void player_system_free(Player * player_ptr)
 
     player_ptr->projectiles.clear(); // Clean up projectiles
     player_ptr->particles.clear();
+
     // Clear active player reference
     player_ptr->current_player = nullptr;
 }
+
 /**************************************************************************/
 /*!
-  Applies damage to the currently active character and handles death logic. 
+  Applies damage to the currently active character and handles death logic.
   - Claire's part
-*/     
+*/
 /**************************************************************************/
-void player_take_damage(Player *player_ptr, s32 damage)
+void player_take_damage(Player* player_ptr, s32 damage)
 {
     if (!player_ptr)
         return;
 
-	// Start hit flash effect on the currently active character
+    // Start hit flash effect on the currently active character
     if (player_ptr->current_character == 1)
         player_ptr->char1.hit_flash_timer = 0.15f;
     else
@@ -991,7 +960,7 @@ void player_take_damage(Player *player_ptr, s32 damage)
     if (player_ptr->current_character == 1)
         play_sfx(g_audio.sfx_knight_hurt); // Knight hurt sound
     else
-        play_sfx(g_audio.sfx_mage_hurt); // Mage hurt sound
+        play_sfx(g_audio.sfx_mage_hurt);   // Mage hurt sound
 
     int* curr_hp = (player_ptr->current_character == 1)
         ? &player_ptr->stats.char1_curr_health
@@ -1025,11 +994,11 @@ void player_take_damage(Player *player_ptr, s32 damage)
 
 /**************************************************************************/
 /*!
-  Checks if both characters are dead. Returns true if the player has lost. 
+  Checks if both characters are dead. Returns true if the player has lost.
   - Claire's part
 */
-/**************************************************************************/    
-bool player_is_dead(Player *player_ptr)
+/**************************************************************************/
+bool player_is_dead(Player* player_ptr)
 {
     if (!player_ptr)
         return false;
@@ -1039,29 +1008,28 @@ bool player_is_dead(Player *player_ptr)
 
 /**************************************************************************/
 /*!
-  Spawns player characters based on their positions in the map array. 
+  Spawns player characters based on their positions in the map array.
   Converts tile coordinates to world coordinates and assigns them to the player struct.
   - Claire's part
 */
 /**************************************************************************/
-void spawn_player_from_map(Player *player_ptr)
+void spawn_player_from_map(Player* player_ptr)
 {
-	for (s32 r = 0; r < TILE_ROWS; r++)
-	{
-		for (s32 c = 0; c < TILE_COLS; c++)
-		{
-			// Assign positions
-			if (map[r][c] == KNIGHT)
-			{
-				player_ptr->char2.x = col_to_world(c);
-				player_ptr->char2.y = row_to_world(r);
-			}
-
-			else if (map[r][c] == WIZARD)
-			{
-				player_ptr->char1.x = col_to_world(c);
-				player_ptr->char1.y = row_to_world(r);
-			}
-		}
-	}
+    for (s32 r = 0; r < TILE_ROWS; r++)
+    {
+        for (s32 c = 0; c < TILE_COLS; c++)
+        {
+            // Assign positions
+            if (map[r][c] == KNIGHT)
+            {
+                player_ptr->char2.x = col_to_world(c);
+                player_ptr->char2.y = row_to_world(r);
+            }
+            else if (map[r][c] == WIZARD)
+            {
+                player_ptr->char1.x = col_to_world(c);
+                player_ptr->char1.y = row_to_world(r);
+            }
+        }
+    }
 }

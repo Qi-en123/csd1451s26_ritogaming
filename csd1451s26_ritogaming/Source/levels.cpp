@@ -470,7 +470,7 @@ void levels_update()
             sync_global_paths();
 
             scroll_row = 0; scroll_row_f = 0.f; scroll_target = 0.f;
-            delete_msg_timer = 2.f;
+            delete_msg_timer = 0.8f;
             pending_delete_idx = -1;
             show_delete_confirm = false;
         }

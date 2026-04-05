@@ -190,6 +190,9 @@ void minimap_draw(Player* pPlayer, int dungeonMap[TILE_ROWS][TILE_COLS], AEGfxTe
         {
             int tileID = dungeonMap[r][c];
 
+            if (tileID == 3 || tileID == 4)
+                tileID = 2;
+
             if (tileID > 0 && tileID < NUM_TILE_TYPES && tiles[tileID])
             {
                 f32 tileX, tileY;

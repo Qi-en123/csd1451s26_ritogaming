@@ -246,7 +246,7 @@ void credit_load()
 void credit_init()
 {
     // Font must be created here, not in load, as it requires the graphics context
-    credit_font = AEGfxCreateFont(font_path.c_str(), font_size);
+    SILENT_CALL(credit_font = AEGfxCreateFont(font_path.c_str(), font_size));
 
     scrollY = scroll_start_y;
 

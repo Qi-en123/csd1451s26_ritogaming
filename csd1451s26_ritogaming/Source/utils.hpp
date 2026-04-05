@@ -13,6 +13,17 @@
 #include <string>
 #include <vector>
 
+
+// Suppresses AEEngine's internal font atlas console output on Windows
+#define SILENT_CALL(expr)                                \
+    do {                                                 \
+        FILE* _sf = nullptr;                             \
+        freopen_s(&_sf, "NUL", "w", stdout);             \
+        (expr);                                          \
+        freopen_s(&_sf, "CON", "w", stdout);             \
+    } while(0)
+
+
 // ----------------------------------------------------------------------------
 //
 // Global Variables (Externs)
@@ -53,3 +64,5 @@ int IsButtonHovered(f32 rectX, f32 rectY, f32 rectW, f32 rectH);
 int draw_confirm_popup(AEGfxTexture* panel,
 	AEGfxTexture* btn_yes, AEGfxTexture* btn_no,
 	s8 font, const char* message, f32 font_scale = 1.f);
+
+

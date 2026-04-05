@@ -144,8 +144,8 @@ void level1_load()
 	load_ui_textures(&ui_manager);
 
 	skeleton_texture = AEGfxTextureLoad(Constants::PATH_DEAD_SKELETON);
-	warning_font = AEGfxCreateFont(Constants::PATH_MAIN_FONT, Constants::FONT_SIZE_LARGE);
-	tooltip_font = AEGfxCreateFont(Constants::PATH_MAIN_FONT, Constants::FONT_SIZE_SMALL);
+	SILENT_CALL(warning_font = AEGfxCreateFont(Constants::PATH_MAIN_FONT, Constants::FONT_SIZE_LARGE));
+	SILENT_CALL(tooltip_font = AEGfxCreateFont(Constants::PATH_MAIN_FONT, Constants::FONT_SIZE_SMALL));
 
 	if (tooltip_font == -1)
 	{

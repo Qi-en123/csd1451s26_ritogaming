@@ -149,7 +149,7 @@ void end_screen_load()
     c_panel = AEGfxTextureLoad("Assets/Sprites/Admin/end_screen_panel.png");
 
     if (end_font == -1)
-        end_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36);
+        SILENT_CALL(end_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36));
 }
 
 void end_screen_unload()

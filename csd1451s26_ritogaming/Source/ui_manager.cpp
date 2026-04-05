@@ -10,6 +10,7 @@
 
 #include "ui_manager.hpp"
 #include "renderer.hpp"
+#include "utils.hpp"
 
 UIManager ui_manager;
 
@@ -24,7 +25,7 @@ void load_ui_textures(UIManager* p_ui_manager)
 	p_ui_manager->cursor_knight = AEGfxTextureLoad("Assets/Sprites/Admin/cursorSword_silver.png");
 	p_ui_manager->cursor_wizard = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_nonactive1.png");
 	p_ui_manager->cursor_wizard_active = AEGfxTextureLoad("Assets/Sprites/Admin/wizard_wand_active1.png");
-	p_ui_manager->font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 48);
+	SILENT_CALL(p_ui_manager->font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 48));
 }
 
 void free_ui_textures(UIManager* p_ui_manager)

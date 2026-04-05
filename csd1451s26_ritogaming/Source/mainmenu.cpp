@@ -235,7 +235,7 @@ void mainmenu_load()
     buttons[5] = AEGfxTextureLoad("Assets/Sprites/Admin/main_menu_button6.png");
 
     // Load font for button labels and title text
-    font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40);
+    SILENT_CALL(font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 40));
     if (font == -1)
         return;
 }

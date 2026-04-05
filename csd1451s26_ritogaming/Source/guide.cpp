@@ -128,10 +128,10 @@ void guide_load() {
 	// Load player stats and combat config from JSON before any player init
 	player_load_config(&player_instance, "Assets/Config/player_config.json");
 
-	guide_text_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36);
+	SILENT_CALL(guide_text_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 36));
 	if (guide_text_font == -1) return;
 
-	tooltip_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 28);
+	SILENT_CALL(tooltip_font = AEGfxCreateFont("Assets/Fonts/Kenney Mini Square.ttf", 28));
 	if (tooltip_font == -1) return;
 }
 

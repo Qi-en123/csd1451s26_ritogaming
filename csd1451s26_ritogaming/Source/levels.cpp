@@ -376,7 +376,7 @@ void levels_load()
     tex_panel = AEGfxTextureLoad(cfg.tex_panel.c_str());
     tex_confirm_yes = AEGfxTextureLoad(cfg.tex_confirm_yes.c_str());
     tex_confirm_no = AEGfxTextureLoad(cfg.tex_confirm_no.c_str());
-    font = AEGfxCreateFont(cfg.font_path.c_str(), cfg.font_size);
+    SILENT_CALL(font = AEGfxCreateFont(cfg.font_path.c_str(), cfg.font_size));
 
     load_tile_textures(cfg.tile_sprites_dir.c_str());
 }

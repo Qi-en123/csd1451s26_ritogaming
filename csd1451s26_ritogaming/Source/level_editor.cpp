@@ -691,7 +691,7 @@ void level_editor_init()
         auto cfg = parse_kv_file("Assets/LevelEditor/level_editor_config.txt");
         std::string fp = kv_str(cfg, "font_path");
         s32         fs = kv_int(cfg, "font_size");
-        level_editor_font = AEGfxCreateFont(fp.c_str(), fs);
+        SILENT_CALL(level_editor_font = AEGfxCreateFont(fp.c_str(), fs));
     }
 
     Camera::zoom = editor_zoom_min;

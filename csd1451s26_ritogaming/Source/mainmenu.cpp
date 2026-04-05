@@ -290,32 +290,59 @@ void mainmenu_update()
     dt = (f32)AEFrameRateControllerGetFrameTime();
     AEInputGetCursorPosition(&mouse_x, &mouse_y);
 
-    // --- Button hover sound (fires once per newly-entered button) ---
+    // --- Hover Sound Logic ---
     static s32 last_hovered = -1;
     s32 current_hovered = -1;
-    for (s32 i = 0; i < 5; ++i)
-    {
-        if (IsButtonHovered(cfg_button_x, cfg_button_y[i], cfg_button_w, cfg_button_h))
-        {
-            current_hovered = i;
-            break;
-        }
-    }
-    if (current_hovered != last_hovered && current_hovered != -1)
-        play_sfx(g_audio.sfx_button_hover);
-    last_hovered = current_hovered;
 
-    // --- Exit confirmation popup blocks all other input while visible ---
     if (show_exit_confirm)
     {
-        if (IsButtonClicked(-100.f, -50.f, 200.f, 80.f)) // Yes — quit
-            next = GS_QUIT;
-        if (IsButtonClicked(100.f, -50.f, 200.f, 80.f))  // No — close popup
-            show_exit_confirm = false;
-        return;
+        // Check Yes button (left) and No button (right)
+        if (IsButtonHovered(-c_btn_x, c_btn_y, c_btn_w, c_btn_h))
+            current_hovered = 10; // Unique ID for Yes
+        else if (IsButtonHovered(c_btn_x, c_btn_y, c_btn_w, c_btn_h))
+            current_hovered = 11; // Unique ID for No
+    }
+    else
+    {
+        // Check standard menu buttons
+        for (s32 i = 0; i < 5; ++i)
+        {
+            if (IsButtonHovered(cfg_button_x, cfg_button_y[i], cfg_button_w, cfg_button_h))
+            {
+                current_hovered = i;
+                break;
+            }
+        }
     }
 
-    // --- Main button clicks ---
+    // Play sound if we just moved onto a new button
+    if (current_hovered != last_hovered && current_hovered != -1)
+    {
+        play_sfx(g_audio.sfx_button_hover);
+    }
+    last_hovered = current_hovered;
+
+
+    // --- Exit confirmation popup interaction ---
+    if (show_exit_confirm)
+    {
+        // Use the same button logic as draw_mainmenu for consistency
+        if (IsButtonClicked(-c_btn_x, c_btn_y, c_btn_w, c_btn_h)) // Yes
+        {
+            play_sfx(g_audio.sfx_button_click, 0.1f);
+            next = GS_QUIT;
+        }
+        if (IsButtonClicked(c_btn_x, c_btn_y, c_btn_w, c_btn_h))  // No
+        {
+            play_sfx(g_audio.sfx_button_click, 0.1f);
+            show_exit_confirm = false;
+        }
+
+        return; // Block main menu logic while popup is active
+    }
+
+
+    // --- Main menu button clicks ---
     if (IsButtonClicked(cfg_button_x, cfg_button_y[0], cfg_button_w, cfg_button_h)) // Play
     {
         play_sfx(g_audio.sfx_button_click, 0.1f);
@@ -341,86 +368,76 @@ void mainmenu_update()
     if (IsButtonClicked(cfg_button_x, cfg_button_y[4], cfg_button_w, cfg_button_h)) // Quit
     {
         play_sfx(g_audio.sfx_button_click, 0.1f);
-        show_exit_confirm = true; // show confirmation before quitting
+        show_exit_confirm = true;
     }
 
-    // --- Knight return animation (runs back to start after exiting screen) ---
+
+    // --- Animation logic (Knight & Ghoul) ---
     if (knight_returning)
     {
-        knight_x += cfg_character_speed * dt; // move knight rightward back to start
-
-        if (knight_x >= cfg_knight_start_x) // reached start position — reset everything
+        knight_x += cfg_character_speed * dt;
+        if (knight_x >= cfg_knight_start_x)
         {
             knight_x = cfg_knight_start_x;
             knight_returning = false;
-            ghoul_scale = cfg_character_min_scale; // ghoul resets to small
+            ghoul_scale = cfg_character_min_scale;
             ghoul_x = cfg_ghoul_start_x;
         }
-        return; // skip all other animation while returning
+        return;
     }
 
-    // --- Ghoul grows to full size before the chase begins ---
     if (ghoul_scale < cfg_character_full_scale)
     {
-        ghoul_scale += cfg_ghoul_grow_rate * dt; // grow at constant rate
-        return; // wait until fully grown before starting movement
+        ghoul_scale += cfg_ghoul_grow_rate * dt;
+        return;
     }
 
-    // --- Chase animation: ghoul flees, knight pursues ---
     ghoul_x += cfg_character_speed * dt;
     knight_x += cfg_character_speed * dt;
     ghoul_bounce_timer += dt;
-    ghoul_y = -50.f + sinf(ghoul_bounce_timer * 5.f) * 20.f; // sine wave bounce
+    ghoul_y = -50.f + sinf(ghoul_bounce_timer * 5.f) * 20.f;
 
-    // When knight exits the right edge, re-enter from the left
     if (knight_x > AEGfxGetWinMaxX() + 100.0f)
     {
         knight_returning = true;
         knight_x = AEGfxGetWinMinX() - 100.0f;
     }
 
-    // --- Dust particles spawn under knight feet while chasing ---
+    // --- Dust & Trail Systems ---
     static f32 dust_timer = 0.f;
     dust_timer += dt;
     if (!knight_returning && ghoul_scale >= cfg_character_full_scale && dust_timer > 0.1f)
     {
-        spawn_dust(knight_x - 40.f, -150.f); // left foot position
-        spawn_dust(knight_x - 60.f, -150.f); // right foot position
+        spawn_dust(knight_x - 40.f, -150.f);
+        spawn_dust(knight_x - 60.f, -150.f);
         dust_timer = 0.f;
     }
 
-    // --- Update active dust particles (move, fade, deactivate) ---
     for (s32 i = 0; i < MAX_DUST; ++i)
     {
         if (!dust_particles[i].active) continue;
-
         dust_particles[i].lifetime -= dt;
         dust_particles[i].x += dust_particles[i].vx * dt;
         dust_particles[i].y += dust_particles[i].vy * dt;
-        dust_particles[i].alpha -= dt * 1.2f; // fade out over time
-
+        dust_particles[i].alpha -= dt * 1.2f;
         if (dust_particles[i].lifetime <= 0.f || dust_particles[i].alpha <= 0.f)
             dust_particles[i].active = false;
     }
 
-    // --- Ghoul trail: snapshot ghoul position every 0.08s ---
     trail_spawn_timer += dt;
     if (ghoul_scale >= cfg_character_full_scale && trail_spawn_timer > 0.08f)
     {
-        // Shift existing trail entries back to make room for the newest
         for (s32 i = MAX_TRAIL - 1; i > 0; --i)
             ghoul_trail[i] = ghoul_trail[i - 1];
 
-        // Store current ghoul state as the newest trail entry
         ghoul_trail[0].x = ghoul_x;
         ghoul_trail[0].y = ghoul_y;
         ghoul_trail[0].scale = ghoul_scale;
-        ghoul_trail[0].alpha = 0.35f; // trail starts semi-transparent
+        ghoul_trail[0].alpha = 0.35f;
         ghoul_trail[0].active = true;
         trail_spawn_timer = 0.f;
     }
 
-    // --- Fade out existing trail entries ---
     for (s32 i = 0; i < MAX_TRAIL; ++i)
     {
         if (!ghoul_trail[i].active) continue;
@@ -429,7 +446,6 @@ void mainmenu_update()
             ghoul_trail[i].active = false;
     }
 
-    // Advance knight bob timer only while the chase is active
     if (!knight_returning && ghoul_scale >= cfg_character_full_scale)
         knight_bob_timer += dt;
     else

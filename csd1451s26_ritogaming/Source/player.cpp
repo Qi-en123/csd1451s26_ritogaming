@@ -751,6 +751,13 @@ void player_handle_melee(Player* player_ptr)
 
     // Only character 1 (knight) swings
     if (player_ptr->current_character != 1) return;
+
+    if (player_ptr->melee_cooldown > 0.f)
+    {
+        player_ptr->melee_cooldown -= dt;
+        return; // block swinging while on cooldown
+    }
+
     if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
     // Get mouse world position (same math you already have)
@@ -767,6 +774,7 @@ void player_handle_melee(Player* player_ptr)
     player_ptr->swing.active = true;
     player_ptr->swing.progress = 0.0f;
     player_ptr->swing.dir = (dx >= 0.0f) ? 1.0f : -1.0f;  // +1 right, -1 left
+    player_ptr->melee_cooldown = player_ptr->swing.duration;
 
     play_sfx(g_audio.sfx_sword_atk, 0.1f, 1.1f);
 }

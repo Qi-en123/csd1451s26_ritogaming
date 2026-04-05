@@ -159,6 +159,8 @@ struct Player
 
 	// Damage flash timer for player hit feedback
     static constexpr f32 HIT_FLASH_DUR = 0.15f;
+
+    f32 melee_cooldown = 0.f;
 };
 
 // Global player instance

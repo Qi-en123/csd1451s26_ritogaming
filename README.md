@@ -8,5 +8,5 @@ solve puzzles, unlock paths and fight monsters through to a boss fight. Team of 
 - Level editor
 
 ## Build and run
-1. Open `csd1451s26_ritogaming/<name>.sln` in Visual Studio. <- check the name
-2. Build and run.  <- check
+1. Open `csd1451s26_ritogaming/csd1451s26_ritogaming.sln` in Visual Studio. 
+2. Build and run.  
